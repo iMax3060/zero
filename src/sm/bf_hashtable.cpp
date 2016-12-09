@@ -11,6 +11,7 @@
 #include "bf_hashtable.h"
 #include "latch.h"
 #include <string.h>
+#include "smthread.h"
 
 const size_t HASHBUCKET_INITIAL_CHUNK_SIZE = 4;
 const uint32_t BF_HASH_SEED = 0x35D0B891;
@@ -269,6 +270,7 @@ bool bf_hashtable<T>::insert_if_not_exists(PageID key, T value) {
 
 template<class T>
 bool bf_hashtable<T>::lookup(PageID key, T& value) const {
+    INC_TSTAT(bf_hashtable_lookup_count);
     uint32_t hash = bf_hash(key);
     return _table[hash % _size].find(key, value);
 }
