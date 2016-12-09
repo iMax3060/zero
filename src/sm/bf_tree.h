@@ -166,27 +166,27 @@ public:
 
 
     /** returns the current latch mode of the page. */
-    latch_mode_t latch_mode(const generic_page* p);
+    latch_mode_t latch_mode(const generic_page* page);
 
     /**
      * upgrade SH-latch on the given page to EX-latch.
      * This method is always conditional, immediately returning if there is a conflicting latch.
      * Returns if successfully upgraded.
      */
-    bool upgrade_latch_conditional(const generic_page* p);
+    bool upgrade_latch_conditional(const generic_page* page);
 
     /** downgrade EX-latch on the given page to SH-latch. */
-    void downgrade_latch(const generic_page* p);
+    void downgrade_latch(const generic_page* page);
 
     /**
      * Release the latch on the page.
      */
-    void unfix(const generic_page* p, bool evict = false);
+    void unfix(const generic_page* page, bool evict = false);
 
     /**
      * Returns if the page is already marked dirty.
      */
-    bool is_dirty(const generic_page* p) const;
+    bool is_dirty(const generic_page* page) const;
 
     /**
      * Returns if the page is already marked dirty.

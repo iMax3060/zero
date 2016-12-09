@@ -854,15 +854,15 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
 }
 
 
-void bf_tree_m::unfix(const generic_page* p, bool evict)
+void bf_tree_m::unfix(const generic_page* page, bool evict)
 {
-    uint32_t idx = p - _buffer;
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     bf_tree_cb_t &cb = get_cb(idx);
     w_assert1(cb.latch().held_by_me());
     if (evict) {
         w_assert0(cb.latch().is_mine());
-        bool removed = _hashtable->remove(p->pid);
+        bool removed = _hashtable->remove(page->pid);
         w_assert1(removed);
 
         cb.clear_except_latch();
@@ -879,8 +879,8 @@ void bf_tree_m::unfix(const generic_page* p, bool evict)
     cb.latch().latch_release();
 }
 
-bool bf_tree_m::is_dirty(const generic_page* p) const {
-    uint32_t idx = p - _buffer;
+bool bf_tree_m::is_dirty(const generic_page* page) const {
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     return get_cb(idx).is_dirty();
 }
@@ -896,9 +896,9 @@ bool bf_tree_m::is_used (bf_idx idx) const {
     return _is_active_idx(idx);
 }
 
-void bf_tree_m::set_page_lsn(generic_page* p, lsn_t lsn)
+void bf_tree_m::set_page_lsn(generic_page* page, lsn_t lsn)
 {
-    uint32_t idx = p - _buffer;
+    uint32_t idx = page - _buffer;
 
     // CS: workaround for design limitation of restore. When redoing a log
     // record, the LSN should only be updated if the page image being used
@@ -917,29 +917,29 @@ void bf_tree_m::set_page_lsn(generic_page* p, lsn_t lsn)
     cb.set_page_lsn(lsn);
 }
 
-lsn_t bf_tree_m::get_page_lsn(generic_page* p)
+lsn_t bf_tree_m::get_page_lsn(generic_page* page)
 {
-    uint32_t idx = p - _buffer;
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     return get_cb(idx).get_page_lsn();
 }
 
-latch_mode_t bf_tree_m::latch_mode(const generic_page* p) {
-    uint32_t idx = p - _buffer;
+latch_mode_t bf_tree_m::latch_mode(const generic_page* page) {
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     return get_cb(idx).latch().mode();
 }
 
-void bf_tree_m::downgrade_latch(const generic_page* p) {
-    uint32_t idx = p - _buffer;
+void bf_tree_m::downgrade_latch(const generic_page* page) {
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     bf_tree_cb_t &cb = get_cb(idx);
     w_assert1(cb.latch().held_by_me());
     cb.latch().downgrade();
 }
 
-bool bf_tree_m::upgrade_latch_conditional(const generic_page* p) {
-    uint32_t idx = p - _buffer;
+bool bf_tree_m::upgrade_latch_conditional(const generic_page* page) {
+    uint32_t idx = page - _buffer;
     w_assert1 (_is_active_idx(idx));
     bf_tree_cb_t &cb = get_cb(idx);
     w_assert1(cb.latch().held_by_me());
