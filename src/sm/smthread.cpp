@@ -11,8 +11,6 @@
 
 #include <sm_base.h>
 
-#include <w_strstream.h>
-
 SmthreadFunc::~SmthreadFunc()
 {
 }
@@ -147,7 +145,7 @@ smthread_t::smthread_t(
     user = (void *)&smthread_init;
 
     lock_timeout(lockto);
-    if(lockto > WAIT_NOT_USED) _initialize_fingerprint();
+    if (lockto > WAIT_NOT_USED) _initialize_fingerprint();
 }
 
 // Used by internal sm threads, e.g., bf_prefetch_thread.

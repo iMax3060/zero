@@ -55,6 +55,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define TID_T_H
 
 #include "w_defines.h"
+#include "basics.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
 

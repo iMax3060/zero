@@ -332,7 +332,8 @@ public:
         priority_t             priority = t_regular,
         const char*            name = 0,
         timeout_in_ms          lockto = WAIT_FOREVER,
-        unsigned               stack_size = default_stack);
+        unsigned               stack_size = default_stack
+    );
 
     /**\brief Normal constructor for a storage manager client.
      * \details
@@ -346,7 +347,7 @@ public:
         const char*            name = 0,
         timeout_in_ms          lockto = WAIT_FOREVER,
         unsigned               stack_size = default_stack
-        );
+    );
 
     // This is helpful for debugging and besides, it returns a w_rc_t
     // so there is an opportunity to check for things like

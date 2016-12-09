@@ -186,7 +186,7 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_logbuf_flush_trigger", po::value<int>(),
         "?")
     ("sm_logbuf_block_size", po::value<int>(),
-        "Log Buffer Block isze")
+        "Log Buffer Block size")
     ("sm_logbuf_part_size", po::value<int>(),
         "Log Buffer part size")
     ("sm_carray_slots", po::value<int>(),

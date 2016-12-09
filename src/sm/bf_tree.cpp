@@ -213,7 +213,7 @@ bf_idx bf_tree_m::lookup(PageID pid) const
 
 ///////////////////////////////////   Page fix/unfix BEGIN         ///////////////////////////////////
 // NOTE most of the page fix/unfix functions are in bf_tree_inline.h.
-// These functions are here are because called less frequently.
+// These functions are here because they're called less frequently.
 
 w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                                    PageID pid, latch_mode_t mode,
