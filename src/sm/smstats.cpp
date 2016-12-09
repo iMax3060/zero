@@ -122,3 +122,86 @@ smlevel_0::add_from_global_stats(sm_stats_info_t &to)
     CRITICAL_SECTION(cs, local_ns::_global_stats_mutex);
     to += local_ns::_global_stats_;
 }
+
+bool sm_stats_logstats_t::activate = false;
+char* sm_stats_logstats_t::filepath = "";
+
+void sm_stats_logstats_t::log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
+                                         bool virgin_page, bool only_if_hit, u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "fix_nonroot,"
+              << tid.as_int64() << ","
+              << page << ","
+              << parent << ","
+              << mode << ","
+              << conditional << ","
+              << virgin_page << ","
+              << only_if_hit << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional,
+                                       u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "fix_root,"
+              << tid.as_int64() << ","
+              << page << ","
+              << store << ","
+              << mode << ","
+              << conditional << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID parent, bool evict, u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "unfix_nonroot,"
+              << tid.as_int64() << ","
+              << page << ","
+              << parent << ","
+              << evict << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "unfix_root,"
+              << tid.as_int64() << ","
+              << page << ","
+              << evict << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "refix,"
+              << tid.as_int64() << ","
+              << page << ","
+              << mode << ","
+              << conditional << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+sm_stats_logstats_t::~sm_stats_logstats_t() {
+    logstats->close();
+    delete logstats;
+}

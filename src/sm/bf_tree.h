@@ -446,6 +446,8 @@ private:
     bool                 _enable_swizzling;
 
     bool _cleaner_decoupled;
+    
+    bool _logstats_fix;
 };
 
 /**

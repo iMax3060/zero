@@ -16,6 +16,7 @@
 #include "addbackup.h"
 #include "xctlatency.h"
 #include "tracerestore.h"
+#include "smstats.h"
 
 #include <boost/foreach.hpp>
 
@@ -269,6 +270,10 @@ void Command::setupSMOptions(po::options_description& options)
         "Enable/Disable Asynchronous merging")
     ("sm_statistics", po::value<bool>(),
         "Enable/Disable display of statistics")
+    ("sm_fix_stats", po::value<bool>()->default_value(false),
+        "Enable/Disable a log about page fix/unfix/refix in the buffer pool")
+    ("sm_fix_stats_file", po::value<string>()->default_value("fix_stats.log"),
+        "Path to the file where to write the log about the buffer pool")
     ("sm_ticker_enable", po::value<bool>(),
         "Enable/Disable ticker (currently always enabled)")
     ("sm_ticker_msec", po::value<int>(),
@@ -402,4 +407,8 @@ void Command::setSMOptions(sm_options& sm_opt, const po::variables_map& values)
             }
         }
     };
+    // Sets the parameters regarding sm_stats_logstats_t to static variables of the class because propagating the sm_options
+    // to every place where they would be needed is just to much to change. CS TODO: Is that an appropriate way to do so?
+    sm_stats_logstats_t::activate = sm_opt.get_bool_option("sm_fix_stats", false);
+    sm_stats_logstats_t::filepath = const_cast<char*>(sm_opt.get_string_option("sm_fix_stats_file", "fix_stats.log").c_str());
 }

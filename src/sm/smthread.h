@@ -58,6 +58,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define SMTHREAD_H
 
 #include "w_defines.h"
+#include "smstats.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
@@ -242,6 +243,11 @@ class smthread_t : public sthread_t {
 
         xct_log_t         *_xct_log;
         sm_stats_info_t*  _TL_stats; // thread-local stats
+    
+        /*!\var   sm_stats_logstats_t* _TL_stats_logstats
+         * \brief The Buffer Pool Log of this \link smthread_t
+         */
+        sm_stats_logstats_t* _TL_stats_logstats;
 
         // for lock_head_t::my_lock::get_me
         queue_based_lock_t::ext_qnode _me1;
@@ -267,6 +273,12 @@ class smthread_t : public sthread_t {
         inline sm_stats_info_t& TL_stats() { return *_TL_stats;}
         inline const sm_stats_info_t& TL_stats_const() const {
                                                  return *_TL_stats; }
+    
+        /*!\fn      inline sm_stats_logstats_t* TL_stats_logstats()
+         * \brief   Getter for the Buffer Pool Log of this \link smthread_t
+         * \returns the \link sm_stats_logstats_t of this \link smthread_t
+         */
+        inline sm_stats_logstats_t* TL_stats_logstats() { return _TL_stats_logstats;}
 
         tcb_t(tcb_t* outer) :
             xct(0),
@@ -278,7 +290,8 @@ class smthread_t : public sthread_t {
             _depth(outer == NULL ? 1 : outer->_depth + 1),
             _outer(outer),
             _xct_log(0),
-            _TL_stats(0)
+            _TL_stats(0),
+            _TL_stats_logstats(0)
         {
             QUEUE_EXT_QNODE_INITIALIZE(_me1);
             QUEUE_EXT_QNODE_INITIALIZE(_me2);
@@ -287,8 +300,19 @@ class smthread_t : public sthread_t {
             QUEUE_EXT_QNODE_INITIALIZE(_xlist_mutex_node);
 
             create_TL_stats();
+    
+            if (sm_stats_logstats_t::activate) {
+                _TL_stats_logstats = new sm_stats_logstats_t();
+            }
         }
-        ~tcb_t() { destroy_TL_stats(); }
+        ~tcb_t()
+        {
+            destroy_TL_stats();
+            
+            if (_TL_stats_logstats) {
+                delete _TL_stats_logstats;
+            }
+        }
     };
 
     /**
@@ -476,7 +500,14 @@ public:
     /// Return thread-local statistics collected for this thread.
     inline sm_stats_info_t& TL_stats() {
                                        return tcb().TL_stats(); }
-
+    
+    /*!\fn      inline sm_stats_logstats_t* TL_stats_logstats()
+     * \brief   Getter for the Buffer Pool Log of this \link smthread_t
+     * \returns the \link sm_stats_logstats_t of this \link smthread_t
+     */
+    inline sm_stats_logstats_t* TL_stats_logstats() {
+        return tcb().TL_stats_logstats(); }
+    
     /// Add thread-local stats into the given structure.
     void add_from_TL_stats(sm_stats_info_t &w) const;
 
@@ -504,6 +535,35 @@ public:
  */
 #define SET_TSTAT(x,y) me()->TL_stats().sm.x = (y)
 
+/*!\def     LOGSTATS_FIX_NONROOT(tid, page, parent, mode, conditional, virgin_page, only_if_hit, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event fix_nonroot.
+ * \details It uses \link sm_stats_logstats_t::log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_FIX_NONROOT(tid, page, parent, mode, conditional, virgin_page, only_if_hit, start, finish) me()->TL_stats_logstats()->log_fix_nonroot(tid, page, parent, mode, conditional, virgin_page, only_if_hit, start, finish)
+
+/*!\def     LOGSTATS_FIX_ROOT(tid, page, store, mode, conditional, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event fix_root.
+ * \details It uses \link sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_FIX_ROOT(tid, page, store, mode, conditional, start, finish) me()->TL_stats_logstats()->log_fix_root(tid, page, store, mode, conditional, start, finish)
+
+/*!\def     LOGSTATS_UNFIX_NONROOT(tid, page, parent, evict, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event unfix_nonroot.
+ * \details It uses \link sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID parent, bool evict, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_UNFIX_NONROOT(tid, page, parent, evict, start, finish) me()->TL_stats_logstats()->log_unfix_nonroot(tid, page, parent, evict, start, finish);
+
+/*!\def     LOGSTATS_UNFIX_ROOT(tid, page, evict, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event unfix_root.
+ * \details It uses \link sm_stats_logstats_t::log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_UNFIX_ROOT(tid, page, evict, start, finish) me()->TL_stats_logstats()->log_unfix_root(tid, page, evict, start, finish);
+
+/*!\def     LOGSTATS_REFIX(tid, page, mode, conditional, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event refix.
+ * \details It uses \link sm_stats_logstats_t::log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_REFIX(tid, page, mode, conditional, start, finish) me()->TL_stats_logstats()->log_refix(tid, page, mode, conditional, start, finish)
 
     /**\cond skip */
     /*
