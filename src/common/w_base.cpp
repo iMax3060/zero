@@ -189,7 +189,7 @@ w_base_t::is_infinite(const f8_t x)
 #if defined(MacOSX) && W_GCC_THIS_VER >= W_GCC_VER(3,0)
     value = !finite(x) && !__isnand(x);
 #else
-    value = !finite(x) && !::isnan(x);
+    value = !finite(x) && !std::isnan(x);
 #endif
     return value;
 }
@@ -201,7 +201,7 @@ w_base_t::is_nan(const f8_t x)
 #if defined(MacOSX) && W_GCC_THIS_VER >= W_GCC_VER(3,0)
     value = __isnand(x);
 #else
-    value = ::isnan(x);
+    value = std::isnan(x);
 #endif
     return value;
 }
