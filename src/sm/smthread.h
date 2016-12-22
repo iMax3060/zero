@@ -565,6 +565,18 @@ public:
  */
 #define LOGSTATS_REFIX(tid, page, mode, conditional, start, finish) me()->TL_stats_logstats()->log_refix(tid, page, mode, conditional, start, finish)
 
+/*!\def     LOGSTATS_PIN(tid, page, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event pin for refix.
+ * \details It uses \link sm_stats_logstats_t::log_pin(tid_t tid, PageID page, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_PIN(tid, page, start, finish) me()->TL_stats_logstats()->log_pin(tid, page, start, finish)
+
+/*!\def     LOGSTATS_UNPIN(tid, page, start, finish)
+ * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event unpin for refix.
+ * \details It uses \link sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
+ */
+#define LOGSTATS_UNPIN(tid, page, start, finish) me()->TL_stats_logstats()->log_unpin(tid, page, start, finish)
+
     /**\cond skip */
     /*
      *  These functions are used to verify than nothing is

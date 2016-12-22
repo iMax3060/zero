@@ -201,6 +201,28 @@ void sm_stats_logstats_t::log_refix(tid_t tid, PageID page, latch_mode_t mode, b
               << finish << std::endl;
 }
 
+void sm_stats_logstats_t::log_pin(tid_t tid, PageID page, u_long start, u_long finish) {
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "pin,"
+              << tid.as_int64() << ","
+              << page << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long finish) {
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "unpin,"
+              << tid.as_int64() << ","
+              << page << ","
+              << start << ","
+              << finish << std::endl;
+}
+
 sm_stats_logstats_t::~sm_stats_logstats_t() {
     logstats->close();
     delete logstats;

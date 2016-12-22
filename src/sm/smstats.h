@@ -286,6 +286,22 @@ public:
      */
     void log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start,
                    u_long finish);
+    /*!\fn log_pin(tid_t tid, PageID page, u_long start, u_long finish)
+     * \brief Creates a new log record for a pin for refix event
+     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
+     * \param page        As in the function call of \link bf_tree_m::pin_for_refix(const generic_page* page) that caused this event.
+     * \param start       The time when the execution of \link bf_tree_m::pin_for_refix(const generic_page* page) started.
+     * \param finish      The time when the execution of \link bf_tree_m::pin_for_refix(const generic_page* page) finished.
+     */
+    void log_pin(tid_t tid, PageID page, u_long start, u_long finish);
+    /*!\fn log_unpin(tid_t tid, PageID page, u_long start, u_long finish)
+     * \brief Creates a new log record for a unpin for refix event
+     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
+     * \param page        As in the function call of \link bf_tree_m::unpin_for_refix(bf_idx idx) that caused this event.
+     * \param start       The time when the execution of \link bf_tree_m::unpin_for_refix(bf_idx idx) started.
+     * \param finish      The time when the execution of \link bf_tree_m::unpin_for_refix(bf_idx idx) finished.
+     */
+    void log_unpin(tid_t tid, PageID page, u_long start, u_long finish);
 };
 
 

@@ -452,6 +452,11 @@ void bf_tree_m::print_page(PageID pid)
 }
 
 bf_idx bf_tree_m::pin_for_refix(const generic_page* page) {
+    u_long start;
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+    
     w_assert1(page != NULL);
     w_assert1(latch_mode(page) != LATCH_NL);
 
@@ -463,10 +468,21 @@ bf_idx bf_tree_m::pin_for_refix(const generic_page* page) {
 
     get_cb(idx).pin();
     DBG(<< "Refix set pin cnt to " << get_cb(idx)._pin_cnt);
+    
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        LOGSTATS_PIN(xct()->tid(), get_cb(idx)._pid, start, finish);
+    }
+    
     return idx;
 }
 
 void bf_tree_m::unpin_for_refix(bf_idx idx) {
+    u_long start;
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+    
     w_assert1(_is_active_idx(idx));
 
     w_assert1(get_cb(idx)._pin_cnt > 0);
@@ -480,6 +496,11 @@ void bf_tree_m::unpin_for_refix(bf_idx idx) {
     get_cb(idx).unpin();
     DBG(<< "Unpin for refix set pin cnt to " << get_cb(idx)._pin_cnt);
     w_assert1(get_cb(idx)._pin_cnt >= 0);
+    
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        LOGSTATS_UNPIN(xct()->tid(), get_cb(idx)._pid, start, finish);
+    }
 }
 
 ///////////////////////////////////   Page fix/unfix END         ///////////////////////////////////
