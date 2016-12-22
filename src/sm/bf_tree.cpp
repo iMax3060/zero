@@ -788,7 +788,7 @@ bf_idx bf_tree_m::get_root_page_idx(StoreID store) {
 w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
                                        idx, latch_mode_t mode, bool conditional) {
     u_long start;
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
     
@@ -802,7 +802,7 @@ w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
     if (mode == LATCH_EX) { ++cb._ref_count_ex; }
     page = &(_buffer[idx]);
     
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         LOGSTATS_REFIX(xct()->tid(), page->pid, mode, conditional, start, finish);
     }
@@ -816,18 +816,18 @@ w_rc_t bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent,
 {
     INC_TSTAT(bf_fix_nonroot_count);
     u_long start;
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
     
     w_rc_t return_code = fix(parent, page, pid, mode, conditional, virgin_page, only_if_hit, emlsn);
     
-    if (_logstats_fix && !return_code.is_error()) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0) && !return_code.is_error()) {
         u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         LOGSTATS_FIX_NONROOT(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
                              only_if_hit, start, finish);
     }
-    
+
     return return_code;
 }
 
@@ -836,7 +836,7 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
                                    bool virgin)
 {
     u_long start;
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
 
@@ -859,11 +859,11 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
             if (!std::atomic_compare_exchange_strong(&(get_cb(idx)._swizzled),
                         &old_value, true))
             {
-                if (_logstats_fix) {
+                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
                     LOGSTATS_FIX_ROOT(xct()->tid(), page->pid, store, mode, conditional, start, finish);
                 }
-
+    
                 // CAS failed -- some other thread is swizzling
                 return RCOK;
             }
@@ -887,11 +887,11 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
     w_assert1(get_cb(idx).latch().held_by_me());
     DBG(<< "Fixed root " << idx << " pin cnt " << get_cb(idx)._pin_cnt);
 
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         LOGSTATS_FIX_ROOT(xct()->tid(), page->pid, store, mode, conditional, start, finish);
     }
-
+    
     return RCOK;
 }
 
@@ -900,7 +900,7 @@ void bf_tree_m::unfix(const generic_page* page, bool evict)
 {
     u_long start;
     PageID parent = 0;
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         bf_idx_pair p;
         if (_hashtable->lookup(page->pid, p)) {
             parent = get_cb(p.second)._pid;
@@ -930,7 +930,7 @@ void bf_tree_m::unfix(const generic_page* page, bool evict)
     DBG(<< "Unfixed " << idx << " pin count " << cb._pin_cnt);
     cb.latch().latch_release();
     
-    if (_logstats_fix) {
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         if (parent != 0) {
             LOGSTATS_UNFIX_NONROOT(xct()->tid(), page->pid, parent, evict, start, finish);
