@@ -51,11 +51,12 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
 w_rc_t bf_tree_m::_get_replacement_block()
 {
     // Evictioner should be responsible for waking up cleaner.
+    pthread_mutex_lock(&_eviction_lock);
     while(_freelist_len == 0)
     {
-        get_evictioner()->wakeup();
-        get_evictioner()->wait_for_notify();
+        get_evictioner()->evict();
     }
+    pthread_mutex_unlock(&_eviction_lock);
     return RCOK;
 }
 

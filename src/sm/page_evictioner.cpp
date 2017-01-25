@@ -6,18 +6,15 @@
 
 page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options)
     :
-    worker_thread_t(options.get_int_option("sm_evictioner_interval_millisec", 1000)),
     _bufferpool(bufferpool)
 {
     _swizziling_enabled = options.get_bool_option("sm_bufferpool_swizzle", false);
     _current_frame = 0;
 }
 
-page_evictioner_base::~page_evictioner_base()
-{
-}
+page_evictioner_base::~page_evictioner_base() {}
 
-void page_evictioner_base::do_work()
+void page_evictioner_base::evict()
 {
     uint32_t preferred_count = EVICT_BATCH_RATIO * _bufferpool->_block_cnt + 1;
 
@@ -29,7 +26,6 @@ void page_evictioner_base::do_work()
             /* idx 0 is never used, so this means pick_victim() exited without
              * finding a victim. This might happen when the page_evictioner is
              * shutting down, for example. */
-            notify_all();
             return;
         }
 
@@ -64,12 +60,6 @@ void page_evictioner_base::do_work()
         cb.latch().latch_release();
 
         INC_TSTAT(bf_evict);
-
-        /* Rather than waiting for all the pages to be evicted, we notify
-         * waiting threads every time a page is evicted. One of them is going to
-         * be able to re-use the freed slot, the others will go back to waiting.
-         */
-        notify_one();
     }
 }
 
@@ -87,9 +77,7 @@ bf_idx page_evictioner_base::pick_victim()
 
      bf_idx idx = _current_frame;
      while(true) {
-
-        if(should_exit()) return 0; // in bf_tree.h, 0 is never used, means null
-
+         
         if(idx == _bufferpool->_block_cnt) {
             idx = 1;
         }
@@ -210,17 +198,17 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
         DBG3(<< "Updated EMLSN on page " << parent_h.pid()
                 << " slot=" << child_slotid
                 << " (child pid=" << pid << ")"
-                << ", OldEMLSN=" << old << " NewEMLSN=" <<
-                _bufferpool->_buffer[idx].lsn);
-
+                << ", OldEMLSN=" << old
+                << " NewEMLSN=" << _bufferpool->_buffer[idx].lsn);
+    
         w_assert1(parent_cb.latch().is_mine());
-
-        _bufferpool->_sx_update_child_emlsn(parent_h, child_slotid,
-                                            _bufferpool->_buffer[idx].lsn);
-
+        w_assert1(parent_cb.latch().mode() == LATCH_EX);
+    
+        W_COERCE(_bufferpool->_sx_update_child_emlsn(parent_h, child_slotid,
+                                                     _bufferpool->_buffer[idx].lsn));
+    
         w_assert1(parent_h.get_emlsn_general(child_slotid)
-                    ==
-                    _bufferpool->_buffer[idx].lsn);
+                  == _bufferpool->_buffer[idx].lsn);
     }
 
     parent_cb.latch().latch_release();
@@ -252,8 +240,6 @@ bf_idx page_evictioner_gclock::pick_victim()
     bf_idx idx = _current_frame;
     while(true)
     {
-        if(should_exit()) return 0; // bf_idx 0 is never used, means NULL
-
         // Circular iteration, jump idx 0
         idx = (idx % (_bufferpool->_block_cnt-1)) + 1;
         w_assert1(idx != 0);

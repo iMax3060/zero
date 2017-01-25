@@ -146,7 +146,6 @@ void bf_tree_m::shutdown()
 {
     // evictioner calls cleaner, so it must be destroyed before!
     if(_evictioner) {
-        _evictioner->stop();
         delete _evictioner;
         _evictioner = NULL;
     }
@@ -227,8 +226,6 @@ page_evictioner_base* bf_tree_m::get_evictioner()
             std::cerr << "Invalid buffer policy." << std::endl;
             W_FATAL(eCRASH);
         }
-
-        _evictioner->fork();
     }
 
     return _evictioner;

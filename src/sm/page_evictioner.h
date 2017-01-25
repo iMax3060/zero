@@ -15,7 +15,7 @@ class bf_tree_m;
 class generic_page;
 struct bf_tree_cb_t;
 
-class page_evictioner_base : public worker_thread_t {
+class page_evictioner_base {
 public:
 	page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options);
     virtual ~page_evictioner_base();
@@ -25,7 +25,13 @@ public:
      * do whatever it wants.
      */
     virtual void            ref(bf_idx idx);
-
+    
+    /**
+     * Evicts pages from the buffer pool until the preferred amount of frames
+     * (\link page_evictioner_base::EVICT_BATCH_RATIO) is in use. This method
+     * needs to be called to free a frame in the buffer pool.
+     */
+    virtual void            evict();
 
 protected:
     /** the buffer pool this cleaner deals with. */
@@ -38,7 +44,6 @@ protected:
      * must return bf_idx 0.
      */
     virtual bf_idx          pick_victim();
-
 
 private:
 	/**
@@ -60,8 +65,6 @@ private:
 	 * looking up the parent, latching, etc, so we save some work.
 	 */
 	bool unswizzle_and_update_emlsn(bf_idx idx);
-
-	virtual void do_work ();
 };
 
 class page_evictioner_gclock : public page_evictioner_base {
