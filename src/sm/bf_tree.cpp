@@ -275,6 +275,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 return RC(stINUSE);
             }
 
+            INC_TSTAT(bf_fix_nonroot_miss_count);
+
             // STEP 1) Grab a free frame to read into
             W_DO(_grab_free_block(idx));
             w_assert1(_is_valid_idx(idx));
@@ -308,8 +310,6 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             cb.init(pid, lsn_t::null);
 
             if (!virgin_page) {
-                INC_TSTAT(bf_fix_nonroot_miss_count);
-
                 if (parent && emlsn.is_null()) {
                     // Get emlsn from parent
                     general_recordid_t recordid = find_page_id_slot(parent, pid);
