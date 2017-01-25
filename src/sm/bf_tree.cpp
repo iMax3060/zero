@@ -120,13 +120,15 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     }
 
     // initially, all blocks are free
-    _freelist = new bf_idx[nbufpages];
+    _freelist = new bf_idx_pair[nbufpages];
     w_assert0(_freelist != NULL);
-    _freelist[0] = 1; // [0] is a special entry. it's the list head
-    for (bf_idx i = 1; i < nbufpages - 1; ++i) {
-        _freelist[i] = i + 1;
+    _freelist_tail = 1;                     // the index 1 is used first
+    _freelist_head = nbufpages - 1;         // the index nbufpages - 1 is used last
+    _freelist[0] = bf_idx_pair(0, 0);       // unused index
+    for (bf_idx i = 1; i <= nbufpages - 2; i++) {
+        _freelist[i] = bf_idx_pair(i + 1, i - 1);
     }
-    _freelist[nbufpages - 1] = 0;
+    _freelist[nbufpages - 1] = bf_idx_pair(0, nbufpages - 2);
     _freelist_len = nbufpages - 1; // -1 because [0] isn't a valid block
 
     //initialize hashtable
@@ -689,7 +691,9 @@ bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, b
 void bf_tree_m::debug_dump(std::ostream &o) const
 {
     o << "dumping the bufferpool contents. _block_cnt=" << _block_cnt << "\n";
-    o << "  _freelist_len=" << _freelist_len << ", HEAD=" << FREELIST_HEAD << "\n";
+    o << "  _freelist_len=" << _freelist_len
+      << ", freelist_tail=" << _freelist_tail
+      << ", freelist_head=" << _freelist_head << "\n";
 
     for (uint32_t store = 1; store < stnode_page::max; ++store) {
         if (_root_pages[store] != 0) {
@@ -712,7 +716,7 @@ void bf_tree_m::debug_dump(std::ostream &o) const
             o << ", ";
             cb.latch().print(o);
         } else {
-            o << "unused (next_free=" << _freelist[idx] << ")";
+            o << "unused (next_free=" << _freelist[idx].first << ")";
         }
         o << std::endl;
     }

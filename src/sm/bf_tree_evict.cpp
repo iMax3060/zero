@@ -16,7 +16,11 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
         if (_freelist_len > 0) {
             CRITICAL_SECTION(cs, &_freelist_lock);
             if (_freelist_len > 0) { // here, we do the real check
-                bf_idx idx = FREELIST_HEAD;
+                bf_idx idx = _freelist_tail;
+                w_assert1(_freelist[idx].second == 0);
+                _freelist_tail = _freelist[idx].first;
+                _freelist[_freelist[idx].first].second = 0;
+                _freelist[idx].first = 0;
                 DBG5(<< "Grabbing idx " << idx);
                 w_assert1(_is_valid_idx(idx));
                 w_assert1 (!get_cb(idx)._used);
@@ -24,24 +28,26 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
 
                 --_freelist_len;
                 if (_freelist_len == 0) {
-                    FREELIST_HEAD = 0;
+                    _freelist_head = 0;
+                    w_assert1(_freelist_head == _freelist_tail);
+                } else if (_freelist_len == 1) {
+                    w_assert1(_freelist_head == _freelist_tail);
                 } else {
-                    FREELIST_HEAD = _freelist[idx];
-                    w_assert1 (FREELIST_HEAD > 0 && FREELIST_HEAD < _block_cnt);
+                    w_assert1(_freelist_head != _freelist_tail);
+                    w_assert1(_freelist_head != 0);
+                    w_assert1(_freelist_tail != 0);
                 }
-                DBG5(<< "New head " << FREELIST_HEAD);
-                w_assert1(ret != FREELIST_HEAD);
+                DBG5(<< "New tail " << _freelist_tail);
+                w_assert1(ret != _freelist_tail);
                 return RCOK;
             }
         } // exit the scope to do the following out of the critical section
 
         // if the freelist was empty, let's evict some page.
-        if (evict)
-        {
+        if (evict) {
             W_DO (_get_replacement_block());
         }
-        else
-        {
+        else {
             return RC(eBFFULL);
         }
     }
@@ -66,9 +72,11 @@ void bf_tree_m::_add_free_block(bf_idx idx)
     CRITICAL_SECTION(cs, &_freelist_lock);
     // CS TODO: Eviction is apparently broken, since I'm seeing the same
     // frame being freed twice by two different threads.
-    w_assert1(idx != FREELIST_HEAD);
+    w_assert1(idx != _freelist_head && idx != _freelist_tail);
+    w_assert1(_freelist[idx].first == 0 && _freelist[idx].second == 0);
     w_assert1(!get_cb(idx)._used);
     ++_freelist_len;
-    _freelist[idx] = FREELIST_HEAD;
-    FREELIST_HEAD = idx;
+    _freelist[idx].second = _freelist_head;
+    _freelist[_freelist_head].first = idx;
+    _freelist_head = idx;
 }

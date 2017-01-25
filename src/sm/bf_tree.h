@@ -397,11 +397,16 @@ private:
     bf_hashtable<bf_idx_pair>*        _hashtable;
 
     /**
-     * singly-linked freelist. index is same as _buffer/_control_blocks. zero means no link.
+     * doubly-linked freelist. index is same as _buffer/_control_blocks. zero means no link.
      * This logically belongs to _control_blocks, but is an array by itself for efficiency.
-     * index 0 is always the head of the list (points to the first free block, or 0 if no free block).
+     * New free blocks gets added to the head and to get an available block, this needs to
+     * be removed from the tail of the list (FIFO). If the list is empty head and tail are
+     * 0. The first index within an entry points towards the head whereas the second one
+     * points towards the tail.
      */
-    bf_idx*              _freelist;
+    bf_idx_pair*              _freelist;
+    bf_idx                    _freelist_head;
+    bf_idx                    _freelist_tail;
 
     /** count of free blocks. */
     uint32_t _freelist_len;
