@@ -18,7 +18,7 @@ void page_evictioner_base::evict()
 {
     uint32_t preferred_count = EVICT_BATCH_RATIO * _bufferpool->_block_cnt + 1;
 
-    while(_bufferpool->_freelist_len < preferred_count) // TODO: increment _freelist_len atomically
+    while(_bufferpool->_approx_freelist_length < preferred_count) // TODO: increment _freelist_len atomically
     {
         bf_idx victim = pick_victim();
 
@@ -94,7 +94,7 @@ bf_idx page_evictioner_base::pick_victim()
         bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
 
         // Step 1: latch page in EX mode and check if eligible for eviction
-        rc_t latch_rc;         
+        rc_t latch_rc;
         latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
         if (latch_rc.is_error()) {
             idx++;

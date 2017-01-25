@@ -15,6 +15,8 @@
 #include <iosfwd>
 #include "page_cleaner.h"
 #include "page_evictioner.h"
+#include <boost/lockfree/queue.hpp>
+#include <boost/atomic.hpp>
 
 class sm_options;
 class lsn_t;
@@ -396,20 +398,23 @@ private:
     /** hashtable to locate a page in this bufferpool. swizzled pages are removed from bufferpool. */
     bf_hashtable<bf_idx_pair>*        _hashtable;
 
-    /**
-     * singly-linked freelist. index is same as _buffer/_control_blocks. zero means no link.
-     * This logically belongs to _control_blocks, but is an array by itself for efficiency.
-     * index 0 is always the head of the list (points to the first free block, or 0 if no free block).
-     */
-    bf_idx*              _freelist;
+//    /**
+//     * singly-linked freelist. index is same as _buffer/_control_blocks. zero means no link.
+//     * This logically belongs to _control_blocks, but is an array by itself for efficiency.
+//     * index 0 is always the head of the list (points to the first free block, or 0 if no free block).
+//     */
+//    bf_idx*              _freelist;
+    
+    boost::lockfree::queue<bf_idx>*     _freelist;
+    mutable boost::atomic<int>          _approx_freelist_length;
 
-    /** count of free blocks. */
-    uint32_t _freelist_len;
+//    /** count of free blocks. */
+//    uint32_t _freelist_len;
 
 // Be VERY careful on deadlock to use the following.
 
-    /** spin lock to protect all freelist related stuff. */
-    tatas_lock           _freelist_lock;
+//    /** spin lock to protect all freelist related stuff. */
+//    tatas_lock           _freelist_lock;
 
 
     bf_idx _eviction_current_frame;

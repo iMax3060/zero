@@ -119,15 +119,21 @@ bf_tree_m::bf_tree_m(const sm_options& options)
         }
     }
 
-    // initially, all blocks are free
-    _freelist = new bf_idx[nbufpages];
-    w_assert0(_freelist != NULL);
-    _freelist[0] = 1; // [0] is a special entry. it's the list head
-    for (bf_idx i = 1; i < nbufpages - 1; ++i) {
-        _freelist[i] = i + 1;
+    _freelist = new boost::lockfree::queue<bf_idx>(nbufpages - 1);
+    for (bf_idx i = 1; i <= nbufpages - 1; i++) {
+        _freelist->push(i);
     }
-    _freelist[nbufpages - 1] = 0;
-    _freelist_len = nbufpages - 1; // -1 because [0] isn't a valid block
+    _approx_freelist_length = nbufpages - 1;
+    
+//    // initially, all blocks are free
+//    _freelist = new bf_idx[nbufpages];
+//    w_assert0(_freelist != NULL);
+//    _freelist[0] = 1; // [0] is a special entry. it's the list head
+//    for (bf_idx i = 1; i < nbufpages - 1; ++i) {
+//        _freelist[i] = i + 1;
+//    }
+//    _freelist[nbufpages - 1] = 0;
+//    _freelist_len = nbufpages - 1; // -1 because [0] isn't a valid block
 
     //initialize hashtable
     int buckets = w_findprime(1024 + (nbufpages / 4)); // maximum load factor is 25%. this is lower than original shore-mt because we have swizzling
@@ -166,9 +172,12 @@ bf_tree_m::~bf_tree_m()
         ::free (buf);
         _control_blocks = NULL;
     }
-    if (_freelist != NULL) {
-        delete[] _freelist;
-        _freelist = NULL;
+    if (_freelist != nullptr) {
+//    if (_freelist != NULL) {
+        delete(_freelist);
+        _freelist = nullptr;
+//        delete[] _freelist;
+//        _freelist = NULL;
     }
     if (_hashtable != NULL) {
         delete _hashtable;
@@ -689,8 +698,9 @@ bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, b
 void bf_tree_m::debug_dump(std::ostream &o) const
 {
     o << "dumping the bufferpool contents. _block_cnt=" << _block_cnt << "\n";
-    o << "  _freelist_len=" << _freelist_len << ", HEAD=" << FREELIST_HEAD << "\n";
-
+    o << "  _approx_freelist_length=" << _approx_freelist_length << "\n";
+//    o << "  _freelist_len=" << _freelist_len << ", HEAD=" << FREELIST_HEAD << "\n";
+    
     for (uint32_t store = 1; store < stnode_page::max; ++store) {
         if (_root_pages[store] != 0) {
             o << ", " << store << "=" << _root_pages[store];
@@ -712,7 +722,9 @@ void bf_tree_m::debug_dump(std::ostream &o) const
             o << ", ";
             cb.latch().print(o);
         } else {
-            o << "unused (next_free=" << _freelist[idx] << ")";
+            o << "unused";
+//            o << "unused (next_free=" << _freelist[idx] << ")";
+    
         }
         o << std::endl;
     }
