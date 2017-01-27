@@ -108,18 +108,6 @@ protected:
     bf_idx              pick_victim();
 
 private:
-    multi_clock<bool>*              _clocks;            // T_1 and T_2
-    
-    hashtable_queue<PageID>*        _b1;                // B_1
-    hashtable_queue<PageID>*        _b2;                // B_2
-    
-    u_int32_t                       _p;                 // parameter p
-    
-    enum clock_index {
-        T_1 = 0,
-        T_2 = 1
-    };
-    
     // Alternative: Boost.MultiIndex
     template<class key>
     class hashtable_queue {
@@ -170,6 +158,19 @@ private:
             return _values[index];
         };
     };
+
+private:
+	multi_clock<bool>*              _clocks;            // T_1 and T_2
+
+	hashtable_queue<PageID>*        _b1;                // B_1
+	hashtable_queue<PageID>*        _b2;                // B_2
+
+	u_int32_t                       _p;                 // parameter p
+
+	enum clock_index {
+		T_1 = 0,
+		T_2 = 1
+	};
 };
 
 /*
