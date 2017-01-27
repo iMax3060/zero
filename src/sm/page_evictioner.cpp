@@ -519,8 +519,8 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
         _clocks->add_tail(T_1, i);
     }
     
-    _b1 = new hashtable_queue<PageID>();
-    _b2 = new hashtable_queue<PageID>();
+    _b1 = new hashtable_queue<PageID>(nullptr);
+    _b2 = new hashtable_queue<PageID>(nullptr);
     
     _p = 0;
 }
@@ -546,7 +546,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _clocks->add_tail(T_1, b_idx);
         _clocks->get(b_idx) = 0;
     } else if (_b1->contains(pid)) {
-        _p = std::min(_p + std::max(1, _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
+        _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
         _b1->remove(pid);
         _clocks->add_tail(T_2, b_idx);
         _clocks->get(b_idx) = 0;
@@ -607,13 +607,15 @@ bf_idx page_evictioner_cart::pick_victim() {
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::contains(key k) {
-    return _list.count(k);
+    return _list->count(k);
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue<key>::hashtable_queue() : _list(std::unordered_map()<key, key_pair>) {
-    _head = nullptr;
-    _tail = nullptr;
+page_evictioner_cart::hashtable_queue<key>::hashtable_queue(key invalid_value) {
+    _list = new std::unordered_map<key, key_pair>();
+	_invalid_value = invalid_value;
+    _head = _invalid_value;
+    _tail = _invalid_value;
 }
 
 template<class key>
@@ -624,86 +626,86 @@ page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::insert_mru(key k) {
-    if (!_list.empty()) {
-        auto previous_size = _list.size();
+    if (!_list->empty()) {
+        auto previous_size = _list->size();
         key previous_head = _head;
-        key_pair previous_head_entry = _list[previous_head];
-        w_assert1(previous_head != nullptr);
-        w_assert1(previous_head_entry.first == nullptr);
+        key_pair previous_head_entry = (*_list)[previous_head];
+        w_assert1(previous_head != _invalid_value);
+        w_assert1(previous_head_entry.first == _invalid_value);
         
-        if (_list.count(k) > 0) {
+        if (_list->count(k) > 0) {
             return false;
         }
-        _list[k] = key_pair(nullptr, previous_head);
-        _list[previous_head].first = k;
+        (*_list)[k] = key_pair(_invalid_value, previous_head);
+        (*_list)[previous_head].first = k;
         _head = k;
-        w_assert1(_list.size() == previous_size + 1);
+        w_assert1(_list->size() == previous_size + 1);
     } else {
-        w_assert1(_head == nullptr);
-        w_assert1(_tail == nullptr);
+        w_assert1(_head == _invalid_value);
+        w_assert1(_tail == _invalid_value);
     
-        _list[k] = key_pair(nullptr, nullptr);
+        (*_list)[k] = key_pair(_invalid_value, _invalid_value);
         _head = k;
         _tail = k;
-        w_assert1(_list.size() == 1);
+        w_assert1(_list->size() == 1);
     }
     return true;
 }
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::remove_lru() {
-    if (_list.empty()) {
+    if (_list->empty()) {
         return false;
-    } else if (_list.size() == 1) {
+    } else if (_list->size() == 1) {
         w_assert1(_head == _tail);
-        w_assert1(_list[_head].first == nullptr);
-        w_assert1(_list[_head].second == nullptr);
+        w_assert1((*_list)[_head].first == _invalid_value);
+        w_assert1((*_list)[_head].second == _invalid_value);
         
-        _list.erase(_head);
-        _head == nullptr;
-        _tail == nullptr;
-        w_assert1(_list.size() == 0);
+        _list->erase(_head);
+        _head = _invalid_value;
+        _tail = _invalid_value;
+        w_assert1(_list->size() == 0);
     } else {
-        auto previous_size = _list.size();
+        auto previous_size = _list->size();
         key previous_tail = _tail;
-        key_pair previous_tail_entry = _list[_tail];
+        key_pair previous_tail_entry = (*_list)[_tail];
         w_assert1(_head != _tail);
-        w_assert1(_head != nullptr);
+        w_assert1(_head != _invalid_value);
         
         _tail = previous_tail_entry.first;
-        _list[previous_tail_entry.first].second = nullptr;
-        _list.erase(previous_tail);
-        w_assert1(_list.size() == previous_size - 1);
+        (*_list)[previous_tail_entry.first].second = _invalid_value;
+        _list->erase(previous_tail);
+        w_assert1(_list->size() == previous_size - 1);
     }
     return false;
 }
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
-    if (_list.count(k) == 0) {
+    if (_list->count(k) == 0) {
         return false;
     } else {
-        auto previous_size = _list.size();
-        key_pair previous_value = _list[k];
-        if (previous_value.first != nullptr) {
-            _list[previous_value.first].second = previous_value.second;
+        auto previous_size = _list->size();
+        key_pair previous_value = (*_list)[k];
+        if (previous_value.first != _invalid_value) {
+            (*_list)[previous_value.first].second = previous_value.second;
         } else {
             _head = previous_value.second;
         }
-        if (previous_value.second != nullptr) {
-            _list[previous_value.second].first = previous_value.first;
+        if (previous_value.second != _invalid_value) {
+            (*_list)[previous_value.second].first = previous_value.first;
         } else {
             _tail = previous_value.first;
         }
-        _list.erase(k);
-        w_assert1(_list.size() == previous_size - 1);
+        _list->erase(k);
+        w_assert1(_list->size() == previous_size - 1);
     }
     return true;
 }
 
 template<class key>
 u_int32_t page_evictioner_cart::hashtable_queue<key>::length() {
-    return _list.size();
+    return _list->size();
 }
 
 template<class value>

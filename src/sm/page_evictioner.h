@@ -114,12 +114,14 @@ private:
     private:
         typedef pair<key, key> key_pair;
         
-        std::unordered_map<key, key_pair>&      _list;
+        std::unordered_map<key, key_pair>*      _list;
         key                                     _head;          // the head of the list (LRU-element); insert here
         key                                     _tail;          // the tail of the list (MRU-element); remove here
+	    
+	    key                                     _invalid_value;
 
     public:
-                        hashtable_queue();
+                        hashtable_queue(key invalid_value);
         virtual         ~hashtable_queue();
 
         bool            contains(key k);
