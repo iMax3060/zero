@@ -519,8 +519,8 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
         _clocks->add_tail(T_1, i);
     }
     
-    _b1 = new hashtable_queue<PageID>(nullptr);
-    _b2 = new hashtable_queue<PageID>(nullptr);
+    _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
+    _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
     
     _p = 0;
 }
