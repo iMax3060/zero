@@ -551,7 +551,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _clocks->add_tail(T_2, b_idx);
         _clocks->get(b_idx) = 0;
     } else {
-        _p = std::max(_p + std::max(1, _b1->length() / _b2->length()), 0);
+        _p = std::max(_p + std::max(u_int32_t(1), _b1->length() / _b2->length()), u_int32_t(0));
         _b2->remove(pid);
         _clocks->add_tail(T_2, b_idx);
         _clocks->get(b_idx) = 0;
@@ -561,7 +561,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
 bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
     while (!evicted_page) {
-        if (_clocks->size_of(T_1) >= std::max(1, _p)) {
+        if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
             bool t_1_head;
             bf_idx t_1_head_index = 0;
             _clocks->get_head(T_1, t_1_head);
