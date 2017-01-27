@@ -606,24 +606,24 @@ bf_idx page_evictioner_cart::pick_victim() {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue::contains(key k) {
+bool page_evictioner_cart::hashtable_queue<key>::contains(key k) {
     return _list.count(k);
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue::hashtable_queue() : _list(std::unordered_map()<key, key_pair>) {
+page_evictioner_cart::hashtable_queue<key>::hashtable_queue() : _list(std::unordered_map()<key, key_pair>) {
     _head = nullptr;
     _tail = nullptr;
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue::~hashtable_queue() {
+page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
     delete(_list);
     _list = nullptr;
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue::insert_mru(key k) {
+bool page_evictioner_cart::hashtable_queue<key>::insert_mru(key k) {
     if (!_list.empty()) {
         auto previous_size = _list.size();
         key previous_head = _head;
@@ -651,7 +651,7 @@ bool page_evictioner_cart::hashtable_queue::insert_mru(key k) {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue::remove_lru() {
+bool page_evictioner_cart::hashtable_queue<key>::remove_lru() {
     if (_list.empty()) {
         return false;
     } else if (_list.size() == 1) {
@@ -679,7 +679,7 @@ bool page_evictioner_cart::hashtable_queue::remove_lru() {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue::remove(key k) {
+bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
     if (_list.count(k) == 0) {
         return false;
     } else {
@@ -702,12 +702,12 @@ bool page_evictioner_cart::hashtable_queue::remove(key k) {
 }
 
 template<class key>
-u_int32_t page_evictioner_cart::hashtable_queue::length() {
+u_int32_t page_evictioner_cart::hashtable_queue<key>::length() {
     return _list.size();
 }
 
 template<class value>
-page_evictioner_cart::multi_clock::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
+page_evictioner_cart::multi_clock<value>::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
     _clocksize = clocksize;
     _values = new value[_clocksize]();
     _clocks = new pair<u_int32_t, u_int32_t>[_clocksize]();
@@ -727,7 +727,7 @@ page_evictioner_cart::multi_clock::multi_clock(u_int32_t clocksize, u_int32_t cl
 }
 
 template<class value>
-page_evictioner_cart::multi_clock::~multi_clock() {
+page_evictioner_cart::multi_clock<value>::~multi_clock() {
     _clocksize = 0;
     delete[](_values);
     delete[](_clocks);
@@ -739,7 +739,7 @@ page_evictioner_cart::multi_clock::~multi_clock() {
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::get_head(u_int32_t clock, value &head_value) {
+bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &head_value) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_value = _values[_hands[clock]];
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -750,7 +750,7 @@ bool page_evictioner_cart::multi_clock::get_head(u_int32_t clock, value &head_va
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::get_head_index(u_int32_t clock, u_int32_t &head_index) {
+bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u_int32_t &head_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_index = _hands[clock];
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -761,7 +761,7 @@ bool page_evictioner_cart::multi_clock::get_head_index(u_int32_t clock, u_int32_
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::move_head(u_int32_t clock) {
+bool page_evictioner_cart::multi_clock<value>::move_head(u_int32_t clock) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         _hands[clock] = _clocks[_hands[clock]].second;
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -772,7 +772,7 @@ bool page_evictioner_cart::multi_clock::move_head(u_int32_t clock) {
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::add_tail(u_int32_t clock, u_int32_t index) {
+bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32_t index) {
     if (index >= 0 && index <= _clocksize - 1 && index != _invalid_index
                    && clock >= 0 && clock <= _clocknumber - 1
                    && _clock_membership[index] == _invalid_clock_index) {
@@ -795,7 +795,7 @@ bool page_evictioner_cart::multi_clock::add_tail(u_int32_t clock, u_int32_t inde
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::remove_head(u_int32_t clock, u_int32_t &removed_index) {
+bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         u_int32_t _old_hand = _invalid_index;
         if (_sizes[clock] == 0) {
@@ -830,7 +830,7 @@ bool page_evictioner_cart::multi_clock::remove_head(u_int32_t clock, u_int32_t &
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index) {
+bool page_evictioner_cart::multi_clock<value>::switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index) {
     moved_index = _invalid_index;
     if (_sizes[source] > 0
      && source >= 0 && source <= _clocknumber - 1
@@ -848,6 +848,6 @@ bool page_evictioner_cart::multi_clock::switch_head_to_tail(u_int32_t source, u_
 }
 
 template<class value>
-u_int32_t page_evictioner_cart::multi_clock::size_of(u_int32_t clock) {
+u_int32_t page_evictioner_cart::multi_clock<value>::size_of(u_int32_t clock) {
     return _sizes[clock];
 }
