@@ -1,3 +1,4 @@
+#include <w_findprime.h>
 #include "page_evictioner.h"
 
 #include "bf_tree.h"
@@ -64,6 +65,8 @@ void page_evictioner_base::evict()
 }
 
 void page_evictioner_base::ref(bf_idx idx) {}
+
+void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {}
 
 bf_idx page_evictioner_base::pick_victim()
 {
@@ -215,6 +218,46 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
     return true;
 }
 
+bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
+    evicted_page = 0;
+    bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
+    
+    rc_t latch_rc = cb.latch().latch_acquire(LATCH_SH, sthread_t::WAIT_IMMEDIATE);
+    if (latch_rc.is_error()) {
+        return false;
+    }
+    
+    w_assert1(cb.latch().held_by_me());
+    
+    /* There are some pages we want to ignore in our policies:
+     * 1) Non B+Tree pages
+     * 2) Dirty pages (the cleaner should have cleaned it already)
+     * 3) Pages being used by someon else
+     * 4) The root
+     */
+    btree_page_h p;
+    p.fix_nonbufferpool_page(_bufferpool->_buffer + idx);
+    if (p.tag() != t_btree_p || cb.is_dirty() ||
+        !cb._used || p.pid() == p.root())
+    {
+        // LL: Should we also decrement the clock count in this case?
+        cb.latch().latch_release();
+        return false;
+    }
+    
+    // Ignore pages that still have swizzled children
+    if(_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
+        // LL: Should we also decrement the clock count in this case?
+        cb.latch().latch_release();
+        return false;
+    }
+    
+    evicted_page = cb._pid;
+    
+    cb.latch().latch_release();
+    return true;
+}
+
 page_evictioner_gclock::page_evictioner_gclock(bf_tree_m* bufferpool, const sm_options& options)
     : page_evictioner_base(bufferpool, options)
 {
@@ -233,6 +276,8 @@ void page_evictioner_gclock::ref(bf_idx idx)
 {
     _counts[idx] = _k;
 }
+
+void page_evictioner_gclock::miss_ref(bf_idx b_idx, PageID pid) {}
 
 bf_idx page_evictioner_gclock::pick_victim()
 {
@@ -312,4 +357,497 @@ bf_idx page_evictioner_gclock::pick_victim()
         --_counts[idx]; //TODO: MAKE ATOMIC
         idx++;
     }
+}
+
+/*
+page_evictioner_clockpro::page_evictioner_clockpro(bf_tree_m* bufferpool, const sm_options& options)
+        : page_evictioner_base(bufferpool, options) {
+    _referenced = new bool[2 * (_bufferpool->_block_cnt - 1)];
+    _hot = new bool[2 * (_bufferpool->_block_cnt - 1)];
+    _test = new bool[2 * (_bufferpool->_block_cnt - 1)];
+    _bf_idx_to_clk_idx = new clk_idx[_bufferpool->_block_cnt];
+    _clk_idx_to_bf_idx = new bf_idx[2 * (_bufferpool->_block_cnt - 1)];
+    _page_id_to_clk_idx = new bf_hashtable<clk_idx >(w_findprime(2048 + (_bufferpool->_block_cnt / 2)));
+}
+
+page_evictioner_clockpro::~page_evictioner_clockpro() {
+    delete[](_referenced);
+    delete[](_hot);
+    delete[](_test);
+    delete[](_bf_idx_to_clk_idx);
+    delete[](_clk_idx_to_bf_idx);
+    delete (_page_id_to_clk_idx);
+}
+
+void page_evictioner_clockpro::ref(bf_idx idx) {
+    _referenced[_bf_idx_to_clk_idx[idx]] = true;
+}
+
+void page_evictioner_clockpro::miss_ref(bf_idx b_idx, PageID pid) {
+    clk_idx c_idx;
+    if (_page_id_to_clk_idx->lookup(pid, c_idx)) {
+        _bf_idx_to_clk_idx[b_idx] = c_idx;
+        _clk_idx_to_bf_idx[c_idx] = b_idx;
+        _referenced[c_idx] = true;
+    } else {
+        c_idx =
+        _page_id_to_clk_idx->insert_if_not_exists(pid, c_idx);
+        _referenced[c_idx] = true;
+        _test[c_idx] = true;
+    }
+}
+
+bf_idx page_evictioner_clockpro::pick_victim() {
+    
+    return run_hand_cold();
+}
+
+void page_evictioner_clockpro::run_hand_hot() {
+    
+}
+
+bf_idx page_evictioner_clockpro::run_hand_cold() {
+    
+    // Check if we still need to evict
+    clk_idx c_idx = _hand_cold;
+    while(true)
+    {
+        c_idx = (c_idx == 2 * (_bufferpool->_block_cnt - 1)) ? 0 : c_idx;
+        
+        w_assert1(0 <= c_idx && c_idx < 2 * (_bufferpool->_block_cnt - 1));
+
+//        // Circular iteration, jump idx 0
+//        idx = (idx % (_bufferpool->_block_cnt-1)) + 1;
+//        w_assert1(idx != 0);
+
+//        // Before starting, let's fire some prefetching for the next step.
+//        bf_idx next_idx = ((c_idx+1) % (_bufferpool->_block_cnt-1)) + 1;
+//        __builtin_prefetch(&_bufferpool->_buffer[next_idx]);
+//        __builtin_prefetch(_bufferpool->get_cbp(next_idx));
+        
+        bf_idx b_idx = _clk_idx_to_bf_idx[c_idx];       // latch the clock-element ?
+        
+        if (b_idx == 0) {
+            c_idx++;
+            continue;
+        }
+        
+        // Now we do the real work.
+        bf_tree_cb_t& cb = _bufferpool->get_cb(b_idx);
+        
+        rc_t latch_rc = cb.latch().latch_acquire(LATCH_SH, sthread_t::WAIT_IMMEDIATE);
+        if (latch_rc.is_error()) {
+            c_idx++;
+            continue;
+        }
+        
+        w_assert1(cb.latch().held_by_me());
+        
+        */
+/* There are some pages we want to ignore in our policy:
+         * 1) Non B+Tree pages
+         * 2) Dirty pages (the cleaner should have cleaned it already)
+         * 3) Pages being used by someon else
+         * 4) The root
+         *//*
+
+        btree_page_h p;
+        p.fix_nonbufferpool_page(_bufferpool->_buffer + c_idx);
+        if (p.tag() != t_btree_p || cb.is_dirty() ||
+            !cb._used || p.pid() == p.root())
+        {
+            // LL: Should we also decrement the clock count in this case?
+            cb.latch().latch_release();
+            c_idx++;
+            continue;
+        }
+        
+        // Ignore pages that still have swizzled children
+        if(_swizziling_enabled && _bufferpool->has_swizzled_child(c_idx))
+        {
+            // LL: Should we also decrement the clock count in this case?
+            cb.latch().latch_release();
+            c_idx++;
+            continue;
+        }
+        
+        if (!_hot[c_idx]) {
+            if (!_referenced[c_idx]) {
+                // We have found our victim!
+                bool would_block;
+                cb.latch().upgrade_if_not_block(would_block); //Try to upgrade latch
+                if (!would_block) {
+                    w_assert1(cb.latch().is_mine());
+                    
+                    */
+/* No need to re-check the values above, because the cb was
+                     * already latched in SH mode, so they cannot change. *//*
+
+                    
+                    if (cb._pin_cnt != 0) {
+                        cb.latch().latch_release(); // pin count -1 means page was already evicted
+                        c_idx++;
+                        continue;
+                    }
+                    
+                    _bf_idx_to_clk_idx[b_idx] = 2 * (_bufferpool->_block_cnt - 1);
+                    _clk_idx_to_bf_idx[c_idx] = 0;
+                    _hand_cold = c_idx++;
+                    return c_idx;
+                }
+            } else if (_test[c_idx]) {
+                _hot[c_idx] = true;
+            }
+        }
+        cb.latch().latch_release();
+        --_counts[c_idx]; //TODO: MAKE ATOMIC
+        c_idx++;
+    }
+}
+
+void page_evictioner_clockpro::run_hand_test() {
+    
+}
+*/
+
+page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options)
+        : page_evictioner_base(bufferpool, options)
+{
+    _clocks = new multi_clock<bool>(_bufferpool->_block_cnt, 2, 0);
+    
+    for (int i = 1; i <= _bufferpool->_block_cnt - 1; i++) {
+        _clocks->add_tail(T_1, i);
+    }
+    
+    _b1 = new hashtable_queue<PageID>();
+    _b2 = new hashtable_queue<PageID>();
+    
+    _p = 0;
+}
+
+page_evictioner_cart::~page_evictioner_cart() {
+    delete(_clocks);
+    
+    delete(_b1);
+    delete(_b2);
+}
+
+void page_evictioner_cart::ref(bf_idx idx) {
+    _clocks->get(idx) = true;
+}
+
+void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
+    if (!_b1->contains(pid) && !_b2->contains(pid)) {
+        if (_clocks->size_of(T_1) + _b1->length() == _bufferpool->_block_cnt - 1) {
+            _b1->remove_lru();
+        } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() == 2 * (_bufferpool->_block_cnt - 1)) {
+            _b2->remove_lru();
+        }
+        _clocks->add_tail(T_1, b_idx);
+        _clocks->get(b_idx) = 0;
+    } else if (_b1->contains(pid)) {
+        _p = std::min(_p + std::max(1, _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
+        _b1->remove(pid);
+        _clocks->add_tail(T_2, b_idx);
+        _clocks->get(b_idx) = 0;
+    } else {
+        _p = std::max(_p + std::max(1, _b1->length() / _b2->length()), 0);
+        _b2->remove(pid);
+        _clocks->add_tail(T_2, b_idx);
+        _clocks->get(b_idx) = 0;
+    }
+}
+
+bf_idx page_evictioner_cart::pick_victim() {
+    bool evicted_page = false;
+    while (!evicted_page) {
+        if (_clocks->size_of(T_1) >= std::max(1, _p)) {
+            bool t_1_head;
+            bf_idx t_1_head_index = 0;
+            _clocks->get_head(T_1, t_1_head);
+            _clocks->get_head_index(T_1, t_1_head_index);
+            
+            if (!t_1_head) {
+                PageID evicted_pid;
+                evicted_page = evict_page(t_1_head_index, evicted_pid);
+                
+                if (evicted_page) {
+                    w_assert1(_clocks->remove_head(T_1, t_1_head_index));
+                    w_assert1(_b1->insert_mru(evicted_pid));
+                } else {
+                    _clocks->move_head(T_1);
+                }
+            } else {
+                t_1_head = 0;
+                _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
+            }
+        } else {
+            bool t_2_head;
+            bf_idx t_2_head_index = 0;
+            _clocks->get_head(T_2, t_2_head);
+            _clocks->get_head_index(T_2, t_2_head_index);
+    
+            if (!t_2_head) {
+                PageID evicted_pid;
+                evicted_page = evict_page(t_2_head_index, evicted_pid);
+        
+                if (evicted_page) {
+                    w_assert1(_clocks->remove_head(T_2, t_2_head_index));
+                    w_assert1(_b2->insert_mru(evicted_pid));
+                } else {
+                    _clocks->move_head(T_1);
+                }
+            } else {
+                t_2_head = 0;
+                _clocks->move_head(T_2);
+            }
+        }
+    }
+}
+
+template<class key>
+bool page_evictioner_cart::hashtable_queue::contains(key k) {
+    return _list.count(k);
+}
+
+template<class key>
+page_evictioner_cart::hashtable_queue::hashtable_queue() : _list(std::unordered_map()<key, key_pair>) {
+    _head = nullptr;
+    _tail = nullptr;
+}
+
+template<class key>
+page_evictioner_cart::hashtable_queue::~hashtable_queue() {
+    delete(_list);
+    _list = nullptr;
+}
+
+template<class key>
+bool page_evictioner_cart::hashtable_queue::insert_mru(key k) {
+    if (!_list.empty()) {
+        auto previous_size = _list.size();
+        key previous_head = _head;
+        key_pair previous_head_entry = _list[previous_head];
+        w_assert1(previous_head != nullptr);
+        w_assert1(previous_head_entry.first == nullptr);
+        
+        if (_list.count(k) > 0) {
+            return false;
+        }
+        _list[k] = key_pair(nullptr, previous_head);
+        _list[previous_head].first = k;
+        _head = k;
+        w_assert1(_list.size() == previous_size + 1);
+    } else {
+        w_assert1(_head == nullptr);
+        w_assert1(_tail == nullptr);
+    
+        _list[k] = key_pair(nullptr, nullptr);
+        _head = k;
+        _tail = k;
+        w_assert1(_list.size() == 1);
+    }
+    return true;
+}
+
+template<class key>
+bool page_evictioner_cart::hashtable_queue::remove_lru() {
+    if (_list.empty()) {
+        return false;
+    } else if (_list.size() == 1) {
+        w_assert1(_head == _tail);
+        w_assert1(_list[_head].first == nullptr);
+        w_assert1(_list[_head].second == nullptr);
+        
+        _list.erase(_head);
+        _head == nullptr;
+        _tail == nullptr;
+        w_assert1(_list.size() == 0);
+    } else {
+        auto previous_size = _list.size();
+        key previous_tail = _tail;
+        key_pair previous_tail_entry = _list[_tail];
+        w_assert1(_head != _tail);
+        w_assert1(_head != nullptr);
+        
+        _tail = previous_tail_entry.first;
+        _list[previous_tail_entry.first].second = nullptr;
+        _list.erase(previous_tail);
+        w_assert1(_list.size() == previous_size - 1);
+    }
+    return false;
+}
+
+template<class key>
+bool page_evictioner_cart::hashtable_queue::remove(key k) {
+    if (_list.count(k) == 0) {
+        return false;
+    } else {
+        auto previous_size = _list.size();
+        key_pair previous_value = _list[k];
+        if (previous_value.first != nullptr) {
+            _list[previous_value.first].second = previous_value.second;
+        } else {
+            _head = previous_value.second;
+        }
+        if (previous_value.second != nullptr) {
+            _list[previous_value.second].first = previous_value.first;
+        } else {
+            _tail = previous_value.first;
+        }
+        _list.erase(k);
+        w_assert1(_list.size() == previous_size - 1);
+    }
+    return true;
+}
+
+template<class key>
+u_int32_t page_evictioner_cart::hashtable_queue::length() {
+    return _list.size();
+}
+
+template<class value>
+page_evictioner_cart::multi_clock::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
+    _clocksize = clocksize;
+    _values = new value[_clocksize]();
+    _clocks = new pair<u_int32_t, u_int32_t>[_clocksize]();
+    _invalid_index = invalid_index;
+    
+    _clocknumber = clocknumber;
+    _hands = new u_int32_t[_clocknumber]();
+    _sizes = new u_int32_t[_clocknumber]();
+    for (int i = 0; i <= _clocknumber - 1; i++) {
+        _hands[i] = _invalid_index;
+    }
+    _invalid_clock_index = _clocknumber;
+    _clock_membership = new u_int32_t[_clocksize]();
+    for (int i = 0; i <= _clocksize - 1; i++) {
+        _clock_membership[i] = _invalid_clock_index;
+    }
+}
+
+template<class value>
+page_evictioner_cart::multi_clock::~multi_clock() {
+    _clocksize = 0;
+    delete[](_values);
+    delete[](_clocks);
+    _invalid_index = 0;
+    
+    _clocknumber = 0;
+    delete[](_hands);
+    delete[](_sizes);
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::get_head(u_int32_t clock, value &head_value) {
+    if (clock >= 0 && clock <= _clocknumber - 1) {
+        head_value = _values[_hands[clock]];
+        w_assert1(_clock_membership[_hands[clock]] == clock);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::get_head_index(u_int32_t clock, u_int32_t &head_index) {
+    if (clock >= 0 && clock <= _clocknumber - 1) {
+        head_index = _hands[clock];
+        w_assert1(_clock_membership[_hands[clock]] == clock);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::move_head(u_int32_t clock) {
+    if (clock >= 0 && clock <= _clocknumber - 1) {
+        _hands[clock] = _clocks[_hands[clock]].second;
+        w_assert1(_clock_membership[_hands[clock]] == clock);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::add_tail(u_int32_t clock, u_int32_t index) {
+    if (index >= 0 && index <= _clocksize - 1 && index != _invalid_index
+                   && clock >= 0 && clock <= _clocknumber - 1
+                   && _clock_membership[index] == _invalid_clock_index) {
+        if (_sizes[clock] == 0) {
+            _hands[clock] = index;
+            _clocks[index].first = index;
+            _clocks[index].second = index;
+        } else {
+            _clocks[index].first = _clocks[_hands[clock]].first;
+            _clocks[index].second = _hands[clock];
+            _clocks[_clocks[_hands[clock]].first].second = index;
+            _clocks[_hands[clock]].first = index;
+        }
+        _sizes[clock]++;
+        _clock_membership[index] = clock;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::remove_head(u_int32_t clock, u_int32_t &removed_index) {
+    if (clock >= 0 && clock <= _clocknumber - 1) {
+        u_int32_t _old_hand = _invalid_index;
+        if (_sizes[clock] == 0) {
+            w_assert1(_hands[clock] == _invalid_index);
+            return false;
+        } else if (_sizes[clock] == 1) {
+            w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
+            w_assert1(_clocks[_hands[clock]].first == _hands[clock]);
+            w_assert1(_clocks[_hands[clock]].second == _hands[clock]);
+    
+            _old_hand = _hands[clock];
+            _clocks[_old_hand].first = _invalid_index;
+            _clocks[_old_hand].second = _invalid_index;
+            _hands[clock] = _invalid_index;
+            _clock_membership[_old_hand] = _invalid_clock_index;
+            _sizes[clock]--;
+            return true;
+        } else {
+            _old_hand = _hands[clock];
+            _clocks[_clocks[_old_hand].first].second = _clocks[_old_hand].second;
+            _clocks[_clocks[_old_hand].second].first = _clocks[_old_hand].first;
+            _hands[clock] = _clocks[_old_hand].second;
+            _clocks[_old_hand].first = _invalid_index;
+            _clocks[_old_hand].second = _invalid_index;
+            _clock_membership[_old_hand] = _invalid_clock_index;
+            _sizes[clock]--;
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index) {
+    moved_index = _invalid_index;
+    if (_sizes[source] > 0
+     && source >= 0 && source <= _clocknumber - 1
+     && destination >= 0 && destination <= _clocknumber - 1) {
+        bool removed = remove_head(source, moved_index);
+        w_assert1(removed);
+        
+        bool added = add_tail(destination, moved_index);
+        w_assert1(added);
+        
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+u_int32_t page_evictioner_cart::multi_clock::size_of(u_int32_t clock) {
+    return _sizes[clock];
 }

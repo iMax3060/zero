@@ -369,6 +369,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 }
                 cb.init(pid, page->lsn);
             }
+    
+            if(_evictioner) _evictioner->miss_ref(idx, pid);
 
             w_assert1(_is_active_idx(idx));
 

@@ -1,6 +1,7 @@
 #ifndef PAGE_EVICTIONER_H
 #define PAGE_EVICTIONER_H
 
+#include <unordered_map>
 #include "smthread.h"
 #include "sm_options.h"
 #include "lsn.h"
@@ -10,6 +11,8 @@
 #include "bf_tree_cb.h"
 
 #include "worker_thread.h"
+
+typedef uint32_t clk_idx;
 
 class bf_tree_m;
 class generic_page;
@@ -26,6 +29,13 @@ public:
      */
     virtual void            ref(bf_idx idx);
     
+    /**
+     *
+     * @param b_idx
+     * @param pid
+     */
+    virtual void        miss_ref(bf_idx b_idx, PageID pid);
+
     /**
      * Evicts pages from the buffer pool until the preferred amount of frames
      * (\link page_evictioner_base::EVICT_BATCH_RATIO) is in use. This method
@@ -44,6 +54,8 @@ protected:
      * must return bf_idx 0.
      */
     virtual bf_idx          pick_victim();
+    
+    bool evict_page(bf_idx idx, PageID &evicted_page);
 
 private:
 	/**
@@ -73,6 +85,7 @@ public:
     virtual ~page_evictioner_gclock();
 
     virtual void            ref(bf_idx idx);
+    virtual void            miss_ref(bf_idx b_idx, PageID pid);
 
 protected:
     virtual bf_idx          pick_victim();
@@ -82,5 +95,112 @@ private:
     uint16_t*           _counts;
     bf_idx              _current_frame;
 };
+
+class page_evictioner_cart : public page_evictioner_base {
+public:
+                        page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options);
+    virtual             ~page_evictioner_cart();
+    
+    void                ref(bf_idx idx);
+    void                miss_ref(bf_idx b_idx, PageID pid);
+
+protected:
+    bf_idx              pick_victim();
+
+private:
+    multi_clock<bool>*              _clocks;            // T_1 and T_2
+    
+    hashtable_queue<PageID>*        _b1;                // B_1
+    hashtable_queue<PageID>*        _b2;                // B_2
+    
+    u_int32_t                       _p;                 // parameter p
+    
+    enum clock_index {
+        T_1 = 0,
+        T_2 = 1
+    };
+    
+    // Alternative: Boost.MultiIndex
+    template<class key>
+    class hashtable_queue {
+    private:
+        typedef pair<key, key> key_pair;
+        
+        std::unordered_map<key, key_pair>&      _list;
+        key                                     _head;          // the head of the list (LRU-element); insert here
+        key                                     _tail;          // the tail of the list (MRU-element); remove here
+
+    public:
+                        hashtable_queue();
+        virtual         ~hashtable_queue();
+
+        bool            contains(key k);
+        bool            insert_mru(key k);
+        bool            remove_lru();
+        bool            remove(key k);
+        u_int32_t       length();
+    };
+    
+    template<class value>
+    class multi_clock {
+    private:
+        u_int32_t                       _clocksize;
+        value*                          _values;
+        pair<u_int32_t, u_int32_t>*     _clocks;        // .first == previous, .second == next
+        u_int32_t                       _invalid_index;
+        u_int32_t*                      _clock_membership;
+        
+        u_int32_t                       _clocknumber;
+        u_int32_t*                      _hands;         // always points to the clocks head
+        u_int32_t*                      _sizes;
+        u_int32_t                       _invalid_clock_index;
+    public:
+                        multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index);
+        virtual         ~multi_clock();
+        
+        bool            get_head(u_int32_t clock, value &head_value);
+        bool            get_head_index(u_int32_t clock, u_int32_t &head_index);
+        bool            move_head(u_int32_t clock);
+        bool            add_tail(u_int32_t clock, u_int32_t index);
+        bool            remove_head(u_int32_t clock, u_int32_t &removed_index);
+        bool            switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index);
+        u_int32_t       size_of(u_int32_t clock);
+        
+        inline value&   get(u_int32_t index) {
+            return _values[index];
+        };
+    };
+};
+
+/*
+class page_evictioner_clockpro : public page_evictioner_base {
+public:
+                        page_evictioner_clockpro(bf_tree_m* bufferpool, const sm_options& options);
+    virtual             ~page_evictioner_clockpro();
+
+    virtual void        ref(bf_idx idx);
+    virtual void        miss_ref(bf_idx b_idx, PageID pid);
+
+protected:
+    virtual bf_idx      pick_victim();
+
+private:
+    virtual void            run_hand_hot();
+    virtual bf_idx          run_hand_cold();
+    virtual void            run_hand_test();
+    
+    bool*                   _hot;           // 1: page is hot; 0: page is cold
+    bool*                   _test;          // 1: cold page in test period; 0: hot page or cold page not in test period
+    bool*                   _referenced;    // reference bit like in CLOCK
+    
+    clk_idx*                _bf_idx_to_clk_idx;
+    bf_idx*                 _clk_idx_to_bf_idx;
+    bf_hashtable<clk_idx>*  _page_id_to_clk_idx;
+    
+    clk_idx                 _hand_hot;
+    clk_idx                 _hand_cold;
+    clk_idx                 _hand_test;
+};
+*/
 
 #endif

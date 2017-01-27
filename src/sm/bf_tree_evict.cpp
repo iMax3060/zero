@@ -1,4 +1,9 @@
 #include "bf_tree_cb.h"
+#include "bf_tree.h"
+#include "btree_page_h.h"
+#include "log_core.h" // debug: for printing log tail
+
+#include "bf_hashtable.cpp"
 
 w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
 {
@@ -6,6 +11,8 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
     while (true) {
         bool got_frame = _freelist->pop(ret);
         if (got_frame) {
+            w_assert1(_is_valid_idx(ret));
+            w_assert1(!get_cb(ret)._used);
             _approx_freelist_length--;
             DBG5(<< "Grabbing idx " << ret);
             return RCOK;
