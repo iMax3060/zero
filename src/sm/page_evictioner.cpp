@@ -22,7 +22,7 @@ void page_evictioner_base::evict()
     while(_bufferpool->_approx_freelist_length < preferred_count) // TODO: increment _freelist_len atomically
     {
         bf_idx victim = pick_victim();
-
+    
         if(victim == 0) {
             /* idx 0 is never used, so this means pick_victim() exited without
              * finding a victim. This might happen when the page_evictioner is
@@ -104,7 +104,7 @@ bf_idx page_evictioner_base::pick_victim()
             DBG3(<< "Eviction failed on latch for " << idx);
             continue;
         }
-        w_assert1(cb.latch().is_mine())
+        w_assert1(cb.latch().is_mine());
 
         // now we hold an EX latch -- check if leaf and not dirty
         btree_page_h p;
@@ -575,6 +575,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
                     bool inserted = _b1->insert_mru(evicted_pid);
                     w_assert1(removed && inserted);
+                    return t_1_head_index;
                 } else {
                     _clocks->move_head(T_1);
                 }
@@ -595,6 +596,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
                     bool inserted = _b2->insert_mru(evicted_pid);
+                    return t_2_head_index;
                     w_assert1(removed && inserted);
                 } else {
                     _clocks->move_head(T_1);
@@ -605,6 +607,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             }
         }
     }
+    return 0;
 }
 
 template<class key>
