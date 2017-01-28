@@ -572,8 +572,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                 evicted_page = evict_page(t_1_head_index, evicted_pid);
                 
                 if (evicted_page) {
-                    w_assert1(_clocks->remove_head(T_1, t_1_head_index));
-                    w_assert1(_b1->insert_mru(evicted_pid));
+                    bool removed = _clocks->remove_head(T_1, t_1_head_index);
+                    bool inserted = _b1->insert_mru(evicted_pid);
+                    w_assert1(removed && inserted);
                 } else {
                     _clocks->move_head(T_1);
                 }
@@ -592,8 +593,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
         
                 if (evicted_page) {
-                    w_assert1(_clocks->remove_head(T_2, t_2_head_index));
-                    w_assert1(_b2->insert_mru(evicted_pid));
+                    bool removed = _clocks->remove_head(T_2, t_2_head_index);
+                    bool inserted = _b2->insert_mru(evicted_pid);
+                    w_assert1(removed && inserted);
                 } else {
                     _clocks->move_head(T_1);
                 }
