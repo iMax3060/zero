@@ -615,7 +615,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
                     bool inserted = _b2->insert_head(evicted_pid);
-//                    std::cout << "Removed from T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+//                    std::cout << "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
@@ -827,6 +827,7 @@ template<class value>
 bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         u_int32_t _old_hand = _invalid_index;
+	    removed_index = _invalid_index;
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
             return false;
@@ -835,7 +836,7 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
             w_assert1(_clocks[_hands[clock]].first == _hands[clock]);
             w_assert1(_clocks[_hands[clock]].second == _hands[clock]);
     
-            _old_hand = _hands[clock];
+            _old_hand, removed_index = _hands[clock];
             _clocks[_old_hand].first = _invalid_index;
             _clocks[_old_hand].second = _invalid_index;
             _hands[clock] = _invalid_index;
@@ -843,7 +844,7 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
             _sizes[clock]--;
             return true;
         } else {
-            _old_hand = _hands[clock];
+            _old_hand, removed_index = _hands[clock];
             _clocks[_clocks[_old_hand].first].second = _clocks[_old_hand].second;
             _clocks[_clocks[_old_hand].second].first = _clocks[_old_hand].first;
             _hands[clock] = _clocks[_old_hand].second;
