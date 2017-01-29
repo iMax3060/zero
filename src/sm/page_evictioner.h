@@ -168,6 +168,8 @@ private:
 	hashtable_queue<PageID>*        _b2;                // B_2
 
 	u_int32_t                       _p;                 // parameter p
+	
+	pthread_mutex_t                 _lock;
 
 	enum clock_index {
 		T_1 = 0,
