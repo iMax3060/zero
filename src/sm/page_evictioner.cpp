@@ -517,6 +517,7 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
     
     for (int i = 1; i <= _bufferpool->_block_cnt - 1; i++) {
         _clocks->add_tail(T_1, i);
+//        std::cout << "Added to T_1: " << i << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
     }
     
     _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
@@ -549,16 +550,19 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
             _b2->remove_tail();
         }
         _clocks->add_tail(T_1, b_idx);
+ //       std::cout << "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
         _b1->remove(pid);
         _clocks->add_tail(T_2, b_idx);
+ //       std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     } else {
         _p = std::max(_p + std::max(u_int32_t(1), _b1->length() / _b2->length()), u_int32_t(0));
         _b2->remove(pid);
         _clocks->add_tail(T_2, b_idx);
+ //       std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     }
     w_assert1(_clocks->size_of(T_1) + _clocks->size_of(T_2) <= _bufferpool->_block_cnt - 1);
@@ -585,6 +589,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
                     bool inserted = _b1->insert_head(evicted_pid);
+//                    std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
@@ -594,6 +599,8 @@ bf_idx page_evictioner_cart::pick_victim() {
             } else {
                 t_1_head = 0;
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
+//                std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+//                std::cout << "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
             }
         } else {
             bool t_2_head;
@@ -608,6 +615,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
                     bool inserted = _b2->insert_head(evicted_pid);
+//                    std::cout << "Removed from T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
@@ -809,7 +817,6 @@ bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32
         }
         _sizes[clock]++;
         _clock_membership[index] = clock;
-//        std::cout << "Added to " << clock << ": " << index << "; New size: " << _sizes[clock] << std::endl;
         return true;
     } else {
         return false;
@@ -835,7 +842,6 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
             _clock_membership[_old_hand] = _invalid_clock_index;
             _sizes[clock]--;
             return true;
-//            std::cout << "Removed from " << clock << ": " << removed_index << "; New size: " << _sizes[clock] << std::endl;
         } else {
             _old_hand = _hands[clock];
             _clocks[_clocks[_old_hand].first].second = _clocks[_old_hand].second;
@@ -845,7 +851,6 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
             _clocks[_old_hand].second = _invalid_index;
             _clock_membership[_old_hand] = _invalid_clock_index;
             _sizes[clock]--;
-//            std::cout << "Removed from " << clock << ": " << removed_index << "; New size: " << _sizes[clock] << std::endl;
             return true;
         }
     } else {
