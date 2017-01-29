@@ -586,6 +586,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
                     bool inserted = _b1->insert_head(evicted_pid);
                     w_assert1(removed && inserted);
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
                     _clocks->move_head(T_1);
@@ -608,6 +609,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
                     bool inserted = _b2->insert_head(evicted_pid);
                     w_assert1(removed && inserted);
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
                     _clocks->move_head(T_1);
