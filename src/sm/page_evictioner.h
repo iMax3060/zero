@@ -125,8 +125,8 @@ private:
         virtual         ~hashtable_queue();
 
         bool            contains(key k);
-        bool            insert_mru(key k);
-        bool            remove_lru();
+        bool            insert_head(key k);
+        bool            remove_tail();
         bool            remove(key k);
         u_int32_t       length();
     };

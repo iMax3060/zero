@@ -539,9 +539,9 @@ void page_evictioner_cart::ref(bf_idx idx) {
 void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() == _bufferpool->_block_cnt - 1) {
-            _b1->remove_lru();
+            _b1->remove_tail();
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() == 2 * (_bufferpool->_block_cnt - 1)) {
-            _b2->remove_lru();
+            _b2->remove_tail();
         }
         _clocks->add_tail(T_1, b_idx);
         _clocks->get(b_idx) = 0;
@@ -573,7 +573,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
-                    bool inserted = _b1->insert_mru(evicted_pid);
+                    bool inserted = _b1->insert_head(evicted_pid);
                     w_assert1(removed && inserted);
                     return t_1_head_index;
                 } else {
@@ -595,7 +595,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
-                    bool inserted = _b2->insert_mru(evicted_pid);
+                    bool inserted = _b2->insert_head(evicted_pid);
                     return t_2_head_index;
                     w_assert1(removed && inserted);
                 } else {
@@ -630,7 +630,7 @@ page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::insert_mru(key k) {
+bool page_evictioner_cart::hashtable_queue<key>::insert_head(key k) {
     if (!_list->empty()) {
         auto previous_size = _list->size();
         key previous_head = _head;
@@ -658,7 +658,7 @@ bool page_evictioner_cart::hashtable_queue<key>::insert_mru(key k) {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::remove_lru() {
+bool page_evictioner_cart::hashtable_queue<key>::remove_tail() {
     if (_list->empty()) {
         return false;
     } else if (_list->size() == 1) {
