@@ -114,6 +114,7 @@ private:
     private:
         class key_pair {
         public:
+            key_pair() {};
             key_pair(key previous, key next) {
                 this->_previous = previous;
                 this->_next = next;
