@@ -325,6 +325,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(_is_valid_idx(idx));
             bf_tree_cb_t &cb = get_cb(idx);
             w_assert1(!cb._used);
+    
+            std::cout << "Free frames: " << _approx_freelist_length << std::endl;
 
             // STEP 2) Acquire EX latch before hash table insert, to make sure
             // nobody will access this page until we're done
