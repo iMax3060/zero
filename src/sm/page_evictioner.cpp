@@ -630,7 +630,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
-                    _clocks->move_head(T_1);
+                    _clocks->move_head(T_2);
                 }
             } else {
                 bool set = _clocks->set_head(T_2, false);
@@ -823,7 +823,7 @@ bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u
 
 template<class value>
 bool page_evictioner_cart::multi_clock<value>::move_head(u_int32_t clock) {
-    if (clock >= 0 && clock <= _clocknumber - 1) {
+    if (clock >= 0 && clock <= _clocknumber - 1 && _sizes[clock] >= 1) {
         _hands[clock] = _clocks[_hands[clock]]._after;
         w_assert1(_clock_membership[_hands[clock]] == clock);
         return true;
