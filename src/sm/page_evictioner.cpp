@@ -34,8 +34,14 @@ void page_evictioner_base::evict()
 
         bf_tree_cb_t& cb = _bufferpool->get_cb(victim);
         w_assert1(cb.latch().is_mine());
+    
+        if (cb.latch().held_by_me()) {
+            std::cout << "38:Still lateched!";
+        } else {
+            std::cout << "38:Not lateched anymore!";
+        }
 
-        if(unswizzle_and_update_emlsn(victim) == false) {
+        if(!unswizzle_and_update_emlsn(victim)) {
             /* We were not able to unswizzle/update parent, therefore we cannot
              * proceed with this victim. We just jump to the next iteration and
              * hope for better luck next time. */
@@ -232,7 +238,7 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     /* There are some pages we want to ignore in our policies:
      * 1) Non B+Tree pages
      * 2) Dirty pages (the cleaner should have cleaned it already)
-     * 3) Pages being used by someon else
+     * 3) Pages being used by someone else
      * 4) The root
      */
     btree_page_h p;
@@ -240,21 +246,27 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     if (p.tag() != t_btree_p || cb.is_dirty() ||
         !cb._used || p.pid() == p.root())
     {
-        // LL: Should we also decrement the clock count in this case?
+        ref(idx);
         cb.latch().latch_release();
         return false;
     }
     
     // Ignore pages that still have swizzled children
     if(_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
-        // LL: Should we also decrement the clock count in this case?
+        ref(idx);
         cb.latch().latch_release();
         return false;
     }
     
+    cb._pin_cnt = -1;
     evicted_page = cb._pid;
     
-    cb.latch().latch_release();
+    if (cb.latch().held_by_me()) {
+        std::cout << "264:Still lateched!";
+    } else {
+        std::cout << "264:Not lateched anymore!";
+    }
+    
     return true;
 }
 
