@@ -576,6 +576,7 @@ bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
     while (!evicted_page) {
         DO_PTHREAD(pthread_mutex_lock(&_lock));
+        std::cout << "p = " << _p << std::endl;
         if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
             bool t_1_head;
             bf_idx t_1_head_index = 0;
