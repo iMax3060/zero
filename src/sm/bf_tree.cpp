@@ -1103,7 +1103,7 @@ bool bf_tree_m::_is_valid_idx(bf_idx idx) const {
 
 
 bool bf_tree_m::_is_active_idx (bf_idx idx) const {
-    return _is_valid_idx(idx) && get_cb(idx)._used;
+    return _is_valid_idx(idx) && get_cb(idx)._pin_cnt >= 1;
 }
 
 
