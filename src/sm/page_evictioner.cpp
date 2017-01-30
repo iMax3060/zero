@@ -252,7 +252,6 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
         return false;
     }
     
-    cb._pin_cnt = -1;
     evicted_page = cb._pid;
     
     return true;
