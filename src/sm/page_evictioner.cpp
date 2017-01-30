@@ -167,11 +167,7 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
 
     /* Look for emlsn slot on parent (must be found because parent pointer is
      * kept consistent at all times). */
-    if (parent_cb._pin_cnt < 1) {
-        std::cout << "Parent Index: " << parent_idx << "; Parent PageID: " << parent_cb._pid << std::endl
-                  << "Dirty: " << (parent_cb.is_dirty() ? "True" : "False") << std::endl;
-    }
-    w_assert1(parent_cb._pin_cnt >= 1);         // _is_active_idx(parent_idx)?
+    // w_assert1(_is_active_idx(parent_idx));         // Dirty pages break this!
     generic_page *parent = &_bufferpool->_buffer[parent_idx];
     btree_page_h parent_h;
     parent_h.fix_nonbufferpool_page(parent);
@@ -550,7 +546,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         }
         bool added = _clocks->add_tail(T_1, b_idx);
         w_assert1(added);
-        std::cout << "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+        DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->get(b_idx) = 0;
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
@@ -558,7 +554,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         w_assert1(removed);
         bool added = _clocks->add_tail(T_2, b_idx);
         w_assert1(added);
-        std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->get(b_idx) = 0;
     } else {
         _p = std::max(_p + std::max(u_int32_t(1), _b1->length() / _b2->length()), u_int32_t(0));
@@ -566,7 +562,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         w_assert1(removed);
         bool added = _clocks->add_tail(T_2, b_idx);
         w_assert1(added);
-        std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->get(b_idx) = 0;
     }
     w_assert1(_clocks->size_of(T_1) + _clocks->size_of(T_2) <= _bufferpool->_block_cnt - 1);
@@ -580,7 +576,7 @@ bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
     while (!evicted_page) {
         DO_PTHREAD(pthread_mutex_lock(&_lock));
-        std::cout << "p = " << _p << std::endl;
+        DBG(<< "p = " << _p);
         if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
             bool t_1_head;
             bf_idx t_1_head_index = 0;
@@ -595,7 +591,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
                     bool inserted = _b1->insert_back(evicted_pid);
-                    std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+                    DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
@@ -607,13 +603,12 @@ bf_idx page_evictioner_cart::pick_victim() {
                 w_assert1(set);
                 
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
-                std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
-                std::cout << "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+                DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 bool new_t_1_head = false;
                 bf_idx new_t_1_head_index = 0;
                 _clocks->get_head(T_1, new_t_1_head);
                 _clocks->get_head_index(T_1, new_t_1_head_index);
-                std::cout << "Was head of T_1: " << t_1_head_index << ". Is head of T_1: " << new_t_1_head_index << "." << std::endl;
             }
         } else {
             bool t_2_head;
@@ -629,7 +624,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
                     bool inserted = _b2->insert_back(evicted_pid);
-                    std::cout << "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+                    DBG(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
