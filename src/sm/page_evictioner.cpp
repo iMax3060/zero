@@ -35,12 +35,6 @@ void page_evictioner_base::evict()
         bf_tree_cb_t& cb = _bufferpool->get_cb(victim);
         w_assert1(cb.latch().is_mine());
     
-        if (cb.latch().held_by_me()) {
-            std::cout << "38:Still lateched!";
-        } else {
-            std::cout << "38:Not lateched anymore!";
-        }
-
         if(!unswizzle_and_update_emlsn(victim)) {
             /* We were not able to unswizzle/update parent, therefore we cannot
              * proceed with this victim. We just jump to the next iteration and
@@ -228,12 +222,12 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     evicted_page = 0;
     bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
     
-    rc_t latch_rc = cb.latch().latch_acquire(LATCH_SH, sthread_t::WAIT_IMMEDIATE);
+    rc_t latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
     if (latch_rc.is_error()) {
         return false;
     }
     
-    w_assert1(cb.latch().held_by_me());
+    w_assert1(cb.latch().is_mine());
     
     /* There are some pages we want to ignore in our policies:
      * 1) Non B+Tree pages
@@ -260,12 +254,6 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     
     cb._pin_cnt = -1;
     evicted_page = cb._pid;
-    
-    if (cb.latch().held_by_me()) {
-        std::cout << "264:Still lateched!";
-    } else {
-        std::cout << "264:Not lateched anymore!";
-    }
     
     return true;
 }
