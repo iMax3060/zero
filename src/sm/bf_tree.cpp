@@ -1052,7 +1052,7 @@ void bf_tree_m::set_page_lsn(generic_page* page, lsn_t lsn)
 lsn_t bf_tree_m::get_page_lsn(generic_page* page)
 {
     uint32_t idx = page - _buffer;
-    w_assert1 (_is_active_idx(idx));
+    // w_assert1(_is_active_idx(parent_idx));         // Dirty pages break this!
     return get_cb(idx).get_page_lsn();
 }
 
