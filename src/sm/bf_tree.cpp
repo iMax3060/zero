@@ -375,10 +375,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	
 	        get_evictioner()->miss_ref(idx, pid);
 
-            w_assert1(_is_active_idx(idx));
-
             // STEP 6) Fix successful -- pin page and downgrade latch
             cb.pin();
+    
+            w_assert1(_is_active_idx(idx));
             w_assert1(cb.latch().is_mine());
             w_assert1(cb._pin_cnt > 0);
             DBG(<< "Fixed page " << pid << " (miss) to frame " << idx);
