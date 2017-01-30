@@ -796,7 +796,7 @@ bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock::set_head(u_int32_t clock, value head_value) {
+bool page_evictioner_cart::multi_clock<value>::set_head(u_int32_t clock, value head_value) {
     if (clock >= 0 && clock <= _clocknumber - 1 && _sizes[clock] >= 1) {
         _values[_hands[clock]] = head_value;
         return true;
