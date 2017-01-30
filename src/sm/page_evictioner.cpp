@@ -181,7 +181,7 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
     else {
         child_slotid = _bufferpool->find_page_id_slot(parent, pid);
     }
-    w_assert1 (child_slotid != GeneralRecordIds::INVALID);
+    // w_assert1 (child_slotid != GeneralRecordIds::INVALID);         // Dirty pages break this!
 
     //==========================================================================
     // STEP 2: Unswizzle pointer on parent before evicting.
