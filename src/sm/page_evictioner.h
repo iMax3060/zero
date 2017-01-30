@@ -173,6 +173,7 @@ private:
         virtual         ~multi_clock();
         
         bool            get_head(u_int32_t clock, value &head_value);
+        bool            set_head(u_int32_t clock, value head_value);
         bool            get_head_index(u_int32_t clock, u_int32_t &head_index);
         bool            move_head(u_int32_t clock);
         bool            add_tail(u_int32_t clock, u_int32_t index);

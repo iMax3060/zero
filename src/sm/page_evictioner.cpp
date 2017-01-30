@@ -599,7 +599,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                     _clocks->move_head(T_1);
                 }
             } else {
-                t_1_head = 0;
+                bool set = _clocks->set_head(T_1, false);
+                w_assert1(set);
+                
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                 std::cout << "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
@@ -631,7 +633,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                     _clocks->move_head(T_1);
                 }
             } else {
-                t_2_head = 0;
+                bool set = _clocks->set_head(T_2, false);
+                w_assert1(set);
+                
                 _clocks->move_head(T_2);
             }
         }
@@ -786,6 +790,16 @@ bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &
             w_assert1(head_value == _invalid_index);
             return false;
         }
+    } else {
+        return false;
+    }
+}
+
+template<class value>
+bool page_evictioner_cart::multi_clock::set_head(u_int32_t clock, value head_value) {
+    if (clock >= 0 && clock <= _clocknumber - 1 && _sizes[clock] >= 1) {
+        _values[_hands[clock]] = head_value;
+        return true;
     } else {
         return false;
     }
