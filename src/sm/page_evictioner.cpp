@@ -776,11 +776,11 @@ template<class value>
 bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &head_value) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_value = _values[_hands[clock]];
-        std::cout << "Requested head index of clock: " << _hands[clock] << std::endl;
-        w_assert1(_clock_membership[_hands[clock]] == clock);
         if (_sizes[clock] >= 1) {
+            w_assert1(_clock_membership[_hands[clock]] == clock);
             return true;
         } else {
+            w_assert1(head_value == _invalid_index);
             return false;
         }
     } else {
@@ -792,11 +792,11 @@ template<class value>
 bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u_int32_t &head_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_index = _hands[clock];
-        std::cout << "Requested head index of clock: " << _hands[clock] << std::endl;
-        w_assert1(_clock_membership[_hands[clock]] == clock);
         if (_sizes[clock] >= 1) {
+            w_assert1(_clock_membership[_hands[clock]] == clock);
             return true;
         } else {
+            w_assert1(head_index == _invalid_index);
             return false;
         }
     } else {
