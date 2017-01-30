@@ -515,11 +515,6 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
 {
     _clocks = new multi_clock<bool>(_bufferpool->_block_cnt, 2, 0);
     
-    for (int i = 1; i <= _bufferpool->_block_cnt - 1; i++) {
-        _clocks->add_tail(T_1, i);
-        std::cout << "Added to T_1: " << i << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
-    }
-    
     _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
     _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
     
@@ -825,9 +820,9 @@ bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32
 
 template<class value>
 bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
+    removed_index = _invalid_index;
     if (clock >= 0 && clock <= _clocknumber - 1) {
         u_int32_t _old_hand = _invalid_index;
-	    removed_index = _invalid_index;
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
             return false;

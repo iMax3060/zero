@@ -34,7 +34,7 @@ public:
      * @param b_idx
      * @param pid
      */
-    virtual void        miss_ref(bf_idx b_idx, PageID pid);
+    virtual void            miss_ref(bf_idx b_idx, PageID pid);
 
     /**
      * Evicts pages from the buffer pool until the preferred amount of frames
