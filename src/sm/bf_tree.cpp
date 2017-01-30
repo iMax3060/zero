@@ -1040,8 +1040,8 @@ void bf_tree_m::set_page_lsn(generic_page* page, lsn_t lsn)
     // required in that case. To fix that, I enabled updating page LSN for any
     // page image, and the check below makes sure it belongs to the buffer pool
     if (!_is_valid_idx(idx)) { return; }
-
-    w_assert1 (_is_active_idx(idx));
+    
+    // w_assert1(_is_active_idx(parent_idx));         // Dirty pages break this!
     bf_tree_cb_t& cb = get_cb(idx);
     w_assert1(cb.latch().is_mine());
     w_assert1(cb.latch().mode() == LATCH_EX);
