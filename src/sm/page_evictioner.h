@@ -34,7 +34,7 @@ public:
      * @param b_idx
      * @param pid
      */
-    virtual void        miss_ref(bf_idx b_idx, PageID pid);
+    virtual void            miss_ref(bf_idx b_idx, PageID pid);
 
     /**
      * Evicts pages from the buffer pool until the preferred amount of frames
@@ -101,8 +101,8 @@ public:
                         page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options);
     virtual             ~page_evictioner_cart();
     
-    void                ref(bf_idx idx);
-    void                miss_ref(bf_idx b_idx, PageID pid);
+    virtual void        ref(bf_idx idx);
+    virtual void        miss_ref(bf_idx b_idx, PageID pid);
 
 protected:
     bf_idx              pick_victim();
