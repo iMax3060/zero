@@ -652,7 +652,7 @@ page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::insert_back(key k) {
     if (!_direct_access_queue->empty()) {
-        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        auto old_size = _direct_access_queue->size();
         key old_back = _back;
         key_pair old_back_entry = (*_direct_access_queue)[old_back];
         w_assert1(old_back != _invalid_key);
@@ -691,7 +691,7 @@ bool page_evictioner_cart::hashtable_queue<key>::remove_front() {
         _back = _invalid_key;
         w_assert1(_direct_access_queue->size() == 0);
     } else {
-        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        auto old_size = _direct_access_queue->size();
         key old_front = _front;
         key_pair old_front_entry = (*_direct_access_queue)[_front];
         w_assert1(_back != _front);
@@ -710,7 +710,7 @@ bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
     if (!this->contains(k)) {
         return false;
     } else {
-        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        auto old_size = _direct_access_queue->size();
         key_pair old_key = (*_direct_access_queue)[k];
         if (old_key._next != _invalid_key) {
             (*_direct_access_queue)[old_key._next]._previous = old_key._previous;
