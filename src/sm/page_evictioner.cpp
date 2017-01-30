@@ -601,7 +601,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                 std::cout << "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+                bool new_t_1_head = false;
                 bf_idx new_t_1_head_index = 0;
+                _clocks->get_head(T_1, new_t_1_head);
                 _clocks->get_head_index(T_1, new_t_1_head_index);
                 std::cout << "Was head of T_1: " << t_1_head_index << ". Is head of T_1: " << new_t_1_head_index << "." << std::endl;
             }
