@@ -168,7 +168,8 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
     /* Look for emlsn slot on parent (must be found because parent pointer is
      * kept consistent at all times). */
     if (parent_cb._pin_cnt < 1) {
-        std::cout << "Parent Index: " << parent_idx << "; Parent PageID: " << parent_cb._pid << std::endl;
+        std::cout << "Parent Index: " << parent_idx << "; Parent PageID: " << parent_cb._pid << std::endl
+                  << "Dirty: " << (parent_cb.is_dirty() ? "True" : "False") << std::endl;
     }
     w_assert1(parent_cb._pin_cnt >= 1);         // _is_active_idx(parent_idx)?
     generic_page *parent = &_bufferpool->_buffer[parent_idx];
