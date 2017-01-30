@@ -540,9 +540,9 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() == _bufferpool->_block_cnt - 1) {
-            _b1->remove_tail();
+            _b1->remove_front();
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() == 2 * (_bufferpool->_block_cnt - 1)) {
-            _b2->remove_tail();
+            _b2->remove_front();
         }
         _clocks->add_tail(T_1, b_idx);
         std::cout << "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
@@ -583,7 +583,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_1, t_1_head_index);
-                    bool inserted = _b1->insert_head(evicted_pid);
+                    bool inserted = _b1->insert_back(evicted_pid);
                     std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -596,6 +596,9 @@ bf_idx page_evictioner_cart::pick_victim() {
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 std::cout << "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                 std::cout << "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
+                bf_idx new_t_1_head_index = 0;
+                _clocks->get_head_index(T_1, new_t_1_head_index);
+                std::cout << "Was head of T_1: " << t_1_head_index << ". Is head of T_1: " << new_t_1_head_index << "." << std::endl;
             }
         } else {
             bool t_2_head;
@@ -609,7 +612,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         
                 if (evicted_page) {
                     bool removed = _clocks->remove_head(T_2, t_2_head_index);
-                    bool inserted = _b2->insert_head(evicted_pid);
+                    bool inserted = _b2->insert_back(evicted_pid);
                     std::cout << "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                     w_assert1(removed && inserted);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -629,112 +632,112 @@ bf_idx page_evictioner_cart::pick_victim() {
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::contains(key k) {
-    return _list->count(k);
+    return _direct_access_queue->count(k);
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue<key>::hashtable_queue(key invalid_value) {
-    _list = new std::unordered_map<key, key_pair>();
-	_invalid_value = invalid_value;
-    _head = _invalid_value;
-    _tail = _invalid_value;
+page_evictioner_cart::hashtable_queue<key>::hashtable_queue(key invalid_key) {
+    _direct_access_queue = new std::unordered_map<key, key_pair>();
+	_invalid_key = invalid_key;
+    _back = _invalid_key;
+    _front = _invalid_key;
 }
 
 template<class key>
 page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
-    delete(_list);
-    _list = nullptr;
+    delete(_direct_access_queue);
+    _direct_access_queue = nullptr;
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::insert_head(key k) {
-    if (!_list->empty()) {
-        auto previous_size = _list->size();
-        key previous_head = _head;
-        key_pair previous_head_entry = (*_list)[previous_head];
-        w_assert1(previous_head != _invalid_value);
-        w_assert1(previous_head_entry.first == _invalid_value);
+bool page_evictioner_cart::hashtable_queue<key>::insert_back(key k) {
+    if (!_direct_access_queue->empty()) {
+        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        key old_back = _back;
+        key_pair old_back_entry = (*_direct_access_queue)[old_back];
+        w_assert1(old_back != _invalid_key);
+        w_assert1(old_back_entry._next == _invalid_key);
         
-        if (_list->count(k) > 0) {
+        if (this->contains(k)) {
             return false;
         }
-        (*_list)[k] = key_pair(_invalid_value, previous_head);
-        (*_list)[previous_head].first = k;
-        _head = k;
-        w_assert1(_list->size() == previous_size + 1);
+        (*_direct_access_queue)[k] = key_pair(old_back, _invalid_key);
+        (*_direct_access_queue)[old_back]._next = k;
+        _back = k;
+        w_assert1(_direct_access_queue->size() == old_size + 1);
     } else {
-        w_assert1(_head == _invalid_value);
-        w_assert1(_tail == _invalid_value);
+        w_assert1(_back == _invalid_key);
+        w_assert1(_front == _invalid_key);
     
-        (*_list)[k] = key_pair(_invalid_value, _invalid_value);
-        _head = k;
-        _tail = k;
-        w_assert1(_list->size() == 1);
+        (*_direct_access_queue)[k] = key_pair(_invalid_key, _invalid_key);
+        _back = k;
+        _front = k;
+        w_assert1(_direct_access_queue->size() == 1);
     }
     return true;
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::remove_tail() {
-    if (_list->empty()) {
+bool page_evictioner_cart::hashtable_queue<key>::remove_front() {
+    if (_direct_access_queue->empty()) {
         return false;
-    } else if (_list->size() == 1) {
-        w_assert1(_head == _tail);
-        w_assert1((*_list)[_head].first == _invalid_value);
-        w_assert1((*_list)[_head].second == _invalid_value);
+    } else if (_direct_access_queue->size() == 1) {
+        w_assert1(_back == _front);
+        w_assert1((*_direct_access_queue)[_front]._next == _invalid_key);
+        w_assert1((*_direct_access_queue)[_front]._previous == _invalid_key);
         
-        _list->erase(_head);
-        _head = _invalid_value;
-        _tail = _invalid_value;
-        w_assert1(_list->size() == 0);
+        _direct_access_queue->erase(_front);
+        _front = _invalid_key;
+        _back = _invalid_key;
+        w_assert1(_direct_access_queue->size() == 0);
     } else {
-        auto previous_size = _list->size();
-        key previous_tail = _tail;
-        key_pair previous_tail_entry = (*_list)[_tail];
-        w_assert1(_head != _tail);
-        w_assert1(_head != _invalid_value);
+        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        key old_front = _front;
+        key_pair old_front_entry = (*_direct_access_queue)[_front];
+        w_assert1(_back != _front);
+        w_assert1(_back != _invalid_key);
         
-        _tail = previous_tail_entry.first;
-        (*_list)[previous_tail_entry.first].second = _invalid_value;
-        _list->erase(previous_tail);
-        w_assert1(_list->size() == previous_size - 1);
+        _front = old_front_entry._next;
+        (*_direct_access_queue)[old_front_entry._next]._previous = _invalid_key;
+        _direct_access_queue->erase(old_front);
+        w_assert1(_direct_access_queue->size() == old_size - 1);
     }
     return false;
 }
 
 template<class key>
 bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
-    if (_list->count(k) == 0) {
+    if (!this->contains(k)) {
         return false;
     } else {
-        auto previous_size = _list->size();
-        key_pair previous_value = (*_list)[k];
-        if (previous_value.first != _invalid_value) {
-            (*_list)[previous_value.first].second = previous_value.second;
+        W_IFDEBUG1(auto old_size = _direct_access_queue->size());
+        key_pair old_key = (*_direct_access_queue)[k];
+        if (old_key._next != _invalid_key) {
+            (*_direct_access_queue)[old_key._next]._previous = old_key._previous;
         } else {
-            _head = previous_value.second;
+            _back = old_key._previous;
         }
-        if (previous_value.second != _invalid_value) {
-            (*_list)[previous_value.second].first = previous_value.first;
+        if (old_key._previous != _invalid_key) {
+            (*_direct_access_queue)[old_key._previous]._next = old_key._next;
         } else {
-            _tail = previous_value.first;
+            _front = old_key._next;
         }
-        _list->erase(k);
-        w_assert1(_list->size() == previous_size - 1);
+        _direct_access_queue->erase(k);
+        w_assert1(_direct_access_queue->size() == old_size - 1);
     }
     return true;
 }
 
 template<class key>
 u_int32_t page_evictioner_cart::hashtable_queue<key>::length() {
-    return _list->size();
+    return _direct_access_queue->size();
 }
 
 template<class value>
 page_evictioner_cart::multi_clock<value>::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
     _clocksize = clocksize;
     _values = new value[_clocksize]();
-    _clocks = new pair<u_int32_t, u_int32_t>[_clocksize]();
+    _clocks = new index_pair[_clocksize]();
     _invalid_index = invalid_index;
     
     _clocknumber = clocknumber;
@@ -787,7 +790,7 @@ bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u
 template<class value>
 bool page_evictioner_cart::multi_clock<value>::move_head(u_int32_t clock) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
-        _hands[clock] = _clocks[_hands[clock]].second;
+        _hands[clock] = _clocks[_hands[clock]]._after;
         w_assert1(_clock_membership[_hands[clock]] == clock);
         return true;
     } else {
@@ -802,13 +805,13 @@ bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32
                    && _clock_membership[index] == _invalid_clock_index) {
         if (_sizes[clock] == 0) {
             _hands[clock] = index;
-            _clocks[index].first = index;
-            _clocks[index].second = index;
+            _clocks[index]._before = index;
+            _clocks[index]._after = index;
         } else {
-            _clocks[index].first = _clocks[_hands[clock]].first;
-            _clocks[index].second = _hands[clock];
-            _clocks[_clocks[_hands[clock]].first].second = index;
-            _clocks[_hands[clock]].first = index;
+            _clocks[index]._before = _clocks[_hands[clock]]._before;
+            _clocks[index]._after = _hands[clock];
+            _clocks[_clocks[_hands[clock]]._before]._after = index;
+            _clocks[_hands[clock]]._before = index;
         }
         _sizes[clock]++;
         _clock_membership[index] = clock;
@@ -822,30 +825,30 @@ template<class value>
 bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
     removed_index = _invalid_index;
     if (clock >= 0 && clock <= _clocknumber - 1) {
-        u_int32_t _old_hand = _invalid_index;
+        u_int32_t old_hand = _invalid_index;
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
             return false;
         } else if (_sizes[clock] == 1) {
             w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
-            w_assert1(_clocks[_hands[clock]].first == _hands[clock]);
-            w_assert1(_clocks[_hands[clock]].second == _hands[clock]);
+            w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
+            w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
     
-            _old_hand, removed_index = _hands[clock];
-            _clocks[_old_hand].first = _invalid_index;
-            _clocks[_old_hand].second = _invalid_index;
+            old_hand, removed_index = _hands[clock];
+            _clocks[old_hand]._before = _invalid_index;
+            _clocks[old_hand]._after = _invalid_index;
             _hands[clock] = _invalid_index;
-            _clock_membership[_old_hand] = _invalid_clock_index;
+            _clock_membership[old_hand] = _invalid_clock_index;
             _sizes[clock]--;
             return true;
         } else {
-            _old_hand, removed_index = _hands[clock];
-            _clocks[_clocks[_old_hand].first].second = _clocks[_old_hand].second;
-            _clocks[_clocks[_old_hand].second].first = _clocks[_old_hand].first;
-            _hands[clock] = _clocks[_old_hand].second;
-            _clocks[_old_hand].first = _invalid_index;
-            _clocks[_old_hand].second = _invalid_index;
-            _clock_membership[_old_hand] = _invalid_clock_index;
+            old_hand, removed_index = _hands[clock];
+            _clocks[_clocks[old_hand]._before]._after = _clocks[old_hand]._after;
+            _clocks[_clocks[old_hand]._after]._before = _clocks[old_hand]._before;
+            _hands[clock] = _clocks[old_hand]._after;
+            _clocks[old_hand]._before = _invalid_index;
+            _clocks[old_hand]._after = _invalid_index;
+            _clock_membership[old_hand] = _invalid_clock_index;
             _sizes[clock]--;
             return true;
         }

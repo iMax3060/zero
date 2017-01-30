@@ -112,21 +112,31 @@ private:
     template<class key>
     class hashtable_queue {
     private:
-        typedef pair<key, key> key_pair;
+        class key_pair {
+        public:
+            key_pair(key previous, key next) {
+                this->_previous = previous;
+                this->_next = next;
+            };
+            virtual ~key_pair() {};
+    
+            key     _previous;          // closer to the front of the queue
+            key     _next;              // closer to the back of the queue
+        };
         
-        std::unordered_map<key, key_pair>*      _list;
-        key                                     _head;          // the head of the list (LRU-element); insert here
-        key                                     _tail;          // the tail of the list (MRU-element); remove here
+        std::unordered_map<key, key_pair>*      _direct_access_queue;
+        key                                     _back;          // the back of the list (MRU-element); insert here
+        key                                     _front;         // the front of the list (LRU-element); remove here
 	    
-	    key                                     _invalid_value;
+	    key                                     _invalid_key;
 
     public:
-                        hashtable_queue(key invalid_value);
+                        hashtable_queue(key invalid_key);
         virtual         ~hashtable_queue();
 
         bool            contains(key k);
-        bool            insert_head(key k);
-        bool            remove_tail();
+        bool            insert_back(key k);
+        bool            remove_front();
         bool            remove(key k);
         u_int32_t       length();
     };
@@ -134,16 +144,29 @@ private:
     template<class value>
     class multi_clock {
     private:
-        u_int32_t                       _clocksize;
-        value*                          _values;
-        pair<u_int32_t, u_int32_t>*     _clocks;        // .first == previous, .second == next
-        u_int32_t                       _invalid_index;
-        u_int32_t*                      _clock_membership;
+        class index_pair {
+        public:
+            index_pair() {};
+            index_pair(u_int32_t before, u_int32_t after) {
+                this->_before = before;
+                this->_after = after;
+            };
+            virtual ~index_pair() {};
+    
+            u_int32_t     _before;              // visited before
+            u_int32_t     _after;               // visited after
+        };
+    
+        u_int32_t                       _clocksize;             // number of elements in the multi clock
+        value*                          _values;                // stored values of the elements
+        index_pair*                     _clocks;                // .first == before, .second == after
+        u_int32_t                       _invalid_index;         // index value with NULL semantics
+        u_int32_t*                      _clock_membership;      // to which clock does an element belong?
         
-        u_int32_t                       _clocknumber;
-        u_int32_t*                      _hands;         // always points to the clocks head
-        u_int32_t*                      _sizes;
-        u_int32_t                       _invalid_clock_index;
+        u_int32_t                       _clocknumber;           // number of clocks in the multi clock
+        u_int32_t*                      _hands;                 // always points to the clocks head
+        u_int32_t*                      _sizes;                 // number of elements within a clock
+        u_int32_t                       _invalid_clock_index;   // index of a clock value with NULL semantics
     public:
                         multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index);
         virtual         ~multi_clock();
