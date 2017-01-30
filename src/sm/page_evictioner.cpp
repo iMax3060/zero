@@ -825,7 +825,7 @@ template<class value>
 bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
     removed_index = _invalid_index;
     if (clock >= 0 && clock <= _clocknumber - 1) {
-        u_int32_t old_hand = _invalid_index;
+        removed_index = _hands[clock];
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
             return false;
@@ -834,22 +834,22 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
             w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
             w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
     
-            old_hand, removed_index = _hands[clock];
-            _clocks[old_hand]._before = _invalid_index;
-            _clocks[old_hand]._after = _invalid_index;
+            _clocks[removed_index]._before = _invalid_index;
+            _clocks[removed_index]._after = _invalid_index;
             _hands[clock] = _invalid_index;
-            _clock_membership[old_hand] = _invalid_clock_index;
+            _clock_membership[removed_index] = _invalid_clock_index;
             _sizes[clock]--;
             return true;
         } else {
-            old_hand, removed_index = _hands[clock];
-            _clocks[_clocks[old_hand]._before]._after = _clocks[old_hand]._after;
-            _clocks[_clocks[old_hand]._after]._before = _clocks[old_hand]._before;
-            _hands[clock] = _clocks[old_hand]._after;
-            _clocks[old_hand]._before = _invalid_index;
-            _clocks[old_hand]._after = _invalid_index;
-            _clock_membership[old_hand] = _invalid_clock_index;
+            _clocks[_clocks[removed_index]._before]._after = _clocks[removed_index]._after;
+            _clocks[_clocks[removed_index]._after]._before = _clocks[removed_index]._before;
+            _hands[clock] = _clocks[removed_index]._after;
+            _clocks[removed_index]._before = _invalid_index;
+            _clocks[removed_index]._after = _invalid_index;
+            _clock_membership[removed_index] = _invalid_clock_index;
             _sizes[clock]--;
+            
+            w_assert1(_hands[clock] != _invalid_index);
             return true;
         }
     } else {
