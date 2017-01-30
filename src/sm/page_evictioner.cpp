@@ -544,19 +544,24 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() == 2 * (_bufferpool->_block_cnt - 1)) {
             _b2->remove_front();
         }
-        _clocks->add_tail(T_1, b_idx);
+        bool added = _clocks->add_tail(T_1, b_idx);
+        w_assert1(added);
         std::cout << "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
-        _b1->remove(pid);
-        _clocks->add_tail(T_2, b_idx);
+        bool removed = _b1->remove(pid);
+        w_assert1(removed);
+        bool added = _clocks->add_tail(T_2, b_idx);
+        w_assert1(added);
         std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     } else {
         _p = std::max(_p + std::max(u_int32_t(1), _b1->length() / _b2->length()), u_int32_t(0));
-        _b2->remove(pid);
-        _clocks->add_tail(T_2, b_idx);
+        bool removed = _b2->remove(pid);
+        w_assert1(removed);
+        bool added = _clocks->add_tail(T_2, b_idx);
+        w_assert1(added);
         std::cout << "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         _clocks->get(b_idx) = 0;
     }
@@ -770,7 +775,11 @@ bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_value = _values[_hands[clock]];
         w_assert1(_clock_membership[_hands[clock]] == clock);
-        return true;
+        if (_sizes[clock] >= 1) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
@@ -781,7 +790,11 @@ bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_index = _hands[clock];
         w_assert1(_clock_membership[_hands[clock]] == clock);
-        return true;
+        if (_sizes[clock] >= 1) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
