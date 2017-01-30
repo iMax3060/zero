@@ -375,10 +375,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	
 	        get_evictioner()->miss_ref(idx, pid);
 
+            w_assert1(_is_active_idx(idx));
+
             // STEP 6) Fix successful -- pin page and downgrade latch
             cb.pin();
-    
-            w_assert1(_is_active_idx(idx));
             w_assert1(cb.latch().is_mine());
             w_assert1(cb._pin_cnt > 0);
             DBG(<< "Fixed page " << pid << " (miss) to frame " << idx);
@@ -409,7 +409,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(_is_active_idx(idx));
             cb.pin();
             cb.inc_ref_count();
-	        get_evictioner()->ref(idx);
+            if(_evictioner) _evictioner->ref(idx);
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
             }
@@ -1103,7 +1103,7 @@ bool bf_tree_m::_is_valid_idx(bf_idx idx) const {
 
 
 bool bf_tree_m::_is_active_idx (bf_idx idx) const {
-    return _is_valid_idx(idx) && get_cb(idx)._pin_cnt >= 1;
+    return _is_valid_idx(idx) && get_cb(idx)._used;
 }
 
 

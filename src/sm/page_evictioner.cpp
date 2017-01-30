@@ -167,7 +167,7 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
 
     /* Look for emlsn slot on parent (must be found because parent pointer is
      * kept consistent at all times). */
-    w_assert1(_bufferpool->_is_active_idx(parent_idx));
+    w_assert1(parent_cb._pin_cnt >= 1);         // _is_active_idx(parent_idx)?
     generic_page *parent = &_bufferpool->_buffer[parent_idx];
     btree_page_h parent_h;
     parent_h.fix_nonbufferpool_page(parent);
