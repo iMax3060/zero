@@ -573,9 +573,11 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
 
 bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
+    int serial = std::rand();
     while (!evicted_page) {
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         DBG(<< "p = " << _p);
+        std::cout << "Iteration in call: " << serial << std::endl;
         if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
             bool t_1_head;
             bf_idx t_1_head_index = 0;
@@ -604,10 +606,6 @@ bf_idx page_evictioner_cart::pick_victim() {
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                bool new_t_1_head = false;
-                bf_idx new_t_1_head_index = 0;
-                _clocks->get_head(T_1, new_t_1_head);
-                _clocks->get_head_index(T_1, new_t_1_head_index);
             }
         } else {
             bool t_2_head;
