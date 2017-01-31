@@ -602,7 +602,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
                     _clocks->move_head(T_1);
-                    _p = _p + 1;
+                    _p = _p - 1;
                     std::cout << "p = " << _p << std::endl;
                 }
             } else {
@@ -639,7 +639,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     std::cout << "Couldn't evict page " << evicted_pid << " from T_2 " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
-                    _p = _p - 1;
+                    _p = _p + 1;
                     std::cout << "p = " << _p << std::endl;
                 }
             } else {
