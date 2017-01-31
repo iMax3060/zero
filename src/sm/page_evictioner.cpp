@@ -509,7 +509,7 @@ void page_evictioner_clockpro::run_hand_test() {
 }
 */
 
-page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options)
+page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options &options)
         : page_evictioner_base(bufferpool, options)
 {
     _clocks = new multi_clock<bool>(_bufferpool->_block_cnt, 2, 0);
@@ -522,7 +522,7 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
     DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
 
-page_evictioner_cart::~page_evictioner_cart() {
+page_evictioner_car::~page_evictioner_car() {
     delete(_clocks);
     
     delete(_b1);
@@ -531,22 +531,23 @@ page_evictioner_cart::~page_evictioner_cart() {
     DO_PTHREAD(pthread_mutex_destroy(&_lock));
 }
 
-void page_evictioner_cart::ref(bf_idx idx) {
-    _clocks->get(idx) = true;
+void page_evictioner_car::ref(bf_idx idx) {
+    _clocks->set(idx, true);
 }
 
-void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
+void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
+    u_int32_t before_p = _p;
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
-        if (_clocks->size_of(T_1) + _b1->length() == _bufferpool->_block_cnt - 1) {
+        if (_clocks->size_of(T_1) + _b1->length() >= _bufferpool->_block_cnt - 1) {
             _b1->remove_front();
-        } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() == 2 * (_bufferpool->_block_cnt - 1)) {
+        } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() >= 2 * (_bufferpool->_block_cnt - 1)) {
             _b2->remove_front();
         }
         bool added = _clocks->add_tail(T_1, b_idx);
         w_assert1(added);
         DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-        _clocks->get(b_idx) = 0;
+        _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
         bool removed = _b1->remove(pid);
@@ -564,6 +565,9 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->get(b_idx) = 0;
     }
+    if (before_p != _p) {
+        std::cout << "p = " << _p << std::endl;
+    }
     w_assert1(_clocks->size_of(T_1) + _clocks->size_of(T_2) <= _bufferpool->_block_cnt - 1);
     w_assert1(_clocks->size_of(T_1) + _b1->length() <= _bufferpool->_block_cnt - 1);
     w_assert1(_clocks->size_of(T_2) + _b2->length() <= 2 * (_bufferpool->_block_cnt - 1));
@@ -571,7 +575,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
-bf_idx page_evictioner_cart::pick_victim() {
+bf_idx page_evictioner_car::pick_victim() {
     bool evicted_page = false;
     while (!evicted_page) {
         DO_PTHREAD(pthread_mutex_lock(&_lock));
@@ -582,7 +586,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             _clocks->get_head(T_1, t_1_head);
             _clocks->get_head_index(T_1, t_1_head_index);
             w_assert1(t_1_head_index != 0);
-            std::cout << "Head of T_1: " << t_1_head_index << "; Size of T_1: " << _clocks->size_of(T_1) << "." << std::endl;
+//            std::cout << "Head of T_1: " << t_1_head_index << "; Size of T_1: " << _clocks->size_of(T_1) << "." << std::endl;
             
             if (!t_1_head) {
                 PageID evicted_pid;
@@ -596,7 +600,10 @@ bf_idx page_evictioner_cart::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
+                    std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
                     _clocks->move_head(T_1);
+                    _p = _p + 1;
+                    std::cout << "p = " << _p << std::endl;
                 }
             } else {
                 bool set = _clocks->set_head(T_1, false);
@@ -612,8 +619,12 @@ bf_idx page_evictioner_cart::pick_victim() {
             _clocks->get_head(T_2, t_2_head);
             _clocks->get_head_index(T_2, t_2_head_index);
             w_assert1(t_2_head_index != 0);
-            std::cout << "Head of T_2: " << t_2_head_index << "; Size of T_2: " << _clocks->size_of(T_2) << "." << std::endl;
+//            std::cout << "Head of T_2: " << t_2_head_index << "; Size of T_2: " << _clocks->size_of(T_2) << "." << std::endl;
     
+            bf_idx t_1_head_index = 0;
+            _clocks->get_head_index(T_1, t_1_head_index);
+//            std::cout << "Head of T_1: " << t_1_head_index << "; Size of T_1: " << _clocks->size_of(T_1) << "." << std::endl;
+//            std::cout << "p = " << _p << std::endl;
             if (!t_2_head) {
                 PageID evicted_pid;
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
@@ -626,7 +637,10 @@ bf_idx page_evictioner_cart::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
+                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
+                    _p = _p - 1;
+                    std::cout << "p = " << _p << std::endl;
                 }
             } else {
                 bool set = _clocks->set_head(T_2, false);
@@ -641,12 +655,12 @@ bf_idx page_evictioner_cart::pick_victim() {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::contains(key k) {
+bool page_evictioner_car::hashtable_queue<key>::contains(key k) {
     return _direct_access_queue->count(k);
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue<key>::hashtable_queue(key invalid_key) {
+page_evictioner_car::hashtable_queue<key>::hashtable_queue(key invalid_key) {
     _direct_access_queue = new std::unordered_map<key, key_pair>();
 	_invalid_key = invalid_key;
     _back = _invalid_key;
@@ -654,13 +668,13 @@ page_evictioner_cart::hashtable_queue<key>::hashtable_queue(key invalid_key) {
 }
 
 template<class key>
-page_evictioner_cart::hashtable_queue<key>::~hashtable_queue() {
+page_evictioner_car::hashtable_queue<key>::~hashtable_queue() {
     delete(_direct_access_queue);
     _direct_access_queue = nullptr;
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::insert_back(key k) {
+bool page_evictioner_car::hashtable_queue<key>::insert_back(key k) {
     if (!_direct_access_queue->empty()) {
         auto old_size = _direct_access_queue->size();
         key old_back = _back;
@@ -688,7 +702,7 @@ bool page_evictioner_cart::hashtable_queue<key>::insert_back(key k) {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::remove_front() {
+bool page_evictioner_car::hashtable_queue<key>::remove_front() {
     if (_direct_access_queue->empty()) {
         return false;
     } else if (_direct_access_queue->size() == 1) {
@@ -716,7 +730,7 @@ bool page_evictioner_cart::hashtable_queue<key>::remove_front() {
 }
 
 template<class key>
-bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
+bool page_evictioner_car::hashtable_queue<key>::remove(key k) {
     if (!this->contains(k)) {
         return false;
     } else {
@@ -739,12 +753,12 @@ bool page_evictioner_cart::hashtable_queue<key>::remove(key k) {
 }
 
 template<class key>
-u_int32_t page_evictioner_cart::hashtable_queue<key>::length() {
+u_int32_t page_evictioner_car::hashtable_queue<key>::length() {
     return _direct_access_queue->size();
 }
 
 template<class value>
-page_evictioner_cart::multi_clock<value>::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
+page_evictioner_car::multi_clock<value>::multi_clock(u_int32_t clocksize, u_int32_t clocknumber, u_int32_t invalid_index) {
     _clocksize = clocksize;
     _values = new value[_clocksize]();
     _clocks = new index_pair[_clocksize]();
@@ -764,7 +778,7 @@ page_evictioner_cart::multi_clock<value>::multi_clock(u_int32_t clocksize, u_int
 }
 
 template<class value>
-page_evictioner_cart::multi_clock<value>::~multi_clock() {
+page_evictioner_car::multi_clock<value>::~multi_clock() {
     _clocksize = 0;
     delete[](_values);
     delete[](_clocks);
@@ -776,7 +790,7 @@ page_evictioner_cart::multi_clock<value>::~multi_clock() {
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &head_value) {
+bool page_evictioner_car::multi_clock<value>::get_head(u_int32_t clock, value &head_value) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_value = _values[_hands[clock]];
         if (_sizes[clock] >= 1) {
@@ -792,9 +806,9 @@ bool page_evictioner_cart::multi_clock<value>::get_head(u_int32_t clock, value &
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::set_head(u_int32_t clock, value head_value) {
+bool page_evictioner_car::multi_clock<value>::set_head(u_int32_t clock, value new_value) {
     if (clock >= 0 && clock <= _clocknumber - 1 && _sizes[clock] >= 1) {
-        _values[_hands[clock]] = head_value;
+        _values[_hands[clock]] = new_value;
         return true;
     } else {
         return false;
@@ -802,7 +816,7 @@ bool page_evictioner_cart::multi_clock<value>::set_head(u_int32_t clock, value h
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u_int32_t &head_index) {
+bool page_evictioner_car::multi_clock<value>::get_head_index(u_int32_t clock, u_int32_t &head_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         head_index = _hands[clock];
         if (_sizes[clock] >= 1) {
@@ -818,7 +832,7 @@ bool page_evictioner_cart::multi_clock<value>::get_head_index(u_int32_t clock, u
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::move_head(u_int32_t clock) {
+bool page_evictioner_car::multi_clock<value>::move_head(u_int32_t clock) {
     if (clock >= 0 && clock <= _clocknumber - 1 && _sizes[clock] >= 1) {
         _hands[clock] = _clocks[_hands[clock]]._after;
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -829,7 +843,7 @@ bool page_evictioner_cart::multi_clock<value>::move_head(u_int32_t clock) {
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32_t index) {
+bool page_evictioner_car::multi_clock<value>::add_tail(u_int32_t clock, u_int32_t index) {
     if (index >= 0 && index <= _clocksize - 1 && index != _invalid_index
                    && clock >= 0 && clock <= _clocknumber - 1
                    && _clock_membership[index] == _invalid_clock_index) {
@@ -852,7 +866,7 @@ bool page_evictioner_cart::multi_clock<value>::add_tail(u_int32_t clock, u_int32
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
+bool page_evictioner_car::multi_clock<value>::remove_head(u_int32_t clock, u_int32_t &removed_index) {
     removed_index = _invalid_index;
     if (clock >= 0 && clock <= _clocknumber - 1) {
         removed_index = _hands[clock];
@@ -888,7 +902,7 @@ bool page_evictioner_cart::multi_clock<value>::remove_head(u_int32_t clock, u_in
 }
 
 template<class value>
-bool page_evictioner_cart::multi_clock<value>::switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index) {
+bool page_evictioner_car::multi_clock<value>::switch_head_to_tail(u_int32_t source, u_int32_t destination, u_int32_t &moved_index) {
     moved_index = _invalid_index;
     if (_sizes[source] > 0
      && source >= 0 && source <= _clocknumber - 1
@@ -906,6 +920,6 @@ bool page_evictioner_cart::multi_clock<value>::switch_head_to_tail(u_int32_t sou
 }
 
 template<class value>
-u_int32_t page_evictioner_cart::multi_clock<value>::size_of(u_int32_t clock) {
+u_int32_t page_evictioner_car::multi_clock<value>::size_of(u_int32_t clock) {
     return _sizes[clock];
 }

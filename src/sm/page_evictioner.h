@@ -96,10 +96,10 @@ private:
     bf_idx              _current_frame;
 };
 
-class page_evictioner_cart : public page_evictioner_base {
+class page_evictioner_car : public page_evictioner_base {
 public:
-                        page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options);
-    virtual             ~page_evictioner_cart();
+                        page_evictioner_car(bf_tree_m *bufferpool, const sm_options &options);
+    virtual             ~page_evictioner_car();
     
     virtual void        ref(bf_idx idx);
     virtual void        miss_ref(bf_idx b_idx, PageID pid);
@@ -114,12 +114,12 @@ private:
     private:
         class key_pair {
         public:
-            key_pair() {};
+            key_pair() {}
             key_pair(key previous, key next) {
                 this->_previous = previous;
                 this->_next = next;
-            };
-            virtual ~key_pair() {};
+            }
+            virtual ~key_pair() {}
     
             key     _previous;          // closer to the front of the queue
             key     _next;              // closer to the back of the queue
@@ -173,7 +173,7 @@ private:
         virtual         ~multi_clock();
         
         bool            get_head(u_int32_t clock, value &head_value);
-        bool            set_head(u_int32_t clock, value head_value);
+        bool            set_head(u_int32_t clock, value new_value);
         bool            get_head_index(u_int32_t clock, u_int32_t &head_index);
         bool            move_head(u_int32_t clock);
         bool            add_tail(u_int32_t clock, u_int32_t index);
@@ -183,7 +183,10 @@ private:
         
         inline value&   get(u_int32_t index) {
             return _values[index];
-        };
+        }
+        inline void     set(u_int32_t index, value new_value) {
+            _values[index] = new_value;
+        }
     };
 
 private:
