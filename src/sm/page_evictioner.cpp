@@ -219,11 +219,13 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
 }
 
 bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
-    evicted_page = 0;
     bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
+    
+    evicted_page = cb._pid;
     
     rc_t latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
     if (latch_rc.is_error()) {
+        std::cout << "Couldn't latch page " << evicted_page << "." << std::endl;
         return false;
     }
     
@@ -242,6 +244,7 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     {
         ref(idx);
         cb.latch().latch_release();
+        std::cout << "Couldn't evict page " << evicted_page << " because of some reason on lines 242, 243." << std::endl;
         return false;
     }
     
@@ -249,10 +252,9 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     if(_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
         ref(idx);
         cb.latch().latch_release();
+        std::cout << "Couldn't evict page " << evicted_page << " because it has swizzled child pages." << std::endl;
         return false;
     }
-    
-    evicted_page = cb._pid;
     
     return true;
 }
@@ -602,7 +604,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
                     _clocks->move_head(T_1);
-                    _p = _p - 1;
+                    _p = std::max(_p - 1, 1);
                     std::cout << "p = " << _p << std::endl;
                 }
             } else {
@@ -639,7 +641,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     std::cout << "Couldn't evict page " << evicted_pid << " from T_2 " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
-                    _p = _p + 1;
+                    _p = std::min(_p + 1, _bufferpool->_block_cnt - 1);
                     std::cout << "p = " << _p << std::endl;
                 }
             } else {
