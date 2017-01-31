@@ -302,6 +302,7 @@ bf_idx page_evictioner_gclock::pick_victim()
         if (latch_rc.is_error())
         {
             idx++;
+            std::cout << "Couldn't latch page " << cb._pid << "." << std::endl;
             continue;
         }
 
@@ -321,6 +322,7 @@ bf_idx page_evictioner_gclock::pick_victim()
             // LL: Should we also decrement the clock count in this case?
             cb.latch().latch_release();
             idx++;
+            std::cout << "Couldn't evict page " << cb._pid << " because of some reason on lines 242, 243." << std::endl;
             continue;
         }
 
@@ -330,6 +332,7 @@ bf_idx page_evictioner_gclock::pick_victim()
             // LL: Should we also decrement the clock count in this case?
             cb.latch().latch_release();
             idx++;
+            std::cout << "Couldn't evict page " << cb._pid << " because it has swizzled child pages." << std::endl;
             continue;
         }
 
@@ -539,7 +542,7 @@ void page_evictioner_car::ref(bf_idx idx) {
 
 void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
-    u_int32_t before_p = _p;
+//    u_int32_t before_p = _p;
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() >= _bufferpool->_block_cnt - 1) {
             _b1->remove_front();
@@ -567,9 +570,9 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->get(b_idx) = 0;
     }
-    if (before_p != _p) {
-        std::cout << "p = " << _p << std::endl;
-    }
+//    if (before_p != _p) {
+//        std::cout << "p = " << _p << std::endl;
+//    }
     w_assert1(_clocks->size_of(T_1) + _clocks->size_of(T_2) <= _bufferpool->_block_cnt - 1);
     w_assert1(_clocks->size_of(T_1) + _b1->length() <= _bufferpool->_block_cnt - 1);
     w_assert1(_clocks->size_of(T_2) + _b2->length() <= 2 * (_bufferpool->_block_cnt - 1));
@@ -602,10 +605,10 @@ bf_idx page_evictioner_car::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
-                    std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
+//                    std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
                     _clocks->move_head(T_1);
                     _p = std::min(_p + 1, _bufferpool->_block_cnt - 1);
-                    std::cout << "p = " << _p << std::endl;
+//                    std::cout << "p = " << _p << std::endl;
                 }
             } else {
                 bool set = _clocks->set_head(T_1, false);
@@ -639,10 +642,10 @@ bf_idx page_evictioner_car::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
-                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 at index " << t_2_head_index << "!" << std::endl;
+//                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 at index " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
                     _p = std::max(_p - 1, u_int32_t(1));
-                    std::cout << "p = " << _p << ";  |T_1| = " << _clocks->size_of(T_1) << ";  |T_2| = " << _clocks->size_of(T_2) << std::endl;
+//                    std::cout << "p = " << _p << ";  |T_1| = " << _clocks->size_of(T_1) << ";  |T_2| = " << _clocks->size_of(T_2) << std::endl;
                 }
             } else {
                 bool set = _clocks->set_head(T_2, false);
