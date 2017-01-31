@@ -573,17 +573,16 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
 
 bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
-    int serial = std::rand();
     while (!evicted_page) {
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         DBG(<< "p = " << _p);
-        std::cout << "Iteration in call: " << serial << std::endl;
         if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
-            bool t_1_head;
+            bool t_1_head = false;
             bf_idx t_1_head_index = 0;
             _clocks->get_head(T_1, t_1_head);
             _clocks->get_head_index(T_1, t_1_head_index);
             w_assert1(t_1_head_index != 0);
+            std::cout << "Head of T_1: " << t_1_head_index << "; Size of T_1: " << _clocks->size_of(T_1) << "." << std::endl;
             
             if (!t_1_head) {
                 PageID evicted_pid;
@@ -608,11 +607,12 @@ bf_idx page_evictioner_cart::pick_victim() {
                 DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
             }
         } else {
-            bool t_2_head;
+            bool t_2_head = false;
             bf_idx t_2_head_index = 0;
             _clocks->get_head(T_2, t_2_head);
             _clocks->get_head_index(T_2, t_2_head_index);
             w_assert1(t_2_head_index != 0);
+            std::cout << "Head of T_2: " << t_2_head_index << "; Size of T_2: " << _clocks->size_of(T_2) << "." << std::endl;
     
             if (!t_2_head) {
                 PageID evicted_pid;
