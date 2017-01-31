@@ -576,10 +576,15 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
 
 bf_idx page_evictioner_car::pick_victim() {
     bool evicted_page = false;
+    u_int32_t blocked_t_1 = 0;
+    u_int32_t blocked_t_2 = 0;
     while (!evicted_page) {
+        if (blocked_t_1 + blocked_t_2 >= _bufferpool->_block_cnt / 16) {
+            _bufferpool->get_cleaner()->wakeup(true);
+        }
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         DBG(<< "p = " << _p);
-        if (_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p)) {
+        if ((_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
             bf_idx t_1_head_index = 0;
             _clocks->get_head(T_1, t_1_head);
@@ -601,7 +606,8 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
 //                    std::cout << "Couldn't evict page " << evicted_pid << " from T_1 " << t_1_head_index << "!" << std::endl;
                     _clocks->move_head(T_1);
-                    _p = std::min(_p + 1, _bufferpool->_block_cnt - 1);
+                    blocked_t_1++;
+//                    _p = std::min(_p + 1, _bufferpool->_block_cnt - 1);
 //                    std::cout << "p = " << _p << std::endl;
                 }
             } else {
@@ -612,7 +618,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
             }
-        } else {
+        } else if (blocked_t_2 < _clocks->size_of(T_2)) {
             bool t_2_head = false;
             bf_idx t_2_head_index = 0;
             _clocks->get_head(T_2, t_2_head);
@@ -638,7 +644,8 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
 //                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 at index " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
-                    _p = std::max(_p - 1, u_int32_t(1));
+                    blocked_t_2++;
+//                    _p = std::max(_p - 1, u_int32_t(1));
 //                    std::cout << "p = " << _p << ";  |T_1| = " << _clocks->size_of(T_1) << ";  |T_2| = " << _clocks->size_of(T_2) << std::endl;
                 }
             } else {
@@ -647,6 +654,8 @@ bf_idx page_evictioner_car::pick_victim() {
                 
                 _clocks->move_head(T_2);
             }
+        } else {
+            return 0;
         }
         DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
