@@ -639,10 +639,10 @@ bf_idx page_evictioner_car::pick_victim() {
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
-                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 " << t_2_head_index << "!" << std::endl;
+                    std::cout << "Couldn't evict page " << evicted_pid << " from T_2 at index " << t_2_head_index << "!" << std::endl;
                     _clocks->move_head(T_2);
                     _p = std::min(_p + 1, _bufferpool->_block_cnt - 1);
-                    std::cout << "p = " << _p << std::endl;
+                    std::cout << "p = " << _p << ";  |T_1| = " << _clocks->size_of(T_1) << ";  |T_2| = " << _clocks->size_of(T_2) << std::endl;
                 }
             } else {
                 bool set = _clocks->set_head(T_2, false);
