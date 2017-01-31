@@ -225,7 +225,6 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     
     rc_t latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
     if (latch_rc.is_error()) {
-        std::cout << "Couldn't latch page " << evicted_page << "." << std::endl;
         return false;
     }
     
@@ -244,7 +243,6 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     {
         ref(idx);
         cb.latch().latch_release();
-        std::cout << "Couldn't evict page " << evicted_page << " because of some reason on lines 242, 243." << std::endl;
         return false;
     }
     
@@ -252,7 +250,6 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     if(_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
         ref(idx);
         cb.latch().latch_release();
-        std::cout << "Couldn't evict page " << evicted_page << " because it has swizzled child pages." << std::endl;
         return false;
     }
     
@@ -302,7 +299,6 @@ bf_idx page_evictioner_gclock::pick_victim()
         if (latch_rc.is_error())
         {
             idx++;
-            std::cout << "Couldn't latch page " << cb._pid << "." << std::endl;
             continue;
         }
 
@@ -322,7 +318,6 @@ bf_idx page_evictioner_gclock::pick_victim()
             // LL: Should we also decrement the clock count in this case?
             cb.latch().latch_release();
             idx++;
-            std::cout << "Couldn't evict page " << cb._pid << " because of some reason on lines 242, 243." << std::endl;
             continue;
         }
 
@@ -332,7 +327,6 @@ bf_idx page_evictioner_gclock::pick_victim()
             // LL: Should we also decrement the clock count in this case?
             cb.latch().latch_release();
             idx++;
-            std::cout << "Couldn't evict page " << cb._pid << " because it has swizzled child pages." << std::endl;
             continue;
         }
 
@@ -554,21 +548,21 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
-        _p = std::min(_p + std::max(u_int32_t(1), _b2->length() / _b1->length()), _bufferpool->_block_cnt - 1);
+        _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_b2->length() / _b1->length())), _bufferpool->_block_cnt - 1);
         bool removed = _b1->remove(pid);
         w_assert1(removed);
         bool added = _clocks->add_tail(T_2, b_idx);
         w_assert1(added);
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-        _clocks->get(b_idx) = 0;
+        _clocks->set(b_idx, false);
     } else {
-        _p = std::max(_p + std::max(u_int32_t(1), _b1->length() / _b2->length()), u_int32_t(0));
+        _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_b1->length() / _b2->length())), u_int32_t(0));
         bool removed = _b2->remove(pid);
         w_assert1(removed);
         bool added = _clocks->add_tail(T_2, b_idx);
         w_assert1(added);
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-        _clocks->get(b_idx) = 0;
+        _clocks->set(b_idx, false);
     }
 //    if (before_p != _p) {
 //        std::cout << "p = " << _p << std::endl;
