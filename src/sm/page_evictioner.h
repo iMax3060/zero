@@ -547,9 +547,6 @@ public:
     inline value&   operator[](key index) {
         return _values[index];
     }
-    inline value&   operator[](key index) const {
-        return _values[index];
-    }
 };
 
 /*
