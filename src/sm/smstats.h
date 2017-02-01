@@ -188,7 +188,7 @@ extern sm_stats_info_t &operator-=(sm_stats_info_t &s, const sm_stats_info_t &t)
  *          This can be easily extended by other kinds of log records that log
  *          events and characteristics of those that happen in the Storage Manager
  *          during a transaction by just adding member functions like
- *          \link log_refix() and using them as in
+ *          log_refix() and using them as in
  *          \verbatim me()->TL_stats_logstats()->log_refix \endverbatim.
  *
  * \warning The activation of this feature can cause some performance loss
@@ -199,107 +199,107 @@ class sm_stats_logstats_t {
 private:
     /*!\var ofstream* logstats
      * File stream used to append the log records to the log. It's open as long as
-     * this instance of \link sm_stats_logstats_t exists.
+     * this instance of sm_stats_logstats_t exists.
      */
     std::ofstream*         logstats;
 public:
     /*!\fn      sm_stats_logstats_t()
-     * \brief   Constructor for \link sm_stats_logstats_t
+     * \brief   Constructor for sm_stats_logstats_t
      * \details It uses the the value of the static member variable
-     *          \link sm_stats_logstats_t::filepath to specify its log file by
-     *          opening the file stream \link logstats.
+     *          sm_stats_logstats_t::filepath to specify its log file by
+     *          opening the file stream logstats.
      */
     sm_stats_logstats_t() {
         logstats = new std::ofstream (sm_stats_logstats_t::filepath, std::ofstream::app);
         w_assert0(logstats->is_open());
     };
     /*!\fn      virtual ~sm_stats_logstats_t()
-     * \brief   Destructor for \link sm_stats_logstats_t
-     * \details It closes file stream \link logstats.
+     * \brief   Destructor for sm_stats_logstats_t
+     * \details It closes file stream logstats.
      */
     virtual ~sm_stats_logstats_t();
     
-    /*!\var static bool activate
-     * This static variable is set according to the value specified in the option
-     * \c sm_fix_stats \c.
+    /*!\var   static bool activate
+     * \brief This static variable is set according to the value specified in the option
+     *        \c sm_fix_stats \c.
      */
     static bool activate;
-    /*!\var static char* filepath
-     * This static variable is set according to the value specified in the option
-     * \c sm_fix_stats_file \c.
+    /*!\var   static char* filepath
+     * \brief This static variable is set according to the value specified in the option
+     *        \c sm_fix_stats_file \c.
      */
     static char* filepath;
 public:
-    /*!\fn void log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, u_long start, u_long finish)
+    /*!\fn    void log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, u_long start, u_long finish)
      * \brief Creates a new log record for a fix_nonroot event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        The \c pid \c as in the function call of  \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param parent      The \link PageID of the \c parent \c as in the function call of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param mode        As in the function call of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param conditional As in the function call of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param virgin_page As in the function call of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param only_if_hit As in the function call of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) started.
-     * \param finish      The time when the execution of \link bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        The \c pid \c as in the function call of  bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param parent      The \c PageID \c of the \c parent \c as in the function call of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param mode        As in the function call of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param conditional As in the function call of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param virgin_page As in the function call of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param only_if_hit As in the function call of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) started.
+     * \param finish      The time when the execution of bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent, PageID pid, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit, lsn_t emlsn) finished.
      */
     void log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
                          bool virgin_page, bool only_if_hit, u_long start, u_long finish);
-    /*!\fn void log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional, u_long start, u_long finish)
+    /*!\fn    void log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional, u_long start, u_long finish)
      * \brief Creates a new log record for a fix_root event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        The \c pid \c as in the function call of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
-     * \param store       As in the function call of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
-     * \param mode        As in the function call of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
-     * \param conditional As in the function call of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) started.
-     * \param finish      The time when the execution of \link bf_tree_m::fix_root (generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        The \c pid \c as in the function call of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
+     * \param store       As in the function call of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
+     * \param mode        As in the function call of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
+     * \param conditional As in the function call of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) started.
+     * \param finish      The time when the execution of bf_tree_m::fix_root(generic_page*& page, StoreID store, latch_mode_t mode, bool conditional, bool virgin) finished.
      */
     void log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional,
                       u_long start, u_long finish);
-    /*!\fn void log_unfix_nonroot(tid_t tid, PageID page, PageID parent ,bool evict, u_long start, u_long finish)
+    /*!\fn    void log_unfix_nonroot(tid_t tid, PageID page, PageID parent ,bool evict, u_long start, u_long finish)
      * \brief Creates a new log record for a unfix event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        As in the function call of \link bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
-     * \param parent      The \link PageID of the \c page \c.
-     * \param evict       As in the function call of \link bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::unfix(const generic_page* page, bool evict) started.
-     * \param finish      The time when the execution of \link bf_tree_m::unfix(const generic_page* page, bool evict) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        As in the function call of bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
+     * \param parent      The \c PageID \c of the \c page \c.
+     * \param evict       As in the function call of bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::unfix(const generic_page* page, bool evict) started.
+     * \param finish      The time when the execution of bf_tree_m::unfix(const generic_page* page, bool evict) finished.
      */
     void log_unfix_nonroot(tid_t tid, PageID page, PageID parent ,bool evict, u_long start, u_long finish);
-    /*!\fn void log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish)
+    /*!\fn    void log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish)
      * \brief Creates a new log record for a unfix event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        As in the function call of \link bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
-     * \param evict       As in the function call of \link bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::unfix(const generic_page* page, bool evict) started.
-     * \param finish      The time when the execution of \link bf_tree_m::unfix(const generic_page* page, bool evict) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        As in the function call of bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
+     * \param evict       As in the function call of bf_tree_m::unfix(const generic_page* page, bool evict) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::unfix(const generic_page* page, bool evict) started.
+     * \param finish      The time when the execution of bf_tree_m::unfix(const generic_page* page, bool evict) finished.
      */
     void log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish);
-    /*!\fn void log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start, u_long finish)
+    /*!\fn    void log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start, u_long finish)
      * \brief Creates a new log record for a refix event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        The \link PageID of the \c page \c after the execution of the function \link bf_tree_m::refix_direct (generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
-     * \param mode        As in the function call of \link bf_tree_m::refix_direct (generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
-     * \param conditional As in the function call of \link bf_tree_m::refix_direct (generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::refix_direct (generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) started.
-     * \param finish      The time when the execution of \link bf_tree_m::refix_direct (generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        The \c PageID \c of the \c page \c after the execution of the function bf_tree_m::refix_direct(generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
+     * \param mode        As in the function call of bf_tree_m::refix_direct(generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
+     * \param conditional As in the function call of bf_tree_m::refix_direct(generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::refix_direct(generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) started.
+     * \param finish      The time when the execution of bf_tree_m::refix_direct(generic_page*& page, bf_idx idx, latch_mode_t mode, bool conditional) finished.
      */
     void log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start,
                    u_long finish);
-    /*!\fn log_pin(tid_t tid, PageID page, u_long start, u_long finish)
+    /*!\fn    log_pin(tid_t tid, PageID page, u_long start, u_long finish)
      * \brief Creates a new log record for a pin for refix event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        As in the function call of \link bf_tree_m::pin_for_refix(const generic_page* page) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::pin_for_refix(const generic_page* page) started.
-     * \param finish      The time when the execution of \link bf_tree_m::pin_for_refix(const generic_page* page) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        As in the function call of bf_tree_m::pin_for_refix(const generic_page* page) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::pin_for_refix(const generic_page* page) started.
+     * \param finish      The time when the execution of bf_tree_m::pin_for_refix(const generic_page* page) finished.
      */
     void log_pin(tid_t tid, PageID page, u_long start, u_long finish);
-    /*!\fn log_unpin(tid_t tid, PageID page, u_long start, u_long finish)
+    /*!\fn    log_unpin(tid_t tid, PageID page, u_long start, u_long finish)
      * \brief Creates a new log record for a unpin for refix event
-     * \param tid         The \link tid_t of the \link smthread_t that caused this event.
-     * \param page        As in the function call of \link bf_tree_m::unpin_for_refix(bf_idx idx) that caused this event.
-     * \param start       The time when the execution of \link bf_tree_m::unpin_for_refix(bf_idx idx) started.
-     * \param finish      The time when the execution of \link bf_tree_m::unpin_for_refix(bf_idx idx) finished.
+     * \param tid         The tid_t of the smthread_t that caused this event.
+     * \param page        As in the function call of bf_tree_m::unpin_for_refix(bf_idx idx) that caused this event.
+     * \param start       The time when the execution of bf_tree_m::unpin_for_refix(bf_idx idx) started.
+     * \param finish      The time when the execution of bf_tree_m::unpin_for_refix(bf_idx idx) finished.
      */
     void log_unpin(tid_t tid, PageID page, u_long start, u_long finish);
 };

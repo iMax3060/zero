@@ -225,8 +225,11 @@ page_evictioner_base* bf_tree_m::get_evictioner()
 
     if (!_evictioner) {
         std::string s = ss_m::get_options().get_string_option("sm_evict_policy", "latched");
-        if(s == "cart") {
+        if(s == "car") {
             _evictioner = new page_evictioner_car(this, ss_m::get_options());
+        }
+        else if (s == "cart") {
+            _evictioner = new page_evictioner_cart(this, ss_m::get_options());
         }
         else if(s == "gclock") {
             _evictioner = new page_evictioner_gclock(this, ss_m::get_options());
