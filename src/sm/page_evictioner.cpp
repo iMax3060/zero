@@ -982,7 +982,7 @@ bool multi_clock<key, value>::get_head(clk_idx clock, value &head_value) {
             w_assert1(_clock_membership[_hands[clock]] == clock);
             return true;
         } else {
-            w_assert1(head_value == _invalid_index);
+            w_assert1(_hands[clock] == _invalid_index);
             return false;
         }
     } else {
