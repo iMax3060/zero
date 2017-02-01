@@ -812,13 +812,13 @@ bf_idx page_evictioner_cart::pick_victim() {
                 w_assert0(_b1->insert_back(evicted_pid));
                 DBG1(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
+                _n_s = _n_s - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 return t_1_head_index;
             } else {
                 blocked_t_1 = blocked_t_1 + 1;
                 _clocks->move_head(T_1);
             }
-            _n_s = _n_s - 1;
         } else if (blocked_t_2 <= _clocks->size_of(T_2)) {
             _clocks->get_head_index(T_1, t_2_head_index);
     
@@ -831,13 +831,13 @@ bf_idx page_evictioner_cart::pick_victim() {
                 w_assert0(_b2->insert_back(evicted_pid));
                 DBG1(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
+                _n_l = _n_l - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 return t_2_head_index;
             } else {
                 blocked_t_2 = blocked_t_2 + 1;
                 _clocks->move_head(T_2);
             }
-            _n_l = _n_l - 1;
         } else {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
