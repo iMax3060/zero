@@ -742,6 +742,9 @@ bf_idx page_evictioner_cart::pick_victim() {
     bf_idx blocked_t_2 = 0;
     
     while (!evicted_page) {
+        if (blocked_t_1 + blocked_t_2 >= _c / 16) {
+            _bufferpool->get_cleaner()->wakeup(true);
+        }
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
