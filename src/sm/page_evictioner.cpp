@@ -692,7 +692,7 @@ void page_evictioner_cart::ref(bf_idx idx) {
 
 void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
-//    u_int32_t before_p = _p;
+    
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max(u_int32_t(0), _q) || _b2->length() == 0)) {
@@ -730,13 +730,12 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
             _q = std::min(_q + 1, 2 * _c - _clocks->size_of(T_1));
         }
     }
-//    if (before_p != _p) {
-//        std::cout << "p = " << _p << std::endl;
-//    }
+    
     w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) && _clocks->size_of(T_1) + _clocks->size_of(T_2) <= _c);
     w_assert1(0 <= _clocks->size_of(T_2) + _b2->length() && _clocks->size_of(T_2) + _b2->length() <= _c);
     w_assert1(0 <= _clocks->size_of(T_1) + _b1->length() && _clocks->size_of(T_1) + _b1->length() <= 2 * (_c));
     w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() && _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
+    
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
@@ -756,6 +755,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         
         bf_idx size_t_1_before = _clocks->size_of(T_1);
         bf_idx size_t_2_before = _clocks->size_of(T_2);
+        u_int32_t iterations = 0;
         while (t_2_head._referenced) {
             w_assert0(_clocks->switch_head_to_tail(T_2, T_1, t_2_head_index));
             DBG1(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
@@ -764,8 +764,9 @@ bf_idx page_evictioner_cart::pick_victim() {
             if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b2->length() - _n_s >= _c) {
                 _q = std::min(_q + 1, 2 * _c - _clocks->size_of(T_1));
             }
-            
+            w_assert0(iterations <= _c);
             _clocks->get_head(T_2, t_2_head);
+            iterations++;
         }
         w_assert1(size_t_1_before + size_t_2_before == _clocks->size_of(T_1) + _clocks->size_of(T_2));
     
@@ -776,6 +777,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         
         size_t_1_before = _clocks->size_of(T_1);
         size_t_2_before = _clocks->size_of(T_2);
+        iterations = 0;
         while (t_1_head._filter == L || t_1_head._referenced) {
             if (t_1_head._referenced) {
                 t_1_head._referenced = false;
@@ -792,9 +794,10 @@ bf_idx page_evictioner_cart::pick_victim() {
                 DBG1(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
                 _q = std::max(_q - 1, _c - _clocks->size_of(T_1));
             }
-            
+            w_assert0(iterations <= _c);
             _clocks->get_head(T_1, t_1_head);
             _clocks->get_head_index(T_1, t_1_head_index);
+            iterations++;
         }
         w_assert1(size_t_1_before == _clocks->size_of(T_1));
         w_assert1(size_t_2_before == _clocks->size_of(T_2));
