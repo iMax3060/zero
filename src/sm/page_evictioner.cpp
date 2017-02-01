@@ -780,7 +780,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         iterations = 0;
         while (t_1_head._filter == L || t_1_head._referenced) {
             if (t_1_head._referenced) {
-                t_1_head._referenced = false;
+                (*_clocks)[t_1_head_index]._referenced = false;
                 _clocks->get_head(T_1, t_1_head);
                 w_assert0(!t_1_head._referenced);
                 w_assert0(_clocks->move_head(T_1));
