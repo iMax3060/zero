@@ -236,6 +236,20 @@ public:
 
 protected:
     virtual bf_idx pick_victim();
+    
+    /**
+     * Contains constants that map the names of the clocks used by the CAR algorithm to
+     * the indexes used by the \link _clocks data structure.
+     */
+    enum clock_index {
+        T_1 = 0,
+        T_2 = 1
+    };
+    
+    enum filter {
+        S = false,
+        L = true
+    };
 
 private:
     class referenced_filter {
@@ -293,20 +307,6 @@ protected:
     u_int32_t                                   _q;
     u_int32_t                                   _n_s;
     u_int32_t                                   _n_l;
-    
-    /**
-     * Contains constants that map the names of the clocks used by the CAR algorithm to
-     * the indexes used by the \link _clocks data structure.
-     */
-    enum clock_index {
-        T_1 = 0,
-        T_2 = 1
-    };
-    
-    enum filter {
-        S = false,
-        L = true
-    };
 };
 
 /*!\class   hashtable_queue
