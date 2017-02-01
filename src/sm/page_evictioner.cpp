@@ -794,7 +794,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 DBG1(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
                 _q = std::max(_q - 1, _c - _clocks->size_of(T_1));
             }
-            w_assert0(iterations <= _c);
+            w_assert0(iterations <= 2 * _c);
             _clocks->get_head(T_1, t_1_head);
             _clocks->get_head_index(T_1, t_1_head_index);
             iterations++;
