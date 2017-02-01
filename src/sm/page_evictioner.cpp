@@ -812,6 +812,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 return t_1_head_index;
             } else {
                 blocked_t_1 = blocked_t_1 + 1;
+                _clocks->move_head(T_1);
             }
             _n_s = _n_s - 1;
         } else if (blocked_t_2 <= _clocks->size_of(T_2)) {
@@ -830,6 +831,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 return t_2_head_index;
             } else {
                 blocked_t_2 = blocked_t_2 + 1;
+                _clocks->move_head(T_2);
             }
             _n_l = _n_l - 1;
         } else {
