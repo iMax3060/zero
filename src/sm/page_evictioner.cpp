@@ -781,6 +781,8 @@ bf_idx page_evictioner_cart::pick_victim() {
         while (t_1_head._filter == L || t_1_head._referenced) {
             if (t_1_head._referenced) {
                 t_1_head._referenced = false;
+                _clocks->get_head(T_1, t_1_head);
+                w_assert0(!t_1_head._referenced);
                 w_assert0(_clocks->move_head(T_1));
                 
                 if (_clocks->size_of(T_1) >= std::min(_p + 1, _b1->length()) && t_1_head._filter == S) {
