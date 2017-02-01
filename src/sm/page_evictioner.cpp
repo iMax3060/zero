@@ -686,6 +686,10 @@ page_evictioner_cart::~page_evictioner_cart() {
     DO_PTHREAD(pthread_mutex_destroy(&_lock));
 }
 
+void page_evictioner_cart::ref(bf_idx idx) {
+    (*_clocks)[idx]._referenced = true;
+}
+
 void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
 //    u_int32_t before_p = _p;
@@ -916,7 +920,7 @@ bool hashtable_queue<key>::remove_front() {
         _direct_access_queue->erase(old_front);
         w_assert1(_direct_access_queue->size() == old_size - 1);
     }
-    return false;
+    return true;
 }
 
 template<class key>

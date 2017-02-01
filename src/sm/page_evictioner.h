@@ -233,6 +233,7 @@ public:
     virtual ~page_evictioner_cart();
     
     virtual void miss_ref(bf_idx b_idx, PageID pid);
+    virtual void        ref(bf_idx idx);
 
 protected:
     virtual bf_idx pick_victim();
