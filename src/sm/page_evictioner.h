@@ -259,6 +259,12 @@ private:
             _referenced = referenced;
             _filter = filter;
         };
+        referenced_filter& operator=(referenced_filter& source) {
+            this->_referenced = source._referenced;
+            this->_filter = source._filter;
+    
+            return *this;
+        }
     
         bool        _referenced;
         filter      _filter;
