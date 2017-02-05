@@ -101,7 +101,6 @@ bf_idx page_evictioner_base::pick_victim()
         latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
         if (latch_rc.is_error()) {
             idx++;
-            DBG3(<< "Eviction failed on latch for " << idx);
             continue;
         }
         w_assert1(cb.latch().is_mine());
@@ -113,7 +112,6 @@ bf_idx page_evictioner_base::pick_victim()
                 || !cb._used || p.pid() == p.root() || p.get_foster() != 0)
         {
             cb.latch().latch_release();
-            DBG5(<< "Eviction failed on flags for " << idx);
             idx++;
             continue;
         }
@@ -123,8 +121,6 @@ bf_idx page_evictioner_base::pick_victim()
         {
             // pin count -1 means page was already evicted
             cb.latch().latch_release();
-            DBG3(<< "Eviction failed on for " << idx
-                    << " pin count is " << cb._pin_cnt);
             idx++;
             continue;
         }
@@ -356,157 +352,6 @@ bf_idx page_evictioner_gclock::pick_victim()
         idx++;
     }
 }
-
-/*
-page_evictioner_clockpro::page_evictioner_clockpro(bf_tree_m* bufferpool, const sm_options& options)
-        : page_evictioner_base(bufferpool, options) {
-    _referenced = new bool[2 * (_bufferpool->_block_cnt - 1)];
-    _hot = new bool[2 * (_bufferpool->_block_cnt - 1)];
-    _test = new bool[2 * (_bufferpool->_block_cnt - 1)];
-    _bf_idx_to_clk_idx = new clk_idx[_bufferpool->_block_cnt];
-    _clk_idx_to_bf_idx = new bf_idx[2 * (_bufferpool->_block_cnt - 1)];
-    _page_id_to_clk_idx = new bf_hashtable<clk_idx >(w_findprime(2048 + (_bufferpool->_block_cnt / 2)));
-}
-
-page_evictioner_clockpro::~page_evictioner_clockpro() {
-    delete[](_referenced);
-    delete[](_hot);
-    delete[](_test);
-    delete[](_bf_idx_to_clk_idx);
-    delete[](_clk_idx_to_bf_idx);
-    delete (_page_id_to_clk_idx);
-}
-
-void page_evictioner_clockpro::ref(bf_idx idx) {
-    _referenced[_bf_idx_to_clk_idx[idx]] = true;
-}
-
-void page_evictioner_clockpro::miss_ref(bf_idx b_idx, PageID pid) {
-    clk_idx c_idx;
-    if (_page_id_to_clk_idx->lookup(pid, c_idx)) {
-        _bf_idx_to_clk_idx[b_idx] = c_idx;
-        _clk_idx_to_bf_idx[c_idx] = b_idx;
-        _referenced[c_idx] = true;
-    } else {
-        c_idx =
-        _page_id_to_clk_idx->insert_if_not_exists(pid, c_idx);
-        _referenced[c_idx] = true;
-        _test[c_idx] = true;
-    }
-}
-
-bf_idx page_evictioner_clockpro::pick_victim() {
-    
-    return run_hand_cold();
-}
-
-void page_evictioner_clockpro::run_hand_hot() {
-    
-}
-
-bf_idx page_evictioner_clockpro::run_hand_cold() {
-    
-    // Check if we still need to evict
-    clk_idx c_idx = _hand_cold;
-    while(true)
-    {
-        c_idx = (c_idx == 2 * (_bufferpool->_block_cnt - 1)) ? 0 : c_idx;
-        
-        w_assert1(0 <= c_idx && c_idx < 2 * (_bufferpool->_block_cnt - 1));
-
-//        // Circular iteration, jump idx 0
-//        idx = (idx % (_bufferpool->_block_cnt-1)) + 1;
-//        w_assert1(idx != 0);
-
-//        // Before starting, let's fire some prefetching for the next step.
-//        bf_idx next_idx = ((c_idx+1) % (_bufferpool->_block_cnt-1)) + 1;
-//        __builtin_prefetch(&_bufferpool->_buffer[next_idx]);
-//        __builtin_prefetch(_bufferpool->get_cbp(next_idx));
-        
-        bf_idx b_idx = _clk_idx_to_bf_idx[c_idx];       // latch the clock-element ?
-        
-        if (b_idx == 0) {
-            c_idx++;
-            continue;
-        }
-        
-        // Now we do the real work.
-        bf_tree_cb_t& cb = _bufferpool->get_cb(b_idx);
-        
-        rc_t latch_rc = cb.latch().latch_acquire(LATCH_SH, sthread_t::WAIT_IMMEDIATE);
-        if (latch_rc.is_error()) {
-            c_idx++;
-            continue;
-        }
-        
-        w_assert1(cb.latch().held_by_me());
-        
-        */
-/* There are some pages we want to ignore in our policy:
-         * 1) Non B+Tree pages
-         * 2) Dirty pages (the cleaner should have cleaned it already)
-         * 3) Pages being used by someon else
-         * 4) The root
-         *//*
-
-        btree_page_h p;
-        p.fix_nonbufferpool_page(_bufferpool->_buffer + c_idx);
-        if (p.tag() != t_btree_p || cb.is_dirty() ||
-            !cb._used || p.pid() == p.root())
-        {
-            // LL: Should we also decrement the clock count in this case?
-            cb.latch().latch_release();
-            c_idx++;
-            continue;
-        }
-        
-        // Ignore pages that still have swizzled children
-        if(_swizziling_enabled && _bufferpool->has_swizzled_child(c_idx))
-        {
-            // LL: Should we also decrement the clock count in this case?
-            cb.latch().latch_release();
-            c_idx++;
-            continue;
-        }
-        
-        if (!_hot[c_idx]) {
-            if (!_referenced[c_idx]) {
-                // We have found our victim!
-                bool would_block;
-                cb.latch().upgrade_if_not_block(would_block); //Try to upgrade latch
-                if (!would_block) {
-                    w_assert1(cb.latch().is_mine());
-                    
-                    */
-/* No need to re-check the values above, because the cb was
-                     * already latched in SH mode, so they cannot change. *//*
-
-                    
-                    if (cb._pin_cnt != 0) {
-                        cb.latch().latch_release(); // pin count -1 means page was already evicted
-                        c_idx++;
-                        continue;
-                    }
-                    
-                    _bf_idx_to_clk_idx[b_idx] = 2 * (_bufferpool->_block_cnt - 1);
-                    _clk_idx_to_bf_idx[c_idx] = 0;
-                    _hand_cold = c_idx++;
-                    return c_idx;
-                }
-            } else if (_test[c_idx]) {
-                _hot[c_idx] = true;
-            }
-        }
-        cb.latch().latch_release();
-        --_counts[c_idx]; //TODO: MAKE ATOMIC
-        c_idx++;
-    }
-}
-
-void page_evictioner_clockpro::run_hand_test() {
-    
-}
-*/
 
 page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options &options)
         : page_evictioner_base(bufferpool, options)

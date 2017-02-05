@@ -549,36 +549,3 @@ public:
         return _values[index];
     }
 };
-
-/*
-class page_evictioner_clockpro : public page_evictioner_base {
-public:
-                        page_evictioner_clockpro(bf_tree_m* bufferpool, const sm_options& options);
-    virtual             ~page_evictioner_clockpro();
-
-    virtual void        ref(bf_idx idx);
-    virtual void        miss_ref(bf_idx b_idx, PageID pid);
-
-protected:
-    virtual bf_idx      pick_victim();
-
-private:
-    virtual void            run_hand_hot();
-    virtual bf_idx          run_hand_cold();
-    virtual void            run_hand_test();
-    
-    bool*                   _hot;           // 1: page is hot; 0: page is cold
-    bool*                   _test;          // 1: cold page in test period; 0: hot page or cold page not in test period
-    bool*                   _referenced;    // reference bit like in CLOCK
-    
-    clk_idx*                _bf_idx_to_clk_idx;
-    bf_idx*                 _clk_idx_to_bf_idx;
-    bf_hashtable<clk_idx>*  _page_id_to_clk_idx;
-    
-    clk_idx                 _hand_hot;
-    clk_idx                 _hand_cold;
-    clk_idx                 _hand_test;
-};
-*/
-
-#endif
