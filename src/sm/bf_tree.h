@@ -319,7 +319,7 @@ private:
     void   _convert_to_disk_page (generic_page* page) const;
 
     /** finds a free block and returns its index. if free list is empty and 'evict' = true, it evicts some page. */
-    w_rc_t _grab_free_block(bf_idx& ret, bool evict = true);
+    w_rc_t _grab_free_block(bf_idx &ret, bool &evicted, bool evict = true);
 
     /**
      * evict some number of blocks.

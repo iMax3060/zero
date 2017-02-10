@@ -5,8 +5,9 @@
 
 #include "bf_hashtable.cpp"
 
-w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
+w_rc_t bf_tree_m::_grab_free_block(bf_idx &ret, bool &evicted, bool evict)
 {
+    evicted = false;
     ret = 0;
     while (true) {
         bool got_frame = _freelist->pop(ret);
@@ -18,7 +19,8 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret, bool evict)
             return RCOK;
         } else {
             if (evict) {
-                W_DO (_get_replacement_block());
+                W_DO(_get_replacement_block());
+                evicted = true;
             } else {
                 return RC(eBFFULL);
             }

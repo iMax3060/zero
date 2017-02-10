@@ -256,6 +256,8 @@ public:
      */
     void log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional,
                       u_long start, u_long finish);
+    void log_fix(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
+                 bool virgin_page, bool only_if_hit, bool hit, bool evict, u_long start, u_long finish);
     /*!\fn    void log_unfix_nonroot(tid_t tid, PageID page, PageID parent ,bool evict, u_long start, u_long finish)
      * \brief Creates a new log record for a unfix event
      * \param tid         The tid_t of the smthread_t that caused this event.

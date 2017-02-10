@@ -267,6 +267,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                                    bool conditional, bool virgin_page, bool only_if_hit,
                                    lsn_t emlsn)
 {
+    u_long start;
+    bool hit = true;
+    bool evict = false;
+    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
     if (is_swizzled_pointer(pid)) {
         w_assert1(!virgin_page);
 
@@ -289,7 +295,13 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         }
 
         page = &(_buffer[idx]);
-
+    
+        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+            u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                                 only_if_hit, hit, evict, start, finish);
+        }
+    
         return RCOK;
     }
 
@@ -317,6 +329,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
         if (idx == 0)
         {
+            hit = false;
+    
             if (only_if_hit) {
                 return RC(stINUSE);
             }
@@ -324,7 +338,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             INC_TSTAT(bf_fix_nonroot_miss_count);
 
             // STEP 1) Grab a free frame to read into
-            W_DO(_grab_free_block(idx));
+            W_DO(_grab_free_block(idx, evict, false));
             w_assert1(_is_valid_idx(idx));
             bf_tree_cb_t &cb = get_cb(idx);
             w_assert1(!cb._used);
@@ -435,7 +449,15 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             p.fix_nonbufferpool_page(parent);
             general_recordid_t slot = find_page_id_slot (parent, pid);
 
-            if (!is_swizzled(parent)) { return RCOK; }
+            if (!is_swizzled(parent)) {
+                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                                 only_if_hit, hit, evict, start, finish);
+                }
+    
+                return RCOK;
+            }
 
             // Either a virgin page which hasn't been linked yet, or some other
             // thread won the race and already swizzled the pointer
@@ -449,6 +471,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Update _swizzled flag atomically
             bool old_value = false;
             if (!std::atomic_compare_exchange_strong(&cb._swizzled, &old_value, true)) {
+                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                                 only_if_hit, hit, evict, start, finish);
+                }
+
                 // CAS failed -- some other thread is swizzling
                 return RCOK;
             }
@@ -464,7 +492,13 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(child_slotid != GeneralRecordIds::INVALID);
 #endif
         }
-
+    
+        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+            u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                         only_if_hit, hit, evict, start, finish);
+        }
+    
         return RCOK;
     }
 }

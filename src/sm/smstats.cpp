@@ -160,6 +160,26 @@ void sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, la
               << finish << std::endl;
 }
 
+void sm_stats_logstats_t::log_fix(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
+                                  bool virgin_page, bool only_if_hit, bool hit, bool evict, u_long start, u_long finish)
+{
+    w_assert0(logstats->is_open());
+    w_assert0(sm_stats_logstats_t::activate);
+    
+    *logstats << "fix,"
+              << tid.as_int64() << ","
+              << page << ","
+              << parent << ","
+              << mode << ","
+              << conditional << ","
+              << virgin_page << ","
+              << only_if_hit << ","
+              << hit << ","
+              << evict << ","
+              << start << ","
+              << finish << std::endl;
+}
+
 void sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID parent, bool evict, u_long start, u_long finish)
 {
     w_assert0(logstats->is_open());

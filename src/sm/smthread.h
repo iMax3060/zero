@@ -547,6 +547,8 @@ public:
  */
 #define LOGSTATS_FIX_ROOT(tid, page, store, mode, conditional, start, finish) me()->TL_stats_logstats()->log_fix_root(tid, page, store, mode, conditional, start, finish)
 
+#define LOGSTATS_FIX(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, start, finish) me()->TL_stats_logstats()->log_fix(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, start, finish)
+
 /*!\def     LOGSTATS_UNFIX_NONROOT(tid, page, parent, evict, start, finish)
  * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event unfix_nonroot.
  * \details It uses \link sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID parent, bool evict, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
