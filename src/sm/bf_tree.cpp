@@ -146,6 +146,10 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     _cleaner_decoupled = options.get_bool_option("sm_cleaner_decoupled", false);
     
     _logstats_fix = options.get_bool_option("sm_fix_stats", false);
+    
+    if (!_evictioner) {
+        get_evictioner();
+    }
 }
 
 void bf_tree_m::shutdown()
@@ -289,7 +293,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
         cb.pin(); //LL: if calling pin, latch should be in EX mode always, no?
         cb.inc_ref_count();
-	    get_evictioner()->ref(idx);
+        if (_evictioner) {
+            _evictioner->ref(idx);
+        }
         if (mode == LATCH_EX) {
             cb.inc_ref_count_ex();
         }
@@ -390,7 +396,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 cb.init(pid, page->lsn);
             }
 	
-	        get_evictioner()->miss_ref(idx, pid);
+	        if (_evictioner) {
+                _evictioner->miss_ref(idx, pid);
+            }
 
             w_assert1(_is_active_idx(idx));
 
