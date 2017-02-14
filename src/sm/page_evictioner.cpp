@@ -88,8 +88,8 @@ bf_idx page_evictioner_base::pick_victim() {
      */
     
     bf_idx idx = _current_frame;
-    PageID p;
     while (true) {
+        
         if (idx == _bufferpool->_block_cnt) {
             idx = 1;
         }
@@ -100,13 +100,42 @@ bf_idx page_evictioner_base::pick_victim() {
             _bufferpool->get_cleaner()->wakeup(true);
         }
         
-        if (evict_page(idx, p)) {
-            _current_frame = idx + 1;
-            return idx;
-        } else {
+        // CS TODO -- why do we latch CB manually instead of simply fixing
+        // the page??
+        
+        bf_tree_cb_t &cb = _bufferpool->get_cb(idx);
+        
+        // Step 1: latch page in EX mode and check if eligible for eviction
+        rc_t latch_rc;
+        latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
+        if (latch_rc.is_error()) {
             idx++;
             continue;
         }
+        w_assert1(cb.latch().is_mine());
+        
+        // now we hold an EX latch -- check if leaf and not dirty
+        btree_page_h p;
+        p.fix_nonbufferpool_page(_bufferpool->_buffer + idx);
+        if (p.tag() != t_btree_p || !p.is_leaf() || cb.is_dirty()
+            || !cb._used || p.pid() == p.root() || p.get_foster() != 0) {
+            cb.latch().latch_release();
+            idx++;
+            continue;
+        }
+        
+        // page is a B-tree leaf -- check if pin count is zero
+        if (cb._pin_cnt != 0) {
+            // pin count -1 means page was already evicted
+            cb.latch().latch_release();
+            idx++;
+            continue;
+        }
+        w_assert1(_bufferpool->_is_active_idx(idx));
+        
+        // If we got here, we passed all tests and have a victim!
+        _current_frame = idx + 1;
+        return idx;
     }
 }
 

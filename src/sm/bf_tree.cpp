@@ -344,7 +344,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             INC_TSTAT(bf_fix_nonroot_miss_count);
 
             // STEP 1) Grab a free frame to read into
-            W_DO(_grab_free_block(idx, evict, false));
+            W_DO(_grab_free_block(idx, evict, true));
             w_assert1(_is_valid_idx(idx));
             bf_tree_cb_t &cb = get_cb(idx);
             w_assert1(!cb._used);
