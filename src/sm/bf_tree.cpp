@@ -146,6 +146,8 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     _cleaner_decoupled = options.get_bool_option("sm_cleaner_decoupled", false);
     
     _logstats_fix = options.get_bool_option("sm_fix_stats", false);
+    
+    if (!_evictioner) get_evictioner();
 }
 
 void bf_tree_m::shutdown()
@@ -218,10 +220,10 @@ page_cleaner_base* bf_tree_m::get_cleaner()
 
 page_evictioner_base* bf_tree_m::get_evictioner()
 {
-    if (!ss_m::vol || !ss_m::vol->caches_ready()) {
-        // No volume manager initialized -- no point in starting evictioner
-        return nullptr;
-    }
+//    if (!ss_m::vol || !ss_m::vol->caches_ready()) {
+//        // No volume manager initialized -- no point in starting evictioner
+//        return nullptr;
+//    }
 
     if (!_evictioner) {
         std::string s = ss_m::get_options().get_string_option("sm_evict_policy", "latched");
@@ -289,7 +291,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
         cb.pin(); //LL: if calling pin, latch should be in EX mode always, no?
         cb.inc_ref_count();
-        if (get_evictioner()) _evictioner->ref(idx);
+        if (_evictioner) _evictioner->ref(idx);
         if (mode == LATCH_EX) {
             cb.inc_ref_count_ex();
         }
@@ -389,8 +391,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 }
                 cb.init(pid, page->lsn);
             }
-	
-	        if (get_evictioner()) _evictioner->miss_ref(idx, pid);
+    
+            if (_evictioner) _evictioner->miss_ref(idx, pid);
 
             w_assert1(_is_active_idx(idx));
 
@@ -426,7 +428,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(_is_active_idx(idx));
             cb.pin();
             cb.inc_ref_count();
-            if(get_evictioner()) _evictioner->ref(idx);
+            if (_evictioner) _evictioner->ref(idx);
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
             }
