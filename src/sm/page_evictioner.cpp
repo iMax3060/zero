@@ -394,12 +394,12 @@ page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options
 }
 
 page_evictioner_car::~page_evictioner_car() {
+    DO_PTHREAD(pthread_mutex_destroy(&_lock));
+
     delete(_clocks);
     
     delete(_b1);
     delete(_b2);
-    
-    DO_PTHREAD(pthread_mutex_destroy(&_lock));
 }
 
 void page_evictioner_car::ref(bf_idx idx) {
@@ -464,6 +464,7 @@ bf_idx page_evictioner_car::pick_victim() {
         if (blocked_t_1 + blocked_t_2 >= _c / 16) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
             _bufferpool->get_cleaner()->wakeup(true);
         }
+        w_assert0(blocked_t_1 + blocked_t_2 > _c);
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         DBG(<< "p = " << _p);
         if ((_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
@@ -549,12 +550,12 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
 }
 
 page_evictioner_cart::~page_evictioner_cart() {
+    DO_PTHREAD(pthread_mutex_destroy(&_lock));
+
     delete(_clocks);
     
     delete(_b1);
     delete(_b2);
-    
-    DO_PTHREAD(pthread_mutex_destroy(&_lock));
 }
 
 void page_evictioner_cart::ref(bf_idx idx) {
