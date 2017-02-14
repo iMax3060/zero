@@ -35,6 +35,30 @@ public:
      * @param pid
      */
     virtual void            miss_ref(bf_idx b_idx, PageID pid);
+    
+    /**
+     *
+     * @param idx
+     */
+    virtual void            used_ref(bf_idx idx);
+    
+    /**
+     *
+     * @param idx
+     */
+    virtual void            dirty_ref(bf_idx idx);
+    
+    /**
+     *
+     * @param idx
+     */
+    virtual void            block_ref(bf_idx idx);
+    
+    /**
+     *
+     * @param idx
+     */
+    virtual void            swizzle_ref(bf_idx idx);
 
     /**
      * Evicts pages from the buffer pool until the preferred amount of frames
@@ -86,6 +110,10 @@ public:
 
     virtual void            ref(bf_idx idx);
     virtual void            miss_ref(bf_idx b_idx, PageID pid);
+    virtual void            used_ref(bf_idx idx);
+    virtual void            dirty_ref(bf_idx idx);
+    virtual void            block_ref(bf_idx idx);
+    virtual void            swizzle_ref(bf_idx idx);
 
 protected:
     virtual bf_idx          pick_victim();
@@ -164,6 +192,10 @@ public:
      * @param pid   The \c PageID \c of the fixed page.
      */
     virtual void        miss_ref(bf_idx b_idx, PageID pid);
+    virtual void        used_ref(bf_idx idx);
+    virtual void        dirty_ref(bf_idx idx);
+    virtual void        block_ref(bf_idx idx);
+    virtual void        swizzle_ref(bf_idx idx);
 
 protected:
     /*!\fn      pick_victim()
@@ -232,8 +264,12 @@ public:
             page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options);
     virtual ~page_evictioner_cart();
     
-    virtual void miss_ref(bf_idx b_idx, PageID pid);
-    virtual void        ref(bf_idx idx);
+    virtual void            miss_ref(bf_idx b_idx, PageID pid);
+    virtual void            ref(bf_idx idx);
+    virtual void            used_ref(bf_idx idx);
+    virtual void            dirty_ref(bf_idx idx);
+    virtual void            block_ref(bf_idx idx);
+    virtual void            swizzle_ref(bf_idx idx);
 
 protected:
     virtual bf_idx pick_victim();

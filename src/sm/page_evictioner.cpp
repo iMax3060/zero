@@ -5,6 +5,8 @@
 #include "bf_hashtable.cpp"
 #include "generic_page.h"
 
+#include <limits>
+
 page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options)
     :
     _bufferpool(bufferpool)
@@ -68,8 +70,15 @@ void page_evictioner_base::ref(bf_idx idx) {}
 
 void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {}
 
-bf_idx page_evictioner_base::pick_victim()
-{
+void page_evictioner_base::used_ref(bf_idx idx) {}
+
+void page_evictioner_base::dirty_ref(bf_idx idx) {}
+
+void page_evictioner_base::block_ref(bf_idx idx) {}
+
+void page_evictioner_base::swizzle_ref(bf_idx idx) {}
+
+bf_idx page_evictioner_base::pick_victim() {
     /*
      * CS: strategy is to try acquiring an EX latch imediately. If it works,
      * page is not that busy, so we can evict it. But only evict leaf pages.
@@ -77,58 +86,27 @@ bf_idx page_evictioner_base::pick_victim()
      * not as effective as LRU or CLOCK, but it is better than RANDOM, simple
      * to implement and, most importantly, does not have concurrency bugs!
      */
-
-     bf_idx idx = _current_frame;
-     while(true) {
-         
-        if(idx == _bufferpool->_block_cnt) {
+    
+    bf_idx idx = _current_frame;
+    PageID p;
+    while (true) {
+        if (idx == _bufferpool->_block_cnt) {
             idx = 1;
         }
-
+        
         if (idx == _current_frame - 1) {
             // We iterate over all pages and no victim was found.
             // Wake up cleaner and wait here.
             _bufferpool->get_cleaner()->wakeup(true);
         }
-
-        // CS TODO -- why do we latch CB manually instead of simply fixing
-        // the page??
-
-        bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
-
-        // Step 1: latch page in EX mode and check if eligible for eviction
-        rc_t latch_rc;
-        latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
-        if (latch_rc.is_error()) {
+        
+        if (evict_page(idx, p)) {
+            _current_frame = idx + 1;
+            return idx;
+        } else {
             idx++;
             continue;
         }
-        w_assert1(cb.latch().is_mine());
-
-        // now we hold an EX latch -- check if leaf and not dirty
-        btree_page_h p;
-        p.fix_nonbufferpool_page(_bufferpool->_buffer + idx);
-        if (p.tag() != t_btree_p || !p.is_leaf() || cb.is_dirty()
-                || !cb._used || p.pid() == p.root() || p.get_foster() != 0)
-        {
-            cb.latch().latch_release();
-            idx++;
-            continue;
-        }
-
-        // page is a B-tree leaf -- check if pin count is zero
-        if (cb._pin_cnt != 0)
-        {
-            // pin count -1 means page was already evicted
-            cb.latch().latch_release();
-            idx++;
-            continue;
-        }
-        w_assert1(_bufferpool->_is_active_idx(idx));
-
-        // If we got here, we passed all tests and have a victim!
-        _current_frame = idx +1;
-        return idx;
     }
 }
 
@@ -215,36 +193,45 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx)
 }
 
 bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
-    bf_tree_cb_t& cb = _bufferpool->get_cb(idx);
-    
+    // Step 1: Get the control block of the eviction candidate
+    bf_tree_cb_t &cb = _bufferpool->get_cb(idx);
     evicted_page = cb._pid;
     
+    // Step 2: Latch page in EX mode and check if eligible for eviction
     rc_t latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
     if (latch_rc.is_error()) {
         return false;
     }
-    
     w_assert1(cb.latch().is_mine());
     
     /* There are some pages we want to ignore in our policies:
      * 1) Non B+Tree pages
-     * 2) Dirty pages (the cleaner should have cleaned it already)
-     * 3) Pages being used by someone else
-     * 4) The root
+     * 2) Pages being used by someone else
+     * 3) The root
      */
     btree_page_h p;
     p.fix_nonbufferpool_page(_bufferpool->_buffer + idx);
-    if (p.tag() != t_btree_p || cb.is_dirty() ||
-        !cb._used || p.pid() == p.root())
-    {
-        ref(idx);
+    if (!cb._used || p.get_foster() != 0) {
+        used_ref(idx);
+        cb.latch().latch_release();
+        return false;
+    }
+    
+    if (p.tag() != t_btree_p || p.pid() == p.root()) {
+        block_ref(idx);
+        cb.latch().latch_release();
+        return false;
+    }
+    
+    if (cb.is_dirty() && !_bufferpool->_cleaner_decoupled) {
+        dirty_ref(idx);
         cb.latch().latch_release();
         return false;
     }
     
     // Ignore pages that still have swizzled children
-    if(_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
-        ref(idx);
+    if (_swizziling_enabled && _bufferpool->has_swizzled_child(idx)) {
+        swizzle_ref(idx);
         cb.latch().latch_release();
         return false;
     }
@@ -261,17 +248,27 @@ page_evictioner_gclock::page_evictioner_gclock(bf_tree_m* bufferpool, const sm_o
 
 }
 
-page_evictioner_gclock::~page_evictioner_gclock()
-{
-    delete [] _counts;
+page_evictioner_gclock::~page_evictioner_gclock() {
+    delete[] _counts;
 }
 
-void page_evictioner_gclock::ref(bf_idx idx)
-{
+void page_evictioner_gclock::ref(bf_idx idx) {
     _counts[idx] = _k;
 }
 
 void page_evictioner_gclock::miss_ref(bf_idx b_idx, PageID pid) {}
+
+void page_evictioner_gclock::used_ref(bf_idx idx) {
+    ref(idx);
+}
+
+void page_evictioner_gclock::dirty_ref(bf_idx idx) {}
+
+void page_evictioner_gclock::block_ref(bf_idx idx) {
+    _counts[idx] = std::numeric_limits<uint16_t>::max();
+}
+
+void page_evictioner_gclock::swizzle_ref(bf_idx idx) {}
 
 bf_idx page_evictioner_gclock::pick_victim()
 {
@@ -419,6 +416,16 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() && _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
+
+void page_evictioner_car::used_ref(bf_idx idx) {
+    ref(idx);
+}
+
+void page_evictioner_car::dirty_ref(bf_idx idx) {}
+
+void page_evictioner_car::block_ref(bf_idx idx) {}
+
+void page_evictioner_car::swizzle_ref(bf_idx idx) {}
 
 bf_idx page_evictioner_car::pick_victim() {
     bool evicted_page = false;
@@ -573,6 +580,16 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
+
+void page_evictioner_cart::used_ref(bf_idx idx) {
+    ref(idx);
+}
+
+void page_evictioner_cart::dirty_ref(bf_idx idx) {}
+
+void page_evictioner_cart::block_ref(bf_idx idx) {}
+
+void page_evictioner_cart::swizzle_ref(bf_idx idx) {}
 
 bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
