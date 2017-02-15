@@ -407,7 +407,6 @@ void page_evictioner_car::ref(bf_idx idx) {
 }
 
 void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
-    std::cout << "Registeres Page!" << std::endl;
     DO_PTHREAD(pthread_mutex_lock(&_lock));
 //    u_int32_t before_p = _p;
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
@@ -416,24 +415,19 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() >= 2 * (_c)) {
             _b2->remove_front();
         }
-        bool added = _clocks->add_tail(T_1, b_idx);
-        w_assert1(added);
+        w_assert0(_clocks->add_tail(T_1, b_idx));
         DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_b2->length() / _b1->length())), _c);
-        bool removed = _b1->remove(pid);
-        w_assert1(removed);
-        bool added = _clocks->add_tail(T_2, b_idx);
-        w_assert1(added);
+        w_assert0(_b1->remove(pid));
+        w_assert0(_clocks->add_tail(T_2, b_idx));
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else {
         _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_b1->length() / _b2->length())), u_int32_t(0));
-        bool removed = _b2->remove(pid);
-        w_assert1(removed);
-        bool added = _clocks->add_tail(T_2, b_idx);
-        w_assert1(added);
+        w_assert0(_b2->remove(pid));
+        w_assert0(_clocks->add_tail(T_2, b_idx));
         DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     }
@@ -866,7 +860,7 @@ multi_clock<key, value>::~multi_clock() {
     _clocksize = 0;
     delete[](_values);
     delete[](_clocks);
-    _invalid_index = 0;
+    delete[](_clock_membership);
     
     _clocknumber = 0;
     delete[](_hands);
@@ -943,8 +937,14 @@ bool multi_clock<key, value>::add_tail(clk_idx clock, key index) {
         }
         _sizes[clock]++;
         _clock_membership[index] = clock;
+        std::cout << "index: " << index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
+                  << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                  << "_clock_membership[" << index << "]: " << _clock_membership[index] << std::endl;
         return true;
     } else {
+        std::cout << "index: " << index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
+                  << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                  << "_clock_membership[" << index << "]: " << _clock_membership[index] << std::endl;
         return false;
     }
 }
@@ -987,16 +987,13 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
 
 template<class key, class value>
 bool multi_clock<key, value>::switch_head_to_tail(clk_idx source, clk_idx destination,
-                                                                  key &moved_index) {
+                                                  key &moved_index) {
     moved_index = _invalid_index;
     if (_sizes[source] > 0
      && source >= 0 && source <= _clocknumber - 1
      && destination >= 0 && destination <= _clocknumber - 1) {
-        bool removed = remove_head(source, moved_index);
-        w_assert1(removed);
-        
-        bool added = add_tail(destination, moved_index);
-        w_assert1(added);
+        w_assert0(remove_head(source, moved_index));
+        w_assert0(add_tail(destination, moved_index));
         
         return true;
     } else {
