@@ -416,19 +416,19 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
             _b2->remove_front();
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_b2->length() / _b1->length())), _c);
         w_assert0(_b1->remove(pid));
         w_assert0(_clocks->add_tail(T_2, b_idx));
-        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else {
         _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_b1->length() / _b2->length())), u_int32_t(0));
         w_assert0(_b2->remove(pid));
         w_assert0(_clocks->add_tail(T_2, b_idx));
-        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     }
 //    if (before_p != _p) {
@@ -465,7 +465,7 @@ bf_idx page_evictioner_car::pick_victim() {
         if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
             std::cout << "Iterated " << iterations << "-times in CAR's pick_victim()." << std::endl;
         }
-        DBG(<< "p = " << _p);
+        DBG2(<< "p = " << _p);
         if ((_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
             bf_idx t_1_head_index = 0;
@@ -478,10 +478,9 @@ bf_idx page_evictioner_car::pick_victim() {
                 evicted_page = evict_page(t_1_head_index, evicted_pid);
                 
                 if (evicted_page) {
-                    bool removed = _clocks->remove_head(T_1, t_1_head_index);
-                    bool inserted = _b1->insert_back(evicted_pid);
-                    DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                    w_assert1(removed && inserted);
+                    w_assert0(_clocks->remove_head(T_1, t_1_head_index));
+                    w_assert0(_b1->insert_back(evicted_pid));
+                    DBG2(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
@@ -490,12 +489,11 @@ bf_idx page_evictioner_car::pick_victim() {
                     continue;
                 }
             } else {
-                bool set = _clocks->set_head(T_1, false);
-                w_assert1(set);
+                w_assert0(_clocks->set_head(T_1, false));
                 
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
-                DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG2(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG2(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 continue;
             }
         } else if (blocked_t_2 < _clocks->size_of(T_2)) {
@@ -512,10 +510,9 @@ bf_idx page_evictioner_car::pick_victim() {
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
         
                 if (evicted_page) {
-                    bool removed = _clocks->remove_head(T_2, t_2_head_index);
-                    bool inserted = _b2->insert_back(evicted_pid);
-                    DBG(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                    w_assert1(removed && inserted);
+                    w_assert0(_clocks->remove_head(T_2, t_2_head_index));
+                    w_assert0(_b2->insert_back(evicted_pid));
+                    DBG2(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
@@ -572,31 +569,31 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max(u_int32_t(0), _q) || _b2->length() == 0)) {
             w_assert0(_b1->remove_front());
-            DBG1(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            DBG2(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         } else if (_b1->length() + _b2->length() >= _c + 1) {
             w_assert0(_b2->remove_front());
-            DBG1(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            DBG2(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = S;
         _n_s = _n_s + 1;
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_n_s / _b1->length())), _c);
         w_assert0(_b1->remove(pid));
-        DBG1(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
     } else {
         _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_n_l / _b2->length())), u_int32_t(0));
         w_assert0(_b2->remove(pid));
-        DBG1(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG2(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
@@ -643,7 +640,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         while (t_2_head._referenced) {
             (*_clocks)[t_2_head_index]._referenced = false;
             w_assert0(_clocks->switch_head_to_tail(T_2, T_1, t_2_head_index));
-            DBG1(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
+            DBG2(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
             
             if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b2->length() - _n_s >= _c) {
                 _q = std::min(_q + 1, 2 * _c - _clocks->size_of(T_1));
@@ -673,7 +670,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             } else {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 w_assert0(_clocks->switch_head_to_tail(T_1, T_2, t_1_head_index));
-                DBG1(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
+                DBG2(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
                 _q = std::max(_q - 1, _c - _clocks->size_of(T_1));
             }
 
@@ -692,9 +689,8 @@ bf_idx page_evictioner_cart::pick_victim() {
             
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_1_head_index));
-                DBG1(<< "Removed from T_1: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 w_assert0(_b1->insert_back(evicted_pid));
-                DBG1(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG2(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                 _n_s = _n_s - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -711,9 +707,9 @@ bf_idx page_evictioner_cart::pick_victim() {
     
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_2_head_index));
-                DBG1(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG2(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 w_assert0(_b2->insert_back(evicted_pid));
-                DBG1(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG2(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                 _n_l = _n_l - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -937,14 +933,8 @@ bool multi_clock<key, value>::add_tail(clk_idx clock, key index) {
         }
         _sizes[clock]++;
         _clock_membership[index] = clock;
-        std::cout << "index: " << index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
-                  << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                  << "_clock_membership[" << index << "]: " << _clock_membership[index] << std::endl;
         return true;
     } else {
-        std::cout << "index: " << index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
-                  << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                  << "_clock_membership[" << index << "]: " << _clock_membership[index] << std::endl;
         return false;
     }
 }
@@ -956,9 +946,6 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
         removed_index = _hands[clock];
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
-            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
-                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return false;
         } else if (_sizes[clock] == 1) {
             w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
@@ -970,9 +957,6 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
             _hands[clock] = _invalid_index;
             _clock_membership[removed_index] = _invalid_clock_index;
             _sizes[clock]--;
-            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
-                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return true;
         } else {
             _clocks[_clocks[removed_index]._before]._after = _clocks[removed_index]._after;
@@ -984,14 +968,9 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
             _sizes[clock]--;
             
             w_assert1(_hands[clock] != _invalid_index);
-            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
-                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return true;
         }
     } else {
-        std::cout << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
-                  << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
         return false;
     }
 }
