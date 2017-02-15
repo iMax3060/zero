@@ -956,6 +956,9 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
         removed_index = _hands[clock];
         if (_sizes[clock] == 0) {
             w_assert1(_hands[clock] == _invalid_index);
+            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
+                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return false;
         } else if (_sizes[clock] == 1) {
             w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
@@ -967,6 +970,9 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
             _hands[clock] = _invalid_index;
             _clock_membership[removed_index] = _invalid_clock_index;
             _sizes[clock]--;
+            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
+                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return true;
         } else {
             _clocks[_clocks[removed_index]._before]._after = _clocks[removed_index]._after;
@@ -978,9 +984,14 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
             _sizes[clock]--;
             
             w_assert1(_hands[clock] != _invalid_index);
+            std::cout << "index: " << removed_index << "; _clocksize: " << _clocksize << "; _invalid_index: " << _invalid_index << std::endl
+                      << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                      << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
             return true;
         }
     } else {
+        std::cout << "clock: " << clock << "; _clocknumber: " << _clocknumber << "; _invalid_clock_index: " << _invalid_clock_index << std::endl
+                  << "_clock_membership[" << removed_index << "]: " << _clock_membership[removed_index] << std::endl;
         return false;
     }
 }
