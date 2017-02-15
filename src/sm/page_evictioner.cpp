@@ -458,7 +458,9 @@ void page_evictioner_car::block_ref(bf_idx idx) {}
 void page_evictioner_car::swizzle_ref(bf_idx idx) {}
 
 void page_evictioner_car::unbuffered(bf_idx idx) {
+	DO_PTHREAD(pthread_mutex_lock(&_lock));
 	_clocks->remove(idx);
+	DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
 bf_idx page_evictioner_car::pick_victim() {
@@ -632,7 +634,9 @@ void page_evictioner_cart::block_ref(bf_idx idx) {}
 void page_evictioner_cart::swizzle_ref(bf_idx idx) {}
 
 void page_evictioner_cart::unbuffered(bf_idx idx) {
+	DO_PTHREAD(pthread_mutex_lock(&_lock));
 	_clocks->remove(idx);
+	DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
 bf_idx page_evictioner_cart::pick_victim() {
