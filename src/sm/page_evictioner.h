@@ -27,7 +27,7 @@ public:
      * Every time a page is fixed, this method is called. The policy then should
      * do whatever it wants.
      */
-    virtual void            ref(bf_idx idx);
+    virtual void            hit_ref(bf_idx idx);
     
     /**
      *
@@ -59,6 +59,12 @@ public:
      * @param idx
      */
     virtual void            swizzle_ref(bf_idx idx);
+    
+    /**
+     *
+     * @param idx
+     */
+    virtual void            unbuffered(bf_idx idx);
 
     /**
      * Evicts pages from the buffer pool until the preferred amount of frames
@@ -108,12 +114,13 @@ public:
     page_evictioner_gclock(bf_tree_m* bufferpool, const sm_options& options);
     virtual ~page_evictioner_gclock();
 
-    virtual void            ref(bf_idx idx);
+    virtual void            hit_ref(bf_idx idx);
     virtual void            miss_ref(bf_idx b_idx, PageID pid);
     virtual void            used_ref(bf_idx idx);
     virtual void            dirty_ref(bf_idx idx);
     virtual void            block_ref(bf_idx idx);
     virtual void            swizzle_ref(bf_idx idx);
+    virtual void            unbuffered(bf_idx idx);
 
 protected:
     virtual bf_idx          pick_victim();
@@ -178,7 +185,7 @@ public:
      * @param idx The frame of the \link _bufferpool \endlink that was fixed with a
      *            page hit.
      */
-    virtual void        ref(bf_idx idx);
+    virtual void        hit_ref(bf_idx idx);
     /*!\fn      miss_ref(bf_idx b_idx, PageID pid)
      * \brief   Updates the eviction statistics on page miss
      * \details Classifies the specified buffer frame to be in clock \f$T_1\f$ or
@@ -196,6 +203,7 @@ public:
     virtual void        dirty_ref(bf_idx idx);
     virtual void        block_ref(bf_idx idx);
     virtual void        swizzle_ref(bf_idx idx);
+    virtual void        unbuffered(bf_idx idx);
 
 protected:
     /*!\fn      pick_victim()
@@ -265,11 +273,12 @@ public:
     virtual ~page_evictioner_cart();
     
     virtual void            miss_ref(bf_idx b_idx, PageID pid);
-    virtual void            ref(bf_idx idx);
+    virtual void            hit_ref(bf_idx idx);
     virtual void            used_ref(bf_idx idx);
     virtual void            dirty_ref(bf_idx idx);
     virtual void            block_ref(bf_idx idx);
     virtual void            swizzle_ref(bf_idx idx);
+    virtual void            unbuffered(bf_idx idx);
 
 protected:
     virtual bf_idx pick_victim();
@@ -572,6 +581,7 @@ public:
     bool            move_head(clk_idx clock);
     bool            add_tail(clk_idx clock, key index);
     bool            remove_head(clk_idx clock, key &removed_index);
+    bool            remove(key &index);
     bool            switch_head_to_tail(clk_idx source, clk_idx destination, key &moved_index);
     key             size_of(clk_idx clock);
     

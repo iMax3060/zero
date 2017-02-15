@@ -66,7 +66,7 @@ void page_evictioner_base::evict()
     }
 }
 
-void page_evictioner_base::ref(bf_idx idx) {}
+void page_evictioner_base::hit_ref(bf_idx idx) {}
 
 void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {}
 
@@ -77,6 +77,8 @@ void page_evictioner_base::dirty_ref(bf_idx idx) {}
 void page_evictioner_base::block_ref(bf_idx idx) {}
 
 void page_evictioner_base::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_base::unbuffered(bf_idx idx) {}
 
 bf_idx page_evictioner_base::pick_victim() {
     /*
@@ -281,14 +283,14 @@ page_evictioner_gclock::~page_evictioner_gclock() {
     delete[] _counts;
 }
 
-void page_evictioner_gclock::ref(bf_idx idx) {
+void page_evictioner_gclock::hit_ref(bf_idx idx) {
     _counts[idx] = _k;
 }
 
 void page_evictioner_gclock::miss_ref(bf_idx b_idx, PageID pid) {}
 
 void page_evictioner_gclock::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_gclock::dirty_ref(bf_idx idx) {}
@@ -298,6 +300,10 @@ void page_evictioner_gclock::block_ref(bf_idx idx) {
 }
 
 void page_evictioner_gclock::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_gclock::unbuffered(bf_idx idx) {
+	_counts[idx] = 0;
+}
 
 bf_idx page_evictioner_gclock::pick_victim()
 {
@@ -402,7 +408,7 @@ page_evictioner_car::~page_evictioner_car() {
     delete(_b2);
 }
 
-void page_evictioner_car::ref(bf_idx idx) {
+void page_evictioner_car::hit_ref(bf_idx idx) {
     _clocks->set(idx, true);
 }
 
@@ -442,7 +448,7 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
 }
 
 void page_evictioner_car::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_car::dirty_ref(bf_idx idx) {}
@@ -450,6 +456,10 @@ void page_evictioner_car::dirty_ref(bf_idx idx) {}
 void page_evictioner_car::block_ref(bf_idx idx) {}
 
 void page_evictioner_car::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_car::unbuffered(bf_idx idx) {
+	_clocks->remove(idx);
+}
 
 bf_idx page_evictioner_car::pick_victim() {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
@@ -558,7 +568,7 @@ page_evictioner_cart::~page_evictioner_cart() {
     delete(_b2);
 }
 
-void page_evictioner_cart::ref(bf_idx idx) {
+void page_evictioner_cart::hit_ref(bf_idx idx) {
     (*_clocks)[idx]._referenced = true;
 }
 
@@ -612,7 +622,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
 }
 
 void page_evictioner_cart::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_cart::dirty_ref(bf_idx idx) {}
@@ -620,6 +630,10 @@ void page_evictioner_cart::dirty_ref(bf_idx idx) {}
 void page_evictioner_cart::block_ref(bf_idx idx) {}
 
 void page_evictioner_cart::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_cart::unbuffered(bf_idx idx) {
+	_clocks->remove(idx);
+}
 
 bf_idx page_evictioner_cart::pick_victim() {
     bool evicted_page = false;
@@ -945,34 +959,50 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         removed_index = _hands[clock];
         if (_sizes[clock] == 0) {
-            w_assert1(_hands[clock] == _invalid_index);
-            return false;
-        } else if (_sizes[clock] == 1) {
-            w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
-            w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
-            w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
-    
-            _clocks[removed_index]._before = _invalid_index;
-            _clocks[removed_index]._after = _invalid_index;
-            _hands[clock] = _invalid_index;
-            _clock_membership[removed_index] = _invalid_clock_index;
-            _sizes[clock]--;
-            return true;
+	        w_assert1(_hands[clock] == _invalid_index);
+	        return false;
+        } else if (_clock_membership[removed_index] != clock) {
+	        return false;
         } else {
-            _clocks[_clocks[removed_index]._before]._after = _clocks[removed_index]._after;
-            _clocks[_clocks[removed_index]._after]._before = _clocks[removed_index]._before;
-            _hands[clock] = _clocks[removed_index]._after;
-            _clocks[removed_index]._before = _invalid_index;
-            _clocks[removed_index]._after = _invalid_index;
-            _clock_membership[removed_index] = _invalid_clock_index;
-            _sizes[clock]--;
-            
-            w_assert1(_hands[clock] != _invalid_index);
+            w_assert0(remove(removed_index));
             return true;
         }
     } else {
         return false;
     }
+}
+
+template<class key, class value>
+bool multi_clock<key, value>::remove(key &index) {
+	if (index >= 0 && index <= _clocksize - 1 && index != _invalid_index
+	 && _clock_membership[index] != _invalid_clock_index) {
+		clk_idx clock = _clock_membership[index];
+		if (_sizes[clock] == 1) {
+			w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
+			w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
+			w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
+			
+			_clocks[index]._before = _invalid_index;
+			_clocks[index]._after = _invalid_index;
+			_hands[clock] = _invalid_index;
+			_clock_membership[index] = _invalid_clock_index;
+			_sizes[clock]--;
+			return true;
+		} else {
+			_clocks[_clocks[index]._before]._after = _clocks[index]._after;
+			_clocks[_clocks[index]._after]._before = _clocks[index]._before;
+			_hands[clock] = _clocks[index]._after;
+			_clocks[index]._before = _invalid_index;
+			_clocks[index]._after = _invalid_index;
+			_clock_membership[index] = _invalid_clock_index;
+			_sizes[clock]--;
+			
+			w_assert1(_hands[clock] != _invalid_index);
+			return true;
+		}
+	} else {
+		return false;
+	}
 }
 
 template<class key, class value>
