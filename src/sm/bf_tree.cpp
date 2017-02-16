@@ -497,8 +497,13 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
     
         if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-            LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                         only_if_hit, hit, evict, start, finish);
+	        if (parent) {
+		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+		                     only_if_hit, hit, evict, start, finish);
+	        } else {
+		        LOGSTATS_FIX(xct()->tid(), page->pid, 0, mode, conditional, virgin_page,
+		                     only_if_hit, hit, evict, start, finish);
+	        }
         }
     
         return RCOK;
