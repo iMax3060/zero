@@ -502,7 +502,7 @@ public:
      * \details
      *
      */
-    virtual         ~hashtable_queue();
+    virtual          ~hashtable_queue();
     
     /*!\fn      contains(key k)
      * \brief
@@ -511,7 +511,7 @@ public:
      * @param k
      * @return
      */
-    bool            contains(key k);
+    bool             contains(key k);
     /*!\fn      insert_back(key k)
      * \brief
      * \details
@@ -519,14 +519,14 @@ public:
      * @param k
      * @return
      */
-    bool            insert_back(key k);
+    bool             insert_back(key k);
     /*!\fn      remove_front()
      * \brief
      * \details
      *
      * @return
      */
-    bool            remove_front();
+    bool             remove_front();
     /*!\fn      remove(key k)
      * \brief
      * \details
@@ -534,14 +534,14 @@ public:
      * @param k
      * @return
      */
-    bool            remove(key k);
+    bool             remove(key k);
     /*!\fn      length()
      * \brief
      * \details
      *
      * @return
      */
-    u_int32_t       length();
+    inline u_int32_t length();
 };
 
 template<class key, class value>
@@ -585,7 +585,7 @@ public:
     bool            remove_head(clk_idx clock, key &removed_index);
     bool            remove(key &index);
     bool            switch_head_to_tail(clk_idx source, clk_idx destination, key &moved_index);
-    key             size_of(clk_idx clock);
+    inline key      size_of(clk_idx clock);
     
     inline value&   get(key index) {
         return _values[index];
