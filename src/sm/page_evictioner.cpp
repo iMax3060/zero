@@ -66,7 +66,7 @@ void page_evictioner_base::evict()
     }
 }
 
-void page_evictioner_base::ref(bf_idx idx) {}
+void page_evictioner_base::hit_ref(bf_idx idx) {}
 
 void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {}
 
@@ -77,6 +77,8 @@ void page_evictioner_base::dirty_ref(bf_idx idx) {}
 void page_evictioner_base::block_ref(bf_idx idx) {}
 
 void page_evictioner_base::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_base::unbuffered(bf_idx idx) {}
 
 bf_idx page_evictioner_base::pick_victim() {
     /*
@@ -281,14 +283,14 @@ page_evictioner_gclock::~page_evictioner_gclock() {
     delete[] _counts;
 }
 
-void page_evictioner_gclock::ref(bf_idx idx) {
+void page_evictioner_gclock::hit_ref(bf_idx idx) {
     _counts[idx] = _k;
 }
 
 void page_evictioner_gclock::miss_ref(bf_idx b_idx, PageID pid) {}
 
 void page_evictioner_gclock::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_gclock::dirty_ref(bf_idx idx) {}
@@ -298,6 +300,10 @@ void page_evictioner_gclock::block_ref(bf_idx idx) {
 }
 
 void page_evictioner_gclock::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_gclock::unbuffered(bf_idx idx) {
+	_counts[idx] = 0;
+}
 
 bf_idx page_evictioner_gclock::pick_victim()
 {
@@ -402,7 +408,7 @@ page_evictioner_car::~page_evictioner_car() {
     delete(_b2);
 }
 
-void page_evictioner_car::ref(bf_idx idx) {
+void page_evictioner_car::hit_ref(bf_idx idx) {
     _clocks->set(idx, true);
 }
 
@@ -415,29 +421,24 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() >= 2 * (_c)) {
             _b2->remove_front();
         }
-        bool added = _clocks->add_tail(T_1, b_idx);
-        w_assert1(added);
-        DBG(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        w_assert0(_clocks->add_tail(T_1, b_idx));
+        DBG5(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_b2->length() / _b1->length())), _c);
-        bool removed = _b1->remove(pid);
-        w_assert1(removed);
-        bool added = _clocks->add_tail(T_2, b_idx);
-        w_assert1(added);
-        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        w_assert0(_b1->remove(pid));
+        w_assert0(_clocks->add_tail(T_2, b_idx));
+        DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else {
         _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_b1->length() / _b2->length())), u_int32_t(0));
-        bool removed = _b2->remove(pid);
-        w_assert1(removed);
-        bool added = _clocks->add_tail(T_2, b_idx);
-        w_assert1(added);
-        DBG(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        w_assert0(_b2->remove(pid));
+        w_assert0(_clocks->add_tail(T_2, b_idx));
+        DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     }
 //    if (before_p != _p) {
-//        std::cout << "p = " << _p << std::endl;
+//        DBG3(<< "p = " << _p);
 //    }
     w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) && _clocks->size_of(T_1) + _clocks->size_of(T_2) <= _c);
     w_assert1(0 <= _clocks->size_of(T_1) + _b1->length() && _clocks->size_of(T_1) + _b1->length() <= _c);
@@ -447,7 +448,7 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
 }
 
 void page_evictioner_car::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_car::dirty_ref(bf_idx idx) {}
@@ -455,6 +456,12 @@ void page_evictioner_car::dirty_ref(bf_idx idx) {}
 void page_evictioner_car::block_ref(bf_idx idx) {}
 
 void page_evictioner_car::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_car::unbuffered(bf_idx idx) {
+	DO_PTHREAD(pthread_mutex_lock(&_lock));
+	_clocks->remove(idx);
+	DO_PTHREAD(pthread_mutex_unlock(&_lock));
+}
 
 bf_idx page_evictioner_car::pick_victim() {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
@@ -466,9 +473,14 @@ bf_idx page_evictioner_car::pick_victim() {
     while (!evicted_page) {
         if (blocked_t_1 + blocked_t_2 >= _c / 16) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
             _bufferpool->get_cleaner()->wakeup(true);
+            DBG3(<< "Run Page_Cleaner ...");
         }
-        w_assert0(blocked_t_1 + blocked_t_2 > _c);
-        DBG(<< "p = " << _p);
+        u_int32_t iterations = (blocked_t_1 + blocked_t_2) / _c;
+        if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
+            DBG1(<< "Iterated " << iterations << "-times in CAR's pick_victim().");
+        }
+        w_assert1(iterations < 3);
+        DBG3(<< "p = " << _p);
         if ((_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
             bf_idx t_1_head_index = 0;
@@ -481,23 +493,23 @@ bf_idx page_evictioner_car::pick_victim() {
                 evicted_page = evict_page(t_1_head_index, evicted_pid);
                 
                 if (evicted_page) {
-                    bool removed = _clocks->remove_head(T_1, t_1_head_index);
-                    bool inserted = _b1->insert_back(evicted_pid);
-                    DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                    w_assert1(removed && inserted);
+                    w_assert0(_clocks->remove_head(T_1, t_1_head_index));
+                    w_assert0(_b1->insert_back(evicted_pid));
+                    DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
                     _clocks->move_head(T_1);
                     blocked_t_1++;
+                    continue;
                 }
             } else {
-                bool set = _clocks->set_head(T_1, false);
-                w_assert1(set);
+                w_assert0(_clocks->set_head(T_1, false));
                 
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
-                DBG(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                DBG(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG5(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                continue;
             }
         } else if (blocked_t_2 < _clocks->size_of(T_2)) {
             bool t_2_head = false;
@@ -513,27 +525,28 @@ bf_idx page_evictioner_car::pick_victim() {
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
         
                 if (evicted_page) {
-                    bool removed = _clocks->remove_head(T_2, t_2_head_index);
-                    bool inserted = _b2->insert_back(evicted_pid);
-                    DBG(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                    w_assert1(removed && inserted);
+                    w_assert0(_clocks->remove_head(T_2, t_2_head_index));
+                    w_assert0(_b2->insert_back(evicted_pid));
+                    DBG5(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
                     _clocks->move_head(T_2);
                     blocked_t_2++;
+                    continue;
                 }
             } else {
                 w_assert0(_clocks->set_head(T_2, false));
                 
                 _clocks->move_head(T_2);
+                continue;
             }
         } else {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
         }
     }
-    
+
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
     return 0;
 }
@@ -560,7 +573,7 @@ page_evictioner_cart::~page_evictioner_cart() {
     delete(_b2);
 }
 
-void page_evictioner_cart::ref(bf_idx idx) {
+void page_evictioner_cart::hit_ref(bf_idx idx) {
     (*_clocks)[idx]._referenced = true;
 }
 
@@ -571,31 +584,31 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max(u_int32_t(0), _q) || _b2->length() == 0)) {
             w_assert0(_b1->remove_front());
-            DBG1(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            DBG5(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         } else if (_b1->length() + _b2->length() >= _c + 1) {
             w_assert0(_b2->remove_front());
-            DBG1(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG5(<< "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = S;
         _n_s = _n_s + 1;
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max(u_int32_t(1), u_int32_t(_n_s / _b1->length())), _c);
         w_assert0(_b1->remove(pid));
-        DBG1(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG5(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
     } else {
         _p = std::max(_p - std::max(u_int32_t(1), u_int32_t(_n_l / _b2->length())), u_int32_t(0));
         w_assert0(_b2->remove(pid));
-        DBG1(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        DBG1(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
@@ -614,7 +627,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
 }
 
 void page_evictioner_cart::used_ref(bf_idx idx) {
-    ref(idx);
+	hit_ref(idx);
 }
 
 void page_evictioner_cart::dirty_ref(bf_idx idx) {}
@@ -622,6 +635,12 @@ void page_evictioner_cart::dirty_ref(bf_idx idx) {}
 void page_evictioner_cart::block_ref(bf_idx idx) {}
 
 void page_evictioner_cart::swizzle_ref(bf_idx idx) {}
+
+void page_evictioner_cart::unbuffered(bf_idx idx) {
+	DO_PTHREAD(pthread_mutex_lock(&_lock));
+	_clocks->remove(idx);
+	DO_PTHREAD(pthread_mutex_unlock(&_lock));
+}
 
 bf_idx page_evictioner_cart::pick_victim() {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
@@ -643,7 +662,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         while (t_2_head._referenced) {
             (*_clocks)[t_2_head_index]._referenced = false;
             w_assert0(_clocks->switch_head_to_tail(T_2, T_1, t_2_head_index));
-            DBG1(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
+            DBG5(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
             
             if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b2->length() - _n_s >= _c) {
                 _q = std::min(_q + 1, 2 * _c - _clocks->size_of(T_1));
@@ -673,7 +692,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             } else {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 w_assert0(_clocks->switch_head_to_tail(T_1, T_2, t_1_head_index));
-                DBG1(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
+                DBG5(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
                 _q = std::max(_q - 1, _c - _clocks->size_of(T_1));
             }
 
@@ -692,9 +711,8 @@ bf_idx page_evictioner_cart::pick_victim() {
             
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_1_head_index));
-                DBG1(<< "Removed from T_1: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 w_assert0(_b1->insert_back(evicted_pid));
-                DBG1(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG5(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                 _n_s = _n_s - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -711,9 +729,9 @@ bf_idx page_evictioner_cart::pick_victim() {
     
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_2_head_index));
-                DBG1(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG5(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 w_assert0(_b2->insert_back(evicted_pid));
-                DBG1(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DBG5(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                 _n_l = _n_l - 1;
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -860,7 +878,7 @@ multi_clock<key, value>::~multi_clock() {
     _clocksize = 0;
     delete[](_values);
     delete[](_clocks);
-    _invalid_index = 0;
+    delete[](_clock_membership);
     
     _clocknumber = 0;
     delete[](_hands);
@@ -949,29 +967,12 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
     if (clock >= 0 && clock <= _clocknumber - 1) {
         removed_index = _hands[clock];
         if (_sizes[clock] == 0) {
-            w_assert1(_hands[clock] == _invalid_index);
-            return false;
-        } else if (_sizes[clock] == 1) {
-            w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
-            w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
-            w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
-    
-            _clocks[removed_index]._before = _invalid_index;
-            _clocks[removed_index]._after = _invalid_index;
-            _hands[clock] = _invalid_index;
-            _clock_membership[removed_index] = _invalid_clock_index;
-            _sizes[clock]--;
-            return true;
+	        w_assert1(_hands[clock] == _invalid_index);
+	        return false;
+        } else if (_clock_membership[removed_index] != clock) {
+	        return false;
         } else {
-            _clocks[_clocks[removed_index]._before]._after = _clocks[removed_index]._after;
-            _clocks[_clocks[removed_index]._after]._before = _clocks[removed_index]._before;
-            _hands[clock] = _clocks[removed_index]._after;
-            _clocks[removed_index]._before = _invalid_index;
-            _clocks[removed_index]._after = _invalid_index;
-            _clock_membership[removed_index] = _invalid_clock_index;
-            _sizes[clock]--;
-            
-            w_assert1(_hands[clock] != _invalid_index);
+            w_assert0(remove(removed_index));
             return true;
         }
     } else {
@@ -980,17 +981,47 @@ bool multi_clock<key, value>::remove_head(clk_idx clock, key &removed_index) {
 }
 
 template<class key, class value>
+bool multi_clock<key, value>::remove(key &index) {
+	if (index >= 0 && index <= _clocksize - 1 && index != _invalid_index
+	 && _clock_membership[index] != _invalid_clock_index) {
+		clk_idx clock = _clock_membership[index];
+		if (_sizes[clock] == 1) {
+			w_assert1(_hands[clock] >= 0 && _hands[clock] <= _clocksize - 1 && _hands[clock] != _invalid_index);
+			w_assert1(_clocks[_hands[clock]]._before == _hands[clock]);
+			w_assert1(_clocks[_hands[clock]]._after == _hands[clock]);
+			
+			_clocks[index]._before = _invalid_index;
+			_clocks[index]._after = _invalid_index;
+			_hands[clock] = _invalid_index;
+			_clock_membership[index] = _invalid_clock_index;
+			_sizes[clock]--;
+			return true;
+		} else {
+			_clocks[_clocks[index]._before]._after = _clocks[index]._after;
+			_clocks[_clocks[index]._after]._before = _clocks[index]._before;
+			_hands[clock] = _clocks[index]._after;
+			_clocks[index]._before = _invalid_index;
+			_clocks[index]._after = _invalid_index;
+			_clock_membership[index] = _invalid_clock_index;
+			_sizes[clock]--;
+			
+			w_assert1(_hands[clock] != _invalid_index);
+			return true;
+		}
+	} else {
+		return false;
+	}
+}
+
+template<class key, class value>
 bool multi_clock<key, value>::switch_head_to_tail(clk_idx source, clk_idx destination,
-                                                                  key &moved_index) {
+                                                  key &moved_index) {
     moved_index = _invalid_index;
     if (_sizes[source] > 0
      && source >= 0 && source <= _clocknumber - 1
      && destination >= 0 && destination <= _clocknumber - 1) {
-        bool removed = remove_head(source, moved_index);
-        w_assert1(removed);
-        
-        bool added = add_tail(destination, moved_index);
-        w_assert1(added);
+        w_assert0(remove_head(source, moved_index));
+        w_assert0(add_tail(destination, moved_index));
         
         return true;
     } else {

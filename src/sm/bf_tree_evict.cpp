@@ -3,8 +3,6 @@
 #include "btree_page_h.h"
 #include "log_core.h" // debug: for printing log tail
 
-#include "bf_hashtable.cpp"
-
 w_rc_t bf_tree_m::_grab_free_block(bf_idx &ret, bool &evicted, bool evict)
 {
     evicted = false;
@@ -44,7 +42,7 @@ w_rc_t bf_tree_m::_get_replacement_block()
 
 void bf_tree_m::_add_free_block(bf_idx idx)
 {
-    bool added_frame = _freelist->push(idx);
-    w_assert1(added_frame);
+    w_assert0(_freelist->push(idx));
+    if(_evictioner) _evictioner->unbuffered(idx);
     _approx_freelist_length++;
 }

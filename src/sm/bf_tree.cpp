@@ -292,7 +292,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         cb.pin(); //LL: if calling pin, latch should be in EX mode always, no?
         cb.inc_ref_count();
         w_assert0(_evictioner);
-        if (_evictioner) _evictioner->ref(idx);
+        if (_evictioner) _evictioner->hit_ref(idx);
         if (mode == LATCH_EX) {
             cb.inc_ref_count_ex();
         }
@@ -431,7 +431,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             cb.pin();
             cb.inc_ref_count();
             w_assert0(_evictioner);
-            if (_evictioner) _evictioner->ref(idx);
+            if (_evictioner) _evictioner->hit_ref(idx);
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
             }
@@ -500,8 +500,13 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
     
         if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-            LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                         only_if_hit, hit, evict, start, finish);
+	        if (parent) {
+		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+		                     only_if_hit, hit, evict, start, finish);
+	        } else {
+		        LOGSTATS_FIX(xct()->tid(), page->pid, 0, mode, conditional, virgin_page,
+		                     only_if_hit, hit, evict, start, finish);
+	        }
         }
     
         return RCOK;
@@ -911,7 +916,7 @@ w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
     cb.pin();
     DBG(<< "Refix direct of " << idx << " set pin cnt to " << cb._pin_cnt);
     cb.inc_ref_count();
-    if(_evictioner) _evictioner->ref(idx);
+    if(_evictioner) _evictioner->hit_ref(idx);
     if (mode == LATCH_EX) { ++cb._ref_count_ex; }
     page = &(_buffer[idx]);
     
@@ -1040,7 +1045,7 @@ void bf_tree_m::unfix(const generic_page* page, bool evict)
         cb.unpin();
         w_assert1(cb._pin_cnt >= 0);
         w_assert0(_evictioner);
-        if (_evictioner) _evictioner->ref(idx);
+        if (_evictioner) _evictioner->hit_ref(idx);
     }
     DBG(<< "Unfixed " << idx << " pin count " << cb._pin_cnt);
     cb.latch().latch_release();
