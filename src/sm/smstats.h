@@ -305,8 +305,13 @@ public:
      * \param finish      The time when the execution of bf_tree_m::unpin_for_refix(bf_idx idx) finished.
      */
     void log_unpin(tid_t tid, PageID page, u_long start, u_long finish);
-    void log_miss_ref(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length, u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index, u_long start, u_long finish);
-    void log_pick_victim(tid_t tid, bf_idx b_idx, u_int32_t iterations, u_int32_t p, u_int32_t b1_length, u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index, u_long start, u_long finish);
+    void log_pick_victim_gclock(tid_t tid, bf_idx b_idx, bf_idx index, u_long start, u_long finish);
+    void log_miss_ref_car(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length, u_int32_t b2_length,
+                          bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index, u_long start,
+                          u_long finish);
+    void log_pick_victim_car(tid_t tid, bf_idx b_idx, u_int32_t t1_movements, u_int32_t t2_movements, u_int32_t p, u_int32_t b1_length,
+                             u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index,
+                             u_long start, u_long finish);
 };
 
 

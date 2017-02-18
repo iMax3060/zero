@@ -243,9 +243,21 @@ void sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long
               << finish << std::endl;
 }
 
-void sm_stats_logstats_t::log_miss_ref(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length,
-                                       u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
-                                       bf_idx t2_index, u_long start, u_long finish) {
+void sm_stats_logstats_t::log_pick_victim_gclock(tid_t tid, bf_idx b_idx, bf_idx index, u_long start, u_long finish) {
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
+    
+    *logstats << "pick_victim,"
+              << tid.as_int64() << ","
+              << b_idx << ","
+              << index << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_miss_ref_car(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length,
+                                           u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
+                                           bf_idx t2_index, u_long start, u_long finish) {
     w_assert1(logstats->is_open());
     w_assert1(sm_stats_logstats_t::activate);
     
@@ -265,16 +277,18 @@ void sm_stats_logstats_t::log_miss_ref(tid_t tid, bf_idx b_idx, PageID page, u_i
 }
 
 void
-sm_stats_logstats_t::log_pick_victim(tid_t tid, bf_idx b_idx, u_int32_t iterations, u_int32_t p, u_int32_t b1_length,
-                                     u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
-                                     bf_idx t2_index, u_long start, u_long finish) {
+sm_stats_logstats_t::log_pick_victim_car(tid_t tid, bf_idx b_idx, u_int32_t t1_movements, u_int32_t t2_movements, u_int32_t p,
+                                         u_int32_t b1_length,
+                                         u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
+                                         bf_idx t2_index, u_long start, u_long finish) {
     w_assert1(logstats->is_open());
     w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "pick_victim,"
               << tid.as_int64() << ","
               << b_idx << ","
-              << iterations << ","
+              << t1_movements << ","
+              << t2_movements << ","
               << p  << ","
               << b1_length << ","
               << b2_length << ","

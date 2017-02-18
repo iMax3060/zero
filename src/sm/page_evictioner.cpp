@@ -13,6 +13,8 @@ page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_optio
 {
     _swizziling_enabled = options.get_bool_option("sm_bufferpool_swizzle", false);
     _current_frame = 0;
+    
+    _logstats_evict = options.get_bool_option("sm_evict_stats", false);
 }
 
 page_evictioner_base::~page_evictioner_base() {}
@@ -307,6 +309,11 @@ void page_evictioner_gclock::unbuffered(bf_idx idx) {
 
 bf_idx page_evictioner_gclock::pick_victim()
 {
+    u_long start;
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+    
     // Check if we still need to evict
     bf_idx idx = _current_frame;
     while(true)
@@ -376,6 +383,12 @@ bf_idx page_evictioner_gclock::pick_victim()
                 }
 
                 _current_frame = idx + 1;
+    
+                if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    LOGSTATS_PICK_VICTIM_GCLOCK(xct()->tid(), idx, _current_frame, start, finish);
+                }
+    
                 return idx;
             }
         }
@@ -395,8 +408,6 @@ page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options
     
     _p = 0;
     _c = _bufferpool->_block_cnt - 1;
-    
-    _logstats_evict = options.get_bool_option("sm_evict_stats", false);
 
     DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
@@ -459,7 +470,8 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         _clocks->get_head_index(T_1, t1_head_index);
         bf_idx t2_head_index;
         _clocks->get_head_index(T_2, t2_head_index);
-        LOGSTATS_MISS_REF(xct()->tid(), b_idx, pid, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+        LOGSTATS_MISS_REF_CAR(xct()->tid(), b_idx, pid, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1),
+                          _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
     }
 }
 
@@ -524,7 +536,9 @@ bf_idx page_evictioner_car::pick_victim() {
                         _clocks->get_head_index(T_1, t1_head_index);
                         bf_idx t2_head_index;
                         _clocks->get_head_index(T_2, t2_head_index);
-                        LOGSTATS_PICK_VICTIM(xct()->tid(), t_1_head_index, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+                        LOGSTATS_PICK_VICTIM_CAR(xct()->tid(), t_1_head_index, blocked_t_1, blocked_t_2, _p,
+                                             _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2),
+                                             t1_head_index, t2_head_index, start, finish);
                     }
     
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -567,7 +581,9 @@ bf_idx page_evictioner_car::pick_victim() {
                         _clocks->get_head_index(T_1, t1_head_index);
                         bf_idx t2_head_index;
                         _clocks->get_head_index(T_2, t2_head_index);
-                        LOGSTATS_PICK_VICTIM(xct()->tid(), t_2_head_index, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+                        LOGSTATS_PICK_VICTIM_CAR(xct()->tid(), t_2_head_index, blocked_t_1, blocked_t_2, _p,
+                                             _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2),
+                                             t1_head_index, t2_head_index, start, finish);
                     }
     
                     return t_2_head_index;
@@ -591,7 +607,9 @@ bf_idx page_evictioner_car::pick_victim() {
                 _clocks->get_head_index(T_1, t1_head_index);
                 bf_idx t2_head_index;
                 _clocks->get_head_index(T_2, t2_head_index);
-                LOGSTATS_PICK_VICTIM(xct()->tid(), 0, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+                LOGSTATS_PICK_VICTIM_CAR(xct()->tid(), 0, blocked_t_1, blocked_t_2, _p, _b1->length(),
+                                     _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index,
+                                     t2_head_index, start, finish);
             }
     
             return 0;
@@ -606,7 +624,8 @@ bf_idx page_evictioner_car::pick_victim() {
         _clocks->get_head_index(T_1, t1_head_index);
         bf_idx t2_head_index;
         _clocks->get_head_index(T_2, t2_head_index);
-        LOGSTATS_PICK_VICTIM(xct()->tid(), 0, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+        LOGSTATS_PICK_VICTIM_CAR(xct()->tid(), 0, blocked_t_1, blocked_t_2, _p, _b1->length(), _b2->length(),
+                             _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
     }
     
     return 0;

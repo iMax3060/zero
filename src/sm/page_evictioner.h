@@ -86,7 +86,8 @@ protected:
     virtual bf_idx          pick_victim();
     
     bool evict_page(bf_idx idx, PageID &evicted_page);
-
+    
+    bool                        _logstats_evict;
 private:
 	/**
 	 * When eviction is triggered, _about_ this number of cb will be evicted at
@@ -107,6 +108,7 @@ private:
 	 * looking up the parent, latching, etc, so we save some work.
 	 */
 	bool unswizzle_and_update_emlsn(bf_idx idx);
+    
 };
 
 class page_evictioner_gclock : public page_evictioner_base {
@@ -256,8 +258,6 @@ protected:
      * doesn't need to acquire this lock for its changes.
      */
     pthread_mutex_t                 _lock;
-    
-    bool                            _logstats_evict;
     
     /**
      * Contains constants that map the names of the clocks used by the CAR algorithm to
