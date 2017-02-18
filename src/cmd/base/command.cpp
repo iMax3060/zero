@@ -415,6 +415,6 @@ void Command::setSMOptions(sm_options& sm_opt, const po::variables_map& values)
     };
     // Sets the parameters regarding sm_stats_logstats_t to static variables of the class because propagating the sm_options
     // to every place where they would be needed is just to much to change. CS TODO: Is that an appropriate way to do so?
-    sm_stats_logstats_t::activate = sm_opt.get_bool_option("sm_fix_stats", false);
+    sm_stats_logstats_t::activate = sm_opt.get_bool_option("sm_fix_stats", false) || sm_opt.get_bool_option("sm_evict_stats", false);
     sm_stats_logstats_t::filepath = const_cast<char*>(sm_opt.get_string_option("sm_stats_file", "buffer.log").c_str());
 }
