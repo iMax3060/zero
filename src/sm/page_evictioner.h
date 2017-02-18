@@ -257,6 +257,8 @@ protected:
      */
     pthread_mutex_t                 _lock;
     
+    bool                            _logstats_evict;
+    
     /**
      * Contains constants that map the names of the clocks used by the CAR algorithm to
      * the indexes used by the \link _clocks data structure.

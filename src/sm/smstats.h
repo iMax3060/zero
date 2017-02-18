@@ -38,6 +38,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "tid_t.h"
 #include "latch.h"
 #include "basics.h"
+#include "bf_hashtable.h"
 
 #include <iostream>
 
@@ -183,7 +184,7 @@ extern sm_stats_info_t &operator-=(sm_stats_info_t &s, const sm_stats_info_t &t)
  * \details The storage manager is instrumented; it collects detailed logs about
  *          every refix, fix and unfix that happens in the buffer pool. It works
  *          independent from the database log and stores the log entries as text
- *          in a file specified with the option \c sm_fix_stats_file \c when it
+ *          in a file specified with the option \c sm_stats_file \c when it
  *          is activated with the option \c sm_fix_stats \c.
  *          This can be easily extended by other kinds of log records that log
  *          events and characteristics of those that happen in the Storage Manager
@@ -226,7 +227,7 @@ public:
     static bool activate;
     /*!\var   static char* filepath
      * \brief This static variable is set according to the value specified in the option
-     *        \c sm_fix_stats_file \c.
+     *        \c sm_stats_file \c.
      */
     static char* filepath;
 public:
@@ -304,6 +305,8 @@ public:
      * \param finish      The time when the execution of bf_tree_m::unpin_for_refix(bf_idx idx) finished.
      */
     void log_unpin(tid_t tid, PageID page, u_long start, u_long finish);
+    void log_miss_ref(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length, u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index, u_long start, u_long finish);
+    void log_pick_victim(tid_t tid, bf_idx b_idx, u_int32_t iterations, u_int32_t p, u_int32_t b1_length, u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index, u_long start, u_long finish);
 };
 
 

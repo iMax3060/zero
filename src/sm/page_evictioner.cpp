@@ -396,6 +396,8 @@ page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options
     _p = 0;
     _c = _bufferpool->_block_cnt - 1;
     
+    _logstats_evict = options.get_bool_option("sm_evict_stats", false);
+
     DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
 
@@ -413,6 +415,11 @@ void page_evictioner_car::hit_ref(bf_idx idx) {
 }
 
 void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
+    u_long start;
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+
     DO_PTHREAD(pthread_mutex_lock(&_lock));
 //    u_int32_t before_p = _p;
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
@@ -445,6 +452,15 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     w_assert1(0 <= _clocks->size_of(T_2) + _b2->length() && _clocks->size_of(T_2) + _b2->length() <= 2 * (_c));
     w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() && _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
+    
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        bf_idx t1_head_index;
+        _clocks->get_head_index(T_1, t1_head_index);
+        bf_idx t2_head_index;
+        _clocks->get_head_index(T_2, t2_head_index);
+        LOGSTATS_MISS_REF(xct()->tid(), b_idx, pid, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+    }
 }
 
 void page_evictioner_car::used_ref(bf_idx idx) {
@@ -464,6 +480,11 @@ void page_evictioner_car::unbuffered(bf_idx idx) {
 }
 
 bf_idx page_evictioner_car::pick_victim() {
+    u_long start;
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+    
     DO_PTHREAD(pthread_mutex_lock(&_lock));
     
     bool evicted_page = false;
@@ -496,6 +517,16 @@ bf_idx page_evictioner_car::pick_victim() {
                     w_assert0(_clocks->remove_head(T_1, t_1_head_index));
                     w_assert0(_b1->insert_back(evicted_pid));
                     DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+    
+                    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                        bf_idx t1_head_index;
+                        _clocks->get_head_index(T_1, t1_head_index);
+                        bf_idx t2_head_index;
+                        _clocks->get_head_index(T_2, t2_head_index);
+                        LOGSTATS_PICK_VICTIM(xct()->tid(), t_1_head_index, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+                    }
+    
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
@@ -529,6 +560,16 @@ bf_idx page_evictioner_car::pick_victim() {
                     w_assert0(_b2->insert_back(evicted_pid));
                     DBG5(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
+    
+                    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                        bf_idx t1_head_index;
+                        _clocks->get_head_index(T_1, t1_head_index);
+                        bf_idx t2_head_index;
+                        _clocks->get_head_index(T_2, t2_head_index);
+                        LOGSTATS_PICK_VICTIM(xct()->tid(), t_2_head_index, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+                    }
+    
                     return t_2_head_index;
                 } else {
                     _clocks->move_head(T_2);
@@ -543,11 +584,31 @@ bf_idx page_evictioner_car::pick_victim() {
             }
         } else {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
+    
+            if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                bf_idx t1_head_index;
+                _clocks->get_head_index(T_1, t1_head_index);
+                bf_idx t2_head_index;
+                _clocks->get_head_index(T_2, t2_head_index);
+                LOGSTATS_PICK_VICTIM(xct()->tid(), 0, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+            }
+    
             return 0;
         }
     }
 
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
+    
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        bf_idx t1_head_index;
+        _clocks->get_head_index(T_1, t1_head_index);
+        bf_idx t2_head_index;
+        _clocks->get_head_index(T_2, t2_head_index);
+        LOGSTATS_PICK_VICTIM(xct()->tid(), 0, (blocked_t_1 + blocked_t_2) / _c, _p, _b1->length(), _b2->length(), _clocks->size_of(T_1), _clocks->size_of(T_2), t1_head_index, t2_head_index, start, finish);
+    }
+    
     return 0;
 }
 

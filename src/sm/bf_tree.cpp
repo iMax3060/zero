@@ -291,7 +291,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
         cb.pin(); //LL: if calling pin, latch should be in EX mode always, no?
         cb.inc_ref_count();
-        w_assert0(_evictioner);
+        w_assert1(_evictioner);
         if (_evictioner) _evictioner->hit_ref(idx);
         if (mode == LATCH_EX) {
             cb.inc_ref_count_ex();
@@ -393,7 +393,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 cb.init(pid, page->lsn);
             }
     
-            w_assert0(_evictioner);
+            w_assert1(_evictioner);
             if (_evictioner) _evictioner->miss_ref(idx, pid);
 
             w_assert1(_is_active_idx(idx));
@@ -430,7 +430,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(_is_active_idx(idx));
             cb.pin();
             cb.inc_ref_count();
-            w_assert0(_evictioner);
+            w_assert1(_evictioner);
             if (_evictioner) _evictioner->hit_ref(idx);
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
@@ -1044,7 +1044,7 @@ void bf_tree_m::unfix(const generic_page* page, bool evict)
     else {
         cb.unpin();
         w_assert1(cb._pin_cnt >= 0);
-        w_assert0(_evictioner);
+        w_assert1(_evictioner);
         if (_evictioner) _evictioner->hit_ref(idx);
     }
     DBG(<< "Unfixed " << idx << " pin count " << cb._pin_cnt);

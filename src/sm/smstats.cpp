@@ -129,8 +129,8 @@ char* sm_stats_logstats_t::filepath = "";
 void sm_stats_logstats_t::log_fix_nonroot(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
                                          bool virgin_page, bool only_if_hit, u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "fix_nonroot,"
               << tid.as_int64() << ","
@@ -147,8 +147,8 @@ void sm_stats_logstats_t::log_fix_nonroot(tid_t tid, PageID page, PageID parent,
 void sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, latch_mode_t mode, bool conditional,
                                        u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "fix_root,"
               << tid.as_int64() << ","
@@ -163,8 +163,8 @@ void sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, la
 void sm_stats_logstats_t::log_fix(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional,
                                   bool virgin_page, bool only_if_hit, bool hit, bool evict, u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "fix,"
               << tid.as_int64() << ","
@@ -182,8 +182,8 @@ void sm_stats_logstats_t::log_fix(tid_t tid, PageID page, PageID parent, latch_m
 
 void sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID parent, bool evict, u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "unfix_nonroot,"
               << tid.as_int64() << ","
@@ -196,8 +196,8 @@ void sm_stats_logstats_t::log_unfix_nonroot(tid_t tid, PageID page, PageID paren
 
 void sm_stats_logstats_t::log_unfix_root(tid_t tid, PageID page, bool evict, u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "unfix_root,"
               << tid.as_int64() << ","
@@ -209,8 +209,8 @@ void sm_stats_logstats_t::log_unfix_root(tid_t tid, PageID page, bool evict, u_l
 
 void sm_stats_logstats_t::log_refix(tid_t tid, PageID page, latch_mode_t mode, bool conditional, u_long start, u_long finish)
 {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "refix,"
               << tid.as_int64() << ","
@@ -222,8 +222,8 @@ void sm_stats_logstats_t::log_refix(tid_t tid, PageID page, latch_mode_t mode, b
 }
 
 void sm_stats_logstats_t::log_pin(tid_t tid, PageID page, u_long start, u_long finish) {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "pin,"
               << tid.as_int64() << ","
@@ -233,12 +233,55 @@ void sm_stats_logstats_t::log_pin(tid_t tid, PageID page, u_long start, u_long f
 }
 
 void sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long finish) {
-    w_assert0(logstats->is_open());
-    w_assert0(sm_stats_logstats_t::activate);
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
     
     *logstats << "unpin,"
               << tid.as_int64() << ","
               << page << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_miss_ref(tid_t tid, bf_idx b_idx, PageID page, u_int32_t p, u_int32_t b1_length,
+                                       u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
+                                       bf_idx t2_index, u_long start, u_long finish) {
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
+    
+    *logstats << "miss_ref,"
+              << tid.as_int64() << ","
+              << b_idx << ","
+              << page << ","
+              << p  << ","
+              << b1_length << ","
+              << b2_length << ","
+              << t1_length << ","
+              << t2_length << ","
+              << t1_index << ","
+              << t2_index << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void
+sm_stats_logstats_t::log_pick_victim(tid_t tid, bf_idx b_idx, u_int32_t iterations, u_int32_t p, u_int32_t b1_length,
+                                     u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
+                                     bf_idx t2_index, u_long start, u_long finish) {
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
+    
+    *logstats << "pick_victim,"
+              << tid.as_int64() << ","
+              << b_idx << ","
+              << iterations << ","
+              << p  << ","
+              << b1_length << ","
+              << b2_length << ","
+              << t1_length << ","
+              << t2_length << ","
+              << t1_index << ","
+              << t2_index << ","
               << start << ","
               << finish << std::endl;
 }
