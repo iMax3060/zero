@@ -457,15 +457,17 @@ void page_evictioner_car::block_ref(bf_idx idx) {}
 void page_evictioner_car::swizzle_ref(bf_idx idx) {}
 
 bf_idx page_evictioner_car::pick_victim() {
+    DO_PTHREAD(pthread_mutex_lock(&_lock));
+    
     bool evicted_page = false;
     u_int32_t blocked_t_1 = 0;
     u_int32_t blocked_t_2 = 0;
+    
     while (!evicted_page) {
         if (blocked_t_1 + blocked_t_2 >= _c / 16) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
             _bufferpool->get_cleaner()->wakeup(true);
         }
         w_assert0(blocked_t_1 + blocked_t_2 > _c);
-        DO_PTHREAD(pthread_mutex_lock(&_lock));
         DBG(<< "p = " << _p);
         if ((_clocks->size_of(T_1) >= std::max(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
@@ -530,9 +532,9 @@ bf_idx page_evictioner_car::pick_victim() {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
         }
-        DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
     
+    DO_PTHREAD(pthread_mutex_unlock(&_lock));
     return 0;
 }
 
@@ -622,6 +624,8 @@ void page_evictioner_cart::block_ref(bf_idx idx) {}
 void page_evictioner_cart::swizzle_ref(bf_idx idx) {}
 
 bf_idx page_evictioner_cart::pick_victim() {
+    DO_PTHREAD(pthread_mutex_lock(&_lock));
+
     bool evicted_page = false;
     bf_idx blocked_t_1 = 0;
     bf_idx blocked_t_2 = 0;
@@ -630,7 +634,6 @@ bf_idx page_evictioner_cart::pick_victim() {
         if (blocked_t_1 + blocked_t_2 >= _c / 16) {
             _bufferpool->get_cleaner()->wakeup(true);
         }
-        DO_PTHREAD(pthread_mutex_lock(&_lock));
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
         _clocks->get_head(T_2, t_2_head);
@@ -723,9 +726,9 @@ bf_idx page_evictioner_cart::pick_victim() {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
         }
-        DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
     
+    DO_PTHREAD(pthread_mutex_unlock(&_lock));
     return 0;
 }
 
