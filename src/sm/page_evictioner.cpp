@@ -451,7 +451,17 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
         DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else {
-        _p = std::max<int32_t>(int32_t(_p) - std::max<int32_t>(u_int32_t(1), u_int32_t(_b1->length() / _b2->length())), u_int32_t(0));
+        if (_b1->length() < _b2->length()) {
+            if (_p >= 1) {
+                _p--;
+            }
+        } else {
+            if (_p <= (_b1->length() / _b2->length())) {
+                _p = 0;
+            } else {
+                _p -= (_b1->length() / _b2->length());
+            }
+        }
         w_assert0(_b2->remove(pid));
         w_assert0(_clocks->add_tail(T_2, b_idx));
         DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
