@@ -408,6 +408,8 @@ page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options
     
     _p = 0;
     _c = _bufferpool->_block_cnt - 1;
+    
+    _hand_movement = 0;
 
     DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
@@ -497,18 +499,15 @@ bf_idx page_evictioner_car::pick_victim() {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
     
-    DO_PTHREAD(pthread_mutex_lock(&_lock));
-    
     bool evicted_page = false;
     u_int32_t blocked_t_1 = 0;
     u_int32_t blocked_t_2 = 0;
     
     while (!evicted_page) {
-        if (blocked_t_1 + blocked_t_2 >= _c / 16) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
-            DO_PTHREAD(pthread_mutex_unlock(&_lock));
-            _bufferpool->get_cleaner()->wakeup(true);
+        if (_hand_movement >= _c) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
+            _bufferpool->get_cleaner()->wakeup(false);
             DBG3(<< "Run Page_Cleaner ...");
-            DO_PTHREAD(pthread_mutex_lock(&_lock));
+            _hand_movement = 0;
         }
         u_int32_t iterations = (blocked_t_1 + blocked_t_2) / _c;
         if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
@@ -516,6 +515,7 @@ bf_idx page_evictioner_car::pick_victim() {
         }
         w_assert1(iterations < 3);
         DBG3(<< "p = " << _p);
+        DO_PTHREAD(pthread_mutex_lock(&_lock));
         if ((_clocks->size_of(T_1) >= std::max<u_int32_t>(u_int32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
             bf_idx t_1_head_index = 0;
@@ -548,6 +548,8 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     _clocks->move_head(T_1);
                     blocked_t_1++;
+                    _hand_movement++;
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     continue;
                 }
             } else {
@@ -556,6 +558,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 DBG5(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
         } else if (blocked_t_2 < _clocks->size_of(T_2)) {
@@ -592,12 +595,16 @@ bf_idx page_evictioner_car::pick_victim() {
                 } else {
                     _clocks->move_head(T_2);
                     blocked_t_2++;
+                    _hand_movement++;
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     continue;
                 }
             } else {
                 w_assert0(_clocks->set_head(T_2, false));
                 
                 _clocks->move_head(T_2);
+                _hand_movement++;
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
         } else {
@@ -616,10 +623,10 @@ bf_idx page_evictioner_car::pick_victim() {
     
             return 0;
         }
+    
+        DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
 
-    DO_PTHREAD(pthread_mutex_unlock(&_lock));
-    
     if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         bf_idx t1_head_index;

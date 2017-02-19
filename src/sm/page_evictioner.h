@@ -248,6 +248,8 @@ protected:
     u_int32_t                       _p;                 // parameter p
     
     u_int32_t                       _c;
+    
+    bf_idx                          _hand_movement;
 
     /**
      * As the data structures \link _clocks, \link _b1 and \link _b2 aren't thread-safe
