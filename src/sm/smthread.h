@@ -580,7 +580,7 @@ public:
 #define LOGSTATS_UNPIN(tid, page, start, finish) me()->TL_stats_logstats()->log_unpin(tid, page, start, finish)
 #define LOGSTATS_PICK_VICTIM_GCLOCK(tid, b_idx, index, start, finish) me()->TL_stats_logstats()->log_pick_victim_gclock(tid, b_idx, index, start, finish)
 #define LOGSTATS_MISS_REF_CAR(tid, b_idx, page, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish) me()->TL_stats_logstats()->log_miss_ref_car(tid, b_idx, page, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish)
-#define LOGSTATS_PICK_VICTIM_CAR(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, in_cleaner, start, finish) me()->TL_stats_logstats()->log_pick_victim_car(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, in_cleaner, start, finish)
+#define LOGSTATS_PICK_VICTIM_CAR(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish) me()->TL_stats_logstats()->log_pick_victim_car(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish)
 
     /**\cond skip */
     /*

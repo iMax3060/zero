@@ -280,7 +280,7 @@ void
 sm_stats_logstats_t::log_pick_victim_car(tid_t tid, bf_idx b_idx, u_int32_t t1_movements, u_int32_t t2_movements, u_int32_t p,
                                          u_int32_t b1_length,
                                          u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index,
-                                         bf_idx t2_index, u_long in_cleaner, u_long start, u_long finish) {
+                                         bf_idx t2_index, u_long start, u_long finish) {
     w_assert1(logstats->is_open());
     w_assert1(sm_stats_logstats_t::activate);
     
@@ -296,7 +296,6 @@ sm_stats_logstats_t::log_pick_victim_car(tid_t tid, bf_idx b_idx, u_int32_t t1_m
               << t2_length << ","
               << t1_index << ","
               << t2_index << ","
-              << in_cleaner << ","
               << start << ","
               << finish << std::endl;
 }

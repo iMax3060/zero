@@ -311,7 +311,7 @@ public:
                           u_long finish);
     void log_pick_victim_car(tid_t tid, bf_idx b_idx, u_int32_t t1_movements, u_int32_t t2_movements, u_int32_t p, u_int32_t b1_length,
                              u_int32_t b2_length, bf_idx t1_length, bf_idx t2_length, bf_idx t1_index, bf_idx t2_index,
-                             u_long in_cleaner, u_long start, u_long finish);
+                             u_long start, u_long finish);
 };
 
 
