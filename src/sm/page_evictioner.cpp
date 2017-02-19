@@ -671,31 +671,31 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max<u_int32_t>(u_int32_t(0), _q) || _b2->length() == 0)) {
             w_assert0(_b1->remove_front());
-            std::cout << "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            std::cout << "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         } else if (_b1->length() + _b2->length() >= _c + 1) {
             w_assert0(_b2->remove_front());
-            std::cout << "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+            std::cout << "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        std::cout << "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        std::cout << "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = S;
         _n_s = _n_s + 1;
     } else if (_b1->contains(pid)) {
         _p = std::min<u_int32_t>(_p + std::max<u_int32_t>(u_int32_t(1), u_int32_t(_n_s / _b1->length())), _c);
         w_assert0(_b1->remove(pid));
-        std::cout << "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        std::cout << "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        std::cout << "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        std::cout << "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
     } else {
         _p = std::max<int32_t>(int32_t(_p) - std::max<int32_t>(u_int32_t(1), u_int32_t(_n_l / _b2->length())), u_int32_t(0));
         w_assert0(_b2->remove(pid));
-        std::cout << "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        std::cout << "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         w_assert0(_clocks->add_tail(T_1, b_idx));
-        std::cout << "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
+        std::cout << "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
         _n_l = _n_l + 1;
