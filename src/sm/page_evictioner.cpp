@@ -739,7 +739,9 @@ bf_idx page_evictioner_cart::pick_victim() {
         if (_hand_movement >= _c) {
             _bufferpool->get_cleaner()->wakeup(false);
             std::cout << "Run Page_Cleaner ..." << std::endl;
+            DO_PTHREAD(pthread_mutex_lock(&_lock));
             _hand_movement = 0;
+            DO_PTHREAD(pthread_mutex_unlock(&_lock));
         }
         u_int32_t iterations = (blocked_t_1 + blocked_t_2) / _c;
         if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
@@ -778,6 +780,7 @@ bf_idx page_evictioner_cart::pick_victim() {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 _clocks->move_head(T_1);
                 _hand_movement++;
+                std::cout << "Moved hand of T_1; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2) << std::endl;
     
                 if (_clocks->size_of(T_1) >= std::min<u_int32_t>(_p + 1, _b1->length()) && t_1_head._filter == S) {
                     (*_clocks)[t_1_head_index]._filter = L;
@@ -816,6 +819,8 @@ bf_idx page_evictioner_cart::pick_victim() {
                 blocked_t_1 = blocked_t_1 + 1;
                 _clocks->move_head(T_1);
                 _hand_movement++;
+                std::cout << "Moved hand of T_1; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2) << std::endl;
+
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
@@ -838,6 +843,8 @@ bf_idx page_evictioner_cart::pick_victim() {
                 blocked_t_2 = blocked_t_2 + 1;
                 _clocks->move_head(T_2);
                 _hand_movement++;
+                std::cout << "Moved hand of T_2; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2) << std::endl;
+
                 DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
