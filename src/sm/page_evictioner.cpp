@@ -749,11 +749,11 @@ bf_idx page_evictioner_cart::pick_victim() {
         w_assert1(iterations < 3);
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
-        bool t_2_has_head = _clocks->get_head(T_2, t_2_head);
+        _clocks->get_head(T_2, t_2_head);
         
         bf_idx size_t_1_before = _clocks->size_of(T_1);
         bf_idx size_t_2_before = _clocks->size_of(T_2);
-        while (t_2_head._referenced && t_2_has_head) {
+        while (t_2_head._referenced) {
             (*_clocks)[t_2_head_index]._referenced = false;
             w_assert0(_clocks->switch_head_to_tail(T_2, T_1, t_2_head_index));
             DBG5(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
@@ -768,12 +768,12 @@ bf_idx page_evictioner_cart::pick_victim() {
     
         referenced_filter t_1_head = referenced_filter(false, S);
         bf_idx t_1_head_index = 0;
-        bool t_1_has_head = _clocks->get_head(T_1, t_1_head);
+        _clocks->get_head(T_1, t_1_head);
         _clocks->get_head_index(T_1, t_1_head_index);
         
         size_t_1_before = _clocks->size_of(T_1);
         size_t_2_before = _clocks->size_of(T_2);
-        while ((t_1_head._filter == L || t_1_head._referenced) && t_1_has_head) {
+        while (t_1_head._filter == L || t_1_head._referenced) {
             if (t_1_head._referenced) {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 _clocks->move_head(T_1);
