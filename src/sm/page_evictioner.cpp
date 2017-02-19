@@ -730,7 +730,6 @@ void page_evictioner_cart::unbuffered(bf_idx idx) {
 }
 
 bf_idx page_evictioner_cart::pick_victim() {
-    DO_PTHREAD(pthread_mutex_lock(&_lock));
 
     bool evicted_page = false;
     bf_idx blocked_t_1 = 0;
@@ -747,6 +746,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             DBG1(<< "Iterated " << iterations << "-times in CAR's pick_victim().");
         }
         w_assert0(iterations < 3);
+        DO_PTHREAD(pthread_mutex_lock(&_lock));
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
         bool t_2_has_head = _clocks->get_head(T_2, t_2_head);
@@ -816,6 +816,8 @@ bf_idx page_evictioner_cart::pick_victim() {
                 blocked_t_1 = blocked_t_1 + 1;
                 _clocks->move_head(T_1);
                 _hand_movement++;
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
+                continue;
             }
         } else if (blocked_t_2 <= _clocks->size_of(T_2)) {
             _clocks->get_head_index(T_1, t_2_head_index);
@@ -836,14 +838,16 @@ bf_idx page_evictioner_cart::pick_victim() {
                 blocked_t_2 = blocked_t_2 + 1;
                 _clocks->move_head(T_2);
                 _hand_movement++;
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
+                continue;
             }
         } else {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
         }
+        DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
     
-    DO_PTHREAD(pthread_mutex_unlock(&_lock));
     return 0;
 }
 
