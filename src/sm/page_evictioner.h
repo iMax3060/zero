@@ -350,6 +350,8 @@ protected:
     
     u_int32_t                                   _c;
     
+    bf_idx                                      _hand_movement;
+    
     /**
      * As the data structures \link _clocks, \link _b1 and \link _b2 aren't thread-safe
      * and as the \link pick_victim() and the \link miss_ref(bf_idx, PageID) methods

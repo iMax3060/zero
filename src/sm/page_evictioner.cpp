@@ -500,7 +500,7 @@ bf_idx page_evictioner_car::pick_victim() {
     u_int32_t blocked_t_2 = 0;
     
     while (!evicted_page) {
-        if (_hand_movement >= _c) {             // 16 should be configurable; add blocked_t_i configurable parameter; don't wake up twice
+        if (_hand_movement >= _c) {
             _bufferpool->get_cleaner()->wakeup(false);
             DBG3(<< "Run Page_Cleaner ...");
             _hand_movement = 0;
@@ -646,6 +646,8 @@ page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_optio
     _c = _bufferpool->_block_cnt - 1;
     _p = _q = _n_s = _n_l = 0;
     
+    _hand_movement = 0;
+    
     DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
 
@@ -735,9 +737,16 @@ bf_idx page_evictioner_cart::pick_victim() {
     bf_idx blocked_t_2 = 0;
     
     while (!evicted_page) {
-        if (blocked_t_1 + blocked_t_2 >= _c / 16) {
-            _bufferpool->get_cleaner()->wakeup(true);
+        if (_hand_movement >= _c) {
+            _bufferpool->get_cleaner()->wakeup(false);
+            DBG3(<< "Run Page_Cleaner ...");
+            _hand_movement = 0;
         }
+        u_int32_t iterations = (blocked_t_1 + blocked_t_2) / _c;
+        if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
+            DBG1(<< "Iterated " << iterations << "-times in CAR's pick_victim().");
+        }
+        w_assert1(iterations < 3);
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
         bool t_2_has_head = _clocks->get_head(T_2, t_2_head);
@@ -768,7 +777,8 @@ bf_idx page_evictioner_cart::pick_victim() {
             if (t_1_head._referenced) {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 w_assert0(_clocks->move_head(T_1));
-                
+                _hand_movement++;
+    
                 if (_clocks->size_of(T_1) >= std::min<u_int32_t>(_p + 1, _b1->length()) && t_1_head._filter == S) {
                     (*_clocks)[t_1_head_index]._filter = L;
                     _n_s = _n_s - 1;
@@ -805,6 +815,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             } else {
                 blocked_t_1 = blocked_t_1 + 1;
                 _clocks->move_head(T_1);
+                _hand_movement++;
             }
         } else if (blocked_t_2 <= _clocks->size_of(T_2)) {
             _clocks->get_head_index(T_1, t_2_head_index);
@@ -824,6 +835,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             } else {
                 blocked_t_2 = blocked_t_2 + 1;
                 _clocks->move_head(T_2);
+                _hand_movement++;
             }
         } else {
             DO_PTHREAD(pthread_mutex_unlock(&_lock));
