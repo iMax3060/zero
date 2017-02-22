@@ -466,10 +466,26 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             // Either a virgin page which hasn't been linked yet, or some other
             // thread won the race and already swizzled the pointer
-            if (slot == GeneralRecordIds::INVALID) { return RCOK; }
+            if (slot == GeneralRecordIds::INVALID) {
+                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                                 only_if_hit, hit, evict, start, finish);
+                }
+    
+                return RCOK;
+            }
             // Not worth swizzling foster children, since they will soon be
             // adopted (an thus unswizzled)
-            if (slot == GeneralRecordIds::FOSTER_CHILD) { return RCOK; }
+            if (slot == GeneralRecordIds::FOSTER_CHILD) {
+                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+                                 only_if_hit, hit, evict, start, finish);
+                }
+    
+                return RCOK;
+            }
             w_assert1(slot > GeneralRecordIds::FOSTER_CHILD);
             w_assert1(slot <= p.max_child_slot());
 
@@ -928,25 +944,25 @@ w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
     return RCOK;
 }
 
-w_rc_t bf_tree_m::fix_nonroot(generic_page*& page, generic_page *parent,
-                                     PageID pid, latch_mode_t mode, bool conditional,
-                                     bool virgin_page, bool only_if_hit, lsn_t emlsn)
-{
-    INC_TSTAT(bf_fix_nonroot_count);
-    u_long start;
-    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
-        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    }
-    
-    w_rc_t return_code = fix(parent, page, pid, mode, conditional, virgin_page, only_if_hit, emlsn);
-    
-    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0) && !return_code.is_error()) {
-        u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        LOGSTATS_FIX_NONROOT(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                             only_if_hit, start, finish);
-    }
-
-    return return_code;
+w_rc_t bf_tree_m::fix_nonroot(generic_page *&page, generic_page *parent,
+                              PageID pid, latch_mode_t mode, bool conditional,
+                              bool virgin_page, bool only_if_hit, lsn_t emlsn) {
+	INC_TSTAT(bf_fix_nonroot_count);
+	u_long start;
+	if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	}
+	
+	w_rc_t return_code = fix(parent, page, pid, mode, conditional, virgin_page, only_if_hit, emlsn);
+	
+	if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0) &&
+	    !return_code.is_error()) {
+		u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		LOGSTATS_FIX_NONROOT(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+		                     only_if_hit, start, finish);
+	}
+	
+	return return_code;
 }
 
 w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
