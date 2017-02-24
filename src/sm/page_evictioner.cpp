@@ -205,6 +205,7 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
     // Step 2: Latch page in EX mode and check if eligible for eviction
     rc_t latch_rc = cb.latch().latch_acquire(LATCH_EX, sthread_t::WAIT_IMMEDIATE);
     if (latch_rc.is_error()) {
+        used_ref(idx);
         return false;
     }
     w_assert1(cb.latch().is_mine());
@@ -216,8 +217,7 @@ bool page_evictioner_base::evict_page(bf_idx idx, PageID &evicted_page) {
      */
     btree_page_h p;
     p.fix_nonbufferpool_page(_bufferpool->_buffer + idx);
-    if (!cb._used || p.get_foster() != 0) {
-        used_ref(idx);
+    if (!cb._used || p.get_foster() != 0 || cb._pin_cnt != 0 || !p.is_leaf()) {
         cb.latch().latch_release();
         return false;
     }
