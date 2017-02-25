@@ -240,14 +240,25 @@ void sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long
 	          << finish << std::endl;
 }
 
-void sm_stats_logstats_t::log_pick_victim_gclock(tid_t tid, bf_idx b_idx, bf_idx index, u_long start, u_long finish) {
+void sm_stats_logstats_t::log_pick_victim_latched(tid_t tid, bf_idx b_idx, u_long start, u_long finish) {
+    w_assert1(logstats->is_open());
+    w_assert1(sm_stats_logstats_t::activate);
+    
+    *logstats << "pick_victim,"
+              << tid.as_int64() << ","
+              << b_idx << ","
+              << start << ","
+              << finish << std::endl;
+}
+
+void sm_stats_logstats_t::log_pick_victim_gclock(tid_t tid, bf_idx b_idx, bf_idx current_frame, u_long start, u_long finish) {
 	w_assert1(logstats->is_open());
 	w_assert1(sm_stats_logstats_t::activate);
 	
 	*logstats << "pick_victim,"
 	          << tid.as_int64() << ","
 	          << b_idx << ","
-	          << index << ","
+	          << current_frame << ","
 	          << start << ","
 	          << finish << std::endl;
 }
