@@ -546,9 +546,7 @@ bf_idx page_evictioner_car::pick_victim() {
             _clocks->get_head(T_2, t_2_head);
             _clocks->get_head_index(T_2, t_2_head_index);
             w_assert1(t_2_head_index != 0);
-    
-            bf_idx t_1_head_index = 0;
-            _clocks->get_head_index(T_1, t_1_head_index);
+            
             if (!t_2_head) {
                 PageID evicted_pid;
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
