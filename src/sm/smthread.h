@@ -592,7 +592,8 @@ public:
  * \details It uses \link sm_stats_logstats_t::log_unpin(tid_t tid, PageID page, u_long start, u_long finish) with an obvious mapping between the parameters to do so.
  */
 #define LOGSTATS_UNPIN(tid, page, start, finish) me()->TL_stats_logstats()->log_unpin(tid, page, start, finish)
-#define LOGSTATS_PICK_VICTIM_GCLOCK(tid, b_idx, index, start, finish) me()->TL_stats_logstats()->log_pick_victim_gclock(tid, b_idx, index, start, finish)
+#define LOGSTATS_PICK_VICTIM_LATCHED(tid, b_idx, start, finish) me()->TL_stats_logstats()->log_pick_victim_latched(tid, b_idx, start, finish)
+#define LOGSTATS_PICK_VICTIM_GCLOCK(tid, b_idx, current_frame, start, finish) me()->TL_stats_logstats()->log_pick_victim_gclock(tid, b_idx, current_frame, start, finish)
 #define LOGSTATS_MISS_REF_CAR(tid, b_idx, page, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish) me()->TL_stats_logstats()->log_miss_ref_car(tid, b_idx, page, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish)
 #define LOGSTATS_PICK_VICTIM_CAR(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish) me()->TL_stats_logstats()->log_pick_victim_car(tid, b_idx, t1_movements, t2_movements, p, b1_length, b2_length, t1_length, t2_length, t1_index, t2_index, start, finish)
     

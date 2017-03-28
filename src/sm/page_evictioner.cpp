@@ -91,6 +91,11 @@ bf_idx page_evictioner_base::pick_victim() {
      * to implement and, most importantly, does not have concurrency bugs!
      */
     
+    u_long start;
+    if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    }
+    
     bf_idx idx = _current_frame;
     while (true) {
         if (idx == _bufferpool->_block_cnt) {
@@ -107,6 +112,12 @@ bf_idx page_evictioner_base::pick_victim() {
         if (evict_page(idx, evicted_page)) {
             w_assert1(_bufferpool->_is_active_idx(idx));
             _current_frame = idx + 1;
+    
+            if (_logstats_evict && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                LOGSTATS_PICK_VICTIM_LATCHED(xct()->tid(), idx, start, finish);
+            }
+
             return idx;
         } else {
             idx++;
@@ -535,9 +546,7 @@ bf_idx page_evictioner_car::pick_victim() {
             _clocks->get_head(T_2, t_2_head);
             _clocks->get_head_index(T_2, t_2_head_index);
             w_assert1(t_2_head_index != 0);
-    
-            bf_idx t_1_head_index = 0;
-            _clocks->get_head_index(T_1, t_1_head_index);
+            
             if (!t_2_head) {
                 PageID evicted_pid;
                 evicted_page = evict_page(t_2_head_index, evicted_pid);
