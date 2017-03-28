@@ -274,6 +274,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
     bool evict = false;
 	u_long hashtable_duration = 0;
 	u_long hashtable_start;
+	u_long latching_duration = 0;
+	u_long latching_start;
+	u_long eviction_duration = 0;
+	u_long eviction_start;
+	u_long io_duration = 0;
+	u_long io_start;
     if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
@@ -283,9 +289,16 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         bf_idx idx = pid ^ SWIZZLED_PID_BIT;
         w_assert1(_is_valid_idx(idx));
         bf_tree_cb_t &cb = get_cb(idx);
-
-        W_DO(cb.latch().latch_acquire(mode,
+	
+	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		    latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	    }
+	    W_DO(cb.latch().latch_acquire(mode,
                     conditional ? sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
+	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		    u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		    latching_duration = latching_finish - latching_start;
+	    }
 
         w_assert1(_is_active_idx(idx));
         w_assert1(cb._swizzled);
@@ -304,7 +317,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-	                     only_if_hit, hit, evict, hashtable_duration, start, finish);
+	                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+	                     io_duration, start, finish);
         }
     
         return RCOK;
@@ -350,15 +364,29 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             INC_TSTAT(bf_fix_nonroot_miss_count);
 
             // STEP 1) Grab a free frame to read into
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        eviction_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	        }
             W_DO(_grab_free_block(idx, evict, true));
             w_assert1(_is_valid_idx(idx));
             bf_tree_cb_t &cb = get_cb(idx);
             w_assert1(!cb._used);
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long eviction_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        eviction_duration = eviction_finish - eviction_start;
+	        }
 
             // STEP 2) Acquire EX latch before hash table insert, to make sure
             // nobody will access this page until we're done
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	        }
             w_rc_t check_rc = cb.latch().latch_acquire(LATCH_EX,
                     sthread_t::WAIT_IMMEDIATE);
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        latching_duration = latching_finish - latching_start;
+	        }
             if (check_rc.is_error())
             {
                 _add_free_block(idx);
@@ -385,6 +413,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	        }
 
             // Read page from disk
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        io_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	        }
             page = &_buffer[idx];
             cb.init(pid, lsn_t::null);
 
@@ -415,6 +446,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 }
                 cb.init(pid, page->lsn);
             }
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long io_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        io_duration = io_finish - io_start;
+	        }
     
             w_assert1(_evictioner);
             if (_evictioner) _evictioner->miss_ref(idx, pid);
@@ -439,9 +474,16 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             // Page is registered in hash table and it is not an in_doubt page,
             // meaning the actual page is in buffer pool already
-
+	
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	        }
             W_DO(cb.latch().latch_acquire(mode, conditional ?
                         sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        latching_duration = latching_finish - latching_start;
+	        }
 
             if (cb._pin_cnt < 0 || cb._pid != pid) {
                 // Page was evicted between hash table probe and latching
@@ -481,7 +523,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
+	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+	                             io_duration, start, finish);
                 }
     
                 return RCOK;
@@ -493,7 +536,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
+	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+	                             io_duration, start, finish);
                 }
     
                 return RCOK;
@@ -504,7 +548,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
+	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+	                             io_duration, start, finish);
                 }
     
                 return RCOK;
@@ -518,7 +563,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
+	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+	                             io_duration, start, finish);
                 }
 
                 // CAS failed -- some other thread is swizzling
@@ -541,10 +587,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        if (parent) {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-		                     only_if_hit, hit, evict, hashtable_duration, start, finish);
+		                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+		                     io_duration, start, finish);
 	        } else {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, 0, mode, conditional, virgin_page,
-		                     only_if_hit, hit, evict, hashtable_duration, start, finish);
+		                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
+		                     io_duration, start, finish);
 	        }
         }
     

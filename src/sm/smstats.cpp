@@ -159,7 +159,8 @@ void sm_stats_logstats_t::log_fix_root(tid_t tid, PageID page, StoreID store, la
 }
 
 void sm_stats_logstats_t::log_fix(tid_t tid, PageID page, PageID parent, latch_mode_t mode, bool conditional, bool virgin_page, bool only_if_hit,
-                                  bool hit, bool evict, u_long hashtable_duration, u_long start, u_long finish) {
+                                  bool hit, bool evict, u_long hashtable_duration, u_long latching_duration, u_long eviction_duration, u_long io_duration,
+                                  u_long start, u_long finish) {
 	w_assert1(logstats->is_open());
 	w_assert1(sm_stats_logstats_t::activate);
 	
@@ -174,6 +175,9 @@ void sm_stats_logstats_t::log_fix(tid_t tid, PageID page, PageID parent, latch_m
 	          << hit << ","
 	          << evict << ","
 			  << hashtable_duration << ","
+			  << latching_duration << ","
+			  << eviction_duration << ","
+			  << io_duration << ","
 	          << start << ","
 	          << finish << std::endl;
 }
