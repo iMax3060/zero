@@ -272,6 +272,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
     u_long start;
     bool hit = true;
     bool evict = false;
+	u_long hashtable_duration = 0;
+	u_long hashtable_start;
     if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
@@ -301,8 +303,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
     
         if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-            LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                                 only_if_hit, hit, evict, start, finish);
+	        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+	                     only_if_hit, hit, evict, hashtable_duration, start, finish);
         }
     
         return RCOK;
@@ -319,6 +321,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             DBGOUT1(<<"keep trying to fix.. " << pid << ". current retry count=" << retry_count);
         }
 #endif
+	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		    hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	    }
         bf_idx_pair p;
         bf_idx idx = 0;
         if (_hashtable->lookup(pid, p)) {
@@ -329,6 +334,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 // _hashtable->update(pid, p);
             }
         }
+	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		    u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		    hashtable_duration = hashtable_finish - hashtable_start;
+	    }
 
         if (idx == 0)
         {
@@ -359,6 +368,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             // Register the page on the hashtable atomically. This guarantees
             // that only one thread will attempt to read the page
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	        }
             bf_idx parent_idx = parent ? parent - _buffer : 0;
             bool registered = _hashtable->insert_if_not_exists(pid,
                     bf_idx_pair(idx, parent_idx));
@@ -367,6 +379,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 _add_free_block(idx);
                 continue;
             }
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        hashtable_duration = hashtable_finish - hashtable_start;
+	        }
 
             // Read page from disk
             page = &_buffer[idx];
@@ -384,7 +400,14 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 w_rc_t read_rc = smlevel_0::vol->read_page_verify(pid, page, emlsn);
                 if (read_rc.is_error())
                 {
+	                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		                hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                }
                     _hashtable->remove(pid);
+	                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		                u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		                hashtable_duration = hashtable_finish - hashtable_start;
+	                }
                     cb.clear_except_latch();
                     cb.latch().latch_release();
                     _add_free_block(idx);
@@ -457,8 +480,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             if (!is_swizzled(parent)) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                                 only_if_hit, hit, evict, start, finish);
+	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
                 }
     
                 return RCOK;
@@ -469,8 +492,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             if (slot == GeneralRecordIds::INVALID) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                                 only_if_hit, hit, evict, start, finish);
+	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
                 }
     
                 return RCOK;
@@ -480,8 +503,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             if (slot == GeneralRecordIds::FOSTER_CHILD) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                                 only_if_hit, hit, evict, start, finish);
+	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
                 }
     
                 return RCOK;
@@ -494,8 +517,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             if (!std::atomic_compare_exchange_strong(&cb._swizzled, &old_value, true)) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                    LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-                                 only_if_hit, hit, evict, start, finish);
+	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
+	                             only_if_hit, hit, evict, hashtable_duration, start, finish);
                 }
 
                 // CAS failed -- some other thread is swizzling
@@ -518,10 +541,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        if (parent) {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
-		                     only_if_hit, hit, evict, start, finish);
+		                     only_if_hit, hit, evict, hashtable_duration, start, finish);
 	        } else {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, 0, mode, conditional, virgin_page,
-		                     only_if_hit, hit, evict, start, finish);
+		                     only_if_hit, hit, evict, hashtable_duration, start, finish);
 	        }
         }
     
