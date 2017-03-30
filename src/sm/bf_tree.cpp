@@ -280,6 +280,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	u_long eviction_start;
 	u_long io_duration = 0;
 	u_long io_start;
+	u_long swizzling_duration = 0;
+	u_long swizzling_start;
     if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
@@ -297,7 +299,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     conditional ? sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
 	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		    u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		    latching_duration = latching_finish - latching_start;
+		    latching_duration += latching_finish - latching_start;
 	    }
 
         w_assert1(_is_active_idx(idx));
@@ -318,7 +320,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-	                     io_duration, start, finish);
+	                     io_duration, swizzling_duration, start, finish);
         }
     
         return RCOK;
@@ -350,7 +352,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         }
 	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		    u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		    hashtable_duration = hashtable_finish - hashtable_start;
+		    hashtable_duration += hashtable_finish - hashtable_start;
 	    }
 
         if (idx == 0)
@@ -373,7 +375,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(!cb._used);
 	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		        u_long eviction_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		        eviction_duration = eviction_finish - eviction_start;
+		        eviction_duration += eviction_finish - eviction_start;
 	        }
 
             // STEP 2) Acquire EX latch before hash table insert, to make sure
@@ -385,7 +387,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     sthread_t::WAIT_IMMEDIATE);
 	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		        latching_duration = latching_finish - latching_start;
+		        latching_duration += latching_finish - latching_start;
 	        }
             if (check_rc.is_error())
             {
@@ -409,7 +411,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             }
 	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		        u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		        hashtable_duration = hashtable_finish - hashtable_start;
+		        hashtable_duration += hashtable_finish - hashtable_start;
 	        }
 
             // Read page from disk
@@ -437,7 +439,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     _hashtable->remove(pid);
 	                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		                u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		                hashtable_duration = hashtable_finish - hashtable_start;
+		                hashtable_duration += hashtable_finish - hashtable_start;
 	                }
                     cb.clear_except_latch();
                     cb.latch().latch_release();
@@ -448,7 +450,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             }
 	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		        u_long io_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		        io_duration = io_finish - io_start;
+		        io_duration += io_finish - io_start;
 	        }
     
             w_assert1(_evictioner);
@@ -482,7 +484,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                         sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
 	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
 		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		        latching_duration = latching_finish - latching_start;
+		        latching_duration += latching_finish - latching_start;
 	        }
 
             if (cb._pin_cnt < 0 || cb._pid != pid) {
@@ -507,7 +509,10 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             DBG(<< "Fixed page " << pid << " (hit) to frame " << idx);
             w_assert1(cb._pin_cnt > 0);
         }
-
+	
+	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		    swizzling_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	    }
         if (!is_swizzled(page) && _enable_swizzling && parent) {
             // swizzle pointer for next invocations
             bf_tree_cb_t &cb = get_cb(idx);
@@ -521,10 +526,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             if (!is_swizzled(parent)) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
-                    u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                swizzling_duration += swizzling_finish - swizzling_start;
+	                u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-	                             io_duration, start, finish);
+	                             io_duration, swizzling_duration, start, finish);
                 }
     
                 return RCOK;
@@ -534,10 +541,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // thread won the race and already swizzled the pointer
             if (slot == GeneralRecordIds::INVALID) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-	                             io_duration, start, finish);
+	                             io_duration, swizzling_duration, start, finish);
                 }
     
                 return RCOK;
@@ -546,10 +555,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // adopted (an thus unswizzled)
             if (slot == GeneralRecordIds::FOSTER_CHILD) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-	                             io_duration, start, finish);
+	                             io_duration, swizzling_duration, start, finish);
                 }
     
                 return RCOK;
@@ -561,10 +572,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             bool old_value = false;
             if (!std::atomic_compare_exchange_strong(&cb._swizzled, &old_value, true)) {
                 if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                             only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-	                             io_duration, start, finish);
+	                             io_duration, swizzling_duration, start, finish);
                 }
 
                 // CAS failed -- some other thread is swizzling
@@ -575,6 +588,11 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Replace pointer with swizzled version
             PageID* addr = p.child_slot_address(slot);
             *addr = idx | SWIZZLED_PID_BIT;
+	
+	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+		        u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		        swizzling_duration += swizzling_finish - swizzling_start;
+	        }
 
 #if W_DEBUG_LEVEL > 0
             PageID swizzled_pid = idx | SWIZZLED_PID_BIT;
@@ -588,11 +606,11 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	        if (parent) {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 		                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-		                     io_duration, start, finish);
+		                     io_duration, swizzling_duration, start, finish);
 	        } else {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, 0, mode, conditional, virgin_page,
 		                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
-		                     io_duration, start, finish);
+		                     io_duration, swizzling_duration, start, finish);
 	        }
         }
     

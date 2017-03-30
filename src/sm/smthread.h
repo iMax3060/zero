@@ -561,7 +561,7 @@ public:
  */
 #define LOGSTATS_FIX_ROOT(tid, page, store, mode, conditional, start, finish) me()->TL_stats_logstats()->log_fix_root(tid, page, store, mode, conditional, start, finish)
 
-#define LOGSTATS_FIX(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration, io_duration, start, finish) me()->TL_stats_logstats()->log_fix(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration, io_duration, start, finish)
+#define LOGSTATS_FIX(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration, io_duration, swizzling_duration, start, finish) me()->TL_stats_logstats()->log_fix(tid, page, parent, mode, conditional, virgin_page, only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration, io_duration, swizzling_duration, start, finish)
 
 /*!\def     LOGSTATS_UNFIX_NONROOT(tid, page, parent, evict, start, finish)
  * \brief   Creates a log record in the Buffer Pool Log (\link sm_stats_logstats_t) for the event unfix_nonroot.
