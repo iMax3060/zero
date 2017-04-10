@@ -282,7 +282,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 	u_long io_start;
 	u_long swizzling_duration = 0;
 	u_long swizzling_start;
-    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	bool do_logstats_fix = _logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0);
+	
+    if (do_logstats_fix) {
         start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     }
     if (is_swizzled_pointer(pid)) {
@@ -292,12 +294,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         w_assert1(_is_valid_idx(idx));
         bf_tree_cb_t &cb = get_cb(idx);
 	
-	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	    if (do_logstats_fix) {
 		    latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	    }
 	    W_DO(cb.latch().latch_acquire(mode,
                     conditional ? sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
-	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	    if (do_logstats_fix) {
 		    u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		    latching_duration += latching_finish - latching_start;
 	    }
@@ -316,7 +318,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
         page = &(_buffer[idx]);
     
-        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        if (do_logstats_fix) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
 	                     only_if_hit, hit, evict, hashtable_duration, latching_duration, eviction_duration,
@@ -337,7 +339,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             DBGOUT1(<<"keep trying to fix.. " << pid << ". current retry count=" << retry_count);
         }
 #endif
-	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	    if (do_logstats_fix) {
 		    hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	    }
         bf_idx_pair p;
@@ -350,7 +352,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 // _hashtable->update(pid, p);
             }
         }
-	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	    if (do_logstats_fix) {
 		    u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		    hashtable_duration += hashtable_finish - hashtable_start;
 	    }
@@ -366,26 +368,26 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             INC_TSTAT(bf_fix_nonroot_miss_count);
 
             // STEP 1) Grab a free frame to read into
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        eviction_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        }
             W_DO(_grab_free_block(idx, evict, true));
             w_assert1(_is_valid_idx(idx));
             bf_tree_cb_t &cb = get_cb(idx);
             w_assert1(!cb._used);
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long eviction_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        eviction_duration += eviction_finish - eviction_start;
 	        }
 
             // STEP 2) Acquire EX latch before hash table insert, to make sure
             // nobody will access this page until we're done
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        }
             w_rc_t check_rc = cb.latch().latch_acquire(LATCH_EX,
                     sthread_t::WAIT_IMMEDIATE);
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        latching_duration += latching_finish - latching_start;
 	        }
@@ -398,7 +400,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             // Register the page on the hashtable atomically. This guarantees
             // that only one thread will attempt to read the page
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        }
             bf_idx parent_idx = parent ? parent - _buffer : 0;
@@ -409,13 +411,13 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 _add_free_block(idx);
                 continue;
             }
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        hashtable_duration += hashtable_finish - hashtable_start;
 	        }
 
             // Read page from disk
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        io_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        }
             page = &_buffer[idx];
@@ -433,11 +435,11 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 w_rc_t read_rc = smlevel_0::vol->read_page_verify(pid, page, emlsn);
                 if (read_rc.is_error())
                 {
-	                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	                if (do_logstats_fix) {
 		                hashtable_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                }
                     _hashtable->remove(pid);
-	                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	                if (do_logstats_fix) {
 		                u_long hashtable_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		                hashtable_duration += hashtable_finish - hashtable_start;
 	                }
@@ -448,7 +450,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 }
                 cb.init(pid, page->lsn);
             }
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long io_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        io_duration += io_finish - io_start;
 	        }
@@ -477,12 +479,12 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Page is registered in hash table and it is not an in_doubt page,
             // meaning the actual page is in buffer pool already
 	
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        latching_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        }
             W_DO(cb.latch().latch_acquire(mode, conditional ?
                         sthread_t::WAIT_IMMEDIATE : sthread_t::WAIT_FOREVER));
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long latching_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        latching_duration += latching_finish - latching_start;
 	        }
@@ -510,7 +512,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             w_assert1(cb._pin_cnt > 0);
         }
 	
-	    if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	    if (do_logstats_fix) {
 		    swizzling_start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	    }
         if (!is_swizzled(page) && _enable_swizzling && parent) {
@@ -525,7 +527,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             general_recordid_t slot = find_page_id_slot (parent, pid);
 
             if (!is_swizzled(parent)) {
-                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                if (do_logstats_fix) {
 	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                swizzling_duration += swizzling_finish - swizzling_start;
 	                u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -540,7 +542,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Either a virgin page which hasn't been linked yet, or some other
             // thread won the race and already swizzled the pointer
             if (slot == GeneralRecordIds::INVALID) {
-                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                if (do_logstats_fix) {
 	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -554,7 +556,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Not worth swizzling foster children, since they will soon be
             // adopted (an thus unswizzled)
             if (slot == GeneralRecordIds::FOSTER_CHILD) {
-                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                if (do_logstats_fix) {
 	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -571,7 +573,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Update _swizzled flag atomically
             bool old_value = false;
             if (!std::atomic_compare_exchange_strong(&cb._swizzled, &old_value, true)) {
-                if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+                if (do_logstats_fix) {
 	                u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	                swizzling_duration += swizzling_finish - swizzling_start;
                     u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -589,7 +591,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             PageID* addr = p.child_slot_address(slot);
             *addr = idx | SWIZZLED_PID_BIT;
 	
-	        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+	        if (do_logstats_fix) {
 		        u_long swizzling_finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		        swizzling_duration += swizzling_finish - swizzling_start;
 	        }
@@ -601,7 +603,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 #endif
         }
     
-        if (_logstats_fix && (std::strcmp(me()->name(), "") == 0 || std::strncmp(me()->name(), "w", 1) == 0)) {
+        if (do_logstats_fix) {
             u_long finish = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	        if (parent) {
 		        LOGSTATS_FIX(xct()->tid(), page->pid, parent->pid, mode, conditional, virgin_page,
