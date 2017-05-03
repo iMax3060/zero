@@ -802,6 +802,7 @@ bf_idx page_evictioner_cart::pick_victim() {
         DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
     
+    DO_PTHREAD(pthread_mutex_unlock(&_lock));
     return 0;
 }
 
