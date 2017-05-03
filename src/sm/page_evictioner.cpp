@@ -615,10 +615,10 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max<u_int32_t>(u_int32_t(0), _q) || _b2->length() == 0)) {
-            w_assert0(_b1->remove_front());
+            w_assert0(_b1->pop());
             std::cout << "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         } else if (_b1->length() + _b2->length() >= _c + 1) {
-            w_assert0(_b2->remove_front());
+            w_assert0(_b2->pop());
             std::cout << "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
@@ -650,10 +650,10 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         }
     }
     
-    w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) && _clocks->size_of(T_1) + _clocks->size_of(T_2) <= _c);
-    w_assert1(0 <= _clocks->size_of(T_2) + _b2->length() && _clocks->size_of(T_2) + _b2->length() <= _c);
-    w_assert1(0 <= _clocks->size_of(T_1) + _b1->length() && _clocks->size_of(T_1) + _b1->length() <= 2 * (_c));
-    w_assert1(0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() && _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
+    w_assert1(/*0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) &&*/ _clocks->size_of(T_1) + _clocks->size_of(T_2) <= _c);
+    w_assert1(/*0 <= _clocks->size_of(T_2) + _b2->length() &&*/ _clocks->size_of(T_2) + _b2->length() <= _c);
+    w_assert1(/*0 <= _clocks->size_of(T_1) + _b1->length() &&*/ _clocks->size_of(T_1) + _b1->length() <= 2 * (_c));
+    w_assert1(/*0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() &&*/ _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
     
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
@@ -756,7 +756,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_1_head_index));
-                w_assert0(_b1->insert_back(evicted_pid));
+                w_assert0(_b1->push(evicted_pid));
                 std::cout << "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                 
                 _n_s = _n_s - 1;
@@ -780,7 +780,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_2_head_index));
                 std::cout << "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
-                w_assert0(_b2->insert_back(evicted_pid));
+                w_assert0(_b2->push(evicted_pid));
                 std::cout << "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length << std::endl;
                 
                 _n_l = _n_l - 1;
@@ -1098,5 +1098,48 @@ bool multi_clock<key, value>::switch_head_to_tail(const clk_idx source, const cl
         return true;
     } else {
         return false;
+    }
+}
+
+template
+int64_t& multi_clock::get(const int64_t index) {
+    return valid_index(index) * _values[index]
+           + !valid_index(index) * _values[_invalid_index];
+}
+
+template<class key, class value>
+value& multi_clock<key, value>::get(const key index) {
+    if (valid_index(index)) {
+        return _values[index];
+    } else {
+        return _values[_invalid_index];
+    }
+}
+
+template
+void multi_clock::set(const int64_t index, int64_t const new_value) {
+    return valid_index(index) * _values[index]
+           + !valid_index(index) * _values[_invalid_index];
+}
+
+template<class key, class value>
+void multi_clock<key, value>::set(const key index, value const new_value) {
+    if (valid_index(index)) {
+        _values[index] = new_value;
+    }
+}
+
+template
+int64_t& multi_clock::operator[](const int64_t index) {
+    return valid_index(index) * _values[index]
+           + !valid_index(index) * _values[_invalid_index];
+}
+
+template<class key, class value>
+value& multi_clock<key, value>::operator[](const key index) {
+    if (valid_index(index)) {
+        return _values[index];
+    } else {
+        return _values[_invalid_index];
     }
 }
