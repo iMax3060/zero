@@ -101,7 +101,7 @@ void bf_tree_cleaner::clean_candidates()
     stopwatch_t timer;
 
     size_t i = 0;
-    bool ignore_min_write = ignore_min_write_now();
+    // bool ignore_min_write = ignore_min_write_now();
 
     // keeps track of cluster positions in the workspace, so that
     // they can be flush asynchronously below
@@ -288,10 +288,10 @@ void bf_tree_cleaner::collect_candidates()
     bf_idx block_cnt = _bufferpool->_block_cnt;
 
     // mixed policy = ignore null clean LSNs every 2 rounds
-    bool ignore_empty_clean_lsn = false;
-    if (policy == cleaner_policy::mixed) {
-        ignore_empty_clean_lsn = get_rounds_completed() % 4 != 0;
-    }
+    // bool ignore_empty_clean_lsn = false;
+    // if (policy == cleaner_policy::mixed) {
+    //     ignore_empty_clean_lsn = get_rounds_completed() % 4 != 0;
+    // }
 
     for (bf_idx idx = 1; idx < block_cnt; ++idx) {
         auto& cb = _bufferpool->get_cb(idx);

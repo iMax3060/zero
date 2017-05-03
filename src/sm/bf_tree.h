@@ -79,6 +79,7 @@ class bf_tree_m {
     friend class page_cleaner_decoupled;
     friend class page_evictioner_gclock;
     friend class page_evictioner_car;
+    friend class page_evictioner_cart;
     friend class GenericPageIterator;
 
 public:
@@ -442,7 +443,7 @@ private:
     
     boost::lockfree::queue<bf_idx>*     _freelist;
     
-    mutable boost::atomic<int>          _approx_freelist_length;
+    mutable boost::atomic<unsigned int>      _approx_freelist_length;
 
 // Be VERY careful on deadlock to use the following.
 
