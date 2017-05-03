@@ -947,7 +947,7 @@ bool multi_clock<key, value>::get_head(const clk_idx clock, value &head_value) {
         w_assert1(_clock_membership[_hands[clock]] == clock);
         return true;
     } else {
-        head_value = nullptr;
+        head_value = _values[_invalid_index];
         w_assert1(_hands[clock] == _invalid_index);
         return false;
     }
@@ -1098,48 +1098,5 @@ bool multi_clock<key, value>::switch_head_to_tail(const clk_idx source, const cl
         return true;
     } else {
         return false;
-    }
-}
-
-template<class key, class value>
-int64_t& multi_clock<key, value>::get(const int64_t index) {
-    return valid_index(index) * _values[index]
-           + !valid_index(index) * _values[_invalid_index];
-}
-
-template<class key, class value>
-value& multi_clock<key, value>::get(const key index) {
-    if (valid_index(index)) {
-        return _values[index];
-    } else {
-        return _values[_invalid_index];
-    }
-}
-
-template<class key, class value>
-void multi_clock<key, value>::set(const int64_t index, int64_t const new_value) {
-    _values[valid_index(index) * _values[index]
-           + !valid_index(index) * _values[_invalid_index]] = new_value;
-}
-
-template<class key, class value>
-void multi_clock<key, value>::set(const key index, value const new_value) {
-    if (valid_index(index)) {
-        _values[index] = new_value;
-    }
-}
-
-template<class key, class value>
-int64_t& multi_clock<key, value>::operator[](const int64_t index) {
-    return valid_index(index) * _values[index]
-           + !valid_index(index) * _values[_invalid_index];
-}
-
-template<class key, class value>
-value& multi_clock<key, value>::operator[](const key index) {
-    if (valid_index(index)) {
-        return _values[index];
-    } else {
-        return _values[_invalid_index];
     }
 }
