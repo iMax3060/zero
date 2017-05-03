@@ -947,7 +947,7 @@ bool multi_clock<key, value>::get_head(const clk_idx clock, value &head_value) {
         w_assert1(_clock_membership[_hands[clock]] == clock);
         return true;
     } else {
-        head_value = _invalid_index;
+        head_value = nullptr;
         w_assert1(_hands[clock] == _invalid_index);
         return false;
     }
@@ -1118,8 +1118,8 @@ value& multi_clock<key, value>::get(const key index) {
 
 template
 void multi_clock<int64_t, int64_t>::set(const int64_t index, int64_t const new_value) {
-    return valid_index(index) * _values[index]
-           + !valid_index(index) * _values[_invalid_index];
+    _values[valid_index(index) * _values[index]
+           + !valid_index(index) * _values[_invalid_index]] = new_value;
 }
 
 template<class key, class value>
