@@ -1314,7 +1314,7 @@ public:
      *              is valid inside this \link multi_clock \endlink or a reference to the value
      *              of the \link _invalid_index \endlink, else.
      */
-    inline value&   get(const key index);
+    value&   get(const key index);
     
     /*!\fn      set(key index, value new_value)
      * \brief   Sets the value that corresponds to the specified index
@@ -1325,7 +1325,7 @@ public:
      * @param new_value The new value for the specified index if this index is valid inside this
      *                  \link multi_clock \endlink or for the \link _invalid_index \endlink, else.
      */
-    inline void     set(const key index, value const new_value);
+    void     set(const key index, value const new_value);
     
     /*!\fn      operator[](key index)
      * \brief   Returns a reference to the value that corresponds to the specified index
@@ -1337,7 +1337,7 @@ public:
      *              is valid inside this \link multi_clock \endlink or a reference to the value
      *              of the \link _invalid_index \endlink, else.
      */
-    inline value&   operator[](const key index);
+    value&   operator[](const key index);
 };
 
 #endif
