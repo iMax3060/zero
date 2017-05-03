@@ -1102,7 +1102,7 @@ bool multi_clock<key, value>::switch_head_to_tail(const clk_idx source, const cl
 }
 
 template
-int64_t& multi_clock::get(const int64_t index) {
+int64_t& multi_clock<int64_t, int64_t>::get(const int64_t index) {
     return valid_index(index) * _values[index]
            + !valid_index(index) * _values[_invalid_index];
 }
@@ -1117,7 +1117,7 @@ value& multi_clock<key, value>::get(const key index) {
 }
 
 template
-void multi_clock::set(const int64_t index, int64_t const new_value) {
+void multi_clock<int64_t, int64_t>::set(const int64_t index, int64_t const new_value) {
     return valid_index(index) * _values[index]
            + !valid_index(index) * _values[_invalid_index];
 }
@@ -1130,7 +1130,7 @@ void multi_clock<key, value>::set(const key index, value const new_value) {
 }
 
 template
-int64_t& multi_clock::operator[](const int64_t index) {
+int64_t& multi_clock<int64_t, int64_t>::operator[](const int64_t index) {
     return valid_index(index) * _values[index]
            + !valid_index(index) * _values[_invalid_index];
 }
