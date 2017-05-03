@@ -444,9 +444,9 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() >= _c) {
-            _b1->pop();
+            w_assert0(_b1->pop());
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() >= 2 * (_c)) {
-            _b2->pop();
+            w_assert0(_b2->pop());
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
         DBG5(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
@@ -489,8 +489,8 @@ void page_evictioner_car::unbuffered(bf_idx idx) {
 
 bf_idx page_evictioner_car::pick_victim() {
     bool evicted_page = false;
-    u_int32_t blocked_t_1 = 0;
-    u_int32_t blocked_t_2 = 0;
+    bf_idx blocked_t_1 = 0;
+    bf_idx blocked_t_2 = 0;
     
     while (!evicted_page) {
         if (_hand_movement >= _c) {
@@ -583,15 +583,16 @@ bf_idx page_evictioner_car::pick_victim() {
     return 0;
 }
 
-page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options) : page_evictioner_base(
-        bufferpool, options) {
+page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options)
+        : page_evictioner_base(bufferpool, options)
+{
     _clocks = new multi_clock<bf_idx, referenced_filter>(_bufferpool->_block_cnt, 2, 0);
     
     _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
     _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
     
-    _c = _bufferpool->_block_cnt - 1;
     _p = _q = _n_s = _n_l = 0;
+    _c = _bufferpool->_block_cnt - 1;
     
     _hand_movement = 0;
     
@@ -608,6 +609,10 @@ page_evictioner_cart::~page_evictioner_cart() {
 }
 
 void page_evictioner_cart::hit_ref(bf_idx /*idx*/) {}
+
+void page_evictioner_cart::unfix_ref(bf_idx idx) {
+    (*_clocks)[idx]._referenced = true;
+}
 
 void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
@@ -658,10 +663,6 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
-void page_evictioner_cart::unfix_ref(bf_idx idx) {
-    (*_clocks)[idx]._referenced = true;
-}
-
 void page_evictioner_cart::used_ref(bf_idx /*idx*/) {}
 
 void page_evictioner_cart::dirty_ref(bf_idx /*idx*/) {}
@@ -685,16 +686,14 @@ bf_idx page_evictioner_cart::pick_victim() {
     while (!evicted_page) {
         if (_hand_movement >= _c) {
             _bufferpool->get_cleaner()->wakeup(false);
-            DBG5(<< "Run Page_Cleaner ...");
-            DO_PTHREAD(pthread_mutex_lock(&_lock));
+            DBG3(<< "Run Page_Cleaner ...");
             _hand_movement = 0;
-            DO_PTHREAD(pthread_mutex_unlock(&_lock));
         }
         u_int32_t iterations = (blocked_t_1 + blocked_t_2) / _c;
         if ((blocked_t_1 + blocked_t_2) % _c == 0 && (blocked_t_1 + blocked_t_2) > 0) {
             DBG1(<< "Iterated " << iterations << "-times in CAR's pick_victim().");
         }
-        w_assert0(iterations < 3);
+        w_assert1(iterations < 3);
         DO_PTHREAD(pthread_mutex_lock(&_lock));
         referenced_filter t_2_head = referenced_filter(false, S);
         bf_idx t_2_head_index = 0;
