@@ -619,7 +619,7 @@ protected:
      *          only atomic and therefore this method doesn't need to acquire this lock
      *          for its changes.
      */
-    pthread_mutex_t                 _lock;
+    srwlock_t                       _lock;
     
     /*!\enum    clock_index
      * \brief   Clock names
@@ -722,7 +722,7 @@ protected:
      * buffer frame latched and the access is also only atomic and therefore this method
      * doesn't need to acquire this lock for its changes.
      */
-    pthread_mutex_t                             _lock;
+    srwlock_t                                   _lock;
     
     u_int32_t                                   _q;
     u_int32_t                                   _n_s;
