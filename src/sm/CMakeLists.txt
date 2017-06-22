@@ -43,6 +43,9 @@ set(sm_STAT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/mem_mgmt.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/logrec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_gclock.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_car.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_cart.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_cleaner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_cleaner_decoupled.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/partition.cpp
@@ -65,37 +68,3 @@ target_link_libraries(sm
     boost_filesystem
     boost_regex
     )
-
-# generate a library that performs swizzling but no pin_cnt increments/decrements
-add_library(sm_swizzling_nopincntincdec STATIC ${sm_STAT_SRCS})
-target_link_libraries(sm_swizzling_nopincntincdec fc sthread common numa)
-# make sure we don't override any previous value of COMPILE_DEFINITIONS
-get_target_property (SM_SWIZZLING_NOPINCNTINCDEC_COMPILEDEF sm_swizzling_nopincntincdec COMPILE_DEFINITIONS)
-set(SM_SWIZZLING_NOPINCNTINCDEC_COMPILEDEF "NO_PINCNT_INCDEC")
-set_target_properties (sm_swizzling_nopincntincdec
-    PROPERTIES COMPILE_DEFINITIONS "${SM_SWIZZLING_NOPINCNTINCDEC_COMPILEDEF}"
-    EXCLUDE_FROM_ALL ON
-)
-
-# generate a library that simulates no swizzling
-add_library(sm_noswizzling STATIC ${sm_STAT_SRCS})
-target_link_libraries(sm_noswizzling fc sthread common numa)
-# make sure we don't override any previous value of COMPILE_DEFINITIONS
-get_target_property (SM_NOSWIZZLING_COMPILEDEF sm_noswizzling COMPILE_DEFINITIONS)
-set(SM_NOSWIZZLING_COMPILEDEF "SIMULATE_NO_SWIZZLING")
-set_target_properties (sm_noswizzling
-    PROPERTIES COMPILE_DEFINITIONS "${SM_NOSWIZZLING_COMPILEDEF}"
-    EXCLUDE_FROM_ALL ON
-)
-
-# generate a library that simulates an in-memory DB
-add_library(sm_mainmemory STATIC ${sm_STAT_SRCS})
-target_link_libraries(sm_mainmemory fc sthread common numa)
-# make sure we don't override any previous value of COMPILE_DEFINITIONS
-get_target_property (SM_MAINMEMORY_COMPILEDEF sm_mainmemory COMPILE_DEFINITIONS)
-set(SM_MAINMEMORY_COMPILEDEF "SIMULATE_MAINMEMORYDB")
-set_target_properties (sm_mainmemory
-    PROPERTIES COMPILE_DEFINITIONS "${SM_MAINMEMORY_COMPILEDEF}"
-    EXCLUDE_FROM_ALL ON
-)
-

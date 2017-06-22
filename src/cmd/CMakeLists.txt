@@ -31,8 +31,8 @@ set(zapps_LIBS
     restore
     loginspect
     # Zero/Shore libraries
-    sm
     common
+    sm
     # third-party dependencies
     pthread
 )

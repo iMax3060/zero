@@ -8,6 +8,9 @@
 #include "bf_tree_cb.h"
 #include "bf_tree_cleaner.h"
 #include "page_cleaner_decoupled.h"
+#include "page_evictioner_gclock.h"
+#include "page_evictioner_car.h"
+#include "page_evictioner_cart.h"
 #include "bf_tree.h"
 
 #include "smthread.h"
