@@ -208,7 +208,7 @@ protected:
      *          only atomic and therefore this method doesn't need to acquire this lock
      *          for its changes.
      */
-    srwlock_t                       _lock;
+    pthread_mutex_t                 _lock;
     
     /*!\enum    clock_index
      * \brief   Clock names

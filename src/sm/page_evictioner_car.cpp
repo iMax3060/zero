@@ -15,9 +15,13 @@ page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options
     _c = _bufferpool->_block_cnt - 1;
     
     _hand_movement = 0;
+    
+    DO_PTHREAD(pthread_mutex_init(&_lock, nullptr));
 }
 
 page_evictioner_car::~page_evictioner_car() {
+    DO_PTHREAD(pthread_mutex_destroy(&_lock));
+    
     delete(_clocks);
     
     delete(_b1);
@@ -27,13 +31,11 @@ page_evictioner_car::~page_evictioner_car() {
 void page_evictioner_car::hit_ref(bf_idx /*idx*/) {}
 
 void page_evictioner_car::unfix_ref(bf_idx idx) {
-    _lock.acquire_read();
     _clocks->set(idx, true);
-    _lock.release_read();
 }
 
 void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
-    _lock.acquire_write();
+    DO_PTHREAD(pthread_mutex_lock(&_lock));
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() >= _c) {
             w_assert0(_b1->pop());
@@ -60,7 +62,7 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     w_assert1(/*0 <= _clocks->size_of(T_1) + _b1->length() &&*/ _clocks->size_of(T_1) + _b1->length() <= _c);
     w_assert1(/*0 <= _clocks->size_of(T_2) + _b2->length() &&*/ _clocks->size_of(T_2) + _b2->length() <= 2 * (_c));
     w_assert1(/*0 <= _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() &&*/ _clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() <= 2 * (_c));
-    _lock.release_write();
+    DO_PTHREAD(pthread_mutex_unlock(&_lock));
 }
 
 void page_evictioner_car::used_ref(bf_idx idx) {
@@ -74,9 +76,7 @@ void page_evictioner_car::block_ref(bf_idx /*idx*/) {}
 void page_evictioner_car::swizzle_ref(bf_idx /*idx*/) {}
 
 void page_evictioner_car::unbuffered(bf_idx idx) {
-    _lock.acquire_write();
     _clocks->remove(idx);
-    _lock.release_write();
 }
 
 bf_idx page_evictioner_car::pick_victim() {
@@ -96,7 +96,7 @@ bf_idx page_evictioner_car::pick_victim() {
         }
         w_assert1(iterations < 3);
         DBG3(<< "p = " << _p);
-        _lock.acquire_write();
+        DO_PTHREAD(pthread_mutex_lock(&_lock));
         if ((_clocks->size_of(T_1) >= std::max<uint32_t>(uint32_t(1), _p) || blocked_t_2 >= _clocks->size_of(T_2)) && blocked_t_1 < _clocks->size_of(T_1)) {
             bool t_1_head = false;
             bf_idx t_1_head_index = 0;
@@ -112,14 +112,14 @@ bf_idx page_evictioner_car::pick_victim() {
                     w_assert0(_clocks->remove_head(T_1, t_1_head_index));
                     w_assert0(_b1->push(evicted_pid));
                     DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                    
-                    _lock.release_write();
+    
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_1_head_index;
                 } else {
                     _clocks->move_head(T_1);
                     blocked_t_1++;
                     _hand_movement++;
-                    _lock.release_write();
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     continue;
                 }
             } else {
@@ -128,7 +128,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 _clocks->switch_head_to_tail(T_1, T_2, t_1_head_index);
                 DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 DBG5(<< "Added to T_2: " << t_1_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                _lock.release_write();
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
         } else if (blocked_t_2 < _clocks->size_of(T_2)) {
@@ -147,13 +147,13 @@ bf_idx page_evictioner_car::pick_victim() {
                     w_assert0(_b2->push(evicted_pid));
                     DBG5(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
-                    _lock.release_write();
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     return t_2_head_index;
                 } else {
                     _clocks->move_head(T_2);
                     blocked_t_2++;
                     _hand_movement++;
-                    _lock.release_write();
+                    DO_PTHREAD(pthread_mutex_unlock(&_lock));
                     continue;
                 }
             } else {
@@ -161,15 +161,15 @@ bf_idx page_evictioner_car::pick_victim() {
                 
                 _clocks->move_head(T_2);
                 _hand_movement++;
-                _lock.release_write();
+                DO_PTHREAD(pthread_mutex_unlock(&_lock));
                 continue;
             }
         } else {
-            _lock.release_write();
+            DO_PTHREAD(pthread_mutex_unlock(&_lock));
             return 0;
         }
     
-        _lock.release_write();
+        DO_PTHREAD(pthread_mutex_unlock(&_lock));
     }
     
     return 0;
