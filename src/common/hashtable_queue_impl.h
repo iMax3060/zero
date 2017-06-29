@@ -6,11 +6,6 @@
 #include "w_base.h"
 
 template<class key>
-bool hashtable_queue<key>::contains(key k) {
-    return _direct_access_queue->count(k);
-}
-
-template<class key>
 hashtable_queue<key>::hashtable_queue(key invalid_key) {
     _direct_access_queue = new std::unordered_map<key, key_pair>();
     _invalid_key = invalid_key;
@@ -22,6 +17,11 @@ template<class key>
 hashtable_queue<key>::~hashtable_queue() {
     delete(_direct_access_queue);
     _direct_access_queue = nullptr;
+}
+
+template<class key>
+bool hashtable_queue<key>::contains(key k) {
+    return _direct_access_queue->count(k);
 }
 
 template<class key>
