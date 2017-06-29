@@ -6,8 +6,12 @@
 #include "w_base.h"
 
 template<class key>
-hashtable_queue<key>::hashtable_queue(key invalid_key) {
-    _direct_access_queue = new std::unordered_map<key, key_pair>();
+hashtable_queue<key>::hashtable_queue(key invalid_key, key max_size) {
+    if (max_size) {
+        _direct_access_queue = new std::unordered_map<key, key_pair>(max_size);
+    } else {
+        _direct_access_queue = new std::unordered_map<key, key_pair>();
+    }
     _invalid_key = invalid_key;
     _back = _invalid_key;
     _front = _invalid_key;

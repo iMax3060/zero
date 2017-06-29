@@ -2,14 +2,15 @@
 
 #include "multi_clock_impl.h"
 #include "hashtable_queue_impl.h"
+#include <cmath>
 
 page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options &options)
         : page_evictioner_base(bufferpool, options)
 {
     _clocks = new multi_clock<bf_idx, bool>(_bufferpool->_block_cnt, 2, 0);
     
-    _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
-    _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
+    _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT, _bufferpool->_block_cnt - 1);
+    _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT, PageID(std::ceil((_bufferpool->_block_cnt - 1) * (1.0 + EVICT_BATCH_RATIO))));
     
     _p = 0;
     _c = _bufferpool->_block_cnt - 1;

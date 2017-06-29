@@ -180,8 +180,6 @@ protected:
      */
     bool evict_page(bf_idx idx, PageID &evicted_page);
 
-
-private:
     /*!\var     EVICT_BATCH_RATIO
      * \brief   Ratio of buffer frames freed as batch
      * \details When eviction is triggered, _about_ this number of buffer frames will
@@ -191,6 +189,8 @@ private:
      */
     const float EVICT_BATCH_RATIO = 0.01;
     
+
+private:
     /*!\var     _current_frame
      * \brief   Last buffer frame examined
      * \details The buffer frame index of the last frame that was checked by RANDOM

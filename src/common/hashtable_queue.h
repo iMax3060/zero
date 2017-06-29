@@ -1,8 +1,8 @@
 #ifndef ZERO_HASHTABLE_QUEUE_H
 #define ZERO_HASHTABLE_QUEUE_H
 
-#include <unordered_map>
 #include <cstdint>
+#include <unordered_map>
 
 /*!\class   hashtable_queue
  * \brief   Queue with Direct Access
@@ -125,7 +125,6 @@ private:
      */
     key                                     _front;
     
-    
     /*!\var     _invalid_key
      * \brief   Invalid (Unused) \c key
      * \details This specifies an invalid \c key which can be used to mark that
@@ -136,19 +135,26 @@ private:
      *          of a this for the case that \c key is a pointer would be \c null.
      */
     key                                     _invalid_key;
-
+    
 
 public:
     /*!\fn      hashtable_queue(key invalid_key)
      * \brief   Constructor of a Queue with Direct Access
      * \details Creates a new instance of \link hashtable_queue \endlink with the specified
-     *          \link _invalid_key \endlink. This \c invalid_key has the semantics of
-     *          \c null for the data stucture and therefore the initialized queue uses this
-     *          value for mark the emptiness of the queue.
+     *          \link _invalid_key \endlink and with an optional maximum size. This
+     *          \c invalid_key has the semantics of \c null for the data structure and
+     *          therefore the initialized queue uses this value for mark the emptiness of
+     *          the queue. If the \c max_size is greater 0, the memory required for the
+     *          specified number of keys is allocated during the creation to reduce the
+     *          overhead due to allocation of memory.
      *
      * @param invalid_key A key used when a \c null -key is required.
+     * @param max_size    The maximum number of keys that can be managed by this
+     *                    \link hashtable_queue \endlink, or \c 0 (default) for a
+     *                    \link hashtable_queue \endlink with an unlimited capacity (depends
+     *                    on the number of unique \c key values).
      */
-    hashtable_queue(key invalid_key);
+    hashtable_queue(key invalid_key, key max_size = 0);
     
     /*!\fn      ~hashtable_queue()
      * \brief   Destructor of a Queue with Direct Access
