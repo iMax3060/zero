@@ -29,9 +29,8 @@ bool hashtable_queue<key>::push(key k) {
     if (!_direct_access_queue->empty()) {
         auto old_size = _direct_access_queue->size();
         key old_back = _back;
-        key_pair old_back_entry = (*_direct_access_queue)[old_back];
         w_assert1(old_back != _invalid_key);
-        w_assert1(old_back_entry._next == _invalid_key);
+        w_assert1((*_direct_access_queue)[old_back]._next == _invalid_key);
         
         if (this->contains(k)) {
             return false;
