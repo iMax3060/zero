@@ -2,7 +2,7 @@
 #define ZERO_HASHTABLE_QUEUE_H
 
 #include <unordered_map>
-#include "stdint.h"
+#include <cstdint>
 
 /*!\class   hashtable_queue
  * \brief   Queue with Direct Access
