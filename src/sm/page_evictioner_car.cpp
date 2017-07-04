@@ -39,22 +39,22 @@ void page_evictioner_car::miss_ref(bf_idx b_idx, PageID pid) {
     DO_PTHREAD(pthread_mutex_lock(&_lock));
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_clocks->size_of(T_1) + _b1->length() >= _c) {
-            w_assert0(_b1->pop());
+            _b1->pop();
         } else if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b1->length() + _b2->length() >= 2 * (_c)) {
-            w_assert0(_b2->pop());
+            _b2->pop();
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
         DBG5(<< "Added to T_1: " << b_idx << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else if (_b1->contains(pid)) {
         _p = std::min(_p + std::max<uint32_t>(uint32_t(1), (_b2->length() / _b1->length())), _c);
-        w_assert0(_b1->remove(pid));
+        _b1->remove(pid);
         w_assert0(_clocks->add_tail(T_2, b_idx));
         DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
     } else {
         _p = std::max<int32_t>(int32_t(_p) - std::max<int32_t>(1, (_b1->length() / _b2->length())), 0);
-        w_assert0(_b2->remove(pid));
+        _b2->remove(pid);
         w_assert0(_clocks->add_tail(T_2, b_idx));
         DBG5(<< "Added to T_2: " << b_idx << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         _clocks->set(b_idx, false);
@@ -111,7 +111,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 
                 if (evicted_page) {
                     w_assert0(_clocks->remove_head(T_1, t_1_head_index));
-                    w_assert0(_b1->push(evicted_pid));
+                    _b1->push(evicted_pid);
                     DBG5(<< "Removed from T_1: " << t_1_head_index << "; New size: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));
@@ -145,7 +145,7 @@ bf_idx page_evictioner_car::pick_victim() {
                 
                 if (evicted_page) {
                     w_assert0(_clocks->remove_head(T_2, t_2_head_index));
-                    w_assert0(_b2->push(evicted_pid));
+                    _b2->push(evicted_pid);
                     DBG5(<< "Removed from T_2: " << t_2_head_index << "; New size: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
     
                     DO_PTHREAD(pthread_mutex_unlock(&_lock));

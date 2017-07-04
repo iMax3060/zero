@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include "hashtable_queue_exceptions.h"
 
 /*!\class   hashtable_queue
  * \brief   Queue with Direct Access
@@ -149,12 +150,12 @@ public:
      *          overhead due to allocation of memory.
      *
      * @param invalid_key A key used when a \c null -key is required.
-     * @param max_size    The maximum number of keys that can be managed by this
+     * @param init_size    The maximum number of keys that can be managed by this
      *                    \link hashtable_queue \endlink, or \c 0 (default) for a
      *                    \link hashtable_queue \endlink with an unlimited capacity (depends
      *                    on the number of unique \c key values).
      */
-    hashtable_queue(key invalid_key, key max_size = 0);
+    hashtable_queue(key invalid_key, key init_size = 0);
     
     /*!\fn      ~hashtable_queue()
      * \brief   Destructor of a Queue with Direct Access
@@ -183,7 +184,7 @@ public:
      * @return  \c true if the key could be added successfully, \c false if
      *          it was already contained in the queue.
      */
-    bool             push(key k);
+    void push(key k) throw (hashtable_queue_already_contains_exception<key>);
     
     /*!\fn      pop()
      * \brief   Removes the next key from the queue
@@ -193,7 +194,7 @@ public:
      * @return  \c true if the key could be removed successfully, \c false if
      *          the queue was already empty.
      */
-    bool             pop();
+    void pop() throw (hashtable_queue_empty_exception<key>);
     
     /*!\fn      remove(key k)
      * \brief   Removes a specific key from the queue
@@ -206,7 +207,7 @@ public:
      * @return  \c true if the key \c k could be removed from the queue sucessfully,
      *          \c false if the key was not contained in the queue.
      */
-    bool             remove(key k);
+    bool             remove(key k) throw (hashtable_queue_not_contained_exception<key>);
     
     /*!\fn      length()
      * \brief   Number of entries in the queue

@@ -38,10 +38,10 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
     if (!_b1->contains(pid) && !_b2->contains(pid)) {
         if (_b1->length() + _b2->length() >= _c + 1
             && (_b1->length() > std::max<uint32_t>(uint32_t(0), _q) || _b2->length() == 0)) {
-            w_assert0(_b1->pop());
+            _b1->pop();
             DBG5(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         } else if (_b1->length() + _b2->length() >= _c + 1) {
-            w_assert0(_b2->pop());
+            _b2->pop();
             DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         }
         w_assert0(_clocks->add_tail(T_1, b_idx));
@@ -51,7 +51,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _n_s = _n_s + 1;
     } else if (_b1->contains(pid)) {
         _p = std::min<uint32_t>(_p + std::max<uint32_t>(uint32_t(1), uint32_t(_n_s / _b1->length())), _c);
-        w_assert0(_b1->remove(pid));
+        _b1->remove(pid);
         DBG5(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
         DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
@@ -60,7 +60,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _n_l = _n_l + 1;
     } else {
         _p = std::max<int32_t>(int32_t(_p) - std::max<int32_t>(uint32_t(1), uint32_t(_n_l / _b2->length())), uint32_t(0));
-        w_assert0(_b2->remove(pid));
+        _b2->remove(pid);
         DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         w_assert0(_clocks->add_tail(T_1, b_idx));
         DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
@@ -173,7 +173,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_1_head_index));
-                w_assert0(_b1->push(evicted_pid));
+                _b1->push(evicted_pid);
                 DBG5(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 
                 _n_s = _n_s - 1;
@@ -197,7 +197,7 @@ bf_idx page_evictioner_cart::pick_victim() {
             if (evicted_page) {
                 w_assert0(_clocks->remove_head(T_1, t_2_head_index));
                 DBG5(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
-                w_assert0(_b2->push(evicted_pid));
+                _b2->push(evicted_pid);
                 DBG5(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 
                 _n_l = _n_l - 1;

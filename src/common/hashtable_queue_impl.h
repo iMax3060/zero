@@ -6,9 +6,9 @@
 #include "w_base.h"
 
 template<class key>
-hashtable_queue<key>::hashtable_queue(key invalid_key, key max_size) {
-    if (max_size) {
-        _direct_access_queue = new std::unordered_map<key, key_pair>(max_size);
+hashtable_queue<key>::hashtable_queue(key invalid_key, key init_size) {
+    if (init_size) {
+        _direct_access_queue = new std::unordered_map<key, key_pair>(init_size);
     } else {
         _direct_access_queue = new std::unordered_map<key, key_pair>();
     }
@@ -20,7 +20,6 @@ hashtable_queue<key>::hashtable_queue(key invalid_key, key max_size) {
 template<class key>
 hashtable_queue<key>::~hashtable_queue() {
     delete(_direct_access_queue);
-    _direct_access_queue = nullptr;
 }
 
 template<class key>
@@ -29,18 +28,17 @@ bool hashtable_queue<key>::contains(key k) {
 }
 
 template<class key>
-bool hashtable_queue<key>::push(key k) {
+void hashtable_queue<key>::push(key k) throw (hashtable_queue_already_contains_exception<key>) {
     if (!_direct_access_queue->empty()) {
         auto old_size = _direct_access_queue->size();
-        key old_back = _back;
-        w_assert1(old_back != _invalid_key);
-        w_assert1((*_direct_access_queue)[old_back]._next == _invalid_key);
+        w_assert1(_back != _invalid_key);
+        w_assert1((*_direct_access_queue)[_back]._next == _invalid_key);
         
         if (this->contains(k)) {
-            return false;
+            throw hashtable_queue_already_contains_exception<key>(this, _direct_access_queue->size(), _back, _front, k);
         }
-        (*_direct_access_queue)[k] = key_pair(old_back, _invalid_key);
-        (*_direct_access_queue)[old_back]._next = k;
+        (*_direct_access_queue)[k] = key_pair(_back, _invalid_key);
+        (*_direct_access_queue)[_back]._next = k;
         _back = k;
         w_assert1(_direct_access_queue->size() == old_size + 1);
     } else {
@@ -52,13 +50,12 @@ bool hashtable_queue<key>::push(key k) {
         _front = k;
         w_assert1(_direct_access_queue->size() == 1);
     }
-    return true;
 }
 
 template<class key>
-bool hashtable_queue<key>::pop() {
+void hashtable_queue<key>::pop() throw (hashtable_queue_empty_exception<key>) {
     if (_direct_access_queue->empty()) {
-        return false;
+        throw hashtable_queue_empty_exception<key>(this, _direct_access_queue->size(), _back, _front);
     } else if (_direct_access_queue->size() == 1) {
         w_assert1(_back == _front);
         w_assert1((*_direct_access_queue)[_front]._next == _invalid_key);
@@ -80,13 +77,12 @@ bool hashtable_queue<key>::pop() {
         _direct_access_queue->erase(old_front);
         w_assert1(_direct_access_queue->size() == old_size - 1);
     }
-    return true;
 }
 
 template<class key>
-bool hashtable_queue<key>::remove(key k) {
+bool hashtable_queue<key>::remove(key k) throw (hashtable_queue_not_contained_exception<key>) {
     if (!this->contains(k)) {
-        return false;
+        throw hashtable_queue_not_contained_exception<key>(this, _direct_access_queue->size(), _back, _front, k);
     } else {
         auto old_size = _direct_access_queue->size();
         key_pair old_key = (*_direct_access_queue)[k];
@@ -103,7 +99,6 @@ bool hashtable_queue<key>::remove(key k) {
         _direct_access_queue->erase(k);
         w_assert1(_direct_access_queue->size() == old_size - 1);
     }
-    return true;
 }
 
 template<class key>
