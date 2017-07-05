@@ -1,7 +1,7 @@
 #ifndef ZERO_MULTI_CLOCK_H
 #define ZERO_MULTI_CLOCK_H
 
-#include "stdint.h"
+#include <cstdint>
 
 /*!\class   multi_clock
  * \brief   Multiple Clocks with a Common Set of Entries
@@ -297,7 +297,7 @@ public:
      * @return      \c true if the specified index is valid and contained in any clock,
      *              \c false else.
      */
-    bool            remove(key &index);
+    bool            remove(key index);
     
     /*!\fn      switch_head_to_tail(clk_idx source, clk_idx destination, key &moved_index)
      * \brief   Moves an entry from the head of one clock to the tail of another one
@@ -389,21 +389,6 @@ public:
         }
     }
     
-    /*!\fn      get(int64_t index)
-     * \brief   Returns a reference to the value that corresponds to the specified index
-     * \details Returns a reference to the value that corresponds to the specified index,
-     *          independent of the membership of that index to any clock.
-     *
-     * @param index The index whose value gets returned.
-     * @return      A reference to the value corresponding the specified index if this index
-     *              is valid inside this \link multi_clock \endlink or a reference to the value
-     *              of the \link _invalid_index \endlink, else.
-     */
-    inline int64_t&   get(const int64_t index) {
-        return valid_index(index) * _values[index]
-               + !valid_index(index) * _values[_invalid_index];
-    }
-    
     /*!\fn      set(key index, value new_value)
      * \brief   Sets the value that corresponds to the specified index
      * \details Sets the value that corresponds to the specified index, independent of the
@@ -417,20 +402,6 @@ public:
         if (valid_index(index)) {
             _values[index] = new_value;
         }
-    }
-    
-    /*!\fn      set(int64_t index, int64_t new_value)
-     * \brief   Sets the value that corresponds to the specified index
-     * \details Sets the value that corresponds to the specified index, independent of the
-     *          membership of that index to any clock.
-     *
-     * @param index     The index whose value gets set.
-     * @param new_value The new value for the specified index if this index is valid inside this
-     *                  \link multi_clock \endlink or for the \link _invalid_index \endlink, else.
-     */
-    inline void     set(const int64_t index, int64_t const new_value) {
-        _values[valid_index(index) * index
-                + !valid_index(index) * _invalid_index] = new_value;
     }
     
     /*!\fn      operator[](key index)
@@ -449,21 +420,6 @@ public:
         } else {
             return _values[_invalid_index];
         }
-    }
-    
-    /*!\fn      operator[](int64_t index)
-     * \brief   Returns a reference to the value that corresponds to the specified index
-     * \details Returns a reference to the value that corresponds to the specified index,
-     *          independent of the membership of that index to any clock.
-     *
-     * @param index The index whose value gets returned.
-     * @return      A reference to the value corresponding the specified index if this index
-     *              is valid inside this \link multi_clock \endlink or a reference to the value
-     *              of the \link _invalid_index \endlink, else.
-     */
-    inline int64_t&   operator[](const int64_t index) {
-        return valid_index(index) * _values[index]
-               + !valid_index(index) * _values[_invalid_index];
     }
 };
 

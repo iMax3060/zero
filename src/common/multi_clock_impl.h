@@ -152,7 +152,7 @@ bool multi_clock<key, value>::remove_head(const clk_idx clock, key &removed_inde
 }
 
 template<class key, class value>
-bool multi_clock<key, value>::remove(key &index) {
+bool multi_clock<key, value>::remove(key index) {
     if (contained_index(index)) {
         clk_idx clock = _clock_membership[index];
         if (_sizes[clock] == 1) {
