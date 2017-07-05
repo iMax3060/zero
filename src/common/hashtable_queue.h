@@ -150,7 +150,7 @@ public:
      *          overhead due to allocation of memory.
      *
      * @param invalid_key A key used when a \c null -key is required.
-     * @param init_size    The maximum number of keys that can be managed by this
+     * @param init_size   The maximum number of keys that can be managed by this
      *                    \link hashtable_queue \endlink, or \c 0 (default) for a
      *                    \link hashtable_queue \endlink with an unlimited capacity (depends
      *                    on the number of unique \c key values).
@@ -181,8 +181,8 @@ public:
      *          queue before will be removed from the queue before \c k.
      *
      * @param k The key that is added to the queue.
-     * @return  \c true if the key could be added successfully, \c false if
-     *          it was already contained in the queue.
+     * @throws hashtable_queue_already_contains_exception Thrown if the key was already
+     *                                                    contained in the queue.
      */
     void push(key k) throw (hashtable_queue_already_contains_exception<key>);
     
@@ -191,8 +191,7 @@ public:
      * \details Removes an entry from the front of the queue. The removed entry was the
      *          entry that was added the furthest in the past.
      *
-     * @return  \c true if the key could be removed successfully, \c false if
-     *          the queue was already empty.
+     * @throws hashtable_queue_empty_exception Thrown if the queue was already empty.
      */
     void pop() throw (hashtable_queue_empty_exception<key>);
     
@@ -204,8 +203,8 @@ public:
      *          after the entry that was in front of \c k is removed.
      *
      * @param k The key to remove from the queue.
-     * @return  \c true if the key \c k could be removed from the queue sucessfully,
-     *          \c false if the key was not contained in the queue.
+     * @throws hashtable_queue_not_contained_exception Thrown if the key was not contained
+     *                                                 in the queue.
      */
     bool             remove(key k) throw (hashtable_queue_not_contained_exception<key>);
     

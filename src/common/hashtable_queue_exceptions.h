@@ -7,27 +7,88 @@
 
 template<class key> class hashtable_queue;
 
+/*!\class   hashtable_queue_exception
+ * \brief   Exception thrown in \link hashtable_queue \endlink
+ * \details Represents an arbitrary exception that can be thrown in instances of
+ *          \link hashtable_queue \endlink . Every exception that is specific for the
+ *          \link hashtable_queue \endlink have to inherit from this class.
+ *
+ * @tparam key The data type of the entries stored in the \link hashtable_queue \endlink
+ *             where this exception was thrown.
+ *
+ * \author Max Gilbert
+ */
 template<class key>
 class hashtable_queue_exception : std::exception {
 protected:
-    hashtable_queue<key>*   _pointer;
-    uint64_t                _size;
-    key                     _back;
-    key                     _front;
+    /*!\var     _pointer
+     * \brief   The \link hashtable_queue \endlink
+     * \details A pointer to the \link hashtable_queue \endlink where this exception was
+     *          thrown.
+     */
+    const hashtable_queue<key>*   _pointer;
+    
+    /*!\var     _size
+     * \brief   The size of the \link hashtable_queue \endlink
+     * \details The number of entries of the \link hashtable_queue \endlink where this
+     *          exception was thrown at the time when this exception happened.
+     */
+    const uint64_t                _size;
+    
+    /*!\var     _back
+     * \brief   The back of the \link hashtable_queue \endlink
+     * \details The value of the back of the \link hashtable_queue \endlink where this
+     *          exception was thrown at the time when this exception happened.
+     */
+    const key                     _back;
+    
+    /*!\var     _front
+     * \brief   The front of the \link hashtable_queue \endlink
+     * \details The value of the front of the \link hashtable_queue \endlink where this
+     *          exception was thrown at the time when this exception happened.
+     */
+    const key                     _front;
 
     
 public:
+    /*!\fn      hashtable_queue_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front)
+     * \brief   Constructor of an exception thrown in \link hashtable_queue \endlink
+     * \details This constructor instantiates an \c hashtable_queue_exception with all
+     *          its variables.
+     *
+     * @param pointer See \link _pointer \endlink .
+     * @param size    See \link _size \endlink .
+     * @param back    See \link _back \endlink .
+     * @param front   See \link _front \endlink .
+     */
     hashtable_queue_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front)
             : _pointer(pointer), _size(size), _back(back), _front(front) {};
     
+    /*!\fn      ~hashtable_queue_exception()
+     * \brief   Destructor of an exception thrown in \link hashtable_queue \endlink
+     * \details As this class doesn't allocate memory dynamically, this destructor
+     *          doesn't do anything.
+     */
     virtual ~hashtable_queue_exception() {};
     
+    /*!\fn      what()
+     * \brief   What caused the exception happened?
+     * \details Returns description about what caused this exception to be thrown.
+     *
+     * @return A description about what caused this exception to be thrown.
+     */
     virtual const char* what() const noexcept {
         std::ostringstream oss;
         oss << "An unknown exception happened in the hashtable_queue instance " << _pointer << ".";
         return oss.str().c_str();
     };
     
+    /*!\fn      details()
+     * \brief   Details about the exceptional state
+     * \details Returns all known details of the state that caused this exception to be thrown.
+     *
+     * @return A description about the state that caused this exception to be thrown.
+     */
     virtual const char* details() const {
         std::ostringstream oss;
         oss << "&hashtable_queue = " << _pointer << ", hashtable_queue.size() = " << _size
@@ -35,27 +96,51 @@ public:
         return oss.str().c_str();
     };
     
-    key getBack() {
-        return _back;
-    };
-    
-    key getFront() {
-        return _front;
-    };
-    
 };
 
+/*!\class   hashtable_queue_already_contains_exception
+ * \brief   Exception thrown when an entry was already contained in an \link hashtable_queue \endlink
+ * \details Represents an exception that can be thrown in instances of \link hashtable_queue \endlink
+ *          when an entry was unexpectedly already contained in the queue.
+ *
+ * @tparam key The data type of the entries stored in the \link hashtable_queue \endlink where this
+ *             exception was thrown.
+ *
+ * \author Max Gilbert
+ */
 template<class key>
 class hashtable_queue_already_contains_exception : public hashtable_queue_exception<key> {
 private:
-    key _duplicate;
+    /*!\var     _duplicate
+     * \brief   The unexpected entry
+     * \brief   The value of the entry that was unexpectedly already contained.
+     */
+    const key _duplicate;
 
     
 public:
+    /*!\fn      hashtable_queue_already_contains_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front, key duplicate)
+     * \brief   Constructor of an exception thrown when an entry was already contained in an
+     *          \link hashtable_queue \endlink
+     * \details This constructor instantiates an \c hashtable_queue_already_contains_exception with all
+     *          its variables.
+     *
+     * @param pointer   See \link _pointer \endlink .
+     * @param size      See \link _size \endlink .
+     * @param back      See \link _back \endlink .
+     * @param front     See \link _front \endlink .
+     * @param duplicate See \link _duplicate \endLink .
+     */
     hashtable_queue_already_contains_exception(hashtable_queue<key>* pointer, uint64_t size, key back,
                                                key front, key duplicate)
             : hashtable_queue_exception<key>(pointer, size, back, front), _duplicate(duplicate) {};
     
+    /*!\fn      ~hashtable_queue_already_contains_exception()
+     * \brief   Destructor of an exception thrown when an entry was already contained in an
+     *          \link hashtable_queue \endlink
+     * \details As this class doesn't allocate memory dynamically, this destructor
+     *          doesn't do anything.
+     */
     virtual ~hashtable_queue_already_contains_exception() {};
     
     virtual const char* what() const noexcept {
@@ -71,17 +156,28 @@ public:
         return oss.str().c_str();
     };
     
-    key getDuplicate() {
-        return _duplicate;
-    };
-    
 };
 
+/*!\class   hashtable_queue_empty_exception
+ * \brief   Exception thrown when an \link hashtable_queue \endlink is empty
+ * \details Represents an exception that can be thrown in instances of \link hashtable_queue \endlink
+ *          when it is unexpectedly empty.
+ *
+ * @tparam key The data type of the entries stored in the \link hashtable_queue \endlink where this
+ *             exception was thrown.
+ *
+ * \author Max Gilbert
+ */
 template<class key>
 class hashtable_queue_empty_exception : public hashtable_queue_exception<key> {
 public:
     using hashtable_queue_exception<key>::hashtable_queue_exception;
     
+    /*!\fn      ~hashtable_queue_empty_exception()
+     * \brief   Destructor of an exception thrown when an \link hashtable_queue \endlink is empty
+     * \details As this class doesn't allocate memory dynamically, this destructor
+     *          doesn't do anything.
+     */
     virtual ~hashtable_queue_empty_exception() {};
     
     virtual const char* what() const noexcept {
@@ -92,16 +188,48 @@ public:
     
 };
 
+/*!\class   hashtable_queue_not_contained_exception
+ * \brief   Exception thrown when an entry was not already contained in an \link hashtable_queue \endlink
+ * \details Represents an exception that can be thrown in instances of \link hashtable_queue \endlink
+ *          when an entry was unexpectedly not already contained in the queue.
+ *
+ * @tparam key The data type of the entries stored in the \link hashtable_queue \endlink where this
+ *             exception was thrown.
+ *
+ * \author Max Gilbert
+ */
 template<class key>
 class hashtable_queue_not_contained_exception : public hashtable_queue_exception<key> {
 private:
-    key _requested;
+    /*!\var     _requested
+     * \brief   The expected entry
+     * \brief   The value of the entry that was unexpectedly not already contained.
+     */
+    const key _requested;
     
     
 public:
+    /*!\fn      hashtable_queue_not_contained_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front, key requested)
+     * \brief   Constructor of an exception thrown when an entry was not already contained in an
+     *          \link hashtable_queue \endlink
+     * \details This constructor instantiates an \c hashtable_queue_not_contained_exception with all
+     *          its variables.
+     *
+     * @param pointer   See \link _pointer \endlink .
+     * @param size      See \link _size \endlink .
+     * @param back      See \link _back \endlink .
+     * @param front     See \link _front \endlink .
+     * @param requested See \link _requested \endLink .
+     */
     hashtable_queue_not_contained_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front, key requested)
             : hashtable_queue_exception<key>(pointer, size, back, front), _requested(requested) {};
     
+    /*!\fn      ~hashtable_queue_not_contained_exception()
+     * \brief   Destructor of an exception thrown when an entry was not already contained in an
+     *          \link hashtable_queue \endlink
+     * \details As this class doesn't allocate memory dynamically, this destructor
+     *          doesn't do anything.
+     */
     virtual ~hashtable_queue_not_contained_exception() {};
     
     virtual const char* what() const noexcept {
