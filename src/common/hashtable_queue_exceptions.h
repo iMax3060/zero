@@ -19,7 +19,7 @@ template<class key> class hashtable_queue;
  * \author Max Gilbert
  */
 template<class key>
-class hashtable_queue_exception : std::exception {
+class hashtable_queue_exception : public std::exception {
 protected:
     /*!\var     _pointer
      * \brief   The \link hashtable_queue \endlink
