@@ -20,12 +20,32 @@
  *          \f$\mathcal{O}\left(1\right)\f$ and the space complexity of this class is in
  *          \f$\mathcal{O}\left(n\right)\f$ regarding the key range.
  *
- * @tparam key   The data type of the key of the key-value pairs where each key is unique
- *               within one instance of this data structure.
- * @tparam value The data type of the value of the key-value pairs where each value
- *               instance corresponds to a key.
+ * @tparam key                  The data type of the key of the key-value pairs where each
+ *                              key is unique within one instance of this data structure.
+ * @tparam value                The data type of the value of the key-value pairs where
+ *                              each value instance corresponds to a key.
+ * @tparam _clocksize           The number of key-value pairs that can be stored in the clocks
+ *                              combined. When this \link multi_clock \endlink is initialized,
+ *                              it allocates memory to hold this many entries. This also
+ *                              specifies the highest key that is allowed in the clocks
+ *                              (\c _clocksize \c - \c 1 ).
+ * @tparam _clocknumber         Contains the total number of clocks contained in this
+ *                              \link multi_clock \endlink an therefore it specifies the
+ *                              highest valid \link clk_idx \endlink, the number of clock
+ *                              \link _hands \endlink etc. The actual number of clocks might
+ *                              be smaller as some clocks can be empty.
+ * @tparam _invalid_index       This specifies an invalid \c key which can be used to mark that
+ *                              a clock is empty and therefore the clock hand points to this value.
+ *                              This should have the semantics of \c null for the specified \c key
+ *                              template parameter therefore a natural choice of this for the case
+ *                              that \c key is a pointer would be \c nullptr.
+ * @tparam _invalid_clock_index This specifies an invalid \c clock index which can be used to mark
+ *                              inside \link _clock_membership \endlink that an index does not
+ *                              belong to any clock. This should have the semantics of \c null for
+ *                              \link clk_idx \endlink and is equal to \link _clocknumber \endlink
+ *                              (greatest clock index plus 1).
  */
-template<class key, class value>
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index = _clocksize>
 class multi_clock {
 public:
     /*!\typedef clk_idx
@@ -80,15 +100,6 @@ private:
         key     _after;
     };
     
-    /*!\var     _clocksize
-     * \brief   Number of entries the clocks can hold
-     * \details Contains the number of key-value pairs that can be stored in the clocks
-     *          combined. When this \link multi_clock \endlink is initialized, it allocates
-     *          memory to hold this many entries. This also specifies the highest key
-     *          that is allowed in the clocks (\c _clocksize \c - \c 1 ).
-     */
-    key                             _clocksize;
-    
     /*!\var     _values
      * \brief   Values
      * \details Holds the values corresponding the keys. The corresponding key is the index
@@ -105,16 +116,6 @@ private:
      */
     index_pair*                     _clocks;
     
-    /*!\var     _invalid_index
-     * \brief   Invalid (Unused) \c index
-     * \details This specifies an invalid \c key which can be used to mark that
-     *          a clock is empty and therefore the clock hand points to this value.
-     *          This should have the semantics of \c null for the specified \c key
-     *          template parameter therefore a natural choice of a this for the case
-     *          that \c key is a pointer would be \c nullptr.
-     */
-    key                             _invalid_index;
-    
     /*!\var     _clock_membership
      * \brief   Membership of indexes to clocks
      * \details This array specifies for each index in the domain to which clock it
@@ -122,16 +123,6 @@ private:
      *          \link _invalid_clock_index \endlink is used.
      */
     clk_idx*                        _clock_membership;
-    
-    /*!\var     _clocknumber
-     * \brief   Number of clocks
-     * \details Contains the total number of clocks contained in this
-     *          \link multi_clock \endlink an therefore it specifies the highest valid
-     *          \link clk_idx \endlink, the number of clock \link _hands \endlink etc.
-     *          The actual number of clocks might be smaller as some clocks can be
-     *          empty.
-     */
-    clk_idx                         _clocknumber;
     
     /*!\var     _hands
      * \brief   Clock hands
@@ -146,31 +137,18 @@ private:
      * \details Contains for each clock the number of elements this clock currently has.
      */
     key*                            _sizes;
-    
-    /*!\var     _invalid_clock_index
-     * \brief   Invalid (Unused) clock index
-     * \details This specifies an invalid \c clock index which can be used to mark inside
-     *          \link _clock_membership \endlink that an index does not belong to any
-     *          clock. This should have the semantics of \c null for \link clk_idx \endlink
-     *          and is equal to \link _clocknumber \endlink (greatest clock index plus 1).
-     */
-    clk_idx                         _invalid_clock_index;
 
 
 public:
-    /*!\fn      multi_clock(key clocksize, uint32_t clocknumber, key invalid_index)
+    /*!\fn      multi_clock()
      * \brief   Constructor of Multiple Clocks with a Common Set of Entries
-     * \details Constructs a new \link multi_clock \endlink with a specified combined capacity
-     *          of the clocks, a specified number of (initially empty) clocks and with an
-     *          \link _invalid_index \endlink corresponding to the \link key \endlink data
-     *          type. The \c clocksize also specifies the range of the indexes. This constructor
-     *          allocates the memory to store \c clocksize entries.
-     *
-     * @param clocksize     The range of the clock indexes and the combined size of the clocks.
-     * @param clocknumber   The number of clocks maintained by this \link multi_clock \endlink
-     * @param invalid_index The \link key \endlink value with the semantics of \c null .
+     * \details Constructs a new \link multi_clock \endlink with a combined capacity of the
+     *          clocks specified in the template parameter \link _clocksize \endlink and a
+     *          number of (initially empty) clocks specified in the template parameter
+     *          \link _clocknumber \endlink . This constructor allocates the memory to
+     *          store \link _clocksize \endlink entries.
      */
-    multi_clock(key clocksize, uint32_t clocknumber, key invalid_index);
+    multi_clock();
     
     /*!\fn      ~multi_clock()
      * \brief   Destructor of Multiple Clocks with a Common Set of Entries

@@ -5,28 +5,24 @@
 
 #include "w_base.h"
 
-template<class key, class value>
-multi_clock<key, value>::multi_clock(key clocksize, clk_idx clocknumber, key invalid_index) {
-    _clocksize = clocksize;
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::multi_clock() {
     _values = new value[_clocksize]();
     _clocks = new index_pair[_clocksize]();
-    _invalid_index = invalid_index;
     
-    _clocknumber = clocknumber;
     _hands = new key[_clocknumber]();
     _sizes = new key[_clocknumber]();
     for (clk_idx i = 0; i <= _clocknumber - 1; i++) {
         _hands[i] = _invalid_index;
     }
-    _invalid_clock_index = _clocknumber;
     _clock_membership = new clk_idx[_clocksize]();
     for (key i = 0; i <= _clocksize - 1; i++) {
         _clock_membership[i] = _invalid_clock_index;
     }
 }
 
-template<class key, class value>
-multi_clock<key, value>::~multi_clock() {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::~multi_clock() {
     _clocksize = 0;
     delete[](_values);
     delete[](_clocks);
@@ -37,8 +33,8 @@ multi_clock<key, value>::~multi_clock() {
     delete[](_sizes);
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::get_head(const clk_idx clock, value &head_value) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::get_head(const clk_idx clock, value &head_value) {
     if (!empty(clock)) {
         head_value = _values[_hands[clock]];
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -50,8 +46,8 @@ bool multi_clock<key, value>::get_head(const clk_idx clock, value &head_value) {
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::set_head(const clk_idx clock, const value new_value) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::set_head(const clk_idx clock, const value new_value) {
     if (!empty(clock)) {
         _values[_hands[clock]] = new_value;
         return true;
@@ -60,8 +56,8 @@ bool multi_clock<key, value>::set_head(const clk_idx clock, const value new_valu
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::get_head_index(const clk_idx clock, key &head_index) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::get_head_index(const clk_idx clock, key &head_index) {
     if (!empty(clock)) {
         head_index = _hands[clock];
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -73,8 +69,8 @@ bool multi_clock<key, value>::get_head_index(const clk_idx clock, key &head_inde
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::move_head(const clk_idx clock) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::move_head(const clk_idx clock) {
     if (!empty(clock)) {
         _hands[clock] = _clocks[_hands[clock]]._after;
         w_assert1(_clock_membership[_hands[clock]] == clock);
@@ -84,8 +80,8 @@ bool multi_clock<key, value>::move_head(const clk_idx clock) {
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::add_tail(const clk_idx clock, const key index) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::add_tail(const clk_idx clock, const key index) {
     if (valid_index(index) && !contained_index(index)
      && valid_clock_index(clock)) {
         if (empty(clock)) {
@@ -106,8 +102,8 @@ bool multi_clock<key, value>::add_tail(const clk_idx clock, const key index) {
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::add_after(const key inside, const key new_entry) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::add_after(const key inside, const key new_entry) {
     if (valid_index(new_entry) && !contained_index(new_entry)
      && contained_index(inside)) {
         w_assert1(_sizes[_clock_membership[inside]] >= 1);
@@ -122,8 +118,8 @@ bool multi_clock<key, value>::add_after(const key inside, const key new_entry) {
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::add_before(const key inside, const key new_entry) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::add_before(const key inside, const key new_entry) {
     if (valid_index(new_entry) && !contained_index(new_entry)
      && contained_index(inside)) {
         w_assert1(_sizes[_clock_membership[inside]] >= 1);
@@ -138,8 +134,8 @@ bool multi_clock<key, value>::add_before(const key inside, const key new_entry) 
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::remove_head(const clk_idx clock, key &removed_index) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::remove_head(const clk_idx clock, key &removed_index) {
     if (!empty(clock)) {
         removed_index = _hands[clock];
         w_assert0(remove(removed_index));
@@ -151,8 +147,8 @@ bool multi_clock<key, value>::remove_head(const clk_idx clock, key &removed_inde
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::remove(key index) {
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::remove(key index) {
     if (contained_index(index)) {
         clk_idx clock = _clock_membership[index];
         if (_sizes[clock] == 1) {
@@ -183,8 +179,8 @@ bool multi_clock<key, value>::remove(key index) {
     }
 }
 
-template<class key, class value>
-bool multi_clock<key, value>::switch_head_to_tail(const clk_idx source, const clk_idx destination,
+template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index>
+bool multi_clock<key, value, _clocksize, _clocknumber, _invalid_index, _invalid_clock_index>::switch_head_to_tail(const clk_idx source, const clk_idx destination,
                                                   key &moved_index) {
     moved_index = _invalid_index;
     if (!empty(source) && valid_clock_index(destination)) {
