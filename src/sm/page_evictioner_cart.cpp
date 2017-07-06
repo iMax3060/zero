@@ -1,7 +1,7 @@
 #include "page_evictioner_cart.h"
 
-#include "multi_clock_impl.h"
-#include "hashtable_queue_impl.h"
+#include "multi_clock.hpp"
+#include "hashtable_queue.hpp"
 
 page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options)
         : page_evictioner_base(bufferpool, options)

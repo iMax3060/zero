@@ -1,5 +1,5 @@
-#ifndef ZERO_HASHTABLE_QUEUE_IMPL_H
-#define ZERO_HASHTABLE_QUEUE_IMPL_H
+#ifndef ZERO_HASHTABLE_QUEUE_HPP
+#define ZERO_HASHTABLE_QUEUE_HPP
 
 #include "hashtable_queue.h"
 
@@ -106,4 +106,4 @@ uint64_t hashtable_queue<key>::length() {
     return _direct_access_queue->size();
 }
 
-#endif //ZERO_HASHTABLE_QUEUE_IMPL_H
+#endif //ZERO_HASHTABLE_QUEUE_HPP

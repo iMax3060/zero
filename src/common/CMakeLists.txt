@@ -12,8 +12,8 @@ set(common_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/basics.cpp # cleanup unused parts; move used parts elsewhere
   ${CMAKE_CURRENT_SOURCE_DIR}/lsn.cpp # unify with FL's new lsn_t
   ${CMAKE_CURRENT_SOURCE_DIR}/vec_t.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/multi_clock_impl.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/hashtable_queue_impl.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/multi_clock.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/hashtable_queue.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/hashtable_queue_exceptions.h)
 
 add_library(common STATIC ${common_SRCS})

@@ -1,5 +1,5 @@
-#ifndef ZERO_MULTI_CLOCK_IMPL_H
-#define ZERO_MULTI_CLOCK_IMPL_H
+#ifndef ZERO_MULTI_CLOCK_HPP
+#define ZERO_MULTI_CLOCK_HPP
 
 #include "multi_clock.h"
 
@@ -198,4 +198,4 @@ bool multi_clock<key, value>::switch_head_to_tail(const clk_idx source, const cl
     }
 }
 
-#endif //ZERO_MULTI_CLOCK_IMPL_H
+#endif //ZERO_MULTI_CLOCK_HPP

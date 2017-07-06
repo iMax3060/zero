@@ -1,7 +1,7 @@
 #include "page_evictioner_car.h"
 
-#include "multi_clock_impl.h"
-#include "hashtable_queue_impl.h"
+#include "multi_clock.hpp"
+#include "hashtable_queue.hpp"
 #include <cmath>
 
 page_evictioner_car::page_evictioner_car(bf_tree_m *bufferpool, const sm_options &options)
