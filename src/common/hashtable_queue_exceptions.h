@@ -61,7 +61,7 @@ public:
      * @param back    See \link _back \endlink .
      * @param front   See \link _front \endlink .
      */
-    hashtable_queue_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front)
+    hashtable_queue_exception(const hashtable_queue<key>* pointer, const uint64_t size, const key back, const key front)
             : _pointer(pointer), _size(size), _back(back), _front(front) {};
     
     /*!\fn      ~hashtable_queue_exception()
@@ -131,8 +131,8 @@ public:
      * @param front     See \link _front \endlink .
      * @param duplicate See \link _duplicate \endLink .
      */
-    hashtable_queue_already_contains_exception(hashtable_queue<key>* pointer, uint64_t size, key back,
-                                               key front, key duplicate)
+    hashtable_queue_already_contains_exception(const hashtable_queue<key>* pointer, const uint64_t size, const key back,
+                                               const key front, const key duplicate)
             : hashtable_queue_exception<key>(pointer, size, back, front), _duplicate(duplicate) {};
     
     /*!\fn      ~hashtable_queue_already_contains_exception()
@@ -221,7 +221,7 @@ public:
      * @param front     See \link _front \endlink .
      * @param requested See \link _requested \endLink .
      */
-    hashtable_queue_not_contained_exception(hashtable_queue<key>* pointer, uint64_t size, key back, key front, key requested)
+    hashtable_queue_not_contained_exception(const hashtable_queue<key>* pointer, const uint64_t size, const key back, const key front, const key requested)
             : hashtable_queue_exception<key>(pointer, size, back, front), _requested(requested) {};
     
     /*!\fn      ~hashtable_queue_not_contained_exception()
