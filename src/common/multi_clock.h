@@ -2,6 +2,9 @@
 #define ZERO_MULTI_CLOCK_H
 
 #include <cstdint>
+#include "multi_clock_exceptions.h"
+#include <vector>
+#include <array>
 
 /*!\class   multi_clock
  * \brief   Multiple Clocks with a Common Set of Entries
@@ -24,11 +27,6 @@
  *                              key is unique within one instance of this data structure.
  * @tparam value                The data type of the value of the key-value pairs where
  *                              each value instance corresponds to a key.
- * @tparam _clocksize           The number of key-value pairs that can be stored in the clocks
- *                              combined. When this \link multi_clock \endlink is initialized,
- *                              it allocates memory to hold this many entries. This also
- *                              specifies the highest key that is allowed in the clocks
- *                              (\c _clocksize \c - \c 1 ).
  * @tparam _clocknumber         Contains the total number of clocks contained in this
  *                              \link multi_clock \endlink an therefore it specifies the
  *                              highest valid \link clk_idx \endlink, the number of clock
@@ -45,7 +43,7 @@
  *                              \link clk_idx \endlink and is equal to \link _clocknumber \endlink
  *                              (greatest clock index plus 1).
  */
-template<class key, class value, key _clocksize, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index = _clocksize>
+template<class key, class value, uint32_t _clocknumber, key _invalid_index, key _invalid_clock_index = _clocknumber>
 class multi_clock {
 public:
     /*!\typedef clk_idx
@@ -68,7 +66,7 @@ private:
          *          setting the members \link _before \endlink and \link _after \endlink.
          */
         index_pair() {};
-        
+
         /*!\fn      index_pair(key before, key after)
          * \brief   Constructor of a pair of keys with initial values
          * \details This constructor instantiates an \link index_pair \endlink and
@@ -82,7 +80,7 @@ private:
             this->_before = before;
             this->_after = after;
         };
-        
+
         /*!\var     _before
          * \brief   Key before this key
          * \details The key that is closer to the tail of the clock. It was visited by
@@ -90,7 +88,7 @@ private:
          *          elements within the array it is stored in).
          */
         key     _before;
-        
+
         /*!\var     _after
          * \brief   Key after this key
          * \details The key that is closer to the head of the clock. It gets visited by
@@ -99,14 +97,23 @@ private:
          */
         key     _after;
     };
-    
+
+    /*!\var     _clocksize
+     * \brief   Number of entries the clocks can hold
+     * \details Contains the number of key-value pairs that can be stored in the clocks
+     *          combined. When this \link multi_clock \endlink is initialized, it allocates
+     *          memory to hold this many entries. This also specifies the highest key
+     *          that is allowed in the clocks (\c _clocksize \c - \c 1 ).
+     */
+    key                             _clocksize;
+
     /*!\var     _values
      * \brief   Values
      * \details Holds the values corresponding the keys. The corresponding key is the index
      *          of this array.
      */
     value*                          _values;
-    
+
     /*!\var     _clocks
      * \brief   Clocks
      * \details Contains the doubly linked, circular lists representing the clocks (every
@@ -115,7 +122,7 @@ private:
      *          \c i and before \c i .
      */
     index_pair*                     _clocks;
-    
+
     /*!\var     _clock_membership
      * \brief   Membership of indexes to clocks
      * \details This array specifies for each index in the domain to which clock it
@@ -123,7 +130,7 @@ private:
      *          \link _invalid_clock_index \endlink is used.
      */
     clk_idx*                        _clock_membership;
-    
+
     /*!\var     _hands
      * \brief   Clock hands
      * \details Contains the clock hands of the clocks. Therefore it contains the index
@@ -131,7 +138,7 @@ private:
      *          \link _invalid_index \endlink.
      */
     key*                            _hands;
-    
+
     /*!\var     _sizes
      * \brief   Number of elements in the clocks
      * \details Contains for each clock the number of elements this clock currently has.
@@ -142,33 +149,41 @@ private:
 public:
     /*!\fn      multi_clock()
      * \brief   Constructor of Multiple Clocks with a Common Set of Entries
-     * \details Constructs a new \link multi_clock \endlink with a combined capacity of the
-     *          clocks specified in the template parameter \link _clocksize \endlink and a
-     *          number of (initially empty) clocks specified in the template parameter
-     *          \link _clocknumber \endlink . This constructor allocates the memory to
-     *          store \link _clocksize \endlink entries.
+     * \details Constructs a new \link multi_clock \endlink with a specified combined
+     *          capacity of the clocks and a number of (initially empty) clocks specified
+     *          in the template parameter \link _clocknumber \endlink . This constructor
+     *          allocates the memory to store \link _clocksize \endlink entries.
+     *
+     * @param clocksize The range of the clock indexes and the combined size of the clocks.
      */
-    multi_clock();
-    
+    multi_clock(key clocksize);
+
+
     /*!\fn      ~multi_clock()
      * \brief   Destructor of Multiple Clocks with a Common Set of Entries
      * \details Destructs this instance of \link multi_clock \endlink and deallocates the
      *          memory used to store the clocks.
      */
-    virtual         ~multi_clock();
-    
+    virtual ~multi_clock();
+
     /*!\fn      get_head(clk_idx clock, value &head_value)
      * \brief   Get the value of the entry where the clock hand of the specified
      *          clock points to
      * \details Returns the value of the head of the specified clock.
      *
-     * @param clock      The clock whose head's value should be returned.
-     * @param head_value The value of the head of the specified clock (return parameter).
-     * @return           \c false if the specified clock does not exist or if it is empty,
-     *                   \c true else.
+     * @param clock The clock whose head's value should be returned.
+     * @return      The value of the head of the specified clock.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_empty_exception               If the specified \c clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            get_head(const clk_idx clock, value &head_value);
-    
+    value get_head(const clk_idx clock) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                               multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                               multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      set_head(clk_idx clock, value new_value)
      * \brief   Set the value of the entry where the clock hand of the specified
      *          clock points to
@@ -176,23 +191,35 @@ public:
      *
      * @param clock     The clock whose head's value should be set.
      * @param new_value The new value of the head of the specified clock.
-     * @return          \c false if the specified clock does not exist or if it is empty,
-     *                  \c true else.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_empty_exception               If the specified \c clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            set_head(const clk_idx clock, const value new_value);
-    
+    void set_head(const clk_idx clock, const value new_value) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                     multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                     multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      get_head_index(clk_idx clock, key &head_index)
      * \brief   Get the index of the entry where the clock hand of the specified
      *          clock points to
      * \details Returns the index of the head of the specified clock.
      *
-     * @param clock      The clock whose head should be returned.
-     * @param head_index The index of the head of the specified clock (return parameter).
-     * @return           \c false if the specified clock does not exist or if it is empty,
-     *                   \c true else.
+     * @param clock The clock whose head should be returned.
+     * @return      The index of the head of the specified clock.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_empty_exception               If the specified \c clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            get_head_index(const clk_idx clock, key &head_index);
-    
+    key get_head_index(const clk_idx clock) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                   multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                   multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      move_head(clk_idx clock)
      * \brief   Move the clock hand forward
      * \details Moves the tail entry of the specified clock before the head of the same
@@ -202,11 +229,17 @@ public:
      *          \link index_pair._after \endlink the new head.
      *
      * @param clock The clock whose clock hand should be moved.
-     * @return      \c true if the specified clock index is valid and if the clock is not
-     *              empty, \c false else.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_empty_exception               If the specified \c clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            move_head(const clk_idx clock);
-    
+    void move_head(const clk_idx clock) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                               multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                               multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      add_tail(clk_idx clock, key index)
      * \brief   Make the specified index the tail of the specified clock
      * \details Adds a new entry with the specified index to the tail of the specified
@@ -217,54 +250,95 @@ public:
      *
      * @param clock The clock where the new entry should be added to at the tail.
      * @param index The index of the new entry.
-     * @return      \c true if the \c clock index is valid and if the new entry's
-     *              \c index is valid and \c false else.
+     *
+     * @throws multi_clock_invalid_index_exception       If the specified \c index is invalid.
+     * @throws multi_clock_already_contained_exception   If the specified \c index could not be
+     *                                                   added because it is already contained
+     *                                                   in some clock.
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            add_tail(const clk_idx clock, const key index);
-    
+    void add_tail(const clk_idx clock, const key index) throw (multi_clock_invalid_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                               multi_clock_already_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                               multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                               multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      add_before(const key inside, const key new_entry)
      * \brief   Add the specified index before another index in an arbitrary clock
      * \details Adds a new entry with the specified index \c new_entry in the clock
-     *          before the entry \c inside. The entry the was before \c inside
+     *          before the entry \c inside. The entry that was before \c inside
      *          before will be \link index_pair._before \endlink \c new_entry. Adding a
      *          new entry is only possible if the index is not already contained inside
      *          any clock of the same \link multi_clock \endlink.
      *
      * @param inside    This index will be the entry after the new entry.
      * @param new_entry This is the index of the new entry.
-     * @return          \c true if \c inside was contained in any clock and if
-     *                  \c new_entry was not, \c false else
+     *
+     * @throws multi_clock_invalid_index_exception     If the specified \c inside or
+     *                                                 \c new_entry is invalid.
+     * @throws multi_clock_already_contained_exception If the specified \c new_entry could not be
+     *                                                 added because it is already contained in
+     *                                                 some clock.
+     * @throws multi_clock_not_contained_exception     If the position for the insertion is not
+     *                                                 valid because the specified \c inside is
+     *                                                 not contained in any clock.
+     * @throws multi_clock_multi_exception             If multiple of those exceptions would be
+     *                                                 thrown.
      */
-    bool            add_before(const key inside, const key new_entry);
-    
+    void add_before(const key inside, const key new_entry) throw (multi_clock_invalid_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                  multi_clock_already_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                  multi_clock_not_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                  multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      add_after(const key inside, const key new_entry)
      * \brief   Add the specified index after another index in an arbitrary clock
      * \details Adds a new entry with the specified index \c new_entry in the clock
-     *          after the entry \c inside. The entry the was after \c inside
+     *          after the entry \c inside. The entry that was after \c inside
      *          before will be \link index_pair._after \endlink \c new_entry. Adding a
      *          new entry is only possible if the index is not already contained inside
      *          any clock of the same \link multi_clock \endlink.
      *
      * @param inside    This index will be the entry before the new entry.
      * @param new_entry This is the index of the new entry.
-     * @return          \c true if \c inside was contained in any clock and if
-     *                  \c new_entry was not, \c false else
+     *
+     * @throws multi_clock_invalid_index_exception     If the specified \c inside or
+     *                                                 \c new_entry is invalid.
+     * @throws multi_clock_already_contained_exception If the specified \c new_entry could not be
+     *                                                 added because it is already contained in
+     *                                                 some clock.
+     * @throws multi_clock_not_contained_exception     If the position for the insertion is not
+     *                                                 valid because the specified \c inside is
+     *                                                 not contained in any clock.
+     * @throws multi_clock_multi_exception             If multiple of those exceptions would be
+     *                                                 thrown.
      */
-    bool            add_after(const key inside, const key new_entry);
-    
+    void add_after(const key inside, const key new_entry) throw (multi_clock_invalid_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                 multi_clock_already_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                 multi_clock_not_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                 multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
+
     /*!\fn      remove_head(clk_idx clock, key &removed_index)
      * \brief   Remove the head entry from the specified clock
      * \details Removes the entry at the head of the specified clock from that clock.
      *          The new head of the clock will be the entry after the removed entry
      *          and therefore the clock hand will point to that index.
      *
-     * @param clock         The index of the clock whose head entry will be removed.
-     * @param removed_index The index of the entry that was removed (return parameter).
-     * @return              \c true if the specified clock exists and it is not empty
-     *                      , \c false else.
+     * @param clock The index of the clock whose head entry will be removed.
+     * @return      The index of the entry that was removed.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c clock does not
+     *                                                   exist.
+     * @throws multi_clock_empty_exception               If the specified \c clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions would
+     *                                                   be thrown.
      */
-    bool            remove_head(const clk_idx clock, key &removed_index);
-    
+    key remove_head(const clk_idx clock) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      remove(key &index)
      * \brief   Remove the specified entry from any clock
      * \details Removed the specified entry from any clock. The entry before this entry
@@ -272,11 +346,18 @@ public:
      *          this entry will be after the entry before the specfied entry.
      *
      * @param index The index of the entry that gets removed.
-     * @return      \c true if the specified index is valid and contained in any clock,
-     *              \c false else.
+     *
+     * @throws multi_clock_invalid_index_exception If the specified \c index is invalid.
+     * @throws multi_clock_not_contained_exception If the specified \c index could not be
+     *                                             removed from some clock because it is
+     *                                             not contained in one.
+     * @throws multi_clock_multi_exception         If multiple of those exceptions would be
+     *                                             thrown.
      */
-    bool            remove(key index);
-    
+    void remove(key index) throw (multi_clock_invalid_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                  multi_clock_not_contained_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                  multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      switch_head_to_tail(clk_idx source, clk_idx destination, key &moved_index)
      * \brief   Moves an entry from the head of one clock to the tail of another one
      * \details Removes the index at the head of the \c source clock and adds it as tail
@@ -285,13 +366,20 @@ public:
      * @param source      The index of the clock whose head gets moved. The head will be
      *                    removed from this clock.
      * @param destination The index of the clock where the moved entry gets added to the tail.
-     * @param moved_index The index of the entry that was moved from one clock to another
-     *                    (return parameter).
-     * @return            \c true if the \c source clock exists, if it is not empty and if
-     *                    the \c destination clock exists, \c false else.
+     * @return            The index of the entry that was moved from one clock to another.
+     *
+     * @throws multi_clock_invalid_clock_index_exception If the specified \c source or
+     *                                                   \c destination does not exist.
+     * @throws multi_clock_empty_exception               If the head of the specified
+     *                                                   \c source could not be taken
+     *                                                   because the clock is empty.
+     * @throws multi_clock_multi_exception               If multiple of those exceptions
+     *                                                   would be thrown.
      */
-    bool            switch_head_to_tail(const clk_idx source, const clk_idx destination, key &moved_index);
-    
+    key switch_head_to_tail(const clk_idx source, const clk_idx destination) throw (multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                                    multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>,
+                                                                                    multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>);
+
     /*!\fn      size_of(clk_idx clock)
      * \brief   Returns the number of entries in the specified clock
      * \details Returns the number of entries that is currently contained in the specified
@@ -303,7 +391,7 @@ public:
     inline key      size_of(const clk_idx clock) {
         return valid_clock_index(clock) * _sizes[clock];
     }
-    
+
     /*!\fn      empty(const clk_idx clock)
      * \brief   Returns \c true if the specified clock is empty
      * \details Returns \c true if the specified clock currently contains entries, if it exists.
@@ -314,7 +402,7 @@ public:
     inline bool     empty(const clk_idx clock) {
         return size_of(clock) == 0;
     }
-    
+
     /*!\fn      valid_index(const key index)
      * \brief   Returns \c true if the specified index is valid
      * \details Returns \c true if the specified index is valid in this \link multi_clock \endlink.
@@ -325,7 +413,7 @@ public:
     inline bool     valid_index(const key index) {
         return index != _invalid_index && index >= 0 && index <= _clocksize - 1;
     }
-    
+
     /*!\fn      contained_index(const key index)
      * \brief   Returns \c true if the specified index is contained in any clock
      * \details Returns \c true if the specified index is valid in this \link multi_clock \endlink
@@ -337,7 +425,7 @@ public:
     inline bool     contained_index(const key index) {
         return valid_index(index) && valid_clock_index(_clock_membership[index]);
     }
-    
+
     /*!\fn      valid_clock_index(const clk_idx clock_index)
      * \brief   Returns \c true if the specified clock exists
      * \details Returns \c true if the specified clock exists in this \link multi_clock \endlink.
@@ -348,7 +436,7 @@ public:
     inline bool     valid_clock_index(const clk_idx clock_index) {
         return clock_index >= 0 && clock_index <= _clocknumber - 1;
     }
-    
+
     /*!\fn      get(key index)
      * \brief   Returns a reference to the value that corresponds to the specified index
      * \details Returns a reference to the value that corresponds to the specified index,
@@ -366,7 +454,7 @@ public:
             return _values[_invalid_index];
         }
     }
-    
+
     /*!\fn      set(key index, value new_value)
      * \brief   Sets the value that corresponds to the specified index
      * \details Sets the value that corresponds to the specified index, independent of the
@@ -381,7 +469,7 @@ public:
             _values[index] = new_value;
         }
     }
-    
+
     /*!\fn      operator[](key index)
      * \brief   Returns a reference to the value that corresponds to the specified index
      * \details Returns a reference to the value that corresponds to the specified index,

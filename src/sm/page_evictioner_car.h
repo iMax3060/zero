@@ -162,40 +162,40 @@ protected:
      *          invalid index (as well as a range of indexes starting from 0), the used
      *          invalid index is 0 which isn't used in the bufferpool as well.
      */
-    multi_clock<bf_idx, bool>*      _clocks;
+    multi_clock<bf_idx, bool, 2, 0>*                            _clocks;
     
     /*!\var     _b1
      * \brief   LRU-list \f$B_1\f$
      * \details Represents the LRU-list \f$B_1\f$ which contains the PageIDs of pages
      *          evicted from \f$T_1\f$.
      */
-    hashtable_queue<PageID>*        _b1;
+    hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>*              _b1;
     
     /*!\var     _b2
      * \brief   LRU-list \f$B_2\f$
      * \details Represents the LRU-list \f$B_2\f$ which contains the PageIDs of pages
      *          evicted from \f$T_2\f$.
      */
-    hashtable_queue<PageID>*        _b2;
+    hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>*              _b2;
     
     /*!\var     _p
      * \brief   Parameter \f$p\f$
      * \details Represents the parameter \f$p\f$ which acts as a target size of \f$T_1\f$.
      */
-    u_int32_t                       _p;
+    u_int32_t                                                   _p;
     
     /*!\var     _c
      * \brief   Parameter \f$c\f$
      * \details The number of buffer frames in the bufferpool \link _bufferpool \endlink.
      */
-    u_int32_t                       _c;
+    u_int32_t                                                   _c;
     
     /*!\var     _hand_movement
      * \brief   Clock hand movements in current circulation
      * \details The combined number of movements of the clock hands of \f$T_1\f$ and
      *          \f$T_2\f$. Is reset after \link _c \endlink movements.
      */
-    bf_idx                          _hand_movement;
+    bf_idx                                                      _hand_movement;
     
     /*!\var     _lock
      * \brief   Latch of \link _clocks \endlink, \link _b1 \endlink and \link _b2 \endlink
@@ -208,7 +208,7 @@ protected:
      *          only atomic and therefore this method doesn't need to acquire this lock
      *          for its changes.
      */
-    pthread_mutex_t                 _lock;
+    pthread_mutex_t                                             _lock;
     
     /*!\enum    clock_index
      * \brief   Clock names

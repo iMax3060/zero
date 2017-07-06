@@ -44,7 +44,7 @@ private:
             _referenced = referenced;
             _filter = filter;
         };
-        referenced_filter& operator=(referenced_filter& source) {
+        referenced_filter& operator=(const referenced_filter& source) {
             this->_referenced = source._referenced;
             this->_filter = source._filter;
             
@@ -66,26 +66,26 @@ protected:
      * from 0), the used invalid index is 0 which isn't used in the bufferpool as
      * well.
      */
-    multi_clock<bf_idx, referenced_filter>*     _clocks;
+    multi_clock<bf_idx, referenced_filter, 2, 0>*                           _clocks;
     /**
      * Represents the LRU-list B_1 which contains the PageIDs of the pages evicted
      * from T_1.
      */
-    hashtable_queue<PageID>*                    _b1;
+    hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>*                          _b1;
     /**
      * Represents the LRU-list B_2 which contains the PageIDs of the pages evicted
      * from T_2.
      */
-    hashtable_queue<PageID>*                    _b2;
+    hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>*                          _b2;
     
     /**
      * Represents the parameter p which acts as a target size of T_1.
      */
-    uint32_t                                    _p;
+    uint32_t                                                                _p;
     
-    uint32_t                                    _c;
+    uint32_t                                                                _c;
     
-    bf_idx                                      _hand_movement;
+    bf_idx                                                                  _hand_movement;
     
     /**
      * As the data structures \link _clocks, \link _b1 and \link _b2 aren't thread-safe
@@ -95,11 +95,11 @@ protected:
      * buffer frame latched and the access is also only atomic and therefore this method
      * doesn't need to acquire this lock for its changes.
      */
-    srwlock_t                                   _lock;
+    srwlock_t                                                               _lock;
     
-    uint32_t                                    _q;
-    uint32_t                                    _n_s;
-    uint32_t                                    _n_l;
+    uint32_t                                                                _q;
+    uint32_t                                                                _n_s;
+    uint32_t                                                                _n_l;
 };
 
 #endif //ZERO_PAGE_EVICTIONER_CART_H

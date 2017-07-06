@@ -6,10 +6,10 @@
 page_evictioner_cart::page_evictioner_cart(bf_tree_m *bufferpool, const sm_options &options)
         : page_evictioner_base(bufferpool, options)
 {
-    _clocks = new multi_clock<bf_idx, referenced_filter>(_bufferpool->_block_cnt, 2, 0);
+    _clocks = new multi_clock<bf_idx, referenced_filter, 2, 0>(_bufferpool->_block_cnt);
     
-    _b1 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
-    _b2 = new hashtable_queue<PageID>(1 | SWIZZLED_PID_BIT);
+    _b1 = new hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>();
+    _b2 = new hashtable_queue<PageID, 1 | SWIZZLED_PID_BIT>();
     
     _p = _q = _n_s = _n_l = 0;
     _c = _bufferpool->_block_cnt - 1;
@@ -44,7 +44,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
             _b2->pop();
             DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
         }
-        w_assert0(_clocks->add_tail(T_1, b_idx));
+        _clocks->add_tail(T_1, b_idx);
         DBG5(<< "Added to T_1: " << b_idx << "; |T_1|: " << _clocks->size_of(T_1) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = S;
@@ -53,7 +53,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _p = std::min<uint32_t>(_p + std::max<uint32_t>(uint32_t(1), uint32_t(_n_s / _b1->length())), _c);
         _b1->remove(pid);
         DBG5(<< "Removed from B_1: " << pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
-        w_assert0(_clocks->add_tail(T_1, b_idx));
+        _clocks->add_tail(T_1, b_idx);
         DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
@@ -62,7 +62,7 @@ void page_evictioner_cart::miss_ref(bf_idx b_idx, PageID pid) {
         _p = std::max<int32_t>(int32_t(_p) - std::max<int32_t>(uint32_t(1), uint32_t(_n_l / _b2->length())), uint32_t(0));
         _b2->remove(pid);
         DBG5(<< "Removed from B_2: " << pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
-        w_assert0(_clocks->add_tail(T_1, b_idx));
+        _clocks->add_tail(T_1, b_idx);
         DBG5(<< "Added to T_2: " << b_idx << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
         (*_clocks)[b_idx]._referenced = false;
         (*_clocks)[b_idx]._filter = L;
@@ -113,39 +113,50 @@ bf_idx page_evictioner_cart::pick_victim() {
         }
         w_assert1(iterations < 3);
         _lock.acquire_write();
-        referenced_filter t_2_head = referenced_filter(false, S);
-        bf_idx t_2_head_index = 0;
-        bool t_2_has_head = _clocks->get_head(T_2, t_2_head);
-        
+
         bf_idx size_t_1_before = _clocks->size_of(T_1);
         bf_idx size_t_2_before = _clocks->size_of(T_2);
-        while (t_2_head._referenced && t_2_has_head) {
+
+        referenced_filter t_2_head = referenced_filter(false, S);
+        bf_idx t_2_head_index = 0;
+        try {
+            t_2_head = _clocks->get_head(T_2);
+        } catch (multi_clock_empty_exception<bf_idx, referenced_filter, 2, 0> e) {}
+
+        while (t_2_head._referenced && size_t_2_before) {
             (*_clocks)[t_2_head_index]._referenced = false;
-            w_assert0(_clocks->switch_head_to_tail(T_2, T_1, t_2_head_index));
+            t_2_head_index = _clocks->switch_head_to_tail(T_2, T_1);
             DBG5(<< "Moved from T_2 to T_1: " << t_2_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
-            
+
             if (_clocks->size_of(T_1) + _clocks->size_of(T_2) + _b2->length() - _n_s >= _c) {
                 _q = std::min<int32_t>(_q + 1, int32_t(2 * _c) - int32_t(_clocks->size_of(T_1)));
             }
-            
-            _clocks->get_head(T_2, t_2_head);
+
+            try {
+                t_2_head = _clocks->get_head(T_2);
+            } catch (multi_clock_empty_exception<bf_idx, referenced_filter, 2, 0> e) {
+                break;
+            }
         }
         w_assert1(size_t_1_before + size_t_2_before == _clocks->size_of(T_1) + _clocks->size_of(T_2));
-        
-        referenced_filter t_1_head = referenced_filter(false, S);
-        bf_idx t_1_head_index = 0;
-        bool t_1_has_head = _clocks->get_head(T_1, t_1_head);
-        _clocks->get_head_index(T_1, t_1_head_index);
-        
+
         size_t_1_before = _clocks->size_of(T_1);
         size_t_2_before = _clocks->size_of(T_2);
-        while ((t_1_head._filter == L || t_1_head._referenced) && t_1_has_head) {
+
+        referenced_filter t_1_head = referenced_filter(false, S);
+        bf_idx t_1_head_index = 0;
+        try {
+            t_1_head = _clocks->get_head(T_1);
+            t_1_head_index = _clocks->get_head_index(T_1);
+        } catch (multi_clock_empty_exception<bf_idx, referenced_filter, 2, 0> e) {}
+
+        while ((t_1_head._filter == L || t_1_head._referenced) && size_t_1_before) {
             if (t_1_head._referenced) {
                 (*_clocks)[t_1_head_index]._referenced = false;
                 _clocks->move_head(T_1);
                 _hand_movement++;
                 DBG5(<< "Moved hand of T_1; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
-                
+
                 if (_clocks->size_of(T_1) >= std::min<uint32_t>(_p + 1, _b1->length()) && t_1_head._filter == S) {
                     (*_clocks)[t_1_head_index]._filter = L;
                     _n_s = _n_s - 1;
@@ -153,26 +164,30 @@ bf_idx page_evictioner_cart::pick_victim() {
                 }
             } else {
                 (*_clocks)[t_1_head_index]._referenced = false;
-                w_assert0(_clocks->switch_head_to_tail(T_1, T_2, t_1_head_index));
+                t_1_head_index = _clocks->switch_head_to_tail(T_1, T_2);
                 DBG5(<< "Moved from T_1 to T_2: " << t_1_head_index << "; |T_1|: " << _clocks->size_of(T_1) << "; |T_2|: " << _clocks->size_of(T_2));
                 _q = std::max<int32_t>(int32_t(_q) - int32_t(1), int32_t(_c) - int32_t(_clocks->size_of(T_1)));
             }
-            
-            _clocks->get_head(T_1, t_1_head);
-            _clocks->get_head_index(T_1, t_1_head_index);
+
+            try {
+                t_1_head = _clocks->get_head(T_1);
+                t_1_head_index = _clocks->get_head_index(T_1);
+            } catch (multi_clock_empty_exception<bf_idx, referenced_filter, 2, 0> e) {
+                break;
+            }
         }
         w_assert1(size_t_1_before == _clocks->size_of(T_1));
         w_assert1(size_t_2_before == _clocks->size_of(T_2));
         
         if ((_clocks->size_of(T_1) >= std::max<uint32_t>(uint32_t(1), _p) || blocked_t_2 > _clocks->size_of(T_2))
             && blocked_t_1 <= _clocks->size_of(T_1)) {
-            _clocks->get_head_index(T_1, t_1_head_index);
+            t_1_head_index = _clocks->get_head_index(T_1);
             
             PageID evicted_pid;
             evicted_page = evict_page(t_1_head_index, evicted_pid);
             
             if (evicted_page) {
-                w_assert0(_clocks->remove_head(T_1, t_1_head_index));
+                t_1_head_index = _clocks->remove_head(T_1);
                 _b1->push(evicted_pid);
                 DBG5(<< "Added to B_1: " << evicted_pid << "; |B_1|: " << _b1->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 
@@ -189,13 +204,13 @@ bf_idx page_evictioner_cart::pick_victim() {
                 continue;
             }
         } else if (blocked_t_2 <= _clocks->size_of(T_2)) {
-            _clocks->get_head_index(T_1, t_2_head_index);
+            t_2_head_index = _clocks->get_head_index(T_1);
             
             PageID evicted_pid;
             evicted_page = evict_page(t_2_head_index, evicted_pid);
             
             if (evicted_page) {
-                w_assert0(_clocks->remove_head(T_1, t_2_head_index));
+                t_2_head_index = _clocks->remove_head(T_1);
                 DBG5(<< "Removed from T_2: " << t_1_head_index << "; |T_2|: " << _clocks->size_of(T_2) << "; Free frames: " << _bufferpool->_approx_freelist_length);
                 _b2->push(evicted_pid);
                 DBG5(<< "Added to B_2: " << evicted_pid << "; |B_2|: " << _b2->length() << "; Free frames: " << _bufferpool->_approx_freelist_length);
@@ -216,9 +231,5 @@ bf_idx page_evictioner_cart::pick_victim() {
             _lock.release_write();
             return 0;
         }
-        _lock.release_write();
     }
-    
-    _lock.release_write();
-    return 0;
 }
