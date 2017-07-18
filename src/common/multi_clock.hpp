@@ -54,6 +54,7 @@ multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_c
                     multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(this, _hands, _sizes, clock));
 
         throw_multiple<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(multi_exception);
+        return _values[_invalid_index];                         // Suppress compiler warning about missing return statement!
     }
 }
 
@@ -99,6 +100,7 @@ key multi_clock<key, value, _clocknumber, _invalid_index, _invalid_clock_index>:
                     multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(this, _hands, _sizes, clock));
 
         throw_multiple<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(multi_exception);
+        return _invalid_index;                                  // Suppress compiler warning about missing return statement!
     }
 }
 
@@ -260,6 +262,7 @@ key multi_clock<key, value, _clocknumber, _invalid_index, _invalid_clock_index>:
                     multi_clock_empty_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(this, _hands, _sizes, clock));
 
         throw_multiple<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(multi_exception);
+        return _invalid_index;                                  // Suppress compiler warning about missing return statement!
     }
 }
 
@@ -329,6 +332,7 @@ key multi_clock<key, value, _clocknumber, _invalid_index, _invalid_clock_index>:
                     multi_clock_invalid_clock_index_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(this, _hands, _sizes, destination));
         }
         throw_multiple(multi_exception);
+        return _invalid_index;                                  // Suppress compiler warning about missing return statement!
     }
 
     w_assert1(moved_index != _invalid_clock_index);
