@@ -346,6 +346,8 @@ key multi_clock<key, value, _clocknumber, _invalid_index, _invalid_clock_index>:
 
         throw e;
     }
+
+    return moved_index;
 }
 
 #endif //ZERO_MULTI_CLOCK_HPP
