@@ -55,6 +55,11 @@ protected:
      */
     std::array<key, _clocknumber>                                                                                   _sizes;
 
+    mutable std::string                                                                                             _what;
+
+    mutable std::string                                                                                             _details;
+
+
 
 public:
     /*!\fn      multi_clock_exception(const multi_clock<key, value, _clocknumber, _invalid_index, _invalid_clock_index>* pointer, const key* hands, const key* sizes)
@@ -80,10 +85,13 @@ public:
      *
      * @return A description about what caused this exception to be thrown.
      */
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "An unknown exception happened in the multi_clock instance " << _pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (_what.empty()) {
+            std::ostringstream oss;
+            oss << "An unknown exception happened in the multi_clock instance " << _pointer << ".";
+            _what = oss.str().c_str();
+        }
+        return _what.c_str();
     }
 
     /*!\fn      details()
@@ -93,15 +101,18 @@ public:
      * @return A description about the state that caused this exception to be thrown.
      */
     virtual const char* details() const {
-        std::ostringstream oss;
-        oss << "&multi_clock = " << _pointer;
-        for (uint32_t i = 0; i <= _clocknumber - 1; i++) {
-            oss << ", multi_clock.size_of(" << i << ") = " << _sizes[i];
+        if (_details.empty()) {
+            std::ostringstream oss;
+            oss << "&multi_clock = " << _pointer;
+            for (uint32_t i = 0; i <= _clocknumber - 1; i++) {
+                oss << ", multi_clock.size_of(" << i << ") = " << _sizes[i];
+            }
+            for (uint32_t i = 0; i <= _clocknumber - 1; i++) {
+                oss << ", multi_clock.get_head_index(" << i << ") = " << _hands[i];
+            }
+            _details = oss.str().c_str();
         }
-        for (uint32_t i = 0; i <= _clocknumber - 1; i++) {
-            oss << ", multi_clock.get_head_index(" << i << ") = " << _hands[i];
-        }
-        return oss.str().c_str();
+        return _details.c_str();
     };
 
 };
@@ -143,21 +154,26 @@ protected:
 public:
     using multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::multi_clock_exception;
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        for (multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index> exception : _exceptions) {
-            oss << exception.what() << std::endl;
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            for (multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index> exception : _exceptions) {
+                oss << exception.what() << std::endl;
+            }
+            this->_what = oss.str().c_str();
         }
-        return oss.str().c_str();
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        for (multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index> exception : _exceptions) {
-            oss << typeid(exception).name() << ":" << std::endl;
-            oss << exception.details() << std::endl;
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            for (multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index> exception : _exceptions) {
+                oss << typeid(exception).name() << ":" << std::endl << exception.details() << std::endl;
+            }
+            this->_details = oss.str().c_str();
         }
-        return oss.str().c_str();
+        return this->_details.c_str();
     }
 
     /*!\fn      getExceptions()
@@ -180,9 +196,15 @@ public:
      */
     void addException(multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index> exception) {
         if (typeid(exception) == typeid(multi_clock_multi_exception)) {
-            _exceptions.insert(_exceptions.end(), dynamic_cast<multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>&>(exception)._exceptions.begin(), dynamic_cast<multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>&>(exception)._exceptions.end());
+            multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>& multi_exception = dynamic_cast<multi_clock_multi_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>&>(exception);
+            if (multi_exception.size()) {
+                _exceptions.insert(_exceptions.end(), multi_exception._exceptions.begin(),
+                                   multi_exception._exceptions.end());
+                this->_what = "";
+            }
         } else {
             _exceptions.push_back(exception);
+            this->_what = "";
         }
     }
 
@@ -245,16 +267,22 @@ public:
                                 const key* hands, const key* sizes, const uint32_t empty_clock)
             : multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(pointer, hands, sizes), _empty_clock(empty_clock) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The clock " << _empty_clock << " of multi_clock instance " << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::_pointer << " was unexpectedly empty.";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The clock " << _empty_clock << " of multi_clock instance " << this->_pointer << " was unexpectedly empty.";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::details() << ", empty clock = " << _empty_clock;
-        return oss.str().c_str();
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << this->details() << ", empty clock = " << _empty_clock;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     }
 
 };
@@ -307,16 +335,22 @@ public:
                                               const key* hands, const key* sizes, const uint32_t clock_index)
             : multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(pointer, hands, sizes), _clock_index(clock_index) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The clock index " << _clock_index << " is invalid for the multi_clock instance " << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::_pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The clock index " << _clock_index << " is invalid for the multi_clock instance " << this->_pointer << ".";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::details() << ", invalid clock index = " << _clock_index;
-        return oss.str().c_str();
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << this->details() << ", invalid clock index = " << _clock_index;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     }
 
 };
@@ -369,16 +403,22 @@ public:
                                         const key* hands, const key* sizes, const uint32_t index)
             : multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(pointer, hands, sizes), _index(index) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The index " << _index << " is invalid for the multi_clock instance " << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::_pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The index " << _index << " is invalid for the multi_clock instance " << this->_pointer << ".";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::details() << ", invalid index = " << _index;
-        return oss.str().c_str();
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << this->details() << ", invalid index = " << _index;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     }
 };
 
@@ -430,16 +470,22 @@ public:
                                             const key* hands, const key* sizes, const uint32_t index)
             : multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(pointer, hands, sizes), _index(index) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The index " << _index << " is unexpectedly already contained in the multi_clock instance " << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::_pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The index " << _index << " is unexpectedly already contained in the multi_clock instance " << this->_pointer << ".";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::details() << ", contained = " << _index;
-        return oss.str().c_str();
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << this->details() << ", contained = " << _index;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     }
 };
 
@@ -491,16 +537,22 @@ public:
                                         const key* hands, const key* sizes, const uint32_t index)
             : multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>(pointer, hands, sizes), _index(index) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The index " << _index << " is unexpectedly not contained in the multi_clock instance " << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::_pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The index " << _index << " is unexpectedly not contained in the multi_clock instance " << this->_pointer << ".";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     }
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << multi_clock_exception<key, value, _clocknumber, _invalid_index, _invalid_clock_index>::details() << ", not contained = " << _index;
-        return oss.str().c_str();
+    virtual const char* details() const override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << this->details() << ", not contained = " << _index;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     }
 };
 

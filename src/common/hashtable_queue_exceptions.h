@@ -49,6 +49,10 @@ protected:
      */
     const key                                   _front;
 
+    mutable std::string                         _what;
+
+    mutable std::string                         _details;
+
 
 public:
     /*!\fn      hashtable_queue_exception(hashtable_queue<key, _invalid_key>* pointer, uint64_t size, key back, key front)
@@ -70,10 +74,13 @@ public:
      *
      * @return A description about what caused this exception to be thrown.
      */
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "An unknown exception happened in the hashtable_queue instance " << _pointer << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (_what.empty()) {
+            std::ostringstream oss;
+            oss << "An unknown exception happened in the hashtable_queue instance " << _pointer << ".";
+            _what = oss.str().c_str();
+        }
+        return _what.c_str();
     };
 
     /*!\fn      details()
@@ -82,11 +89,14 @@ public:
      *
      * @return A description about the state that caused this exception to be thrown.
      */
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << "&hashtable_queue = " << _pointer << ", hashtable_queue.size() = " << _size
-            << "hashtable_queue._back = " << _back << "hashtable_queue._front = " << _front;
-        return oss.str().c_str();
+    virtual const char* details() const noexcept {
+        if (_details.empty()) {
+            std::ostringstream oss;
+            oss << "&hashtable_queue = " << _pointer << ", hashtable_queue.size() = " << _size
+                << "hashtable_queue._back = " << _back << "hashtable_queue._front = " << _front;
+            _details =oss.str().c_str();
+        }
+        return _details.c_str();
     };
 
 };
@@ -128,17 +138,23 @@ public:
                                                const key front, const key contained_key)
             : hashtable_queue_exception<key, _invalid_key>(pointer, size, back, front), _contained_key(contained_key) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << _contained_key << " was tried to be inserted into the hashtable_queue instance "
-            << this->_pointer << ", but it was already contained in there.";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << _contained_key << " was tried to be inserted into the hashtable_queue instance "
+                << this->_pointer << ", but it was already contained in there.";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     };
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << hashtable_queue_exception<key, _invalid_key>::details() << "key = " << _contained_key;
-        return oss.str().c_str();
+    virtual const char* details() const noexcept override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << hashtable_queue_exception<key, _invalid_key>::details() << "key = " << _contained_key;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     };
 
 };
@@ -158,10 +174,13 @@ class hashtable_queue_empty_exception : public hashtable_queue_exception<key, _i
 public:
     using hashtable_queue_exception<key, _invalid_key>::hashtable_queue_exception;
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The hashtable_queue instance " << this->_pointer << " was already empty.";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The hashtable_queue instance " << this->_pointer << " was already empty.";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     };
 
 };
@@ -202,16 +221,22 @@ public:
     hashtable_queue_not_contained_exception(const hashtable_queue<key, _invalid_key>* pointer, const uint64_t size, const key back, const key front, const key requested_key)
             : hashtable_queue_exception<key, _invalid_key>(pointer, size, back, front), _requested_key(requested_key) {};
 
-    virtual const char* what() const noexcept {
-        std::ostringstream oss;
-        oss << "The hashtable_queue instance " << this->_pointer << " doesn't contain key " << _requested_key << ".";
-        return oss.str().c_str();
+    virtual const char* what() const noexcept override {
+        if (this->_what.empty()) {
+            std::ostringstream oss;
+            oss << "The hashtable_queue instance " << this->_pointer << " doesn't contain key " << _requested_key << ".";
+            this->_what = oss.str().c_str();
+        }
+        return this->_what.c_str();
     };
 
-    virtual const char* details() const {
-        std::ostringstream oss;
-        oss << hashtable_queue_exception<key, _invalid_key>::details() << "not contained = " << _requested_key;
-        return oss.str().c_str();
+    virtual const char* details() const noexcept override {
+        if (this->_details.empty()) {
+            std::ostringstream oss;
+            oss << hashtable_queue_exception<key, _invalid_key>::details() << "not contained = " << _requested_key;
+            this->_details = oss.str().c_str();
+        }
+        return this->_details.c_str();
     };
 
 };
