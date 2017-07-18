@@ -6,3 +6,5 @@ set(zapps_base_SRCS
     )
 
 add_library (zapps_base ${zapps_base_SRCS})
+
+add_subdirectory(backward)

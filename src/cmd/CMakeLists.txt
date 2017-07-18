@@ -22,7 +22,7 @@ add_subdirectory(kits)
 add_subdirectory(webserver)
 add_subdirectory(loginspect)
 
-add_executable(zapps main.cpp)
+add_executable(zapps main.cpp ${BACKWARD_ENABLE})
 
 set(zapps_LIBS
     # zapps components
@@ -38,3 +38,7 @@ set(zapps_LIBS
 )
 
 target_link_libraries(zapps ${zapps_LIBS})
+
+# This will add libraries, definitions and include directories needed by backward
+# by setting each property on the target.
+add_backward(zapps)
