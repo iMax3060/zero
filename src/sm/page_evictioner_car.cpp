@@ -166,4 +166,5 @@ bf_idx page_evictioner_car::pick_victim() {
             return 0;
         }
     }
+    return 0;           // Suppress compiler warning about missing return statement!
 }
