@@ -79,7 +79,7 @@ void hashtable_queue<key, _invalid_key>::pop() throw (hashtable_queue_empty_exce
 }
 
 template<class key, key _invalid_key>
-bool hashtable_queue<key, _invalid_key>::remove(key k) throw (hashtable_queue_not_contained_exception<key, _invalid_key>) {
+void hashtable_queue<key, _invalid_key>::remove(key k) throw (hashtable_queue_not_contained_exception<key, _invalid_key>) {
     if (!this->contains(k)) {
         throw hashtable_queue_not_contained_exception<key, _invalid_key>(this, _direct_access_queue->size(), _back, _front, k);
     } else {

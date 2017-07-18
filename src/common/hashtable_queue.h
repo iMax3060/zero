@@ -154,7 +154,7 @@ public:
      * \details Destructs this instance of \link hashtable_queue \endlink including the
      *          dynamically allocated memory used for the data.
      */
-    virtual          ~hashtable_queue();
+    virtual         ~hashtable_queue();
     
     /*!\fn      contains(key k)
      * \brief   Entry with given key contained
@@ -165,7 +165,7 @@ public:
      * @return  \c true if this \link hashtable_queue \endlink contains an entry with
      *          \c k as key, \c false else.
      */
-    bool             contains(key k);
+    bool            contains(key k);
     
     /*!\fn      push(key k)
      * \brief   Add the key to the queue
@@ -176,7 +176,7 @@ public:
      * @throws hashtable_queue_already_contains_exception Thrown if the key was already
      *                                                    contained in the queue.
      */
-    void push(key k) throw (hashtable_queue_already_contains_exception<key, _invalid_key>);
+    void            push(key k) throw (hashtable_queue_already_contains_exception<key, _invalid_key>);
     
     /*!\fn      pop()
      * \brief   Removes the next key from the queue
@@ -185,7 +185,7 @@ public:
      *
      * @throws hashtable_queue_empty_exception Thrown if the queue was already empty.
      */
-    void pop() throw (hashtable_queue_empty_exception<key, _invalid_key>);
+    void            pop() throw (hashtable_queue_empty_exception<key, _invalid_key>);
     
     /*!\fn      remove(key k)
      * \brief   Removes a specific key from the queue
@@ -198,7 +198,7 @@ public:
      * @throws hashtable_queue_not_contained_exception Thrown if the key was not contained
      *                                                 in the queue.
      */
-    bool             remove(key k) throw (hashtable_queue_not_contained_exception<key, _invalid_key>);
+    void            remove(key k) throw (hashtable_queue_not_contained_exception<key, _invalid_key>);
     
     /*!\fn      length()
      * \brief   Number of entries in the queue
