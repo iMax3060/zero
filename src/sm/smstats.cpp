@@ -268,8 +268,8 @@ const char* get_stat_name(sm_stat_id s)
         case sm_stat_id::backup_eviction_stuck: return "backup_eviction_stuck";
         case sm_stat_id::la_wasted_read: return "la_wasted_read";
         case sm_stat_id::la_avoided_probes: return "la_avoided_probes";
+        case sm_stat_id::stat_max: return "UNKNOWN_STAT";
     }
-    return "UNKNOWN_STAT";
 }
 
 const char* get_stat_expl(sm_stat_id s)
@@ -499,8 +499,8 @@ const char* get_stat_expl(sm_stat_id s)
         case sm_stat_id::backup_eviction_stuck: return "Backup prefetcher could not find a segment to evict";
         case sm_stat_id::la_wasted_read: return "Wasted log archive reads, i.e., that didn't use any logrec";
         case sm_stat_id::la_avoided_probes: return "Log archive prbves that were avoided thanks to run filters";
+        case sm_stat_id::stat_max: return "UNKNOWN_STAT";
     }
-    return "UNKNOWN_STAT";
 }
 
 void print_sm_stats(sm_stats_t& stats, std::ostream& out)

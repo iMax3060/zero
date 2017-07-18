@@ -892,7 +892,7 @@ xct_t::_pre_commit(uint32_t flags)
         // if the logic changes here, need to visit chkpt logic which is
         // depending on the logic here when recording active transactions
 
-        state_t old_state = _core->_state;
+        // state_t old_state = _core->_state;
         change_state(xct_freeing_space);
         rc_t rc = RCOK;
         // CS TODO: removed xct_freeing_space (no 2pc support anyway)

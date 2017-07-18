@@ -19,7 +19,8 @@ BackupReader::BackupReader(size_t bufferSize)
 {
     // Using direct I/O
     w_assert1(bufferSize % IO_ALIGN == 0);
-    posix_memalign((void**) &buffer, IO_ALIGN, bufferSize);
+    int alloc_status = posix_memalign((void**) &buffer, IO_ALIGN, bufferSize);
+    w_assert0_msg(alloc_status, "The aligned memory allocation for BackupReader failed!");
     // buffer = new char[bufferSize];
 }
 

@@ -83,7 +83,7 @@ vol_t::vol_t(const sm_options& options, chkpt_t* chkpt_info)
     CHECK_ERRNO(fd);
     _fd = fd;
 
-    bool instantRestart = options.get_bool_option("sm_restart_instant", true);
+    // bool instantRestart = options.get_bool_option("sm_restart_instant", true);
     if (chkpt_info) {
         _dirty_pages = new buf_tab_t(chkpt_info->buf_tab);
         if (!chkpt_info->bkp_path.empty()) {

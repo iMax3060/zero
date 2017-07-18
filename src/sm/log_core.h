@@ -316,7 +316,7 @@ protected:
      * commit policy, qualifies for a log flush. If false, flush daemon
      * will not flush its buffer but wait for the next invocation.
      */
-    bool _should_group_commit(long write_size);
+    bool _should_group_commit(size_t write_size);
 
     /**
      * Enables page-image compression in the log. For every N bytes of log

@@ -1050,7 +1050,7 @@ void log_core::flush_daemon()
         last_completed_flush_lsn=lsn) ;
 }
 
-bool log_core::_should_group_commit(long write_size)
+bool log_core::_should_group_commit(size_t write_size)
 {
     // Do not flush if write size is less than group commit size
     if (write_size < _group_commit_size) {
