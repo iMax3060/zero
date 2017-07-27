@@ -33,7 +33,7 @@ void hashtable_queue<key, _invalid_key>::push(key k) throw (hashtable_queue_alre
         w_assert1(_back != _invalid_key);
         w_assert1((*_direct_access_queue)[_back]._next == _invalid_key);
         
-        if (this->contains(k)) {
+        if (_direct_access_queue->count(k)) {
             throw hashtable_queue_already_contains_exception<key, _invalid_key>(this, _direct_access_queue->size(), _back, _front, k);
         }
         (*_direct_access_queue)[k] = key_pair(_back, _invalid_key);
@@ -80,7 +80,7 @@ void hashtable_queue<key, _invalid_key>::pop() throw (hashtable_queue_empty_exce
 
 template<class key, key _invalid_key>
 void hashtable_queue<key, _invalid_key>::remove(key k) throw (hashtable_queue_not_contained_exception<key, _invalid_key>) {
-    if (!this->contains(k)) {
+    if (!_direct_access_queue->count(k)) {
         throw hashtable_queue_not_contained_exception<key, _invalid_key>(this, _direct_access_queue->size(), _back, _front, k);
     } else {
         auto old_size = _direct_access_queue->size();
