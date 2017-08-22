@@ -145,7 +145,7 @@ void page_evictioner_base::flush_dirty_page(const bf_tree_cb_t& cb)
     Logger::log_sys<page_write_log>(cb._pid, clean_lsn, 1);
 }
 
-void page_evictioner_base::ref(bf_idx idx)
+void page_evictioner_base::hit_ref(bf_idx idx)
 {
     if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
 }
@@ -354,7 +354,7 @@ page_evictioner_gclock::~page_evictioner_gclock()
     delete [] _counts;
 }
 
-void page_evictioner_gclock::ref(bf_idx idx)
+void page_evictioner_gclock::hit_ref(bf_idx idx)
 {
     _counts[idx] = _k;
 }

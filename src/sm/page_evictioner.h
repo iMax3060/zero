@@ -27,7 +27,7 @@ public:
      * Every time a page is fixed, this method is called. The policy then should
      * do whatever it wants.
      */
-    virtual void            ref(bf_idx idx);
+    virtual void            hit_ref(bf_idx idx);
 
 
     /**
@@ -93,7 +93,7 @@ public:
     page_evictioner_gclock(bf_tree_m* bufferpool, const sm_options& options);
     virtual ~page_evictioner_gclock();
 
-    virtual void            ref(bf_idx idx);
+    virtual void            hit_ref(bf_idx idx);
 
 protected:
     virtual bf_idx          pick_victim();
