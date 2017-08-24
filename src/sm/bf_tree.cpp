@@ -379,6 +379,7 @@ void bf_tree_m::_add_free_block(bf_idx idx)
     w_assert1(idx != FREELIST_HEAD);
     w_assert1(!get_cb(idx)._used);
     w_assert1(get_cb(idx)._pin_cnt < 0);
+    if(_evictioner) _evictioner->unbuffered(idx);
     ++_freelist_len;
     _freelist[idx] = FREELIST_HEAD;
     FREELIST_HEAD = idx;
@@ -534,7 +535,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 continue;
             }
 
-            // Register the page on the hashtable atomically. This guarantees
+            // Register the page on the hash table atomically. This guarantees
             // that only one thread will attempt to read the page
             bf_idx parent_idx = parent ? parent - _buffer : 0;
             bool registered = _hashtable->insert_if_not_exists(pid,
@@ -584,6 +585,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             cb.set_check_recovery(true);
 
             w_assert1(_is_active_idx(idx));
+
+            if (_evictioner) _evictioner->miss_ref(idx, pid);
 
             // STEP 6) Fix successful -- pin page and downgrade latch
             w_assert1(cb.latch().is_mine());

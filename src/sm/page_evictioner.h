@@ -76,10 +76,10 @@ class page_evictioner_base : public worker_thread_t {
 public:
     /*!\fn      page_evictioner_base(bf_tree_m* buffer pool, const sm_options& options)
      * \brief   Constructor for page_evictioner_base
-     * \details This instantiates a page evictioner that uses the page eviction strategy
-     *          according to the \c options to select victims for replacement. It will
-     *          serve the specified \c bufferpool and uses the specified \c options to
-     *          specify the behavior of the page evictioner.
+     * \details This instantiates a page evictioner that uses the page eviction
+     *          strategy according to the \c options to select victims for replacement.
+     *          It will serve the specified \c bufferpool and uses the specified
+     *          \c options to specify the behavior of the page evictioner.
      *
      * @param bufferpool The bf_tree_m the constructed page evictioner is used to
      *                   select pages for eviction for.
@@ -93,17 +93,125 @@ public:
      */
     virtual                               ~page_evictioner_base();
 
+    // TODO: Change hit_ref to unfix_ref
     /*!\fn      hit_ref(bf_idx idx)
      * \brief   Updates the eviction statistics on page hit
      * \details According to the selected page eviction strategy:
      *          - __RANDOM, LOOP:__  Does nothing.
-     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the buffer
-     *                               frame \c idx.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx. This action is taken
+     *                               according to the CLOCK page replacement strategy.
+     *
      *
      * @param idx The frame of the \link _bufferpool \endlink that was fixed with a
      *            page hit.
      */
     virtual void                          hit_ref(bf_idx idx);
+
+    /*!\fn      miss_ref(bf_idx b_idx, PageID pid)
+     * \brief   Updates the eviction statistics on page miss
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx. This action is taken
+     *                               according to the CLOCK page replacement strategy.
+     *
+     * @param b_idx The frame of the \link _bufferpool \endlink that was fixed with a
+     *              page miss.
+     * @param pid   The \link PageID \endlink of the \link generic_page \endlink that
+     *              was loaded into the buffer frame.
+     */
+    virtual void                          miss_ref(bf_idx b_idx, PageID pid);
+
+    /*!\fn      used_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of used pages during eviction
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx to reduce the number of
+     *                               control block examinations when a frame is fixed
+     *                               (only once) for a long time.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that was picked for
+     *            eviction while it was fixed.
+     */
+    virtual void                          used_ref(bf_idx idx);
+
+    /*!\fn      dirty_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of dirty pages during eviction
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Does nothing as the evictioner periodically
+     *                               runs the page cleaner and therefore it is
+     *                               unlikely that the page won't be cleaned before
+     *                               the next examination of the corresponding control
+     *                               block.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that was picked for
+     *            eviction while the contained page is dirty.
+     */
+    virtual void                          dirty_ref(bf_idx idx);
+
+    /*!\fn      block_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx to reduce the number of
+     *                               control block examinations when it will not be
+     *                               evictable at all.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that contains a page that
+     *            cannot be evicted at all.
+     */
+    virtual void                          block_ref(bf_idx idx);
+
+    /*!\fn      swizzle_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of pages containing swizzled pointers
+     *          during eviction
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx to reduce the number of
+     *                               control block examinations when it is very
+     *                               unlikely that it will be evictable anytime soon.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that was picked for
+     *            eviction while containing a page with swizzled pointers.
+     */
+    virtual void                          swizzle_ref(bf_idx idx);
+
+    /*!\fn      unbuffered(bf_idx idx)
+     * \brief   Updates the eviction statistics on explicit eviction
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Unsets the referenced bit corresponding to the
+     *                               buffer frame \c idx to leave the referenced bit in
+     *                               its empty frame state. There are three situations
+     *                               leading to empty buffer frames that require an
+     *                               initialized referenced bit when used the next
+     *                               time:
+     *                               -# Buffer frame wasn't used since the startup:
+     *                                  Referenced bits are initialized with \c false
+     *                                  when a \link page_evictioner_base \endlink is
+     *                                  constructed.
+     *                               -# Buffer frame was freed explicitly: Therefore
+     *                                  the function
+     *                                  \link bf_tree_m::_add_free_block(bf_idx idx) \endlink
+     *                                  was called. If the function was called from
+     *                                  within
+     *                                  \link page_evictioner_base::do_work() \endlink
+     *                                  it is redundant to initialize the referenced
+     *                                  bit to \c false here (see last case) but if
+     *                                  another method called it, it is required as the
+     *                                  reference bit could have any value.
+     *                               -# The Buffer frame was freed by the evictioner:
+     *                                  This only happens when the referenced bit of
+     *                                  the frame is unset.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that is freed explicitly.
+     */
+    virtual void                          unbuffered(bf_idx idx);
 
     /*!\fn      pick_victim()
      * \brief   Selects a page to be evicted from the \link _bufferpool \endlink
@@ -364,6 +472,90 @@ public:
      *            page hit.
      */
     virtual void   hit_ref(bf_idx idx);
+
+    /*!\fn      miss_ref(bf_idx b_idx, PageID pid)
+     * \brief   Updates the eviction statistics on page miss
+     * \details There are three situations leading to empty buffer frames that require
+     *          an initialized referenced counter when used the next time:
+     *            - Buffer frame wasn't used since the startup: Referenced counters
+     *              are initialized with 0 when a \link page_evictioner_gclock \endlink
+     *              is constructed.
+     *            - Buffer frame was freed explicitly: Therefore the function
+     *              \link bf_tree_m::_add_free_block(bf_idx idx) \endlink was called. If
+     *              the function was called from within
+     *              \link page_evictioner_base::do_work() \endlink it is redundant to
+     *              initialize the referenced counter here (see last case) but if another
+     *              method called it, it is required as the reference counter could have
+     *              any value.
+     *            - The Buffer frame was freed by the evictioner: This only happens when
+     *              the referenced counter of the frame is 0.
+     *          Therefore, no action is required during a page miss as the initial value
+     *          of the referenced counter is always already 0.
+     *
+     * @param b_idx The frame of the \link _bufferpool \endlink that was fixed with a
+     *              page miss.
+     * @param pid   The \link PageID \endlink of the \link generic_page \endlink that was
+     *              loaded into the buffer frame.
+     */
+    virtual void            miss_ref(bf_idx b_idx, PageID pid);
+
+    /*!\fn      used_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of used pages during eviction
+     * \details As GCLOCK logs page usage in its statistics, the referenced counter of a page
+     *          which is encountered used needs to be handled like page hits.
+     *          When a page is fixed while its referenced counter is 0, it is picked for
+     *          eviction during each circulation of the clock hand. But the eviction fails
+     *          as long as it is fixed and therefore the incrementing of the referenced
+     *          counter delays the next time this page is picked for eviction and therefore
+     *          this probably speeds up the eviction.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that had a referenced counter
+     *            of 0 while it was fixed.
+     */
+    virtual void            used_ref(bf_idx idx);
+
+    /*!\fn      dirty_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of dirty pages during eviction
+     * \details As a dirty page shouldn't be picked for eviction until it is cleaned, it
+     *          should be excluded from the eviction to increase the performance of the
+     *          eviction but that is not implemented yet.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that had a referenced counter
+     *            of 0 while the contained page is dirty.
+     */
+    virtual void            dirty_ref(bf_idx idx);
+
+    /*!\fn      block_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+     * \details As some pages are not allowed to be evicted at all (will never be allowed),
+     *          those are excluded from the eviction by setting the referenced value to
+     *          a large value.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that contains a page that
+     *            cannot be evicted at all.
+     */
+    virtual void            block_ref(bf_idx idx);
+
+    /*!\fn      swizzle_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+     * \details As a page containing swizzled pointers shouldn't be picked for eviction until the
+     *          pointers are unswizzled, it should be excluded from the eviction to increase the
+     *          performance of the eviction but that is not implemented yet.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that had a referenced counter
+     *            of 0 while containing a page with swizzled pointers.
+     */
+    virtual void            swizzle_ref(bf_idx idx);
+
+    /*!\fn      unbuffered(bf_idx idx)
+     * \brief   Updates the eviction statistics on explicit eviction
+     * \details When a page is evicted explicitly, the referenced counter of the corresponding frame
+     *          might be greater than 0 and therefore this function initializes the counter for
+     *          this case.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that is freed explicitly.
+     */
+    virtual void            unbuffered(bf_idx idx);
 
 protected:
     /*!\fn      pick_victim()
