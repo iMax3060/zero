@@ -93,20 +93,46 @@ public:
      */
     virtual                               ~page_evictioner_base();
 
-    // TODO: Change hit_ref to unfix_ref
+    // TODO: hit_ref, unfix_ref or both?
     /*!\fn      hit_ref(bf_idx idx)
      * \brief   Updates the eviction statistics on page hit
      * \details According to the selected page eviction strategy:
      *          - __RANDOM, LOOP:__  Does nothing.
-     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
-     *                               buffer frame \c idx. This action is taken
-     *                               according to the CLOCK page replacement strategy.
+     *          - __0CLOCK, CLOCK:__ Does nothing as recognizing an unfix instead of
+     *                               a fix optimizes the quality of a page evictioner.
+     *                               At least according to
+     *                               <A HREF="https://doi.org/10.1145/1994.2022">"Principles of Database Buffer Management"</A>
+     *                               by W. Effelsberg and T. Härder.
      *
+     * \warning If a page eviction strategy is sensitive to recognizing the same page
+     *          reference multiple times, implement this different from
+     *          \link unfix_ref(bf_idx) \endlink.
      *
      * @param idx The frame of the \link _bufferpool \endlink that was fixed with a
      *            page hit.
      */
     virtual void                          hit_ref(bf_idx idx);
+
+    /*!\fn      unfix_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics on page unfix
+     * \details According to the selected page eviction strategy:
+     *          - __RANDOM, LOOP:__  Does nothing.
+     *          - __0CLOCK, CLOCK:__ Sets the referenced bit corresponding to the
+     *                               buffer frame \c idx. This action is taken
+     *                               according to the CLOCK page replacement strategy.
+     *                               The recognition of unfixes instead of fixes as
+     *                               page references is an optimization of a page
+     *                               evictioner. At least according to
+     *                               <A HREF="https://doi.org/10.1145/1994.2022">"Principles of Database Buffer Management"</A>
+     *                               of W. Effelsberg and T. Härder.
+
+     * \warning If a page eviction strategy is sensitive to recognizing the same page
+     *          reference multiple times, implement this different from
+     *          \link unfix_ref(bf_idx) \endlink.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that was unfixed.
+     */
+    virtual void            unfix_ref(bf_idx idx);
 
     /*!\fn      miss_ref(bf_idx b_idx, PageID pid)
      * \brief   Updates the eviction statistics on page miss
@@ -472,6 +498,16 @@ public:
      *            page hit.
      */
     virtual void   hit_ref(bf_idx idx);
+
+    /*!\fn      unfix_ref(bf_idx idx)
+     * \brief   Updates the eviction statistics on page unfix
+     * \details Sets the referenced counter of the specified buffer frame \c idx \c to
+     *          the value specified in \link _k \endlink as this page was still used
+     *          until this point in time.
+     *
+     * @param idx The frame of the \link _bufferpool \endlink that was unfixed.
+     */
+    virtual void            unfix_ref(bf_idx idx);
 
     /*!\fn      miss_ref(bf_idx b_idx, PageID pid)
      * \brief   Updates the eviction statistics on page miss

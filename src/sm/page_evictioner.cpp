@@ -136,6 +136,10 @@ void page_evictioner_base::hit_ref(bf_idx idx) {
     if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
 }
 
+void page_evictioner_base::unfix_ref(bf_idx idx) {
+    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
+}
+
 void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {
     if (_use_clock && !_clock_ref_bits[b_idx]) { _clock_ref_bits[b_idx] = true; }
 }
@@ -336,10 +340,14 @@ void page_evictioner_gclock::hit_ref(bf_idx idx) {
     _counts[idx] = _k;
 }
 
+void page_evictioner_gclock::unfix_ref(bf_idx idx) {
+    _counts[idx] = _k;
+}
+
 void page_evictioner_gclock::miss_ref(bf_idx b_idx, PageID pid) {}
 
 void page_evictioner_gclock::used_ref(bf_idx idx) {
-    hit_ref(idx);
+    _counts[idx] = _k;
 }
 
 void page_evictioner_gclock::dirty_ref(bf_idx idx) {}
