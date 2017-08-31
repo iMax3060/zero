@@ -1196,6 +1196,57 @@ bool bf_tree_m::is_dirty(const bf_idx idx) const {
     return get_cb(idx).is_dirty();
 }
 
+bool bf_tree_m::is_evictable(const bf_idx idx, const bool flush_dirty) const {
+    bool ignore_dirty = flush_dirty || _no_db_mode || _write_elision;
+
+    auto &cb = get_cb(idx);
+    btree_page_h p;
+    p.fix_nonbufferpool_page(_buffer + idx);
+    // We do not consider for eviction...
+    if (// ... the stnode page
+           p.tag() == t_stnode_p
+        // ... B-tree root pages
+        // (note, single-node B-tree is both root and leaf)
+        || (p.tag() == t_btree_p && p.pid() == p.root())
+    ) {
+        _evictioner->block_ref(idx);
+        DBG5(<< "Eviction failed on node type for " << idx);
+        return false;
+    }
+    if (// ... B-tree inner (non-leaf) pages
+        // (requires unswizzling, which is not supported)
+            (_enable_swizzling && p.tag() == t_btree_p && !p.is_leaf())
+        // ... B-tree pages that have a foster child
+        // (requires unswizzling, which is not supported)
+        || (_enable_swizzling && p.tag() == t_btree_p && p.get_foster() != 0)
+    ) {
+        _evictioner->swizzle_ref(idx);
+        DBG5(<< "Eviction failed on swizzled for " << idx);
+        return false;
+    }
+    if (// ... dirty pages, unless we're told to ignore them
+           (!ignore_dirty && cb.is_dirty())
+    ) {
+        _evictioner->dirty_ref(idx);
+        DBG5(<< "Eviction failed on dirty for " << idx);
+        return false;
+    }
+    if (// ... unused frames, which don't hold a valid page
+           !cb._used
+    ) {
+        DBG5(<< "Eviction failed on unused for " << idx);
+        return false;
+    }
+    if (// ... pinned frames, i.e., someone required it not be evicted
+           cb._pin_cnt != 0
+    ) {
+        _evictioner->used_ref(idx);
+        DBG5(<< "Eviction failed on pinned for " << idx);
+        return false;
+    }
+    return true;
+}
+
 bool bf_tree_m::is_used (bf_idx idx) const {
     return _is_active_idx(idx);
 }

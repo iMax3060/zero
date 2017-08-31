@@ -198,6 +198,56 @@ public:
      */
     bool is_dirty(const bf_idx idx) const;
 
+    /*!\fn      is_evictable(const bf_idx idx, bool flush_dirty) const
+     * \brief   Check if a page can be evicted
+     * \details The following conditions make a page unevictable:
+     *          - It is the store node page (\link generic_page_h::tag() \endlink \c ==
+     *            \link page_tag_t::t_stnode_p \endlink).
+     *          - It is the root page of a B-Tree (\link generic_page_h::tag() \endlink
+     *            \c == \link page_tag_t::t_btree_p \endlink \c &&
+     *            \link generic_page_h::pid() \endlink \c ==
+     *            \link btree_page_h::root() \endlink).
+     *          - It is an inner page of a B-Tree and swizzling is enabled
+     *            (\link _enable_swizzling \endlink \c &&
+     *            \link generic_page_h::tag() \endlink
+     *            \c == \link page_tag_t::t_btree_p \endlink \c &&
+     *            \c !\link btree_page_h::is_leaf() \endlink).\n
+     *            We exclude those as we do not support unswizzling and as we do not
+     *            know if inner pages of a B-Tree might contain swizzled pointers.
+     *          - It is a page of a B-Tree with a foster child
+     *            (\link _enable_swizzling \endlink \c &&
+     *            \link generic_page_h::tag() \endlink
+     *            \c == \link page_tag_t::t_btree_p \endlink \c &&
+     *            \c \link btree_page_h::get_foster() \endlink) \c != \c 0).\n
+     *            We exclude those as we do not support unswizzling.
+     *          - It is a dirty page that needs to be cleaned by the page cleaner
+     *            (\c (\link flush_dirty \endlink \c || \link is_no_db_mode() \endlink
+     *            \c || \link _write_elision \endlink\c) \c &&
+     *            \link bf_tree_cb_t::is_dirty() \endlink)\n
+     *            If noDB or write elision is used, a page doesn't need to be flushed
+     *            before eviction and if the evictioner flushes dirty pages, those can
+     *            be evicted as well.
+     *          - There is no page in the buffer pool frame - it is ununsed
+     *            (\c!\link bf_tree_cb_t::_used \endlink).
+     *          - It is pinned (\c!\link bf_tree_cb_t::_pin_cnt \endlink \c != \c 0).\n
+     *            The page is either pinned or it gets currently evicted by another
+     *            thread.
+     *
+     * \pre     The buffer frame with index \c idx is latched in
+     *          \link latch_mode_t::LATCH_EX \endlink mode by this thread.
+     *
+     * \remark  The example implementations for the conditions are given in the
+     *          documentation because it is hard to figure out which pages cannot be
+     *          evicted.
+     *
+     * @param idx         The index of the buffer frame that is supposed to be freed
+     *                    by evicting the contained page.
+     * @param flush_dirty \c true if the page gets flushed during the eviction,
+     *                    \c false else.
+     * @return            \c true if the page could be evicted, \c false else.
+     */
+    bool is_evictable(const bf_idx idx, const bool flush_dirty) const;
+
     bf_idx lookup(PageID pid) const;
 
     /**
