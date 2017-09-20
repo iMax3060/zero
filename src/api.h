@@ -475,7 +475,6 @@ void your_server_thread_t::run()
  *   - is in storage manager
  *   - transaction ID of any attached transaction
 */
- /**\example vtable_example.cpp */
 
 /**\defgroup MISC Miscellaneous
  * \ingroup SSMAPI

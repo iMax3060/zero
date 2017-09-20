@@ -1,8 +1,8 @@
 /*
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
-#ifndef BF_HASHTABLE_CPP
-#define BF_HASHTABLE_CPP
+#ifndef __BF_HASHTABLE_CPP
+#define __BF_HASHTABLE_CPP
 
 #include "w_defines.h"
 #include "w_base.h"
@@ -278,4 +278,4 @@ bool bf_hashtable<T>::remove(PageID key) {
     return _table[hash % _size].remove(key);
 }
 
-#endif
+#endif // __BF_HASHTABLE_CPP

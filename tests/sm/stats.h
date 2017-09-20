@@ -1,5 +1,5 @@
-#ifndef STATS_H
-#define STATS_H
+#ifndef __STATS_H
+#define __STATS_H
 
 #include "w_defines.h"
 
@@ -36,4 +36,4 @@ private:
     boost::random::discrete_distribution<> typeDist;
 };
 
-#endif
+#endif // __STATS_H

@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BF_TREE_CB_H
-#define BF_TREE_CB_H
+#ifndef __BF_TREE_CB_H
+#define __BF_TREE_CB_H
 
 #include "w_defines.h"
 #include "latch.h"
@@ -14,10 +14,10 @@
 #include <assert.h>
 
 /**
- * \Brief Control block in the new buffer pool class.
+ * \brief Control block in the new buffer pool class.
  * \ingroup SSMBUFPOOL
  *
- * \Details
+ * \details
  * The design of control block had at least 2 big surgeries.  The first one happened in
  * the summer of 2011, making our first version of Foster B-tree based on Shore-MT.  We
  * added a few relatively-minor things in bufferpool
@@ -27,7 +27,7 @@
  * renamed and rewritten from scratch.
  *
  *
- * \Section PinCount (_pin_cnt)
+ * \section PinCount (_pin_cnt)
  *
  * The value is incremented when 1) if the page is non-swizzled and some thread fixes this
  * page, 2) when the page has been swizzled, 3) when the page's child page is brought into
@@ -312,4 +312,4 @@ struct bf_tree_cb_t {
     }
 };
 
-#endif // BF_TREE_CB_H
+#endif // __BF_TREE_CB_H

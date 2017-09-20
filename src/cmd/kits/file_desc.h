@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_file_desc.h
+/** @file:   file_desc.h
  *
  *  @brief:  Descriptors for Shore files/indexes, and structures that help in
  *           keeping track of the created files/indexes.
@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef __SHORE_FILE_DESC_H
-#define __SHORE_FILE_DESC_H
+#ifndef __FILE_DESC_H
+#define __FILE_DESC_H
 
 #include "sm_vas.h"
 
@@ -106,4 +106,4 @@ enum physical_design_t { PD_NORMAL      = 0x1,
                          PD_NOLATCH     = 0x8
 };
 
-#endif /* __SHORE_FILE_DESC_H */
+#endif // __FILE_DESC_H

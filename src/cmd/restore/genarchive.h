@@ -1,5 +1,5 @@
-#ifndef GENARCHIVE_H
-#define GENARCHIVE_H
+#ifndef __GENARCHIVE_H
+#define __GENARCHIVE_H
 
 #include "command.h"
 
@@ -15,4 +15,4 @@ private:
     size_t bucketSize;
 };
 
-#endif
+#endif // __GENARCHIVE_H

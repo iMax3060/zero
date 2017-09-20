@@ -1,5 +1,5 @@
-#ifndef XCT_LOGGER_H
-#define XCT_LOGGER_H
+#ifndef __XCT_LOGGER_H
+#define __XCT_LOGGER_H
 
 #include "sm.h"
 #include "xct.h"
@@ -229,4 +229,4 @@ public:
 // own generic Logger template argument
 using Logger = XctLogger;
 
-#endif
+#endif // __XCT_LOGGER_H

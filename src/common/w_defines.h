@@ -50,8 +50,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_DEFINES_H
-#define W_DEFINES_H
+#ifndef __W_DEFINES_H
+#define __W_DEFINES_H
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
@@ -183,4 +183,4 @@ const size_t CACHELINE_SIZE = 64;
 
 /*<std-footer incl-file-exclusion='W_DEFINES_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_DEFINES_H /*</std-footer>*/

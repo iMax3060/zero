@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file shore_index.cpp
+/** @file index_desc.cpp
  *
  *  @brief Implementation of shore_index class
  *

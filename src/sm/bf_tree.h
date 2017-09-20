@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BF_TREE_H
-#define BF_TREE_H
+#ifndef __BF_TREE_H
+#define __BF_TREE_H
 
 #include "w_defines.h"
 #include "latch.h"
@@ -31,7 +31,7 @@ class bf_tree_cleaner;
 class btree_page_h;
 struct EvictionContext;
 
-/** Specifies how urgent we are to evict pages. \NOTE Order does matter.  */
+/** Specifies how urgent we are to evict pages. \note Order does matter.  */
 enum evict_urgency_t {
     /** Not urgent at all. We don't even try multiple rounds of traversal. */
     EVICT_NORMAL = 0,
@@ -47,17 +47,17 @@ enum evict_urgency_t {
 constexpr uint32_t SWIZZLED_PID_BIT = 0x80000000;
 
 /**
- * \Brief The new buffer manager that exploits the tree structure of indexes.
+ * \brief The new buffer manager that exploits the tree structure of indexes.
  * \ingroup SSMBUFPOOL
- * \Details
+ * \details
  * This is the new buffer manager in Foster B-tree which only deals with
  * tree-structured stores such as B-trees.
  * This class and bf_fixed_m effectively replace the old bf_core_m.
  *
- * \section{Pointer-Swizzling}
+ * \section buffer_swizzle Pointer-Swizzling
  * See bufferpool_design.docx.
  *
- * \section{Hierarchical-Bufferpool}
+ * \section buffer_hierarchy Hierarchical-Bufferpool
  * This bufferpool assumes hierarchical data dastucture like B-trees.
  * fix() receives the already-latched parent pointer and uses it to find
  * the requested page. Especially when the pointer to the child is swizzled,
@@ -127,12 +127,13 @@ public:
      * @param[out] page         the fixed page.
      * @param[in]  parent       parent of the page to be fixed. has to be already latched. if you can't provide this,
      *                          use fix_direct() though it can't exploit pointer swizzling.
-     * @param[in]  vol          volume ID.
-     * @param[in]  pid        ID of the page to fix (or bufferpool index when swizzled)
+     * @param[in]  pid          ID of the page to fix (or bufferpool index when swizzled)
      * @param[in]  mode         latch mode.  has to be SH or EX.
      * @param[in]  conditional  whether the fix is conditional (returns immediately even if failed).
      * @param[in]  only_if_hit  fix is only successful if frame is already on buffer (i.e., hit)
      * @param[in]  virgin_page  whether the page is a new page thus doesn't have to be read from disk.
+     * @param[in]  do_recovery  whether recovery should be enabled for this page.
+     * @param[in]  emlsn        The emlsn of the requested page.
      *
      * To use this method, you need to include bf_tree_inline.h.
      */
@@ -211,7 +212,7 @@ public:
      *            (\link _enable_swizzling \endlink \c &&
      *            \link generic_page_h::tag() \endlink
      *            \c == \link page_tag_t::t_btree_p \endlink \c &&
-     *            \c !\link btree_page_h::is_leaf() \endlink).\n
+     *            \c ! \link btree_page_h::is_leaf() \endlink).\n
      *            We exclude those as we do not support unswizzling and as we do not
      *            know if inner pages of a B-Tree might contain swizzled pointers.
      *          - It is a page of a B-Tree with a foster child
@@ -221,15 +222,15 @@ public:
      *            \c \link btree_page_h::get_foster() \endlink) \c != \c 0).\n
      *            We exclude those as we do not support unswizzling.
      *          - It is a dirty page that needs to be cleaned by the page cleaner
-     *            (\c (\link flush_dirty \endlink \c || \link is_no_db_mode() \endlink
-     *            \c || \link _write_elision \endlink\c) \c &&
+     *            (\c (\c flush_dirty \c || \link is_no_db_mode() \endlink
+     *            \c || \link _write_elision \endlink\c ) \c &&
      *            \link bf_tree_cb_t::is_dirty() \endlink)\n
      *            If noDB or write elision is used, a page doesn't need to be flushed
      *            before eviction and if the evictioner flushes dirty pages, those can
      *            be evicted as well.
-     *          - There is no page in the buffer pool frame - it is ununsed
-     *            (\c!\link bf_tree_cb_t::_used \endlink).
-     *          - It is pinned (\c!\link bf_tree_cb_t::_pin_cnt \endlink \c != \c 0).\n
+     *          - There is no page in the buffer pool frame - it is unused
+     *            (\c !\link bf_tree_cb_t::_used \endlink).
+     *          - It is pinned (\c !\link bf_tree_cb_t::_pin_cnt \endlink \c != \c 0).\n
      *            The page is either pinned or it gets currently evicted by another
      *            thread.
      *
@@ -356,18 +357,22 @@ public:
 
     void fuzzy_checkpoint(chkpt_t& chkpt) const;
 
-    /**
-     * Tries to unswizzle the given child page from the parent page.  If, for
-     * some reason, unswizzling was impossible or troublesome, gives up and
-     * returns false
+    /*!\fn      unswizzle(generic_page* parent, general_recordid_t child_slot, bool apply = true, PageID* ret_pid = nullptr)
+     * \brief
+     * \details Tries to unswizzle the given child page from the parent page. If, for some reason,
+     *          unswizzling was impossible or troublesome, gives up and returns \c false.
      *
      * @pre parent is latched in any mode; child is latched in EX mode (if apply=true)
-     * @return whether the child page has been unswizzled
      *
-     * @param[out] pid_ret Unswizzled PageID is returned in pid_ret (if not null)
-     * @param[in] apply If apply == true, pointer is actually unswizzled
-     * in parent; otherwise just return what the unswizzled pointer would be
-     * (i.e., the ret_pid)
+     * @param[in]     parent     The parent page where to unswizzle the child page.
+     * @param[in]     child_slot The slot within the parent page where to find the swizzled pointer to
+     *                           the child page.
+     * @param[in]     apply      If \c true, pointer is actually unswizzled in parent; otherwise just
+     *                           return what the unswizzled pointer would be (i.e., the \c ret_pid)
+     * @param[in,out] ret_pid    If it wasn't set to the \c nullptr, the unswizzled \link PageID \endlink
+     *                           of the child page is returned.
+     *
+     * @return                   Whether the child page has been unswizzled.
      */
     bool unswizzle(generic_page* parent, general_recordid_t child_slot, bool apply = true,
             PageID* ret_pid = nullptr);
@@ -441,12 +446,12 @@ private:
 
     /**
      * \brief System transaction for upadting child EMLSN in parent
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      * @param[in,out] parent parent page
      * @param[in] child_slotid slot id of child
      * @param[in] child_emlsn new emlsn to store in parent
      * @pre parent.is_latched()
-     * \NOTE parent must be latched, but does not have to be EX-latched.
+     * \note parent must be latched, but does not have to be EX-latched.
      * This is because EMLSN are not viewed/updated by multi threads (only accessed during
      * page eviction or cache miss of the particular page).
      */
@@ -720,4 +725,4 @@ private:
 // #define SWIZZLED_LRU_NEXT(x) _swizzled_lru[x * 2 + 1]
 
 
-#endif // BF_TREE_H
+#endif // __BF_TREE_H

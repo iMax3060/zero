@@ -50,17 +50,17 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_DEBUG_H
-#define W_DEBUG_H
+#ifndef __W_DEBUG_H
+#define __W_DEBUG_H
 
 #include "w_defines.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef W_BASE_H
+#ifndef __W_BASE_H
 /* NB: DO NOT make this include w.h -- not yet */
 #include <w_base.h>
-#endif /* W_BASE_H */
+#endif // __W_BASE_H
 
 /**\file w_debug.h
  *\ingroup MACROS
@@ -285,4 +285,4 @@ extern w_debug _w_debug;
 
 /*<std-footer incl-file-exclusion='W_DEBUG_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_DEBUG_H /*</std-footer>*/

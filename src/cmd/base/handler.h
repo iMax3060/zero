@@ -1,5 +1,5 @@
-#ifndef HANDLER_H
-#define HANDLER_H
+#ifndef __HANDLER_H
+#define __HANDLER_H
 
 
 #include "logrec.h"
@@ -51,4 +51,4 @@ public:
     virtual void handle(const StoreID&) = 0;
 };
 
-#endif
+#endif // __HANDLER_H

@@ -50,8 +50,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LSN_H
-#define LSN_H
+#ifndef __LSN_H
+#define __LSN_H
 
 #include <iostream>
 
@@ -371,4 +371,4 @@ namespace std {
     };
 }
 
-#endif
+#endif // __LSN_H

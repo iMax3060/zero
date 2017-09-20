@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_S_H
-#define LOCK_S_H
+#ifndef __LOCK_S_H
+#define __LOCK_S_H
 
 /**
  * This is only for OKVL performance experiments.
@@ -204,4 +204,4 @@ inline uint32_t lockid_t::hash() const
     return ((uint32_t) (h >> 32)) ^ ((uint32_t) (h & 0xFFFFFFFF));
 }
 
-#endif
+#endif // __LOCK_S_H

@@ -1,5 +1,5 @@
-#ifndef LOG_CONSUMER_H
-#define LOG_CONSUMER_H
+#ifndef __LOG_CONSUMER_H
+#define __LOG_CONSUMER_H
 
 #include <bitset>
 
@@ -218,4 +218,4 @@ private:
 };
 
 
-#endif
+#endif // __LOG_CONSUMER_H

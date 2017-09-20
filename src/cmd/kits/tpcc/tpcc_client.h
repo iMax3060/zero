@@ -21,15 +21,15 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_client.h
+/** @file:   tpcc_client.h
  *
  *  @brief:  Defines the client for the TPCC benchmark
  *
  *  @author: Ippokratis Pandis, July 2008
  */
 
-#ifndef __SHORE_TPCC_CLIENT_H
-#define __SHORE_TPCC_CLIENT_H
+#ifndef __TPCC_CLIENT_H
+#define __TPCC_CLIENT_H
 
 
 #include "shore_client.h"
@@ -81,4 +81,4 @@ public:
 
 };
 
-#endif /** __SHORE_TPCC_CLIENT_H */
+#endif // __TPCC_CLIENT_H

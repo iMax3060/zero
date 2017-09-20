@@ -1,5 +1,5 @@
-#ifndef LOGREC_SUPPORT_H
-#define LOGREC_SUPPORT_H
+#ifndef __LOGREC_SUPPORT_H
+#define __LOGREC_SUPPORT_H
 
 #include "lock.h"
 #include "btree_page.h"
@@ -79,5 +79,4 @@ struct page_img_format_t {
     }
 };
 
-#endif
-
+#endif // __LOGREC_SUPPORT_H

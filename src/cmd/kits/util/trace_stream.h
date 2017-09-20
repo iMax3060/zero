@@ -27,8 +27,8 @@
  *
  *  @bug See trace_stream.cpp.
  */
-#ifndef _TRACE_STREAM_H
-#define _TRACE_STREAM_H
+#ifndef __TRACE_STREAM_H
+#define __TRACE_STREAM_H
 
 #include <cstdio>   /* for FILE* */
 #include <cstdarg>  /* for va_list datatype */
@@ -43,4 +43,4 @@ void trace_stream(FILE* out_stream,
 
 
 
-#endif
+#endif // __TRACE_STREAM_H

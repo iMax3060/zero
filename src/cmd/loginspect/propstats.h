@@ -1,5 +1,5 @@
-#ifndef PROPSTATS_H
-#define PROPSTATS_H
+#ifndef __PROPSTATS_H
+#define __PROPSTATS_H
 
 #include "command.h"
 
@@ -12,4 +12,4 @@ private:
     size_t psize;
 };
 
-#endif
+#endif // __PROPSTATS_H

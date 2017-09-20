@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef SM_VAS_H
-#define SM_VAS_H
+#ifndef __SM_VAS_H
+#define __SM_VAS_H
 
 #include "w_defines.h"
 
@@ -88,27 +88,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * generates enough log to run out of log space.
  */
 
- /**\example startstop.cpp
-  * This is an example of using \<sm_vas.h\>. It shows a minimal
-  * storage manager server, which does nothing but start up (recover) and
-  * shut down.
-  */
- /**\example init_config_options.cpp
-  * This example demonstrates the use of run-time options.
-  * This code is used for other examples.
-  */
- /**\example create_rec.cpp
-  * This example demonstrates creating a file of records.
-  * It also demonstrates scanning the file of records,
-  * creating a device and volume, and use of the root index.
-  * It must also contain, of course, the creation of options, starting up
-  * and shutting down a storage manager.
-  */
- /**\example log_exceed.cpp
-  * This example demonstrates the use of the ss_m::ss_m arguments.
-  * It is an extension of the \ref create_rec.cpp example that
-  * generates enough log to run out of log space.
-  */
 #include "w.h"
 #include <cstddef>
 
@@ -122,4 +101,4 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*<std-footer incl-file-exclusion='SM_VAS_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __SM_VAS_H /*</std-footer>*/

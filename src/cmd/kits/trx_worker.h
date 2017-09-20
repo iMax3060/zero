@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:  shore_trx_worker.h
+/** @file:  trx_worker.h
  *
  *  @brief: Wrapper for the worker threads in Baseline
  *          (specialization of the Shore workers)
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef __SHORE_TRX_WORKER_H
-#define __SHORE_TRX_WORKER_H
+#ifndef __TRX_WORKER_H
+#define __TRX_WORKER_H
 
 #include <boost/program_options.hpp>
 #include "thread.h"
@@ -591,5 +591,4 @@ public:
 
 }; // EOF: trx_worker_t
 
-#endif /** __SHORE_TRX_WORKER_H */
-
+#endif // __TRX_WORKER_H

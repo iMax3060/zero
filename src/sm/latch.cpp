@@ -133,7 +133,7 @@ __thread latch_holder_t* latch_holder_t::thread_local_holders(NULL);
  *
  * \details
  * Ready for recycling.  These structures are first taken from the global heap
- * but put on this list for reuse rather than ::free-ed.
+ * but put on this list for reuse rather than \c free -ed.
  * When the thread is destroyed, the items on this list are returned
  * to the global heap.
  *

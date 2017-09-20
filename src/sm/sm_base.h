@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef SM_BASE_H
-#define SM_BASE_H
+#ifndef __SM_BASE_H
+#define __SM_BASE_H
 
 #include "w_defines.h"
 
@@ -506,4 +506,4 @@ ostream& operator<<(ostream& o, const smlevel_0::xct_state_t& xct_state);
 
 /*<std-footer incl-file-exclusion='SM_BASE_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __SM_BASE_H /*</std-footer>*/

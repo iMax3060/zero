@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef ALLOC_PAGE_H
-#define ALLOC_PAGE_H
+#ifndef __ALLOC_PAGE_H
+#define __ALLOC_PAGE_H
 
 #include "generic_page.h"
 #include "sm_base.h"
@@ -75,4 +75,4 @@ public:
 };
 BOOST_STATIC_ASSERT(sizeof(alloc_page) == generic_page_header::page_sz);
 
-#endif // ALLOC_PAGE_H
+#endif // __ALLOC_PAGE_H

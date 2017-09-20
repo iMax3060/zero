@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef SM_H
-#define SM_H
+#ifndef __SM_H
+#define __SM_H
 
 #include "w_defines.h"
 
@@ -67,9 +67,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *  definitions used in the API.
  */
 
-#ifndef SM_INT_2_H
+#ifndef __SM_BASE_H
 #include <sm_base.h>
-#endif
+#endif // __SM_BASE_H
 
 #include <smstats.h> // declares sm_stats_t and sm_config_info_t
 #include <lsn.h>
@@ -501,10 +501,6 @@ public:
      * \ingroup SSMINIT
      * \details
      * @param[in] options Start-up parameters.
-     * @param[in] warn   A callback function. This is called
-     * when/if the log is in danger of becoming "too full".
-     * @param[in] get   A callback function. This is called
-     * when the storage manager needs an archived log file to be restored.
      *
      * When an ss_m object is created, the storage manager initializes itself
      * and,
@@ -965,54 +961,8 @@ public:
      */
     static rc_t            xct_reserve_log_space(off_t amt);
 
-
-    // /**\brief Collect transaction information in a virtual table.
-    //  * \ingroup SSMVTABLE
-    //  * \details
-    //  * @param[out] v  The virtual table to populate.
-    //  * @param[in] names_too  If true, make the
-    //  *            first row of the table a list of the attribute names.
-    //  *
-    //  * All attribute values will be strings.
-    //  * The virtual table v can be printed with its output operator
-    //  * operator\<\< for ostreams.
-    //  *
-    //  * \attention Not atomic. Can yield stale data.
-    //  */
-    // static rc_t            xct_collect(vtable_t&v, bool names_too=true);
-
-    // /**\brief Collect lock table information in a virtual table.
-    //  * \ingroup SSMVTABLE
-    //  * \details
-    //  * @param[out] v  The virtual table to populate.
-    //  * @param[in] names_too  If true, make the
-    //  *            first row of the table a list of the attribute names.
-    //  *
-    //  * All attribute values will be strings.
-    //  * The virtual table v can be printed with its output operator
-    //  * operator<< for ostreams.
-    //  *
-    //  * \attention Not atomic. Can yield stale data.
-    //  * Cannot be used in a multi-threaded-transaction context.
-    //  */
-    // static rc_t            lock_collect(vtable_t&v, bool names_too=true);
-
-    // /**\brief Collect thread information in a virtual table.
-    //  * \ingroup SSMVTABLE
-    //  * \details
-    //  * @param[out] v  The virtual table to populate.
-    //  * @param[in] names_too  If true, make the
-    //  *            first row of the table a list of the attribute names.
-    //  *
-    //  * All attribute values will be strings.
-    //  * The virtual table v can be printed with its output operator
-    //  * operator<< for ostreams.
-    //  *
-    //  * \attention Not thread-safe. Can yield stale data.
-    //  */
-    // static rc_t            thread_collect(vtable_t&v, bool names_too=true);
-
-    /**\brief Take a checkpoint.
+    /**
+     * \brief Take a checkpoint.
      * \ingroup SSMAPIDEBUG
      * \note For debugging only!
      *
@@ -1029,7 +979,6 @@ public:
     /**
      * \brief Force the buffer pool to flush to disk all pages for the given volume.
      * \ingroup SSMBUFPOOL
-     * @param[in] vol Volume whose pages are to be flushed.
      */
     static rc_t            force_volume();
 
@@ -1103,7 +1052,7 @@ public:
     /**
     * \brief Pretty-prints the content of log file to the given stream
     * in a way we can easily debug single-page recovery.
-    * \ingroup Single-Page-Recovery
+    * \ingroup SPR
     * \details
     * This is for debugging, so performance is not guaranteed and also not thread-safe.
     * @param[in] o   Stream to which to write the information.
@@ -1114,15 +1063,22 @@ public:
     static void             dump_page_lsn_chain(std::ostream &o, const PageID &pid,
                                                 const lsn_t &max_lsn);
     /**
-     * Overload to receive only pid.
-     * \ingroup Single-Page-Recovery
-     * @copydoc dump_page_lsn_chain(std::ostream&, const PageID &, const lsn_t&)
+    * \brief Pretty-prints the content of log file to the given stream
+    * in a way we can easily debug single-page recovery.
+    * \ingroup SPR
+    * \details
+    * This is for debugging, so performance is not guaranteed and also not thread-safe.
+    * @param[in] o   Stream to which to write the information.
+    * @param[in] pid If given, we only dump logs relevant to the page.
      */
     static void             dump_page_lsn_chain(std::ostream &o, const PageID &pid);
     /**
-     * Overload to receive neither.
-     * \ingroup Single-Page-Recovery
-     * @copydoc dump_page_lsn_chain(std::ostream&, const PageID &, const lsn_t&)
+    * \brief Pretty-prints the content of log file to the given stream
+    * in a way we can easily debug single-page recovery.
+    * \ingroup SPR
+    * \details
+    * This is for debugging, so performance is not guaranteed and also not thread-safe.
+    * @param[in] o   Stream to which to write the information.
      */
     static void             dump_page_lsn_chain(std::ostream &o);
 
@@ -1192,7 +1148,6 @@ public:
 
     /**\brief Create a B+-Tree index.
      * \ingroup SSMBTREE
-     * @param[in] vid   Volume on which to create the index.
      * @param[out] stid New store ID will be returned here.
      */
     static rc_t            create_index(
@@ -1274,7 +1229,7 @@ public:
     /**
     *  \brief This function finds the given key, updates the specific part of element if found.
      * \ingroup SSMBTREE
-    * @param[in] root id of root page
+    * @param[in] stid id of root page
     * @param[in] key key of the existing tuple
     * @param[in] el new data of the tuple
     * @param[in] offset overwrites to this position of the record
@@ -1326,10 +1281,19 @@ public:
     static rc_t           defrag_index_page(btree_page_h &page);
 
     /**
-    *  Verifies the integrity of B-Tree index using the fence-key bitmap technique.
-     * \ingroup SSMBTREE
-     * @copydetails btree_impl::_ux_verify_tree(const PageID&,int,bool&)
+    * \brief Verifies the integrity of B-Tree index using the fence-key bitmap technique.
+    * \ingroup SSMBTREE
+    * \details
+    * This method constructs a bitmap, traverses all pages in this BTree
+    * and flips each bit based on facts collected from each page.
+    * The size of bitmap is 2^hash_bits bits = 2^(hash_bits - 3) bytes.
+    * We recommend hash_bits to be around 20.
+    * For more details of this algorithm, check out TODS'11 paper.
+    * Context: in both user and system transaction.
+    * \note This method holds a tree-wide read latch/lock. No concurrent update is allowed.
     * @param[in] stid  ID of the index.
+    * @param[in] hash_bits the number of bits we use for hashing, at most 31.
+    * @param[out] consistent whether the BTree is consistent
     */
     static rc_t           verify_index(StoreID  stid, int hash_bits, bool &consistent);
 
@@ -1467,10 +1431,10 @@ ostream& operator<<(ostream& o, const sm_config_info_t& s)
     return o;
 }
 
-#ifndef VEC_T_H
+#ifndef __VEC_T_H
 #include <vec_t.h>
-#endif
+#endif // __VEC_T_H
 
 /*<std-footer incl-file-exclusion='SM_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __SM_H /*</std-footer>*/

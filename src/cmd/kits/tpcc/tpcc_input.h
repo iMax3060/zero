@@ -433,5 +433,4 @@ mbench_cust_input_t  create_mbench_cust_input(int sf,
 
 };
 
-#endif
-
+#endif // __TPCC_INPUT_H

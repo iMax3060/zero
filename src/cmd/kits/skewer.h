@@ -28,8 +28,8 @@
  *  @author: Pinar Tozun, Feb 2011
  */
 
-#ifndef __UTIL_SKEWER_H
-#define __UTIL_SKEWER_H
+#ifndef __SKEWER_H
+#define __SKEWER_H
 
 #include <iostream>
 #include <vector>
@@ -129,4 +129,4 @@ private:
 
 };
 
-#endif // __UTIL_SKEW_INFO_H
+#endif // __SKEWER_H

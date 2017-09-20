@@ -21,11 +21,11 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_table.h
+/** @file:   table_desc.h
  *
  *  @brief:  Base class for tables stored in Shore
  *
- *  @note:   table_desc_t - table abstraction
+ *  @note:   \link table_desc_t \endlink - table abstraction
  *
  *  @author: Ippokratis Pandis, January 2008
  *  @author: Caetano Sauer, April 2015
@@ -398,4 +398,4 @@ inline unsigned table_desc_t::maxsize()
     return (*&_maxsize);
 }
 
-#endif /* __TABLE_DESC_H */
+#endif // __TABLE_DESC_H

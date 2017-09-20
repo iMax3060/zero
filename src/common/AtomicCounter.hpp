@@ -342,4 +342,4 @@ namespace lintel {
 #endif
 } // namespace lintel
 
-#endif
+#endif // LINTEL_ATOMIC_COUNTER_HPP

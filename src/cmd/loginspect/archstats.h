@@ -1,5 +1,5 @@
-#ifndef ARCHSTATS_H
-#define ARCHSTATS_H
+#ifndef __ARCHSTATS_H
+#define __ARCHSTATS_H
 
 #include "command.h"
 #include "handler.h"
@@ -35,4 +35,4 @@ private:
     size_t prevPos;
 };
 
-#endif
+#endif // __ARCHSTATS_H

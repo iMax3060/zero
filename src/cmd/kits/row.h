@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_row.h
+/** @file:   row.h
  *
  *  @brief:  Base class for records (rows) of tables in Shore
  *
@@ -82,8 +82,8 @@
  *
  */
 
-#ifndef __SHORE_ROW_H
-#define __SHORE_ROW_H
+#ifndef __ROW_H
+#define __ROW_H
 
 
 //#include "k_defines.h"
@@ -569,4 +569,4 @@ inline bool table_row_t::get_value(const unsigned idx,
 }
 
 
-#endif /* __SHORE_ROW_H */
+#endif // __ROW_H

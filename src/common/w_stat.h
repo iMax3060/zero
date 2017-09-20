@@ -27,19 +27,19 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_STAT_H
-#define W_STAT_H
+#ifndef __W_STAT_H
+#define __W_STAT_H
 
 #include "w_defines.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef W_BASE_H
+#ifndef __W_BASE_H
 #include <w_base.h>
-#endif
-#ifndef W_RC_H
+#endif // __W_BASE_H
+#ifndef __W_RC_H
 #include <w_rc.h>
-#endif
+#endif // __W_RC_H
 
 class w_statistics_t; // forward
 class w_stat_module_t; // forward
@@ -169,4 +169,4 @@ public:
 
 /*<std-footer incl-file-exclusion='W_STAT_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_STAT_H /*</std-footer>*/

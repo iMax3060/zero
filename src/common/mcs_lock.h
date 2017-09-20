@@ -1,5 +1,5 @@
-#ifndef MCS_LOCK_H
-#define MCS_LOCK_H
+#ifndef __MCS_LOCK_H
+#define __MCS_LOCK_H
 /* -*- mode:C++; c-basic-offset:4 -*-
      Shore-MT -- Multi-threaded port of the SHORE storage manager
    
@@ -163,5 +163,4 @@ struct mcs_lock {
 
 /** Used to keep mcs_lock in its own cacheline. */
 const size_t CACHELINE_MCS_PADDING = CACHELINE_SIZE - sizeof(mcs_lock);
-#endif
-
+#endif // __MCS_LOCK_H

@@ -28,8 +28,8 @@
  *  @note See trace.cpp.
  */
 
-#ifndef __UTIL_TRACE_H
-#define __UTIL_TRACE_H
+#ifndef __TRACE_H
+#define __TRACE_H
 
 #include <cstdarg>             /* for varargs */
 #include <stdint.h>            /* for uint32_t */
@@ -106,13 +106,10 @@ unsigned int trace_get();
  *
  * @brief Macro wrapper for trace_get()
  * 
- * @param types Passed through as trace_type_mask parameter of
- * trace_get().
- *
- * @return void
+ * @return unsigned int
  */
 #define TRACE_GET() trace_get()
 
 
 
-#endif // __UTIL_TRACE_H
+#endif // __TRACE_H

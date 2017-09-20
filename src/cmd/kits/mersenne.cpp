@@ -2,7 +2,7 @@
  * See copyright at top of file, it is the BSD copyright
  */
 
-/** @file
+/** @file mersenne.cpp
     modifications from M. Matsumoto and T. Nishimura
 */
 

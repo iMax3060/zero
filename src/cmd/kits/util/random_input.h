@@ -30,8 +30,8 @@
  */
 
 
-#ifndef __UTIL_RANDOM_INPUT_H
-#define __UTIL_RANDOM_INPUT_H
+#ifndef __RANDOM_INPUT_H
+#define __RANDOM_INPUT_H
 
 
 #include "zipfian.h"
@@ -54,4 +54,4 @@ void setZipf(const bool isEnabled, const double s);
 
 int UZRand(const int low, const int high);
 
-#endif // __UTIL_RANDOM_INPUT_H
+#endif // __RANDOM_INPUT_H

@@ -1,5 +1,5 @@
-#ifndef MERGERUNS_H
-#define MERGERUNS_H
+#ifndef __MERGERUNS_H
+#define __MERGERUNS_H
 
 #include "command.h"
 
@@ -17,4 +17,4 @@ private:
     size_t replFactor;
 };
 
-#endif
+#endif // __MERGERUNS_H

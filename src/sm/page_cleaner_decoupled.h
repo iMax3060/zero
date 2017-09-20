@@ -1,5 +1,5 @@
-#ifndef PAGE_CLEANER_DECOUPLED_H
-#define PAGE_CLEANER_DECOUPLED_H
+#ifndef __PAGE_CLEANER_DECOUPLED_H
+#define __PAGE_CLEANER_DECOUPLED_H
 
 #include "bf_tree.h"
 #include "logarchiver.h"
@@ -21,4 +21,4 @@ private:
     void fill_cb_indexes();
 };
 
-#endif // PAGE_CLEANER_H
+#endif // __PAGE_CLEANER_DECOUPLED_H

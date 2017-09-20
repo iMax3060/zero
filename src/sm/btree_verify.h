@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BTREE_VERIFY_H
-#define BTREE_VERIFY_H
+#ifndef __BTREE_VERIFY_H
+#define __BTREE_VERIFY_H
 
 // classes and structs used in BTree verification
 #include <map>
@@ -75,5 +75,4 @@ public:
     std::map<PageID, verification_context*> _results;
 };
 
-#endif // BTREE_VERIFY_H
-
+#endif // __BTREE_VERIFY_H

@@ -1,29 +1,27 @@
-#ifndef TIMEOUT_T
-#define TIMEOUT_T
+#ifndef __TIMEOUT_T
+#define __TIMEOUT_T
 
-/**\enum timeout_t
- * \brief Special values for int.
+/**\struct timeout_t
+ * \brief  Special values for timeouts (int-values).
+ * \details sthreads package recognizes 2 \c WAIT_* values:
+ *            - \c == \link WAIT_IMMEDIATE \endlink
+ *            - \c != \link WAIT_IMMEDIATE \endlink
+ *          If it's not \link WAIT_IMMEDIATE \endlink, it's assumed to be a
+ *          positive integer (milliseconds) used for the select timeout.\n
+ *          The user of the thread (e.g., sm) had better convert timeout that
+ *          are negative values (\c WAIT_* below) to something \c >= \c 0
+ *          before calling \c block().\n
+ *          All other \c WAIT_* values other than \link WAIT_IMMEDIATE \endlink
+ *          are handled by sm layer.
  *
- * \details sthreads package recognizes 2 WAIT_* values:
- * == WAIT_IMMEDIATE
- * and != WAIT_IMMEDIATE.
+ * @param WAIT_IMMEDIATE           Don't wait.
+ * @param WAIT_FOREVER             May block indefinitely.
+ * @param WAIT_SPECIFIED_BY_THREAD Pick up a timeout from the smthread.
+ * @param WAIT_SPECIFIED_BY_XCT    Pick up a timeout from the transaction.
+ * @param WAIT_NOT_USED            Indicates the negative number used by
+ *                                 sthreads.
  *
- * If it's not WAIT_IMMEDIATE, it's assumed to be
- * a positive integer (milliseconds) used for the
- * select timeout.
- * WAIT_IMMEDIATE: no wait
- * WAIT_FOREVER:   may block indefinitely
- * The user of the thread (e.g., sm) had better
- * convert timeout that are negative values (WAIT_* below)
- * to something >= 0 before calling block().
- *
- * All other WAIT_* values other than WAIT_IMMEDIATE
- * are handled by sm layer:
- * WAIT_SPECIFIED_BY_THREAD: pick up a int from the smthread.
- * WAIT_SPECIFIED_BY_XCT: pick up a int from the transaction.
- * Anything else: not legitimate.
- *
- * \sa int
+ * \see int
  */
 struct timeout_t {
     static constexpr int WAIT_IMMEDIATE     = 0;
@@ -35,4 +33,4 @@ struct timeout_t {
     static constexpr int WAIT_NOT_USED = -6; // indicates last negative number used by sthreads
 };
 
-#endif
+#endif // __TIMEOUT_T

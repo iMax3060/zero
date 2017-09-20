@@ -1,7 +1,7 @@
 #include "w_defines.h"
 
-#ifndef RESTORE_H
-#define RESTORE_H
+#ifndef __RESTORE_H
+#define __RESTORE_H
 
 #include "thread_wrapper.h"
 #include "sm_base.h"
@@ -556,4 +556,4 @@ inline bool RestoreMgr::isRestored(const PageID& pid)
     return bitmap->is_restored(seg);
 }
 
-#endif
+#endif // __RESTORE_H

@@ -290,4 +290,4 @@ struct Name {                                            \
 
 } /* namespace tls_tricks */
 
-#endif
+#endif // __TLS_H

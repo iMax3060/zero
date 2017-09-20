@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LOG_STORAGE_H
-#define LOG_STORAGE_H
+#ifndef __LOG_STORAGE_H
+#define __LOG_STORAGE_H
 #include "w_defines.h"
 
 #include "sm_options.h"
@@ -144,4 +144,4 @@ public:
     static const string chkpt_regex;
 };
 
-#endif
+#endif // __LOG_STORAGE_H

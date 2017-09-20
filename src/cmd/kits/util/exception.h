@@ -145,4 +145,4 @@ inline void unreachable() {
 #define unreachable() THROW(Unreachable)
 #endif
 
-#endif
+#endif // __EXCEPTION_H

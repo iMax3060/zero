@@ -53,8 +53,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef W_PTHREAD_H
-#define W_PTHREAD_H
+#ifndef __W_PTHREAD_H
+#define __W_PTHREAD_H
 
 #include <pthread.h>
 #include <string.h>
@@ -92,4 +92,4 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
     } \
 }
 
-#endif          /*</std-footer>*/
+#endif // __W_PTHREAD_H /*</std-footer>*/

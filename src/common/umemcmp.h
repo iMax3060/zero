@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef UMEMCMP_H
-#define UMEMCMP_H
+#ifndef __UMEMCMP_H
+#define __UMEMCMP_H
 
 #include "w_defines.h"
 
@@ -45,9 +45,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #include <assert.h>
 
-#ifndef W_WORKAROUND_H
+#ifndef __W_WORKAROUND_H
 #include <w_workaround.h>
-#endif
+#endif // __W_WORKAROUND_H
 
 // Simple byte-by-byte comparisions
 inline int __umemcmp(const unsigned char* p, const unsigned char* q, int n)
@@ -148,4 +148,4 @@ inline int umemcmp(const void* p, const void* q, int n)
 
 /*<std-footer incl-file-exclusion='UMEMCMP_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __UMEMCMP_H /*</std-footer>*/

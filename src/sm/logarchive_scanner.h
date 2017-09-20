@@ -1,5 +1,5 @@
-#ifndef LOGARCHIVE_SCANNER_H
-#define LOGARCHIVE_SCANNER_H
+#ifndef __LOGARCHIVE_SCANNER_H
+#define __LOGARCHIVE_SCANNER_H
 
 #include <iostream>
 #include <memory>
@@ -195,4 +195,4 @@ public:
     };
 };
 
-#endif
+#endif // __LOGARCHIVE_SCANNER_H

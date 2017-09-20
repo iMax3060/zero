@@ -55,8 +55,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LATCH_H
-#define LATCH_H
+#ifndef __LATCH_H
+#define __LATCH_H
 
 #include "w_defines.h"
 
@@ -281,4 +281,4 @@ extern "C" void print_latch(const latch_t *l);
 
 /*<std-footer incl-file-exclusion='LATCH_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __LATCH_H /*</std-footer>*/

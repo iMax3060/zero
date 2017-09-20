@@ -31,8 +31,8 @@
 
         */
 
-#ifndef RESTART_H
-#define RESTART_H
+#ifndef __RESTART_H
+#define __RESTART_H
 
 #include "w_defines.h"
 #include "w_heap.h"
@@ -91,7 +91,7 @@ private:
 public:
 
     /**
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      * Defined in log_spr.cpp.
      * @copydoc ss_m::dump_page_lsn_chain(std::ostream&, const PageID &, const lsn_t&)
      */
@@ -145,7 +145,7 @@ private:
 
 // CS: documentation code copied from old log_spr.h
 /**
- * \defgroup Single-Page-Recovery
+ * \defgroup SPR Single-Page-Recovery
  * \brief \b Single-Page-Recovery (\b SPR) is a novel feature to recover a single page
  * without going through the entire restart procedure.
  * \ingroup SSMLOG
@@ -229,4 +229,4 @@ private:
  * \li G. Graefe et al., "Foster B-trees". TODS'12.
  */
 
-#endif
+#endif // __RESTART_H

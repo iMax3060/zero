@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_trx_worker.cpp
+/** @file:   trx_worker.cpp
  *
  *  @brief:  Declaration of the worker threads in Baseline
  *           (specialization of the Shore workers)

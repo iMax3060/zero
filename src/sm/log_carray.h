@@ -23,8 +23,8 @@
    DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
-#ifndef LOG_CARRAY_H
-#define LOG_CARRAY_H
+#ifndef __LOG_CARRAY_H
+#define __LOG_CARRAY_H
 
 /**
  * \defgroup CARRAY Consolidation Array
@@ -162,7 +162,7 @@ struct CArraySlot {
     /**
     * The main queue lock used to acquire log buffers.
     * Lock head is log_core::_insert_lock.
-    * \NOTE This should not be in the same cache line as me2.
+    * \note This should not be in the same cache line as me2.
     */
     mcs_lock::qnode me;                 // +16 -> 88
     /**
@@ -325,4 +325,4 @@ inline int ConsolidationArray::_indexof(const CArraySlot* info) const {
     return info - _all_slots;
 }
 
-#endif // LOG_CARRAY_H
+#endif // __LOG_CARRAY_H

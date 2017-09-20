@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_xct.cpp
+/** @file:   tpcc_xct.cpp
  *
  *  @brief:  Implementation of the Baseline Shore TPC-C transactions
  *

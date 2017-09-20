@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_X_H
-#define LOCK_X_H
+#ifndef __LOCK_X_H
+#define __LOCK_X_H
 
 #include "w_defines.h"
 
@@ -180,4 +180,4 @@ private:
     atomic_thread_map_t  _wait_map; // for dreadlocks DLD
 };
 
-#endif          /*</std-footer>*/
+#endif // __LOCK_X_H /*</std-footer>*/

@@ -1,5 +1,5 @@
-#ifndef MEM_MGMT_H
-#define MEM_MGMT_H
+#ifndef __MEM_MGMT_H
+#define __MEM_MGMT_H
 
 #include "w_defines.h"
 #include "sm_base.h"
@@ -151,4 +151,4 @@ public:
 };
 
 
-#endif
+#endif // __MEM_MGMT_H

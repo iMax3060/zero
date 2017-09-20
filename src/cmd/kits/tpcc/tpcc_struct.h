@@ -373,4 +373,4 @@ struct tpcc_warehouse_tuple_key {
 
 };
 
-#endif
+#endif // __TPCC_STRUCT_H

@@ -21,9 +21,10 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file shore_asc_sort_buf.cpp
+/** @file sort.cpp
  *
- *  @brief Implementation of comparison functions for asc_sort_buffer_t
+ *  @brief Implementation of comparison functions for
+ *         \link asc_sort_buffer_t \endlink
  *
  *  @author: Ippokratis Pandis, Sept 2008
  *  @author: Ilknur Cansu Kaynak, April 2010

@@ -1,5 +1,5 @@
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef __COMMAND_H
+#define __COMMAND_H
 
 
 #include "sm_base.h"
@@ -66,4 +66,4 @@ private:
     size_t limit;
 };
 
-#endif
+#endif // __COMMAND_H

@@ -269,4 +269,4 @@ private:
 
 
 /**\endcond skip */
-#endif
+#endif // __DYNARRAY_H

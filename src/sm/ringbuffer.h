@@ -1,5 +1,5 @@
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#ifndef __RINGBUFFER_H
+#define __RINGBUFFER_H
 
 #include "w_defines.h"
 #include "basics.h"
@@ -182,4 +182,4 @@ inline bool AsyncRingBuffer::isFinished()
     return finished;
 }
 
-#endif
+#endif // __RINGBUFFER_H

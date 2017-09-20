@@ -21,8 +21,8 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-#ifndef __UTIL_ZIPFIAN_H
-#define __UTIL_ZIPFIAN_H
+#ifndef __ZIPFIAN_H
+#define __ZIPFIAN_H
 
 //#include "rand48.h"
 #include <cmath>
@@ -77,5 +77,4 @@ struct zipfian
     }
 };
 
-#endif // __UTIL_ZIPFIAN_H
-
+#endif // __ZIPFIAN_H

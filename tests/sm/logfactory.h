@@ -1,5 +1,5 @@
-#ifndef LOGFACTORY_H
-#define LOGFACTORY_H
+#ifndef __LOGFACTORY_H
+#define __LOGFACTORY_H
 
 #include "w_defines.h"
 
@@ -159,4 +159,4 @@ private:
 
 };
 
-#endif
+#endif // __LOGFACTORY_H

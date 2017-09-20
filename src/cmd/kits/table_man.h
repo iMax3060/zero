@@ -21,11 +21,11 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_table.h
+/** @file:   table_man.h
  *
  *  @brief:  Base class for tables stored in Shore
  *
- *  @note:   table_desc_t - table abstraction
+ *  @note:   \link table_desc_t \endlink - table abstraction
  *
  *  @author: Ippokratis Pandis, January 2008
  *
@@ -405,4 +405,4 @@ public:
 }; // EOF: table_fetcher_t
 #endif // 0
 
-#endif /* __TABLE_MAN_H */
+#endif // __TABLE_MAN_H

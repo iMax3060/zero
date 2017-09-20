@@ -1,11 +1,11 @@
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
-#ifndef LOCK_RAW_H
-#define LOCK_RAW_H
+#ifndef __LOCK_RAW_H
+#define __LOCK_RAW_H
 
 /**
- * \defgroup RAWLOCK
+ * \defgroup RAWLOCK RAW-style Lock Manager
  * \brief \b RAW-style \b Lock \b Manager
  * \ingroup SSMLOCK
  * \details
@@ -223,12 +223,12 @@ struct RawLockQueue {
      * @param[in] xct the transaction to own the new lock
      * @param[in] hash precise hash of the resource to lock.
      * @param[in] mode requested lock mode
-     * @param[in] int maximum length to wait in milliseconds.
+     * @param[in] timeout_in_ms maximum length to wait in milliseconds.
      * negative number means forever. If conditional, this parameter is ignored.
-     * @param[in] conditional If true, this method doesn't wait at all \b and also it leaves
-     * the inserted lock entry even if it wasn't granted immediately.
-     * @param[in] check_only if true, this method doesn't actually create a new lock object
+     * @param[in] check if true, this method doesn't actually create a new lock object
      * but just checks if the requested lock mode can be granted or not.
+     * @param[in] wait If false, this method doesn't wait at all \b and also it leaves
+     * the inserted lock entry even if it wasn't granted immediately.
      * @param[out] out pointer to the \e successfully acquired lock. it returns NULL if
      * we couldn't get the lock \b except conditional==true case.
      * \details
@@ -258,7 +258,7 @@ struct RawLockQueue {
     /**
      * Waits for the already-inserted lock entry. Used after a failed conditional locking.
      * @see acquire()
-     * \NOTE "lock" is a RawLock**, not RawLock*. It might be cleared after another failure,
+     * \note "lock" is a RawLock**, not RawLock*. It might be cleared after another failure,
      * or become a new lock when it's automatically retried.
      */
     w_error_codes   retry_acquire(RawLock** lock, bool wait, bool acquire,
@@ -336,7 +336,7 @@ struct RawLockQueue {
      * target should be marked for death (target->next.is_marked()), but this is not
      * a contract because of concurrent delinks. If it isn't (say target is already delinked),
      * then the atomic CAS fails, returning false.
-     * \NOTE Although might sound weird, this method \e is const.
+     * \note Although might sound weird, this method \e is const.
      * This method \b physically delinks an already-marked entry, so \b logically it does
      * nothing.
      */
@@ -399,7 +399,7 @@ const int RAW_XCT_LOCK_HASHMAP_SIZE = 1023;
  * \section PERFORMANCE Performance Comparison
  * As of 20140213, with and without this improvement, TPCC on 4-socket machine is as
  * follows: BEFORE=12027 TPS, AFTER=13764 TPS.
- * \NOTE yes, it's a copy-paste from XctLockHashMap, but this would be the only implementation.
+ * \note yes, it's a copy-paste from XctLockHashMap, but this would be the only implementation.
  */
 class RawXctLockHashMap {
 public:
@@ -657,4 +657,4 @@ protected:
     GcPoolForest<RawXct>*      _xct_pool;
 };
 
-#endif // LOCK_RAW_H
+#endif // __LOCK_RAW_H

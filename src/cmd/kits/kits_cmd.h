@@ -1,5 +1,5 @@
-#ifndef KITS_CMD_H
-#define KITS_CMD_H
+#ifndef __KITS_CMD_H
+#define __KITS_CMD_H
 
 #include "command.h"
 #include "shore_client.h"
@@ -87,4 +87,4 @@ private:
     FailureThread* failure_thread;
 };
 
-#endif
+#endif // __KITS_CMD_H

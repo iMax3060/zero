@@ -1,5 +1,5 @@
-#ifndef LOGRECINFO_H
-#define LOGRECINFO_H
+#ifndef __LOGRECINFO_H
+#define __LOGRECINFO_H
 
 #include "command.h"
 
@@ -10,5 +10,4 @@ public:
     void setupOptions();
 };
 
-#endif
-
+#endif // __LOGRECINFO_H

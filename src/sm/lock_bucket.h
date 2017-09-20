@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_BUCKET_H
-#define LOCK_BUCKET_H
+#ifndef __LOCK_BUCKET_H
+#define __LOCK_BUCKET_H
 
 #include <stdint.h>
 #include "w_okvl.h"
@@ -388,4 +388,4 @@ inline lock_queue_t* bucket_t::find_lock_queue_create(uint32_t hash) {
     return new_p;
 }
 
-#endif // LOCK_BUCKET_H
+#endif // __LOCK_BUCKET_H

@@ -1,5 +1,5 @@
-#ifndef LOGPAGESTATS_H
-#define LOGPAGESTATS_H
+#ifndef __LOGPAGESTATS_H
+#define __LOGPAGESTATS_H
 
 #include "command.h"
 
@@ -10,4 +10,4 @@ public:
     void setupOptions();
 };
 
-#endif
+#endif // __LOGPAGESTATS_H

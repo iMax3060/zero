@@ -1,5 +1,5 @@
-#ifndef LOGANALYSIS_H
-#define LOGANALYSIS_H
+#ifndef __LOGANALYSIS_H
+#define __LOGANALYSIS_H
 
 #include "command.h"
 #include "handler.h"
@@ -30,4 +30,4 @@ public:
     size_t xctCount;
 };
 
-#endif
+#endif // __LOGANALYSIS_H

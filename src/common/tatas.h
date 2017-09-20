@@ -1,5 +1,5 @@
-#ifndef TATAS_H
-#define TATAS_H
+#ifndef __TATAS_H
+#define __TATAS_H
 
 #include "AtomicCounter.hpp"
 #include "w_defines.h"
@@ -120,4 +120,4 @@ private:
 /** Used to keep tatas_lock in its own cacheline. */
 const size_t CACHELINE_TATAS_PADDING = CACHELINE_SIZE - sizeof(tatas_lock);
 
-#endif // TATAS_H
+#endif // __TATAS_H

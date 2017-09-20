@@ -1,5 +1,5 @@
-#ifndef RESTORE_CMD_H
-#define RESTORE_CMD_H
+#ifndef __RESTORE_CMD_H
+#define __RESTORE_CMD_H
 
 #include "kits_cmd.h"
 
@@ -27,4 +27,4 @@ protected:
     virtual void doWork();
 };
 
-#endif
+#endif // __RESTORE_CMD_H

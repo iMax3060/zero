@@ -53,4 +53,4 @@ public:
 };
 
 
-#endif
+#endif // __RANDGEN_H

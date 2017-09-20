@@ -55,8 +55,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LOG_CORE_H
-#define LOG_CORE_H
+#ifndef __LOG_CORE_H
+#define __LOG_CORE_H
 #include "w_defines.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
@@ -371,4 +371,4 @@ log_i::get_last_rc()
 { return last_rc; }
 /*<std-footer incl-file-exclusion='LOG_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __LOG_CORE_H /*</std-footer>*/

@@ -1,5 +1,5 @@
-#ifndef WORKER_THREAD_H
-#define WORKER_THREAD_H
+#ifndef __WORKER_THREAD_H
+#define __WORKER_THREAD_H
 
 #include "thread_wrapper.h"
 
@@ -109,5 +109,4 @@ private:
     std::atomic<lsn_t> endLSN;
 };
 
-#endif
-
+#endif // __WORKER_THREAD_H

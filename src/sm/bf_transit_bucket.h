@@ -60,8 +60,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef BF_TRANSIT_BUCKET_H
-#define BF_TRANSIT_BUCKET_H
+#ifndef __BF_TRANSIT_BUCKET_H
+#define __BF_TRANSIT_BUCKET_H
 
 /**\brief Bucket for in-transit pages. We put only in-transit-out pages in here.
  * \details
@@ -189,5 +189,5 @@ public:
  */
 
 
-#endif
+#endif // __BF_TRANSIT_BUCKET_H
 #endif // COMMENTED_OUT

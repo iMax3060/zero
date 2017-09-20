@@ -1,5 +1,5 @@
-#ifndef PAGE_CLEANER_H
-#define PAGE_CLEANER_H
+#ifndef __PAGE_CLEANER_H
+#define __PAGE_CLEANER_H
 
 #include "smthread.h"
 #include "sm_options.h"
@@ -37,5 +37,4 @@ protected:
     bool _write_elision;
 };
 
-#endif
-
+#endif __PAGE_CLEANER_H

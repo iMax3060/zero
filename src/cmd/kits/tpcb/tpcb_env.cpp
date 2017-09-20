@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_env.cpp
+/** @file:   tpcb_env.cpp
  *
  *  @brief:  Declaration of the Shore TPC-C environment (database)
  *

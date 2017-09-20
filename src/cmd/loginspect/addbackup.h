@@ -1,5 +1,5 @@
-#ifndef ADDBACKUP_H
-#define ADDBACKUP_H
+#ifndef __ADDBACKUP_H
+#define __ADDBACKUP_H
 
 #include "command.h"
 
@@ -15,4 +15,4 @@ private:
     string lsnString;
 };
 
-#endif
+#endif // __ADDBACKUP_H

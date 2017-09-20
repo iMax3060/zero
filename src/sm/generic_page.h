@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef GENERIC_PAGE_H
-#define GENERIC_PAGE_H
+#ifndef __GENERIC_PAGE_H
+#define __GENERIC_PAGE_H
 
 #include <boost/static_assert.hpp>
 
@@ -171,4 +171,4 @@ protected:
     generic_page* _pp;
 };
 
-#endif
+#endif // __GENERIC_PAGE_H

@@ -324,4 +324,4 @@ struct thread_local {
 extern __thread thread_pool* THREAD_POOL;
 
 
-#endif  /* __THREAD_H */
+#endif // __THREAD_H

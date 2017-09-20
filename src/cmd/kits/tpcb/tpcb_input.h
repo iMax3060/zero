@@ -207,5 +207,4 @@ mbench_mix_input_t create_mbench_mix_input(int SF,
 					   int specificBr = 0, int tspread = 0);
 
 
-#endif
-
+#endif // __TPCB_INPUT_H

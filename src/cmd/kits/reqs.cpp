@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_reqs.cpp
+/** @file:   reqs.cpp
  *
  *  @brief:  Structures that represent user requests
  *

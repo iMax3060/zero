@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef ALLOC_CACHE_H
-#define ALLOC_CACHE_H
+#ifndef __ALLOC_CACHE_H
+#define __ALLOC_CACHE_H
 
 #include "w_defines.h"
 #include "alloc_page.h"
@@ -22,7 +22,7 @@ class bf_fixed_m;
  * This object handles allocation/deallocation requests for one volume.
  * All allocation/deallocation are logged and done in a critical section.
  * To make it scalable, this object is designed to be as fast as possible.
- * @See alloc_page_h
+ * @see alloc_page_h
  */
 class alloc_cache_t {
 public:
@@ -95,4 +95,4 @@ private:
     rc_t load_alloc_page(StoreID stid, extent_id_t ext);
 };
 
-#endif // ALLOC_CACHE_H
+#endif // __ALLOC_CACHE_H

@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_env.h
+/** @file:   tpcb_env.h
  *
  *  @brief:  Definition of the Shore TPC-B environment
  *
@@ -30,8 +30,8 @@
  *  @date:   July 2009
  */
 
-#ifndef __SHORE_TPCB_ENV_H
-#define __SHORE_TPCB_ENV_H
+#ifndef __TPCB_ENV_H
+#define __TPCB_ENV_H
 
 
 #include "sm_vas.h"
@@ -254,4 +254,4 @@ public:
 
 }; // namespace
 
-#endif /* __SHORE_TPCB_ENV_H */
+#endif // __TPCB_ENV_H

@@ -1,5 +1,5 @@
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
+#ifndef __HTTP_H
+#define __HTTP_H
 
 #include "command.h"
 #include "kits_cmd.h"
@@ -82,4 +82,4 @@ public:
 
 };
 
-#endif
+#endif // __HTTP_H

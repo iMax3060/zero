@@ -65,8 +65,8 @@
  *  @note   See file tests/config_file_example.cpp for more examples.
  */
 
-#ifndef __UTIL_CONFPARSER_H
-#define __UTIL_CONFPARSER_H
+#ifndef __CONFPARSER_H
+#define __CONFPARSER_H
 
 #include <map>
 #include <iostream>
@@ -287,4 +287,4 @@ void ConfigFile::add( string key, const T& value )
 }
 
 
-#endif  /* __UTIL_CONFPARSER_H */
+#endif // __CONFPARSER_H

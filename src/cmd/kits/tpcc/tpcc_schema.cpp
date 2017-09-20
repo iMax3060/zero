@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_schema.cpp
+/** @file:   tpcc_schema.cpp
  *
  *  @brief:  Declaration of the TPC-C tables
  *

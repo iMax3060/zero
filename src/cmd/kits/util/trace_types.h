@@ -59,4 +59,4 @@
 
 
 
-#endif
+#endif // __TRACE_TYPES_H

@@ -1,5 +1,5 @@
-#ifndef TESTS_BTREE_TEST_ENV_H
-#define TESTS_BTREE_TEST_ENV_H
+#ifndef __BTREE_TEST_ENV_H
+#define __BTREE_TEST_ENV_H
 
 #include <vector>
 #include <utility>
@@ -718,4 +718,4 @@ public:
     bool _finished;
 };
 
-#endif // TESTS_BTREE_TEST_ENV_H
+#endif // __BTREE_TEST_ENV_H

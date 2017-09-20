@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BF_TREE_CLEANER_H
-#define BF_TREE_CLEANER_H
+#ifndef __BF_TREE_CLEANER_H
+#define __BF_TREE_CLEANER_H
 
 #include "page_cleaner.h"
 #include "bf_tree_cb.h"
@@ -52,13 +52,15 @@ using policy_predicate_t =
 class bf_tree_cleaner : public page_cleaner_base
 {
 public:
-    /**
-     * Constructs this object. This merely allocates arrays and objects.
-     * The real start-up is done in start_cleaners() because a constructor can't return error codes.
-     * @param cleaner_threads count of worker threads. has to be at least 1. If you want to disable
-     * all cleaners at first, use the following parameter.
-     * @param initially_wakeup_workers whether to start cleaner threads as soon as possible.
-     * Even if this is false, you can start cleaners later by calling wakeup_cleaners().
+    /*!\fn      bf_tree_cleaner(bf_tree_m* bufferpool, const sm_options& _options)
+     * \brief   Constructor for \c bf_tree_cleaner
+     * \details This merely allocates arrays and objects. The real start-up is done in
+     *          \link do_work() \endlink because a constructor can't return error codes.
+     *
+     * @param bufferpool The \link bf_tree_m \endlink the constructed page cleaner is  used to clean
+     *                   pages for.
+     * @param _options   Contains the set cleaner policy and options with regard to the selection
+     *                   of pages to clean.
      */
     bf_tree_cleaner(bf_tree_m* bufferpool, const sm_options& _options);
 
@@ -116,4 +118,4 @@ inline cleaner_policy make_cleaner_policy(string s)
     return cleaner_policy::oldest_lsn;
 }
 
-#endif // BF_TREE_CLEANER_H
+#endif // __BF_TREE_CLEANER_H

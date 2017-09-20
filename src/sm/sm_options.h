@@ -2,8 +2,8 @@
  * (c) Copyright 2014-, Hewlett-Packard Development Company, LP
  */
 
-#ifndef SM_OPTIONS_H
-#define SM_OPTIONS_H
+#ifndef __SM_OPTIONS_H
+#define __SM_OPTIONS_H
 
 #include <stdint.h>
 #include <string>
@@ -29,7 +29,7 @@ public:
 
     /**
      * Returns the value of the specified integer start up parameter.
-     * @param[in] param_name name of the parameter
+     * @param[in] option_name name of the parameter
      * @param[in] default_value value to return if the parameter does not exist.
      * @return the value of the specified integer start up parameter, or the default value if it doesn't exist.
      */
@@ -37,7 +37,7 @@ public:
 
     /**
      * Returns the value of the specified boolean start up parameter.
-     * @param[in] param_name name of the parameter
+     * @param[in] option_name name of the parameter
      * @param[in] default_value value to return if the parameter does not exist.
      * @return the value of the specified boolean start up parameter, or the default value if it doesn't exist.
      */
@@ -54,21 +54,21 @@ public:
     /**
      * Sets the value of the specified integer start up option.
      * @param[in] option_name name of the option
-     * @param[in] default_value value of the option.
+     * @param[in] value value of the option.
      */
     void set_int_option(const std::string& option_name, int64_t value);
 
     /**
      * Sets the value of the specified boolean start up option.
      * @param[in] option_name name of the option
-     * @param[in] default_value value of the option.
+     * @param[in] value value of the option.
      */
     void set_bool_option(const std::string& option_name, bool value);
 
     /**
      * Sets the value of the specified string start up option.
      * @param[in] option_name name of the option
-     * @param[in] default_value value of the option.
+     * @param[in] value value of the option.
      */
     void set_string_option(const std::string& option_name, const std::string& value);
 
@@ -125,4 +125,4 @@ inline void sm_options::set_string_option(const std::string& option_name, const 
     _string_options[option_name] = value;
 }
 
-#endif // SM_OPTIONS_H
+#endif // __SM_OPTIONS_H

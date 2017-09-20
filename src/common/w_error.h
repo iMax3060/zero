@@ -1,5 +1,5 @@
-#ifndef W_ERROR_H
-#define W_ERROR_H
+#ifndef __W_ERROR_H
+#define __W_ERROR_H
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
@@ -84,4 +84,4 @@ inline const char* w_error_message(w_error_codes error_code) {
 };
 #undef X
 
-#endif // W_ERROR_H
+#endif // __W_ERROR_H

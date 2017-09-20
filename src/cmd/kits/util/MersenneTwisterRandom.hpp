@@ -106,4 +106,4 @@ MT_random_shuffle(RandomAccessIter first, RandomAccessIter last, MersenneTwister
   }
 }
 
-#endif
+#endif // LINTEL_MERSENNE_TWISTER_RANDOM_HPP

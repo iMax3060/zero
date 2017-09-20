@@ -1,5 +1,5 @@
-#ifndef W_FILL_H
-#define W_FILL_H
+#ifndef __W_FILL_H
+#define __W_FILL_H
 
 #include <stdint.h>
 
@@ -50,4 +50,4 @@ struct fill4 {
     fill4() : u(0) {}
 };
 
-#endif // W_FILL_H
+#endif // __W_FILL_H

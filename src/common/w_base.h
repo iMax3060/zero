@@ -50,8 +50,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_BASE_H
-#define W_BASE_H
+#ifndef __W_BASE_H
+#define __W_BASE_H
 
 #include "w_defines.h"
 
@@ -79,9 +79,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /* end configuration definitions                       */
 /*******************************************************/
 
-#ifndef W_WORKAROUND_H
+#ifndef __W_WORKAROUND_H
 #include "w_workaround.h"
-#endif
+#endif // __W_WORKAROUND_H
 
 #define NORET        /**/
 #define CAST(t,o) ((t)(o))
@@ -490,4 +490,4 @@ template<typename T> struct compile_time_assert
 #endif
 /*<std-footer incl-file-exclusion='W_BASE_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_BASE_H /*</std-footer>*/

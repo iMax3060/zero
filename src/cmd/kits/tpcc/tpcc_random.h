@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file workload/tpcc/common/tpcc_random.h
+/** @file tpcc_random.h
  *
  *  @brief Functions used for the generation of the inputs for
  *         all the TPC-C transactions
@@ -29,8 +29,8 @@
  *  @version Based on TPC-C Standard Specification Revision 5.4 (Apr 2005)
  */
 
-#ifndef __TPCC_COMMON_H
-#define __TPCC_COMMON_H
+#ifndef __TPCC_RANDOM_H
+#define __TPCC_RANDOM_H
 
 namespace tpcc {
 
@@ -52,5 +52,4 @@ int generate_cust_last(int select, char* dest);
 
 };
 
-#endif
-
+#endif // __TPCC_RANDOM_H

@@ -50,8 +50,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_WORKAROUND_H
-#define W_WORKAROUND_H
+#ifndef __W_WORKAROUND_H
+#define __W_WORKAROUND_H
 
 #include "w_defines.h"
 
@@ -272,4 +272,4 @@ extern const char *form(const char *, ...);
 
 /*<std-footer incl-file-exclusion='W_WORKAROUND_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_WORKAROUND_H /*</std-footer>*/

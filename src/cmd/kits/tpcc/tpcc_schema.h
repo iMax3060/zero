@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_schema.h
+/** @file:   tpcc_schema.h
  *
  *  @brief:  Declaration of the TPC-C tables
  *
@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __SHORE_TPCC_SCHEMA_H
-#define __SHORE_TPCC_SCHEMA_H
+#ifndef __TPCC_SCHEMA_H
+#define __TPCC_SCHEMA_H
 
 
 #include <math.h>
@@ -64,4 +64,4 @@ DECLARE_TABLE_SCHEMA_PD(item_t);
 
 };
 
-#endif // __SHORE_TPCC_SCHEMA_H
+#endif // __TPCC_SCHEMA_H

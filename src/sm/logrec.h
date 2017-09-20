@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LOGREC_H
-#define LOGREC_H
+#ifndef __LOGREC_H
+#define __LOGREC_H
 
 #include "w_defines.h"
 
@@ -109,7 +109,7 @@ struct baseLogHeader
      * For per-page chains of log-records.
      * Note that some types of log records (split, merge) impact two pages.
      * The page_prev_lsn is for the "primary" page.
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      */
     lsn_t               _page_prv;
     /* 16+8 = 24 */
@@ -265,13 +265,13 @@ public:
     const lsn_t&         undo_nxt() const;
     /**
      * Returns the LSN of previous log that modified this page.
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      */
     const lsn_t&         page_prev_lsn() const;
     const lsn_t&         page2_prev_lsn() const;
     /**
      * Sets the LSN of previous log that modified this page.
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      */
     void                 set_page_prev_lsn(const lsn_t &lsn);
     const lsn_t&         xid_prev() const;
@@ -415,14 +415,14 @@ inline bool baseLogHeader::is_valid() const
  * either page without the other page. This is an important property
  * because otherwise it imposes write-order-dependency and a careful recovery.
  * In such a case "page2" is the data source page while "page" is the data destination page.
- * \NOTE a REDO operation of multi-page log must expect _either_ of page/page2 are given.
+ * \note a REDO operation of multi-page log must expect _either_ of page/page2 are given.
  * It must first check if which page is requested to recover, then apply right changes
  * to the page.
  */
 struct multi_page_log_t {
     /**
      * _page_prv for another page touched by the operation.
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      */
     lsn_t       _page2_prv; // +8
 
@@ -746,4 +746,4 @@ public:
 
 /*<std-footer incl-file-exclusion='LOGREC_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __LOGREC_H /*</std-footer>*/

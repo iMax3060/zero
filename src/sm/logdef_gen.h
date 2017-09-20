@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef LOGDEF_GEN_H
-#define LOGDEF_GEN_H
+#ifndef __LOGDEF_GEN_H
+#define __LOGDEF_GEN_H
 
 #include "w_defines.h"
 #include "alloc_page.h"
@@ -290,4 +290,4 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
         void construct(PageID pid, uint32_t count);
     };
 
-#endif
+#endif // __LOGDEF_GEN_H

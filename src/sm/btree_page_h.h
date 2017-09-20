@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BTREE_PAGE_H_H
-#define BTREE_PAGE_H_H
+#ifndef __BTREE_PAGE_H_H
+#define __BTREE_PAGE_H_H
 
 #include "btree_page.h"
 
@@ -60,7 +60,7 @@ private:
     PageID         _child;  // opaque pointer
     /**
      * Expected child LSN for the _child (only in interior node).
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      */
     lsn_t           _child_emlsn;
     cvec_t          _elem;
@@ -742,7 +742,7 @@ public:
     rc_t                         defrag(const bool full_logging_redo = false);
 
     /**
-     * \breif Compress page by trying to expand the prefix and truncate keys
+     * \brief Compress page by trying to expand the prefix and truncate keys
      * even further
      */
     rc_t compress(const w_keystr_t& low, const w_keystr_t& high,
@@ -770,23 +770,23 @@ public:
      */
     bool             is_consistent (bool check_keyorder = false, bool check_space = false) const;
 
-    /** Returns the pointer to Expected Child LSN of pid0, foster-child, or real child. \ingroup Single-Page-Recovery */
+    /** Returns the pointer to Expected Child LSN of pid0, foster-child, or real child. \ingroup SPR */
     lsn_t*         emlsn_address(general_recordid_t pos);
     /** Returns the Expected Child LSN of pid0, foster-child, or real child. */
     const lsn_t&   get_emlsn_general(general_recordid_t pos) const;
     /**
      * \brief Sets the Expected Child LSN of pid0, foster-child, or real child.
-     * \ingroup Single-Page-Recovery
+     * \ingroup SPR
      * \details
      * This method is not protected by exclusive latch but still safe because EMLSN are not
      * viewed/updated by multi threads.
      */
     void           set_emlsn_general(general_recordid_t pos, const lsn_t &lsn);
 
-    /** Returns the Expected Child LSN of foster-child. \ingroup Single-Page-Recovery */
+    /** Returns the Expected Child LSN of foster-child. \ingroup SPR */
     const lsn_t&   get_foster_emlsn() const;
 
-    /** Returns the Expected Child LSN of pid0. \ingroup Single-Page-Recovery */
+    /** Returns the Expected Child LSN of pid0. \ingroup SPR */
     const lsn_t&   get_pid0_emlsn() const;
 
     /*
@@ -1436,4 +1436,4 @@ inline const lsn_t& btree_page_h::get_pid0_emlsn() const {
     return page()->btree_pid0_emlsn;
 }
 
-#endif // BTREE_PAGE_H_H
+#endif // __BTREE_PAGE_H_H

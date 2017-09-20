@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_schema_man.h
+/** @file:   tpcc_schema_man.h
  *
  *  @brief:  Declaration of the TPC-C table managers
  *
@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __SHORE_TPCC_SCHEMA_MANAGER_H
-#define __SHORE_TPCC_SCHEMA_MANAGER_H
+#ifndef __TPCC_SCHEMA_MAN_H
+#define __TPCC_SCHEMA_MAN_H
 
 #include "scan.h"
 #include "tpcc_struct.h"
@@ -374,4 +374,4 @@ public:
 
 };
 
-#endif /* __SHORE_TPCC_SCHEMA_MANAGER_H */
+#endif // __TPCC_SCHEMA_MAN_H

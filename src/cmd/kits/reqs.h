@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:  shore_reqs.h
+/** @file:  reqs.h
  *
  *  @brief: Structures that represent user requests
  *
@@ -29,8 +29,8 @@
  */
 
 
-#ifndef __SHORE_REQS_H
-#define __SHORE_REQS_H
+#ifndef __REQS_H
+#define __REQS_H
 
 
 #include "sm_vas.h"
@@ -289,5 +289,4 @@ struct trx_request_t : public base_request_t
 
 }; // EOF: trx_request_t
 
-#endif /** __SHORE_REQS_H */
-
+#endif // __REQS_H

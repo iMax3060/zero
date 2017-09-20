@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef BASICS_H
-#define BASICS_H
+#ifndef __BASICS_H
+#define __BASICS_H
 
 #include "w_defines.h"
 
@@ -113,4 +113,4 @@ inline bool is_aligned(const void* p)
 
 /*<std-footer incl-file-exclusion='BASICS_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __BASICS_H /*</std-footer>*/

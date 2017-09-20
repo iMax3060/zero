@@ -708,4 +708,4 @@ protected:
 
 
 
-#endif /* __SHORE_ENV_H */
+#endif // __SHORE_ENV_H

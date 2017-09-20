@@ -1,5 +1,5 @@
-#ifndef BLOCK_ALLOC_H
-#define BLOCK_ALLOC_H
+#ifndef __BLOCK_ALLOC_H
+#define __BLOCK_ALLOC_H
 
 /**\cond skip */
 #include "dynarray.h"
@@ -383,4 +383,4 @@ void operator delete(void* ptr, blob_pool &alloc)
 
 
 /**\endcond skip */
-#endif
+#endif // __BLOCK_ALLOC_H

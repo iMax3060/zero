@@ -1,5 +1,5 @@
-#ifndef XCTLATENCY_H
-#define XCTLATENCY_H
+#ifndef __XCTLATENCY_H
+#define __XCTLATENCY_H
 
 #include "command.h"
 #include "handler.h"
@@ -36,4 +36,4 @@ protected:
     void dump();
 };
 
-#endif
+#endif // __XCTLATENCY_H

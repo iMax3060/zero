@@ -27,8 +27,8 @@
  *
  *  @bug See trace_print_pthread.cpp.
  */
-#ifndef _TRACE_PRINT_PTHREAD_H
-#define _TRACE_PRINT_PTHREAD_H
+#ifndef __TRACE_PRINT_PTHREAD_H
+#define __TRACE_PRINT_PTHREAD_H
 
 #include <pthread.h> /* for pthread_t */
 #include <cstdio>   /* for FILE* */
@@ -41,4 +41,4 @@ void trace_print_pthread(FILE* out_stream, pthread_t thread);
 
 
 
-#endif
+#endif // __TRACE_PRINT_PTHREAD_H

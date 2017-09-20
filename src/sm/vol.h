@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef VOL_H
-#define VOL_H
+#ifndef __VOL_H
+#define __VOL_H
 
 #include "w_defines.h"
 #include "stnode_page.h"
@@ -202,4 +202,4 @@ inline bool vol_t::is_valid_store(StoreID f) const
     return (f < stnode_page::max);
 }
 
-#endif          /*</std-footer>*/
+#endif // __VOL_H /*</std-footer>*/

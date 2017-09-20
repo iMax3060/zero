@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_schema.h
+/** @file:   tpcb_schema.h
  *
  *  @brief:  Declaration of the TPC-B tables
  *
@@ -30,8 +30,8 @@
  *  @date:   Feb 2009
  */
 
-#ifndef __SHORE_TPCB_SCHEMA_H
-#define __SHORE_TPCB_SCHEMA_H
+#ifndef __TPCB_SCHEMA_H
+#define __TPCB_SCHEMA_H
 
 
 #include <math.h>
@@ -58,4 +58,4 @@ DECLARE_TABLE_SCHEMA_PD(history_t);
 };
 
 
-#endif /* __SHORE_TPCB_SCHEMA_H */
+#endif // __TPCB_SCHEMA_H

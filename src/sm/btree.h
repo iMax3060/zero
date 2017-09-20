@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BTREE_H
-#define BTREE_H
+#ifndef __BTREE_H
+#define __BTREE_H
 
 /*
  *  Interface to btree manager.
@@ -122,7 +122,7 @@ public:
 
     /**
     *  Verifies the integrity of whole tree using the fence-key bitmap technique.
-     * @copydetails btree_impl::_ux_verify_tree(const PageID&,int,bool&)
+     * @copydetails btree_impl::_ux_verify_tree(StoreID store, int hash_bits, bool &consistent)
     */
     static rc_t                        verify_tree(
         StoreID store, int hash_bits, bool &consistent);
@@ -159,4 +159,4 @@ private:
 
 /*<std-footer incl-file-exclusion='BTREE_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __BTREE_H /*</std-footer>*/

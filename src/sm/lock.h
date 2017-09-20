@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_H
-#define LOCK_H
+#ifndef __LOCK_H
+#define __LOCK_H
 
 #include "w_defines.h"
 
@@ -59,9 +59,8 @@ public:
     lil_global_table*            get_lil_global_table();
 
     /**
-     * \brief Returns the lock granted to this transaction for the given lock ID.
-     * @param[in] lock_id identifier of the lock
-     * @return the lock mode this transaction has for the lock. ALL_N_GAP_N if not any.
+     * \brief Returns the lock granted to the given transaction for this lock.
+     * @return the lock mode the transaction has for this lock. ALL_N_GAP_N if not any.
      * \details
      * This method returns very quickly because it only checks transaction-private data.
      * @pre the current thread is the only thread running the current transaction
@@ -70,7 +69,36 @@ public:
 
     /**
      * \brief Acquires a lock of the given mode (or stronger)
-     * @copydoc RawLockQueue::acquire()
+     * @param[in] hash precise hash of the resource to lock.
+     * @param[in] m requested lock mode
+     * @param[in] check if true, this method doesn't actually create a new lock object
+     * but just checks if the requested lock mode can be granted or not.
+     * @param[in] wait If false, this method doesn't wait at all \b and also it leaves
+     * the inserted lock entry even if it wasn't granted immediately.
+     * @param[in] xd the transaction to own the new lock
+     * @param[in] timeout maximum length to wait in milliseconds.
+     * negative number means forever. If conditional, this parameter is ignored.
+     * @param[out] out pointer to the \e successfully acquired lock. it returns NULL if
+     * we couldn't get the lock \b except conditional==true case.
+     * \details
+     * \b check_only=true can give a false positive in concurrent unlock case, but
+     * give no false negative \b assuming a conflicting lock is not concurrently taken for
+     * the key. This assumption holds for our only check_only=true use case, which is the
+     * tentative NX lock check before inserting a new key, \b because we then have an EX latch!
+     * Thus, this is a safe and efficient check for B-tree insertion.
+     *
+     * \b conditional locking is the standard way to take a lock in DBMS without leaving
+     * latches long time. B-tree first requests a lock without releasing latch (conditional).
+     * If it fails, it releases latch and unconditionally lock, which needs re-check of LSN
+     * after lock and re-latch. The purpose of this \e conditional parameter is that we don't
+     * want to insert the same lock entry twice when the first conditional locking fails.
+     * When conditional==true, we leave the lock entry and return it in \e out even if it
+     * wasn't granted. The caller \e MUST be responsible to call retry_acquire() after the
+     * failed acquire (which returns eCONDLOCKTIMEOUT if it failed) or release the lock.
+     * It is anyway released at commit time, but waiting lock entry should be removed
+     * before the transaction does anything else.
+     *
+     * @pre out != NULL
      */
     rc_t lock(uint32_t hash, const okvl_mode &m,
             bool check, bool wait, bool acquire,
@@ -111,4 +139,4 @@ private:
     lock_core_m*                _core;
 };
 
-#endif // LOCK_H
+#endif // __LOCK_H

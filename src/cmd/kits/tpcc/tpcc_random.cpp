@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file workload/tpcc/common/tpcc_random.cpp
+/** @file tpcc_random.cpp
  *  
  *  @brief Functions used for the generation of the inputs for 
  *         all the tpcc transaction.
@@ -54,7 +54,7 @@ namespace tpcc {
 
 
 
-/** @func random(int, int, randgen_t*)
+/** @fn random(int, int, randgen_t*)
  *
  *  @brief Generates a uniform random number between low and high. 
  *  Not seen by public.
@@ -66,7 +66,7 @@ int random(int low, int high, randgen_t* rp) {
 }
 
 
-/** @func URand(int, int)
+/** @fn URand(int, int)
  *
  *  @brief Generates a uniform random number between (low) and (high)
  */
@@ -92,7 +92,7 @@ int URand(int low, int high)
 }
 
 
-/** @func NURand(int, int, int)
+/** @fn NURand(int, int, int)
  *
  *  @brief Generates a non-uniform random number
  */
@@ -109,7 +109,7 @@ int NURand(int A, int low, int high)
             % (high - low + 1)) + low );
 }
 
-/** @func generate_cust_last(int)
+/** @fn generate_cust_last(int)
  *
  *  @brief Generates a customer last name (C_LAST) according to clause 4.3.2.3 of the
  *  TPCC specification. 
@@ -168,7 +168,7 @@ int generate_cust_last(int select, char* dest)
 
 /******************************************************************************* 
  * 
- *  @func:  random_xct_type
+ *  @fn:  random_xct_type
  *  
  *  @brief: Translates or picks a random xct type given the benchmark 
  *          specification

@@ -21,9 +21,9 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   stl_pooled_alloc.cpp
+/** @file:   stl_pooled_alloc.h
  * 
- *  @brief:  A simple poolled allocator
+ *  @brief:  A simple pooled allocator
  * 
  *  @author: Ippokratis Pandis, Nov 2008
  *
@@ -31,8 +31,8 @@
  */
 
 
-#ifndef __UTIL_STL_POOLED_ALLOC
-#define __UTIL_STL_POOLED_ALLOC
+#ifndef __STL_POOLED_ALLOC
+#define __STL_POOLED_ALLOC
 
 
 #include "stl_pool.h"
@@ -237,5 +237,4 @@ struct PooledVec
 
 
 
-#endif /** __UTIL_POOLED_ALLOC */
-
+#endif // __STL_POOLED_ALLOC

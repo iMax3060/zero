@@ -1,8 +1,8 @@
 /*
  * (c) Copyright 2013-, Hewlett-Packard Development Company, LP
  */
-#ifndef W_OKVL_INL_H
-#define W_OKVL_INL_H
+#ifndef __W_OKVL_INL_H
+#define __W_OKVL_INL_H
 
 /**
  * \file w_okvl_inl.h
@@ -19,7 +19,7 @@ const char* const element_mode_names[] = {
 
 /**
 * \brief Pre-defines frequently used lock modes as const objects.
-* \Details This is for both convenience and performance.
+* \details This is for both convenience and performance.
 * In many cases (most likely as a func param), we can just use these const static objects.
 * These constants could be named like XX, SS, .. for short, but this lengthy name is more clear,
 * so in long run it will help us.
@@ -404,4 +404,4 @@ inline std::ostream& operator<<(std::ostream& o, const okvl_mode& v) {
     return o;
 }
 
-#endif // W_OKVL_INL_H
+#endif // __W_OKVL_INL_H

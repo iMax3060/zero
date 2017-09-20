@@ -332,4 +332,4 @@ struct meta_block_size : public fail_unless<(ChipSize > 0 && OverheadBytes >= 0)
 
 /**\endcond skip */
 
-#endif
+#endif // __MEM_BLOCK_H

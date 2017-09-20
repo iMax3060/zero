@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_schema.h
+/** @file:   tpcc_schema_man.cpp
  *
  *  @brief:  Implementation of the workload-specific access methods
  *           on TPC-C tables

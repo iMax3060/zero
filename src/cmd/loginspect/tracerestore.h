@@ -1,5 +1,5 @@
-#ifndef TRACERESTORE_H
-#define TRACERESTORE_H
+#ifndef __TRACERESTORE_H
+#define __TRACERESTORE_H
 
 #include "command.h"
 #include "handler.h"
@@ -18,4 +18,4 @@ protected:
     int currentTick;
 };
 
-#endif
+#endif // __TRACERESTORE_H

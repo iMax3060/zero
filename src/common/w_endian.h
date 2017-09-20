@@ -1,5 +1,5 @@
-#ifndef ENDIAN_H
-#define ENDIAN_H
+#ifndef __W_ENDIAN_H
+#define __W_ENDIAN_H
 
 #include "shore-config.h"
 #include <stdint.h>
@@ -133,4 +133,4 @@ inline void deserialize_ho(uint64_t &value) {
     value = deserialize64_ho(&value);
 }
 
-#endif // ENDIAN_H
+#endif // __W_ENDIAN_H

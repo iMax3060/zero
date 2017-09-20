@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_COMPT_H
-#define LOCK_COMPT_H
+#ifndef __LOCK_COMPT_H
+#define __LOCK_COMPT_H
 /**
  * this file defines the lock compatibility table and other constant
  * values for lock tables. Only included from lock_core.cpp
@@ -37,4 +37,4 @@ static const uint32_t primes[] = {
         /* 0x800000, 8388608, 2**23   */ 8388593
 };
 
-#endif // LOCK_COMPT_H
+#endif // __LOCK_COMPT_H

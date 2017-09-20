@@ -114,4 +114,4 @@ namespace lintel {
     };
 };
 
-#endif
+#endif // LINTEL_RANDOM_BASE_HPP

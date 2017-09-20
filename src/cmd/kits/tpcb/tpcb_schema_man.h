@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_schema_man.h
+/** @file:   tpcb_schema_man.h
  *
  *  @brief:  Declaration of the TPC-B table managers
  *
@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __SHORE_TPCB_SCHEMA_MANAGER_H
-#define __SHORE_TPCB_SCHEMA_MANAGER_H
+#ifndef __TPCB_SCHEMA_MAN_H
+#define __TPCB_SCHEMA_MAN_H
 
 
 #include "tpcb_schema.h"
@@ -153,4 +153,4 @@ public:
 
 };
 
-#endif /* __SHORE_TPCB_SCHEMA_MANAGER_H */
+#endif // __TPCB_SCHEMA_MAN_H

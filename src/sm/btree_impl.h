@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BTREE_IMPL_H
-#define BTREE_IMPL_H
+#ifndef __BTREE_IMPL_H
+#define __BTREE_IMPL_H
 
 #include "w_defines.h"
 
@@ -43,7 +43,7 @@
  * do \e global \e physical changes like page splitting and key-adopts.
  * They should be kept short-lived.
  *
- * \section REFERENCES References
+ * \section BTree-REFERENCES References
  *
  * Basic Btree technique is from Mohan, et. al.
  * IBM Research Report # RJ 7008
@@ -463,7 +463,7 @@ public:
      * \brief Pushes up all foster-children of children to the parent.
      *  \details
      * This method also follows foster-children of the parent.
-     * @param[in] parent the interior node to store new children.
+     * @param[in] parent_arg the interior node to store new children.
      */
     static rc_t _sx_adopt_foster_sweep (btree_page_h &parent_arg);
 
@@ -705,7 +705,6 @@ public:
      * However, you cannot have concurrent update operations while
      * you are running this verification. It might cause deadlocks!
      * To allow concurrent transaction while verifying, consider using _ux_verify_tree().
-     * @param[in] vid The volume of interest.
      * @param[in] hash_bits the number of bits we use for hashing per BTree, at most 31.
      * @param[out] result Results of the verification.
      * @see _ux_verify_tree()
@@ -766,7 +765,7 @@ public:
      * the slot numbers of ghost records that are removed because there are
      * 'logically' no changes.
      * Context: System transaction.
-     * @param[in] pid the page to be defraged
+     * @param[in] page the page to be defraged
      */
     static rc_t _sx_defrag_page(btree_page_h &page);
 
@@ -864,4 +863,4 @@ public:
         s_foster_children_counts[hash] = 0;
     }
 };
-#endif //BTREE_IMPL_H
+#endif // __BTREE_IMPL_H

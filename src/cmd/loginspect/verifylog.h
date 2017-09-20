@@ -1,5 +1,5 @@
-#ifndef VERIFYLOG_H
-#define VERIFYLOG_H
+#ifndef __VERIFYLOG_H
+#define __VERIFYLOG_H
 
 #include <unordered_map>
 
@@ -41,4 +41,4 @@ private:
     void checkAlloc(logrec_t& r);
 };
 
-#endif
+#endif // __VERIFYLOG_H

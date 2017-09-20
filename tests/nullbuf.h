@@ -1,5 +1,5 @@
-#ifndef TEST_NULLBUF_H
-#define TEST_NULLBUF_H
+#ifndef __NULLBUF_H
+#define __NULLBUF_H
 
 // dummy stream object to ignore outputs.
 // used to partially suppress verbose outputs in testcases.
@@ -21,4 +21,4 @@ typedef basic_nullbuf<char> nullbuf;
 typedef basic_nullbuf<wchar_t> wnullbuf;
 
 
-#endif // TEST_NULLBUF_H
+#endif // __NULLBUF_H

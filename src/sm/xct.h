@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef XCT_H
-#define XCT_H
+#ifndef __XCT_H
+#define __XCT_H
 
 #include "w_defines.h"
 
@@ -174,7 +174,7 @@ class stid_list_elem_t  {
  * \brief A transaction. Internal to the storage manager.
  * \ingroup SSMXCT
  * This class may be used in a limited way for the handling of
- * out-of-log-space conditions.  See \ref SSMLOG.
+ * out-of-log-space conditions.
  */
 class xct_t : public smlevel_0 {
 /**\cond skip */
@@ -1042,7 +1042,7 @@ class sys_xct_section_t {
 public:
     /**
      * starts a nested system transaction.
-     * @param[in] singular_sys_xct whether this transaction will have at most one xlog entry
+     * @param[in] single_log_sys_xct whether this transaction will have at most one xlog entry
      */
     sys_xct_section_t(bool single_log_sys_xct = false);
     /** This destructor makes sure the system transaction ended. */
@@ -1093,4 +1093,4 @@ const int ELR_READONLY_WAIT_USEC = 2000;
 
 /*<std-footer incl-file-exclusion='XCT_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __XCT_H /*</std-footer>*/

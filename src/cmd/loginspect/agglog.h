@@ -1,5 +1,5 @@
-#ifndef AGGLOG_H
-#define AGGLOG_H
+#ifndef __AGGLOG_H
+#define __AGGLOG_H
 
 #include "command.h"
 #include "handler.h"
@@ -44,4 +44,4 @@ protected:
     void dumpCounts();
 };
 
-#endif
+#endif // __AGGLOG_H

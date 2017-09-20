@@ -1,5 +1,5 @@
-#ifndef LOCAL_RANDOM_H
-#define LOCAL_RANDOM_H
+#ifndef __LOCAL_RANDOM_H
+#define __LOCAL_RANDOM_H
 #include <stdint.h>
 // thread-local-random. it's also deterministic.
 struct tlr_t {
@@ -13,4 +13,4 @@ struct tlr_t {
     }
     uint64_t _seed;
 };
-#endif // LOCAL_RANDOM_H
+#endif // __LOCAL_RANDOM_H

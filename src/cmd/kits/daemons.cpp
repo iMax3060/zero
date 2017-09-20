@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file shore_helper_loader.cpp
+/** @file daemons.cpp
  *
  *  @brief Declaration of helper loader thread classes
  *

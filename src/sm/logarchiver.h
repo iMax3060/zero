@@ -1,5 +1,5 @@
-#ifndef LOGARCHIVER_H
-#define LOGARCHIVER_H
+#ifndef __LOGARCHIVER_H
+#define __LOGARCHIVER_H
 
 #include "worker_thread.h"
 #include "sm_base.h"
@@ -261,4 +261,4 @@ private:
 
 };
 
-#endif
+#endif // __LOGARCHIVER_H

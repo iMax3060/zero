@@ -1,5 +1,5 @@
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef __SCANNER_H
+#define __SCANNER_H
 
 
 #include "sm_base.h"
@@ -91,4 +91,4 @@ private:
     PageID scan_pid;
 };
 
-#endif
+#endif // __SCANNER_H

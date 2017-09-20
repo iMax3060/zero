@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef CHKPT_H
-#define CHKPT_H
+#ifndef __CHKPT_H
+#define __CHKPT_H
 
 #include "w_defines.h"
 
@@ -257,4 +257,4 @@ private:
 
 /*<std-footer incl-file-exclusion='CHKPT_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __CHKPT_H /*</std-footer>*/

@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file shore_table.cpp
+/** @file table_desc.cpp
  *
  *  @brief Implementation of shore_table class
  *

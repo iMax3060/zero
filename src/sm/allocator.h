@@ -1,5 +1,5 @@
-#ifndef ALLOCATOR_H
-#define ALLOCATOR_H
+#ifndef __ALLOCATOR_H
+#define __ALLOCATOR_H
 
 #include "w_defines.h"
 #include <stdexcept>
@@ -115,4 +115,4 @@ struct memalign_allocator
     }
 };
 
-#endif
+#endif // __ALLOCATOR_H

@@ -1,5 +1,5 @@
-#ifndef KITS_SCAN_H
-#define KITS_SCAN_H
+#ifndef __SCAN_H
+#define __SCAN_H
 
 #include "table_man.h"
 
@@ -150,4 +150,4 @@ public:
     }
 };
 
-#endif
+#endif // __SCAN_H

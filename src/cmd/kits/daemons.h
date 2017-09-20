@@ -21,15 +21,15 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_helper_loader.h
+/** @file:   daemons.h
  *
  *  @brief:  Definition of helper loader thread classes
  *
  *  @author: Ippokratis Pandis (ipandis)
  */
 
-#ifndef __SHORE_HELPER_LOADER_H
-#define __SHORE_HELPER_LOADER_H
+#ifndef __DAEMONS_H
+#define __DAEMONS_H
 
 #include "sm_vas.h"
 
@@ -515,5 +515,5 @@ public:
 
 }; // EOF: abort_smt_t
 
-#endif /* __SHORE_HELPER_LOADER_H */
+#endif // __DAEMONS_H
 

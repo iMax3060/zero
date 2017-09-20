@@ -1,5 +1,5 @@
-#ifndef TRUNCATELOG_H
-#define TRUNCATELOG_H
+#ifndef __TRUNCATELOG_H
+#define __TRUNCATELOG_H
 
 #include "command.h"
 
@@ -13,4 +13,4 @@ private:
     size_t partition;
 };
 
-#endif
+#endif // __TRUNCATELOG_H

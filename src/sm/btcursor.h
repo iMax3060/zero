@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BTCURSOR_H
-#define BTCURSOR_H
+#ifndef __BTCURSOR_H
+#define __BTCURSOR_H
 
 #include "w_defines.h"
 #include "w_key.h"
@@ -66,7 +66,6 @@ class bt_cursor_t : private smlevel_0 {
 public:
     /**
      * Constructs a full scan cursor.
-     * @param[in] vol Volume ID
      * @param[in] store Store ID
      * @param[in] forward true if this cursor goes forward from lower bound, false if
      * this cursor goes backwards from upper bound.
@@ -75,7 +74,6 @@ public:
 
     /**
      * Creates a BTree cursor object for the given search conditions.
-     * @param[in] vol Volume ID
      * @param[in] store Store ID
      * @param[in] lower lower bound of the search range
      * @param[in] lower_inclusive true if returning a tuple exactly matching the lower bound
@@ -92,7 +90,6 @@ public:
 
     /**
      * Constructs an open-end scan, with a start condition only.
-     * @param[in] vol Volume ID
      * @param[in] store Store ID
      * @param[in] bound start condition for the scan (lower if forward, upper otherwise)
      * @param[in] inclusive true if returning a tuple exactly matching the bound
@@ -208,4 +205,4 @@ private:
     char        _elbuf [SM_PAGESIZE];
 };
 
-#endif//BTCURSOR_H
+#endif // __BTCURSOR_H

@@ -96,8 +96,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * - \ref ALLOCST 
  * - \ref SAFTERXCT 
  * - \ref ALLOCPG 
- * - \ref VOLCACHES 
- * - \ref PAGES 
+ * - \ref VOLCACHES
+ * - \ref PAGES
  * - \ref RSVD_MODE 
  *
  * \subsection EXTENTSTORE Extents and Stores
@@ -201,7 +201,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * searching through the 
  *   extent-map pages for an extent that is both 
  *   unallocated (owner is zero) and not locked. 
- *  - The storage 
+ * - The storage
  *   manager caches the minimum free extent number with which to start a
  *   search; this number is reset to its static lower bound when the
  *   volume is mounted, meaning that the first extent operation after a
@@ -733,8 +733,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * The bodies of the methods of the class \<log-rec-name\>_log
  * are hand-written and reside in \code logrec.cpp \endcode.
  *
- * Adding a new log record type consists in adding a line to
- * \code logdef.dat, \endcode
+ * Adding a new log record type consists in adding a struct to
+ * \code logdef_gen.h, \endcode
  * adding method definitions to 
  * \code logrec.cpp, \endcode
  * and adding the calls to the free function log_<log-rec-name\>(args)

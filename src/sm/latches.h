@@ -1,5 +1,5 @@
-#ifndef LATCHES_H
-#define LATCHES_H
+#ifndef __LATCHES_H
+#define __LATCHES_H
 
 #include "w_base.h"
 #include "timeout.h"
@@ -412,5 +412,4 @@ private:
     srwlock_t *_lock;
 };
 
-#endif
-
+#endif // __LATCHES_H

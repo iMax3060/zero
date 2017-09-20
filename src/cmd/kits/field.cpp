@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_field.cpp
+/** @file:   field.cpp
  *
  *  @brief:  Implementation of the table field description and value
  *

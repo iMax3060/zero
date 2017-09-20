@@ -1,8 +1,8 @@
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
-#ifndef W_MARKABLE_POINTER_H
-#define W_MARKABLE_POINTER_H
+#ifndef __W_MARKABLE_POINTER_H
+#define __W_MARKABLE_POINTER_H
 
 #include "w_defines.h"
 #include <stdint.h>
@@ -56,7 +56,7 @@ typedef uint16_t aba_stamp;
  * the last bit of the pointer is always 0. We use the last bit to store additional flag
  * in the 8 byte pointer. We can then use the value for 8-byte atomic operations efficiently.
  *
- * \NOTE To address a common misunderstanding of lock-free list/queue: the "mark for death"
+ * \note To address a common misunderstanding of lock-free list/queue: the "mark for death"
  * bit in the pointer is NOT marking the pointed object (e.g., "next") for death.
  * It's often marking the object that holds the pointer for death because it is what
  * we want to atomically guarantee when we link/delink on the next pointer.
@@ -313,4 +313,4 @@ inline std::ostream& operator<<(std::ostream &o, const MarkablePointer<T> &x) {
     return o;
 }
 
-#endif // W_MARKABLE_POINTER_H
+#endif // __W_MARKABLE_POINTER_H

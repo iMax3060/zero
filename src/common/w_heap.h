@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_HEAP_H
-#define W_HEAP_H
+#ifndef __W_HEAP_H
+#define __W_HEAP_H
 
 #include "w_defines.h"
 
@@ -535,4 +535,4 @@ void Heap<T, Cmp>::PrintRoot(ostream& out, int rootElem, int indentLevel) const
 
 /*<std-footer incl-file-exclusion='W_HEAP_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_HEAP_H /*</std-footer>*/

@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_asc_sort_buf.h
+/** @file:   sort.h
  *
  *  @brief:  In-memory ascending sort buffer structure
  *
@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef   __SHORE_ASC_SORT_BUF_H
-#define   __SHORE_ASC_SORT_BUF_H
+#ifndef __SORT_H
+#define __SORT_H
 
 #include "table_man.h"
 
@@ -251,4 +251,4 @@ inline void asc_sort_iter_impl::reset()
     _index=0;
 }
 
-#endif // __SHORE_SORT_BUF_H
+#endif // __SORT_H

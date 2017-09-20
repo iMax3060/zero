@@ -21,15 +21,15 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_client.h
+/** @file:   tpcb_client.h
  *
  *  @brief:  Defines test client for the TPC-B benchmark
  *
  *  @author: Ippokratis Pandis, Feb 2009
  */
 
-#ifndef __SHORE_TPCB_CLIENT_H
-#define __SHORE_TPCB_CLIENT_H
+#ifndef __TPCB_CLIENT_H
+#define __TPCB_CLIENT_H
 
 
 #include "shore_client.h"
@@ -78,4 +78,4 @@ public:
 
 };
 
-#endif /** __SHORE_TPCB_CLIENT_H */
+#endif // __TPCB_CLIENT_H

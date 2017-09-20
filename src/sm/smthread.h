@@ -54,8 +54,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef SMTHREAD_H
-#define SMTHREAD_H
+#ifndef __SMTHREAD_H
+#define __SMTHREAD_H
 
 #include "w_defines.h"
 
@@ -66,12 +66,12 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  */
 
 #include <assert.h>
-#ifndef W_H
+#ifndef __W_H
 #include <w.h>
-#endif
-#ifndef SM_BASE_H
+#endif // __W_H
+#ifndef __SM_BASE_H
 #include <sm_base.h>
-#endif
+#endif // __SM_BASE_H
 #include <w_bitvector.h>
 
 #include <mutex>
@@ -605,4 +605,4 @@ DumpBlockedThreads(ostream& o);
 
 /*<std-footer incl-file-exclusion='SMTHREAD_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __SMTHREAD_H /*</std-footer>*/

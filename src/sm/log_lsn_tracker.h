@@ -1,8 +1,8 @@
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
-#ifndef LOG_LSN_TRACKER_H
-#define LOG_LSN_TRACKER_H
+#ifndef __LOG_LSN_TRACKER_H
+#define __LOG_LSN_TRACKER_H
 
 #include <stdint.h>
 #include "lsn.h"
@@ -56,4 +56,4 @@ private:
     lsn_t               _cache;
 };
 
-#endif // LOG_LSN_TRACKER_H
+#endif // __LOG_LSN_TRACKER_H

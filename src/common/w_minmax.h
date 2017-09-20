@@ -27,8 +27,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_MINMAX_H
-#define W_MINMAX_H
+#ifndef __W_MINMAX_H
+#define __W_MINMAX_H
 
 #include "w_defines.h"
 
@@ -69,4 +69,4 @@ min(const T x, const T y)
 
 /*<std-footer incl-file-exclusion='W_MINMAX_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_MINMAX_H /*</std-footer>*/

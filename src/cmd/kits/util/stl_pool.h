@@ -30,8 +30,8 @@
  *  @note:   Taken from: http://www.sjbrown.co.uk/2004/05/01/pooled-allocators-for-the-stl/
  */
 
-#ifndef __UTIL_STL_POOL
-#define __UTIL_STL_POOL
+#ifndef __STL_POOL
+#define __STL_POOL
 
 #include <iostream>
 #include "util/guard.h"
@@ -102,5 +102,4 @@ class Pool
 };
 
 
-#endif /** __UTIL_STL_POOL */
-
+#endif // __STL_POOL

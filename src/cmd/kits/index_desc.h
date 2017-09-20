@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_index.h
+/** @file:   index_desc.h
  *
  *  @brief:  Description of an index.
  *
@@ -152,4 +152,4 @@ public:
 
 
 
-#endif /* __INDEX_DESC_H */
+#endif // __INDEX_DESC_H

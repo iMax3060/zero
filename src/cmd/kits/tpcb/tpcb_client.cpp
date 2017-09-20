@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_client.cpp
+/** @file:   tpcb_client.cpp
  *
  *  @brief:  Implementation of the test client for the TPCB benchmark
  *

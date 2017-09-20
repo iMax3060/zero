@@ -1,9 +1,9 @@
-#ifndef W_RC_H
-#define W_RC_H
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
 
+#ifndef __W_RC_H
+#define __W_RC_H
 /**
  * \defgroup RCT Return values
  * \brief Standard return values of functions in storage manager
@@ -92,7 +92,7 @@ public:
     /**
      * \brief Instantiate a return code without a custom error message nor stacktrace.
      * @param[in] error_code Error code, either OK or real errors.
-     * \detail
+     * \details
      * This is the most (next to RCOK) light-weight way to create/propagate a return code.
      * Use this one if you do not need a detail information to debug the error (eg, error whose cause
      * is obvious, an expected error that is immediately caught, etc).
@@ -568,4 +568,4 @@ inline void w_rc_t::fatal() const {
     std::abort();
 }
 
-#endif // W_RC_H
+#endif // __W_RC_H

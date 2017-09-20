@@ -1,5 +1,5 @@
-#ifndef DBSCAN_H
-#define DBSCAN_H
+#ifndef __DBSCAN_H
+#define __DBSCAN_H
 
 #include "command.h"
 
@@ -14,4 +14,4 @@ private:
     string dbfile;
 };
 
-#endif
+#endif // __DBSCAN_H

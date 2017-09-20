@@ -1,5 +1,5 @@
-#ifndef BACKUP_READER_H
-#define BACKUP_READER_H
+#ifndef __BACKUP_READER_H
+#define __BACKUP_READER_H
 
 #include "thread_wrapper.h"
 #include "sm_base.h"
@@ -197,4 +197,4 @@ public:
     static const std::string IMPL_NAME;
 };
 
-#endif
+#endif // __BACKUP_READER_H

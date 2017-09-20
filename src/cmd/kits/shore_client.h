@@ -249,4 +249,4 @@ private:
 }; // EOF: base_client_t
 
 
-#endif /** __SHORE_CLIENT_H */
+#endif // __SHORE_CLIENT_H

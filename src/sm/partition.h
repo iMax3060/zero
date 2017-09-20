@@ -55,8 +55,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef PARTITION_H
-#define PARTITION_H
+#ifndef __PARTITION_H
+#define __PARTITION_H
 #include "w_defines.h"
 
 #include "sm_base.h" // for partition_number_t (CS TODO)
@@ -127,4 +127,4 @@ private:
     mutex _read_mutex;
 };
 
-#endif
+#endif // __PARTITION_H

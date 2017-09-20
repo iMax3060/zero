@@ -50,16 +50,16 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef W_LIST_H
-#define W_LIST_H
+#ifndef __W_LIST_H
+#define __W_LIST_H
 
 #include "w_defines.h"
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef W_BASE_H
+#ifndef __W_BASE_H
 #include <w_base.h>
-#endif
+#endif // __W_BASE_H
 
 #include <iostream>
 
@@ -797,4 +797,4 @@ w_descend_list_t<T,LOCK, K>::put_in_order(T* t)
 }
 /*<std-footer incl-file-exclusion='W_LIST_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_LIST_H /*</std-footer>*/

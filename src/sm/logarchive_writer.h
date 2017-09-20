@@ -1,5 +1,5 @@
-#ifndef LOGARCHIVE_WRITER_H
-#define LOGARCHIVE_WRITER_H
+#ifndef __LOGARCHIVE_WRITER_H
+#define __LOGARCHIVE_WRITER_H
 
 #include <vector>
 
@@ -151,4 +151,4 @@ public:
 
 };
 
-#endif
+#endif // __LOGARCHIVE_WRITER_H

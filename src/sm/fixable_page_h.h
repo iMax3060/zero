@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-#ifndef FIXABLE_PAGE_H_H
-#define FIXABLE_PAGE_H_H
+#ifndef __FIXABLE_PAGE_H_H
+#define __FIXABLE_PAGE_H_H
 
 #include "bf_hashtable.h"
 #include "generic_page.h"
@@ -75,17 +75,17 @@ public:
      * @param[in] parent       parent of the page to be fixed.  If you can't provide this, use
      *                         fix_direct() though it can't exploit pointer swizzling and
      *                         thus will be slower.
-     * @param[in] vol          volume ID.
-     * @param[in] shpid        ID of the page to fix (or bufferpool index when swizzled)
+     * @param[in] pid          ID of the page to fix (or bufferpool index when swizzled)
      * @param[in] mode         latch mode.  Can be Q, SH, or EX.
      * @param[in] conditional  whether the fix is conditional (returns immediately even if
      *                         failed).
      * @param[in] virgin_page  whether the page is a new page and thus doesn't have to be
      *                         read from disk.
+     * @param[in] only_if_hit  whether the page shouldn't be fixed on a page miss.
      *
-     * If parent.latch_mode() or mode is LATCH_Q, can return eLATCHQFAIL,
-     * ePARENTLATCHQFAIL, or eNEEDREALLATCH.  The later occurs only when virgin_page is
-     * true or shpid is not swizzled.
+     * If \c parent.latch_mode() or \c mode is \c LATCH_Q, can return \c eLATCHQFAIL,
+     * \c ePARENTLATCHQFAIL, or \c eNEEDREALLATCH. The later occurs only when
+     * \c virgin_page is \c true or \c pid is not swizzled.
      */
     w_rc_t fix_nonroot(const fixable_page_h &parent,
                        PageID pid, latch_mode_t mode, bool conditional=false,
@@ -224,4 +224,4 @@ protected:
     q_ticket_t    _Q_ticket;
 };
 
-#endif
+#endif // __FIXABLE_PAGE_H_H

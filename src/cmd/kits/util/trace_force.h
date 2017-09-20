@@ -29,8 +29,8 @@
  *
  *  @bug See trace_force.cpp.
  */
-#ifndef _TRACE_FORCE_H
-#define _TRACE_FORCE_H
+#ifndef __TRACE_FORCE_H
+#define __TRACE_FORCE_H
 
 #include <cstdarg> /* for varargs */
 
@@ -64,4 +64,4 @@ void trace_force_(const char* filename, int line_num, const char* function_name,
 
 
 
-#endif // _TRACE_FORCE_H
+#endif // __TRACE_FORCE_H

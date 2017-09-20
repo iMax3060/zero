@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef STNODE_PAGE_H
-#define STNODE_PAGE_H
+#ifndef __STNODE_PAGE_H
+#define __STNODE_PAGE_H
 
 #include <vector>
 
@@ -172,4 +172,4 @@ private:
 
 };
 
-#endif // STNODE_PAGE_H
+#endif // __STNODE_PAGE_H

@@ -1,5 +1,5 @@
-#ifndef EVENTLOG_H
-#define EVENTLOG_H
+#ifndef __EVENTLOG_H
+#define __EVENTLOG_H
 
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -33,4 +33,4 @@ public:
     };
 };
 
-#endif
+#endif // __EVENTLOG_H

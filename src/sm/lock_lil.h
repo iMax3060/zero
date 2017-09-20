@@ -2,11 +2,11 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef LOCK_LIL_H
-#define LOCK_LIL_H
+#ifndef __LOCK_LIL_H
+#define __LOCK_LIL_H
 
 /**
- * \defgroup LIL
+ * \defgroup LIL Light-weight Intent Lock
  * \brief \b Light-weight \b Intent \b Lock (\b LIL)
  * \ingroup SSMLOCK
  * \details
@@ -262,4 +262,4 @@ public:
     lil_private_vol_table* find_vol_table(uint16_t vid);
 };
 
-#endif // LOCK_LIL_H
+#endif // __LOCK_LIL_H

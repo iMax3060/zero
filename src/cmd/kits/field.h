@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_field.h
+/** @file:   field.h
  *
  *  @brief:  Description and current value of a field (column)
  *
@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef __SHORE_FIELD_H
-#define __SHORE_FIELD_H
+#ifndef __FIELD_H
+#define __FIELD_H
 
 #include "util/decimal.h"
 
@@ -1066,4 +1066,4 @@ inline timestamp_t& field_value_t::get_tstamp_value() const
 }
 
 
-#endif /* __SHORE_FIELD_H */
+#endif // __FIELD_H

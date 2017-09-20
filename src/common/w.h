@@ -26,8 +26,8 @@ Further funding for this work was provided by DARPA through
 Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
-#ifndef W_H
-#define W_H
+#ifndef __W_H
+#define __W_H
 
 #include "w_defines.h"
 
@@ -42,4 +42,4 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*<std-footer incl-file-exclusion='W_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __W_H /*</std-footer>*/

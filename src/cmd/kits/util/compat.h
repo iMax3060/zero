@@ -37,4 +37,4 @@
 #endif
 
 
-#endif
+#endif // __COMPAT_H

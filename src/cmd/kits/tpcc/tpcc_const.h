@@ -108,4 +108,4 @@ int random_xct_type(int selected);
 
 };
 
-#endif /* __TPCC_CONST_H */
+#endif // __TPCC_CONST_H

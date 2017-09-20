@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_row_cache.h
+/** @file:   row_cache.h
  *
  *  @brief:  Cache for tuples (row_impl<>) used in Shore
  *
@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef __SHORE_ROW_CACHE_H
-#define __SHORE_ROW_CACHE_H
+#ifndef __ROW_CACHE_H
+#define __ROW_CACHE_H
 
 #include "block_alloc.h"
 #include "row.h"
@@ -85,4 +85,4 @@ public:
 }; // EOF: row_cache_t
 
 
-#endif /* __SHORE_ROW_CACHE_H */
+#endif // __ROW_CACHE_H

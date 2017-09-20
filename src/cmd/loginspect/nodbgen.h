@@ -1,5 +1,5 @@
-#ifndef NODBGEN_H
-#define NODBGEN_H
+#ifndef __NODBGEN_H
+#define __NODBGEN_H
 
 #include "command.h"
 
@@ -15,4 +15,4 @@ private:
     string logdir;
 };
 
-#endif
+#endif // __NODBGEN_H

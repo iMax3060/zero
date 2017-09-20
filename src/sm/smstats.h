@@ -31,8 +31,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef SMSTATS_H
-#define SMSTATS_H
+#ifndef __SMSTATS_H
+#define __SMSTATS_H
 
 #include "w_defines.h"
 #include <array>
@@ -418,4 +418,4 @@ struct sm_config_info_t {
 
 /*<std-footer incl-file-exclusion='SMSTATS_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __SMSTATS_H /*</std-footer>*/

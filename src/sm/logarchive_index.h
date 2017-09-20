@@ -1,5 +1,5 @@
-#ifndef LOGARCHIVE_INDEX_H
-#define LOGARCHIVE_INDEX_H
+#ifndef __LOGARCHIVE_INDEX_H
+#define __LOGARCHIVE_INDEX_H
 
 #include <vector>
 #include <list>
@@ -311,4 +311,4 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
     }
 }
 
-#endif
+#endif // __LOGARCHIVE_INDEX_H

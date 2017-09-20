@@ -51,11 +51,11 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef TID_T_H
-#define TID_T_H
+#ifndef __TID_T_H
+#define __TID_T_H
 
 #include <cstdint>
 
 typedef uint64_t tid_t;
 
-#endif          /*</std-footer>*/
+#endif // __TID_T_H /*</std-footer>*/

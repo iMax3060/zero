@@ -1,5 +1,5 @@
-#ifndef THREAD_WRAPPER_H
-#define THREAD_WRAPPER_H
+#ifndef __THREAD_WRAPPER_H
+#define __THREAD_WRAPPER_H
 
 #include <thread>
 #include <memory>
@@ -69,4 +69,4 @@ private:
     std::unique_ptr<std::thread> thread_ptr;
 };
 
-#endif
+#endif // __THREAD_WRAPPER_H

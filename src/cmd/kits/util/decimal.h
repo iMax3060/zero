@@ -156,4 +156,4 @@ inline decimal operator/(double a, decimal const &b) {
 }
 
 
-#endif
+#endif // __DECIMAL_H

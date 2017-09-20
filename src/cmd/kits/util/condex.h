@@ -21,8 +21,8 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-#ifndef __UTIL_CONDEX_H
-#define __UTIL_CONDEX_H
+#ifndef __CONDEX_H
+#define __CONDEX_H
 
 #include <cstdlib>
 
@@ -120,4 +120,4 @@ struct condex_pair
 
 
 
-#endif /** __UTIL_CONDEX_H */
+#endif // __CONDEX_H

@@ -2,8 +2,8 @@
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
-#ifndef BF_HASHTABLE_H
-#define BF_HASHTABLE_H
+#ifndef __BF_HASHTABLE_H
+#define __BF_HASHTABLE_H
 
 #include "basics.h"
 #include "w_defines.h"
@@ -17,10 +17,10 @@ class bf_hashbucket;
 typedef pair<bf_idx, bf_idx> bf_idx_pair;
 
 /**
- * \Brief Hash table for the buffer pool manager.
+ * \brief Hash table for the buffer pool manager.
  * \ingroup SSMBUFPOOL
- * \Details
- * \Section{Difference from original Shore-MT's hash table}
+ * \details
+ * \section Difference from original Shore-MT's hash table
  * We changed the protocol of page-pinning in bufferpool,
  * so several things have been changed in this hashtable too.
  *
@@ -88,4 +88,4 @@ private:
     bf_hashbucket<T>*      _table;
 };
 
-#endif // BF_HASHTABLE_H
+#endif // __BF_HASHTABLE_H

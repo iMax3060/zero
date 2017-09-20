@@ -53,8 +53,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#ifndef CRIT_SEC_H
-#define CRIT_SEC_H
+#ifndef __CRITICAL_SECTION_H
+#define __CRITICAL_SECTION_H
 
 /**\def CRITICAL_SECTION(name, lock)
  *
@@ -148,4 +148,4 @@ SPECIALIZE_CS(pthread_mutex_t, int _dummy,  (_dummy=0),
     pthread_mutex_lock(_mutex), pthread_mutex_unlock(_mutex));
 
 
-#endif          /*</std-footer>*/
+#endif // __CRITICAL_SECTION_H </std-footer>*/

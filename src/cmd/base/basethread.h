@@ -1,5 +1,5 @@
-#ifndef BASETHREAD_H
-#define BASETHREAD_H
+#ifndef __BASETHREAD_H
+#define __BASETHREAD_H
 
 
 #include "thread_wrapper.h"
@@ -43,4 +43,4 @@ private:
     xct_t* current_xct;
 };
 
-#endif
+#endif // __BASETHREAD_H

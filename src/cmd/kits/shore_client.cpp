@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_client_env.cpp
+/** @file:   shore_client.cpp
  *
  *  @brief:  Implementation base class for Shore clients
  *

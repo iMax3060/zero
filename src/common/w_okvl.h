@@ -1,11 +1,11 @@
 /*
  * (c) Copyright 2013-, Hewlett-Packard Development Company, LP
  */
-#ifndef W_OKVL_H
-#define W_OKVL_H
+#ifndef __W_OKVL_H
+#define __W_OKVL_H
 
 /**
- * \defgroup OKVL
+ * \defgroup OKVL Orthogonal Key Value Locking
  * \ingroup SSMLOCK
  * \brief \b Orthogonal \b Key \b Value \b Locking (\b OKVL).
  * \details
@@ -64,7 +64,7 @@
  * \details
  * Must be 1 or more. If the value is 1, it behaves just like OKRL.
  * In the OKVL paper, this parameter is denoted as "k".
- * \NOTE When this value is more than 1, it should be a prime number
+ * \note When this value is more than 1, it should be a prime number
  * because we currently divide hashes by this number to determine
  * the partition. A simple number, say "256", would result
  * in horrible hash collisions (yes, I actually hit the issue).
@@ -225,4 +225,4 @@ private:
     /** Returns the 64bit-batched lock modes for the given partition. */
     uint64_t&   _get_batch64_ref (part_id part);
 };
-#endif // W_OKVL_H
+#endif // __W_OKVL_H

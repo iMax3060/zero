@@ -7,8 +7,8 @@
  * Separated from logrec.cpp.
  */
 
-#ifndef BTREE_LOGREC_H
-#define BTREE_LOGREC_H
+#ifndef __BTREE_LOGREC_H
+#define __BTREE_LOGREC_H
 
 #include "w_defines.h"
 
@@ -29,12 +29,12 @@
 
 /**
  * Page buffers used while Single-Page-Recovery as scratch space.
- * \ingroup Single-Page-Recovery
+ * \ingroup SPR
  */
 DECLARE_TLS(block_alloc<generic_page>, scratch_space_pool);
 /**
  * Automatically deletes generic_page obtained from scratch_space_pool.
- * \ingroup Single-Page-Recovery
+ * \ingroup SPR
  */
 
 struct SprScratchSpace {
@@ -310,4 +310,4 @@ struct btree_bulk_delete_t : public multi_page_log_t {
     }
 };
 
-#endif
+#endif // __BTREE_LOGREC_H

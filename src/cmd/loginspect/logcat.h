@@ -1,5 +1,5 @@
-#ifndef LOGCAT_H
-#define LOGCAT_H
+#ifndef __LOGCAT_H
+#define __LOGCAT_H
 
 #include "command.h"
 
@@ -10,4 +10,4 @@ public:
     void setupOptions();
 };
 
-#endif
+#endif // __LOGCAT_H

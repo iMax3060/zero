@@ -1,8 +1,8 @@
 /*
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
-#ifndef W_GC_POOL_FOREST_H
-#define W_GC_POOL_FOREST_H
+#ifndef __W_GC_POOL_FOREST_H
+#define __W_GC_POOL_FOREST_H
 
 #include <stdint.h>
 #include <memory>
@@ -835,4 +835,4 @@ inline T* GcPointer<T>::dereference(GcPoolForest<T> &pool) const {
     return pointer;
 }
 
-#endif // W_GC_POOL_FOREST_H
+#endif // __W_GC_POOL_FOREST_H

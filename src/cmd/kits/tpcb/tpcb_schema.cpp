@@ -21,7 +21,7 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcb_schema.h
+/** @file:   tpcb_schema.h
  *
  *  @brief:  Declaration of the TPC-B tables
  *

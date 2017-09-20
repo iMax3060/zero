@@ -50,8 +50,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 
-#ifndef VEC_T_H
-#define VEC_T_H
+#ifndef __VEC_T_H
+#define __VEC_T_H
 
 #include "w_defines.h"
 
@@ -376,4 +376,4 @@ inline bool operator!=(const cvec_t& v1, const cvec_t& v2)
 
 /*<std-footer incl-file-exclusion='VEC_T_H'>  -- do not edit anything below this line -- */
 
-#endif          /*</std-footer>*/
+#endif // __VEC_T_H /*</std-footer>*/

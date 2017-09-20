@@ -1,5 +1,5 @@
-#ifndef ITERATOR_H
-#define ITERATOR_H
+#ifndef __ITERATOR_H
+#define __ITERATOR_H
 
 
 #include "thread_wrapper.h"
@@ -49,4 +49,4 @@ private:
     void writeBlock(char* b);
 };
 
-#endif
+#endif // __ITERATOR_H

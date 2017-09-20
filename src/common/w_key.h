@@ -1,5 +1,5 @@
-#ifndef W_KEY_H
-#define W_KEY_H
+#ifndef __W_KEY_H
+#define __W_KEY_H
 
 #include <cassert>
 #include <string.h> //#include <cstring>
@@ -157,16 +157,20 @@ str1.construct_regularkey ("your_key", 8);\endverbatim
 
     /**
      * Compares this string with a string data WITH sign byte
-     * which should be a serialized w_keystr_t.
-     * @copydoc w_keystr_t::compare(const w_keystr_t&)
+     * which should be a serialized \link w_keystr_t \endlink.
+     * @param[in] keystr another string data WITH sign byte to compare with
+     * @param[in] length length of the \c keystr
+     * @return 0 if equal. <0 if this<r, >0 if this>r
      */
     int compare_keystr (const void *keystr, w_keystr_len_t length) const;
 
     /**
      * Compares this string with a string data WITH sign byte
-     * which should be a serialized w_keystr_t.
+     * which should be a serialized \link w_keystr_t \endlink.
      * Note that non-key string can't represent infinity.
-     * @copydoc w_keystr_t::compare(const w_keystr_t&)
+     * @param[in] nonkeystr another non-key string data WITH sign byte to compare with
+     * @param[in] length length of the \c nonkeystr
+     * @return 0 if equal. <0 if this<r, >0 if this>r
      */
     int compare_nonkeystr (const void *nonkeystr, w_keystr_len_t length) const;
 
@@ -479,4 +483,4 @@ inline bool w_keystr_t::operator> (const w_keystr_t& r) const { return compare(r
 inline bool w_keystr_t::operator<=(const w_keystr_t& r) const { return compare(r) <= 0; }
 inline bool w_keystr_t::operator>=(const w_keystr_t& r) const { return compare(r) >= 0; }
 
-#endif // W_KEY_H
+#endif // __W_KEY_H

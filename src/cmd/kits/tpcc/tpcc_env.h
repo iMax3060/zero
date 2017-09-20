@@ -21,15 +21,15 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-/** @file:   shore_tpcc_env.h
+/** @file:   tpcc_env.h
  *
  *  @brief:  Definition of the Shore TPC-C environment
  *
  *  @author: Ippokratis Pandis (ipandis)
  */
 
-#ifndef __SHORE_TPCC_ENV_H
-#define __SHORE_TPCC_ENV_H
+#ifndef __TPCC_ENV_H
+#define __TPCC_ENV_H
 
 
 #include "sm_vas.h"
@@ -267,4 +267,4 @@ public:
 
 };
 
-#endif /* __SHORE_TPCC_ENV_H */
+#endif // __TPCC_ENV_H

@@ -1,5 +1,5 @@
-#ifndef PAGE_EVICTIONER_H
-#define PAGE_EVICTIONER_H
+#ifndef __PAGE_EVICTIONER_H
+#define __PAGE_EVICTIONER_H
 
 #include "smthread.h"
 #include "sm_options.h"
@@ -75,14 +75,14 @@ struct bf_tree_cb_t;
 class page_evictioner_base : public worker_thread_t {
 public:
     /*!\fn      page_evictioner_base(bf_tree_m* buffer pool, const sm_options& options)
-     * \brief   Constructor for page_evictioner_base
+     * \brief   Constructor for \c page_evictioner_base
      * \details This instantiates a page evictioner that uses the page eviction
      *          strategy according to the \c options to select victims for replacement.
      *          It will serve the specified \c bufferpool and uses the specified
      *          \c options to specify the behavior of the page evictioner.
      *
-     * @param bufferpool The bf_tree_m the constructed page evictioner is used to
-     *                   select pages for eviction for.
+     * @param bufferpool The \link bf_tree_m \endlink the constructed page evictioner is
+     *                   used to select pages for eviction for.
      * @param options    The options passed to the program on startup.
      */
 	page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options);
@@ -270,7 +270,7 @@ public:
      *          mode as the buffer pool frame will be changed during eviction (page
      *          will be removed).
      *
-     * @return The buffer frame that can be freed or \c 0 \c if no eviction victim could
+     * @return The buffer frame that can be freed or \c 0 if no eviction victim could
      *         be found.
      */
     virtual bf_idx                        pick_victim();
@@ -386,7 +386,7 @@ protected:
     unsigned                              _wakeup_cleaner_attempts;
 
 private:
-    /*!\const   EVICT_BATCH_RATIO
+    /*!\var     EVICT_BATCH_RATIO
      * \brief   Ratio of freed buffer frames during eviction
      * \details When eviction is triggered, _about_ this number of buffer frames will
      *          be freed at once. If this amount of frames is already free, the
@@ -423,7 +423,7 @@ private:
 	 *          looking up the parent, latching, etc., so we save some work.
      *
      * @param idx The buffer frame index where the page that gets evicted can be found.
-     * @return    \c true \c if the .
+     * @return    \c true if the .
      */
 	bool                                  unswizzle_and_update_emlsn(bf_idx idx);
 
@@ -501,7 +501,7 @@ public:
 
     /*!\fn      unfix_ref(bf_idx idx)
      * \brief   Updates the eviction statistics on page unfix
-     * \details Sets the referenced counter of the specified buffer frame \c idx \c to
+     * \details Sets the referenced counter of the specified buffer frame \c idx to
      *          the value specified in \link _k \endlink as this page was still used
      *          until this point in time.
      *
@@ -635,4 +635,4 @@ private:
     bf_idx         _current_frame;
 };
 
-#endif
+#endif // __PAGE_EVICTIONER_H

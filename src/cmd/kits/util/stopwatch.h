@@ -21,8 +21,8 @@
    RESULTING FROM THE USE OF THIS SOFTWARE.
 */
 
-#ifndef __UTIL_STOPWATCH_H
-#define __UTIL_STOPWATCH_H
+#ifndef __STOPWATCH_H
+#define __STOPWATCH_H
 
 #include <sys/time.h>
 
@@ -60,4 +60,4 @@ public:
 };
 
 
-#endif
+#endif // __STOPWATCH_H
