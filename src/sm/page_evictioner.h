@@ -393,7 +393,7 @@ private:
      *          eviction does nothing and goes back to sleep. Given as a ratio of the
      *          buffer size (currently 1%).
      */
-    constexpr float                       EVICT_BATCH_RATIO = 0.01;
+    static constexpr float                EVICT_BATCH_RATIO = 0.01;
 
     /*!\var     _current_frame
      * \brief   Last control block examined
