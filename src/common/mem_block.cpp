@@ -257,11 +257,11 @@ void* block_list::acquire(size_t chip_size, size_t chip_count, size_t block_size
 
 
 block_list::block_list(block_pool* pool, size_t chip_size, size_t chip_count, size_t block_size)
-    : _fake_block(TEMPLATE_ARGS)
-    , _tail(&_fake_block)
+    : _tail(&_fake_block)
     , _pool(pool)
     , _hit_count(0)
     , _avg_hit_rate(0)
+    , _fake_block(TEMPLATE_ARGS)
 {
     /* make the fake block advertise that it has nothing to give
 

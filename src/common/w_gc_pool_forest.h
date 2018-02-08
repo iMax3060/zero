@@ -126,6 +126,15 @@ union gc_pointer_raw {
 
     /** Integer representation, which is handy for single-word CAS. */
     uint64_t word;
+
+    bool operator==(const gc_pointer_raw& other) const {
+        return word == word;
+    }
+
+    bool operator!=(const gc_pointer_raw& other) const {
+        return word != word;
+    }
+
 };
 
 /**
