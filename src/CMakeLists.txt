@@ -1,25 +1,33 @@
-macro(INSTALL_GENERATED_H)
-  set(ig_tmp)
-  foreach(tmp ${ARGV})
-    list(APPEND ig_tmp ${CMAKE_CURRENT_BINARY_DIR}/${tmp})
-  endforeach(tmp)
-  install(FILES ${ig_tmp} DESTINATION include)
-endmacro(INSTALL_GENERATED_H)
+MACRO(INSTALL_GENERATED_H)
+    SET(ig_tmp)
+    FOREACH(tmp ${ARGV})
+        LIST(APPEND ig_tmp ${CMAKE_CURRENT_BINARY_DIR}/${tmp})
+    ENDFOREACH(tmp)
+    INSTALL(FILES
+            ${ig_tmp}
+            DESTINATION include
+           )
+ENDMACRO(INSTALL_GENERATED_H)
 
-INCLUDE_DIRECTORIES (
-  ${CMAKE_SOURCE_DIR}/config
-  ${CMAKE_SOURCE_DIR}/src/common
-  ${CMAKE_SOURCE_DIR}/src/sm
-  ${CMAKE_SOURCE_DIR}/src/cmd
-)
-# to look for generated headers
-INCLUDE_DIRECTORIES (
-  ${CMAKE_BINARY_DIR}/config
-  ${CMAKE_BINARY_DIR}/src/common
-  ${CMAKE_BINARY_DIR}/src/sm
-  ${CMAKE_BINARY_DIR}/src/cmd
+# Add config and src-subdirectories to the include directories:
+INCLUDE_DIRECTORIES(
+        ${CMAKE_SOURCE_DIR}/config
+        ${CMAKE_SOURCE_DIR}/src/common
+        ${CMAKE_SOURCE_DIR}/src/sm
+        ${CMAKE_SOURCE_DIR}/src/cmd
+        ${CMAKE_SOURCE_DIR}/src/third_party
 )
 
-add_subdirectory(common)
-add_subdirectory(sm)
-add_subdirectory(cmd)
+# Add generated headers from config and src-subdirectories to the include directories:
+INCLUDE_DIRECTORIES (
+        ${CMAKE_BINARY_DIR}/config
+        ${CMAKE_BINARY_DIR}/src/common
+        ${CMAKE_BINARY_DIR}/src/sm
+        ${CMAKE_BINARY_DIR}/src/cmd
+        ${CMAKE_BINARY_DIR}/src/third_party
+)
+
+ADD_SUBDIRECTORY(common)
+ADD_SUBDIRECTORY(sm)
+ADD_SUBDIRECTORY(cmd)
+ADD_SUBDIRECTORY(third_party)

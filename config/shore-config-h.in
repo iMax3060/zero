@@ -1,5 +1,345 @@
 /* config/shore-config-h.in.  Generated from configure.ac by autoheader.  */
 
+/* old debug code included */
+#undef DEBUG
+
+/* no debug code included */
+#undef NDEBUG
+
+/*if is gcc2.96*/
+#if defined(__GNUC__) && __GNUC__==2
+# if defined(__GNUC_MINOR__) && __GNUC_MINOR__==96
+# define GCC_BROKEN_WARNINGS
+# endif
+#endif
+
+/* hack for gcc3.4 and later */
+#undef GCC_VER_34_WARNINGS
+
+/*if is gcc3.x, x < 4*/
+#if defined(__GNUC__) && (__GNUC__==3) 
+# define GCC_VER_3_WARNINGS
+#endif
+
+
+/* Define to 1 if you have the <algorithm> header file. */
+#undef HAVE_ALGORITHM
+
+/* Define to 1 if you have the <array> header file. */
+#undef HAVE_ARRAY
+
+/* Define to 1 if you have the <atomic> header file. */
+#undef HAVE_ATOMIC
+
+/* Define to 1 if you have the <bitset> header file. */
+#undef HAVE_BITSET
+
+/* Define to 1 if you have the <boost/algorithm/string.hpp> header file. */
+#undef HAVE_BOOST_ALGORITHM_STRING_HPP
+
+/* Define to 1 if you have the <boost/asio.hpp> header file. */
+#undef HAVE_BOOST_ASIO_HPP
+
+/* Define to 1 if you have the <boost/concept_check.hpp> header file. */
+#undef HAVE_BOOST_CONCEPT_CHECK_HPP
+
+/* Define to 1 if you have the <boost/date_time/gregorian/gregorian.hpp> header file. */
+#undef HAVE_BOOST_DATE_TIME_GREGORIAN_GREGORIAN_HPP
+
+/* Define to 1 if you have the <boost/date_time/posix_time/posix_time.hpp> header file. */
+#undef HAVE_BOOST_DATE_TIME_POSIX_TIME_POSIX_TIME_HPP
+
+/* Define to 1 if you have the <boost/filesystem.hpp> header file. */
+#undef HAVE_BOOST_FILESYSTEM_HPP
+
+/* Define to 1 if you have the <boost/foreach.hpp> header file. */
+#undef HAVE_BOOST_FOREACH_HPP
+
+/* Define to 1 if you have the <boost/lexical_cast.hpp> header file. */
+#undef HAVE_BOOST_LEXICAL_CAST_HPP
+
+/* Define to 1 if you have the <boost/program_options.hpp> header file. */
+#undef HAVE_BOOST_PROGRAM_OPTIONS_HPP
+
+/* Define to 1 if you have the <boost/regex.hpp> header file. */
+#undef HAVE_BOOST_REGEX_HPP
+
+/* Define to 1 if you have the <boost/scoped_array.hpp> header file. */
+#undef HAVE_BOOST_SCOPED_ARRAY_HPP
+
+/* Define to 1 if you have the <boost/static_assert.hpp> header file. */
+#undef HAVE_BOOST_STATIC_ASSERT_HPP
+
+/* Define to 1 if you have the <cassert> header file. */
+#undef HAVE_CASSERT
+
+/* Define to 1 if you have the <cctype> header file. */
+#undef HAVE_CCTYPE
+
+/* Define to 1 if you have the <cerrno> header file. */
+#undef HAVE_CERRNO
+
+/* Define to 1 if you have the <chrono> header file. */
+#undef HAVE_CHRONO
+
+/* Define to 1 if you have the <climits> header file. */
+#undef HAVE_CLIMITS
+
+/* Define to 1 if you have the <cmath> header file. */
+#undef HAVE_CMATH
+
+/* Define to 1 if you have the <condition_variable> header file. */
+#undef HAVE_CONDITION_VARIABLE
+
+/* Define to 1 if you have the <cstdarg> header file. */
+#undef HAVE_CSTDARG
+
+/* Define to 1 if you have the <cstddef> header file. */
+#undef HAVE_CSTDDEF
+
+/* Define to 1 if you have the <cstdint> header file. */
+#undef HAVE_CSTDINT
+
+/* Define to 1 if you have the <cstdio> header file. */
+#undef HAVE_CSTDIO
+
+/* Define to 1 if you have the <cstdlib> header file. */
+#undef HAVE_CSTDLIB
+
+/* Define to 1 if you have the <cstring> header file. */
+#undef HAVE_CSTRING
+
+/* Define to 1 if you have the <ctime> header file. */
+#undef HAVE_CTIME
+
+/* Define to 1 if you have the <deque> header file. */
+#undef HAVE_DEQUE
+
+/* Define to 1 if you have the <exception> header file. */
+#undef HAVE_EXCEPTION
+
+/* Define to 1 if you have the <fstream> header file. */
+#undef HAVE_FSTREAM
+
+/* Define to 1 if you have the <functional> header file. */
+#undef HAVE_FUNCTIONAL
+
+/* Define to 1 if you have the <iomanip> header file. */
+#undef HAVE_IOMANIP
+
+/* Define to 1 if you have the <iosfwd> header file. */
+#undef HAVE_IOSFWD
+
+/* Define to 1 if you have the <iostream> header file. */
+#undef HAVE_IOSTREAM
+
+/* Define to 1 if you have the <limits> header file. */
+#undef HAVE_LIMITS
+
+/* Define to 1 if you have the <list> header file. */
+#undef HAVE_LIST
+
+/* Define to 1 if you have the <map> header file. */
+#undef HAVE_MAP
+
+/* Define to 1 if you have the <memory> header file. */
+#undef HAVE_MEMORY
+
+/* Define to 1 if you have the <mutex> header file. */
+#undef HAVE_MUTEX
+
+/* Define to 1 if you have the <new> header file. */
+#undef HAVE_NEW
+
+/* Define to 1 if you have the <numeric> header file. */
+#undef HAVE_NUMERIC
+
+/* Define to 1 if you have the <ostream> header file. */
+#undef HAVE_OSTREAM
+
+/* Define to 1 if you have the <queue> header file. */
+#undef HAVE_QUEUE
+
+/* Define to 1 if you have the <random> header file. */
+#undef HAVE_RANDOM
+
+/* Define to 1 if you have the <set> header file. */
+#undef HAVE_SET
+
+/* Define to 1 if you have the <sstream> header file. */
+#undef HAVE_SSTREAM
+
+/* Define to 1 if you have the <stdexcept> header file. */
+#undef HAVE_STDEXCEPT
+
+/* Define to 1 if you have the <string> header file. */
+#undef HAVE_STRING
+
+/* Define to 1 if you have the <thread> header file. */
+#undef HAVE_THREAD
+
+/* Define to 1 if you have the <type_traits> header file. */
+#undef HAVE_TYPE_TRAITS
+
+/* Define to 1 if you have the <unordered_map> header file. */
+#undef HAVE_UNORDERED_MAP
+
+/* Define to 1 if you have the <unordered_set> header file. */
+#undef HAVE_UNORDERED_SET
+
+/* Define to 1 if you have the <utility> header file. */
+#undef HAVE_UTILITY
+
+/* Define to 1 if you have the <vector> header file. */
+#undef HAVE_VECTOR
+
+/* Define to 1 if you have the <basics.h> header file. */
+#undef HAVE_BASICS_H
+
+/* Define to 1 if you have the <dirent.h> header file. */
+#undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <error.h> header file. */
+#undef HAVE_ERROR_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/uio.h> header file. */
+#undef HAVE_SYS_UIO_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <Wincrypt.h> header file. */
+#undef HAVE_WINCRYPT_H
+
+/* Define to 1 if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
+
+
+/* Define to 1 if you have the <valgrind.h> header file. */
+#undef HAVE_VALGRIND_H
+
+/* Define to 1 if you have the <valgrind/valgrind.h> header file. */
+#undef HAVE_VALGRIND_VALGRIND_H
+
+/* Define to 1 if you have the <google/profiler.h> header file. */
+#undef HAVE_GOOGLE_PROFILER_H
+
+/* Define to 1 if you have the <numa.h> header file. */
+#undef HAVE_NUMA_H
+
+
+
+/* Define to 1 if the system has the type `char_t'. */
+#undef HAVE_CHAR_T
+/* Define to 1 if the system has the type `long_t'. */
+#undef HAVE_LONG_T
+/* Define to 1 if the system has the type `short_t'. */
+#undef HAVE_SHORT_T
+/* Define to 1 if the system has the type `uchar_t'. */
+#undef HAVE_UCHAR_T
+/* Define to 1 if the system has the type `ulong_t'. */
+#undef HAVE_ULONG_T
+/* Define to 1 if the system has the type `ushort_t'. */
+#undef HAVE_USHORT_T
+
+
+/* Define to 1 if you have the declaration of `MAP_ALIGN', and to 0 if you don't. */
+#undef HAVE_DECL_MAP_ALIGN
+
+/* Define to 1 if you have the declaration of `MAP_ANON', and to 0 if you don't. */
+#undef HAVE_DECL_MAP_ANON
+
+/* Define to 1 if you have the declaration of `MAP_ANONYMOUS', and to 0 if you don't. */
+#undef HAVE_DECL_MAP_ANONYMOUS
+
+/* Define to 1 if you have the declaration of `MAP_FIXED', and to 0 if you don't. */
+#undef HAVE_DECL_MAP_FIXED
+
+/* Define to 1 if you have the declaration of `MAP_NORESERVE', and to 0 if you don't. */
+#undef HAVE_DECL_MAP_NORESERVE
+
+
+
+/* Define to 1 if you have the <vprintf> function. */
+#undef HAVE_VPRINTF
+
+/* Define to 1 if you have the <getopt> function. */
+#undef HAVE_GETOPT
+
+/* Define to 1 if you have the <memalign> function. */
+#undef HAVE_MEMALIGN
+
+/* Define to 1 if you have the <membar_enter> function. */
+#undef HAVE_MEMBAR_ENTER
+
+/* Define to 1 if you have the <memcntl> function. */
+#undef HAVE_MEMCNTL
+
+/* Define to 1 if you have the <posix_memalign> function. */
+#undef HAVE_POSIX_MEMALIGN
+
+/* Define to 1 if you have the <posix_spawn> function. */
+#undef HAVE_POSIX_SPAWN
+
+/* Define to 1 if you have the <valloc> function. */
+#undef HAVE_VALLOC
+
+/* Define to 1 if you have the <strerror> function. */
+#undef HAVE_STRERROR
+
+
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+/* Define to 1 if you have the `gethrtime' function. */
+#undef HAVE_GETHRTIME
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the `pthread_attr_getstack' function. */
+#undef HAVE_PTHREAD_ATTR_GETSTACK
+/* Define to 1 if you have the `pthread_attr_getstacksize' function. */
+#undef HAVE_PTHREAD_ATTR_GETSTACKSIZE
+
+/* Define to 1 if you have the `getpagesizes' function. */
+#undef HAVE_GETPAGESIZES
+
+
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
@@ -12,207 +352,8 @@
 /* architecture */
 #undef Alpha
 
-/* old debug code included */
-#undef DEBUG
-
-/*if is gcc2.96*/
-#if defined(__GNUC__) && __GNUC__==2
-# if defined(__GNUC_MINOR__) && __GNUC_MINOR__==96
-# define GCC_BROKEN_WARNINGS
-#endif
-#endif
-    
-
-/* hack for gcc3.4 and later */
-#undef GCC_VER_34_WARNINGS
-
-/*if is gcc3.x, x < 4*/
-#if defined(__GNUC__) && (__GNUC__==3) 
-# define GCC_VER_3_WARNINGS
-#endif
-    
-
-/* Define to 1 if you have the <atomic.h> header file. */
-#undef HAVE_ATOMIC_H
-
-/* Define to 1 if the system has the type `char_t'. */
-#undef HAVE_CHAR_T
-
-/* Define to 1 if you have the `clock_gettime' function. */
-#undef HAVE_CLOCK_GETTIME
-
-/* Define to 1 if you have the declaration of `MAP_ALIGN', and to 0 if you
-   don't. */
-#undef HAVE_DECL_MAP_ALIGN
-
-/* Define to 1 if you have the declaration of `MAP_ANON', and to 0 if you
-   don't. */
-#undef HAVE_DECL_MAP_ANON
-
-/* Define to 1 if you have the declaration of `MAP_ANONYMOUS', and to 0 if you
-   don't. */
-#undef HAVE_DECL_MAP_ANONYMOUS
-
-/* Define to 1 if you have the declaration of `MAP_FIXED', and to 0 if you
-   don't. */
-#undef HAVE_DECL_MAP_FIXED
-
-/* Define to 1 if you have the declaration of `MAP_NORESERVE', and to 0 if you
-   don't. */
-#undef HAVE_DECL_MAP_NORESERVE
-
-/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
-   */
-#undef HAVE_DIRENT_H
-
-/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
-#undef HAVE_DOPRNT
-
-/* Define to 1 if you have the <fcntl.h> header file. */
-#undef HAVE_FCNTL_H
-
-/* Define to 1 if you have the `gethrtime' function. */
-#undef HAVE_GETHRTIME
-
-/* Define to 1 if you have the `getopt' function. */
-#undef HAVE_GETOPT
-
-/* Define to 1 if you have the `getpagesizes' function. */
-#undef HAVE_GETPAGESIZES
-
-/* Define to 1 if you have the `gettimeofday' function. */
-#undef HAVE_GETTIMEOFDAY
-
-/* Define to 1 if you have the <inttypes.h> header file. */
-#undef HAVE_INTTYPES_H
-
-/* Define to 1 if you have the `rt' library (-lrt). */
-#undef HAVE_LIBRT
-
-/* Define to 1 if the system has the type `long_t'. */
-#undef HAVE_LONG_T
-
-/* Define to 1 if you have the `memalign' function. */
-#undef HAVE_MEMALIGN
-
-/* Define to 1 if you have the `membar_enter' function. */
-#undef HAVE_MEMBAR_ENTER
-
-/* Define to 1 if you have the `memcntl' function. */
-#undef HAVE_MEMCNTL
-
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-#undef HAVE_NDIR_H
-
-/* Define to 1 if you have the <netdb.h> header file. */
-#undef HAVE_NETDB_H
-
-/* Define to 1 if you have the <netinet/in.h> header file. */
-#undef HAVE_NETINET_IN_H
-
-/* Define to 1 if you have the `posix_memalign' function. */
-#undef HAVE_POSIX_MEMALIGN
-
-/* Define to 1 if you have the `posix_spawn' function. */
-#undef HAVE_POSIX_SPAWN
-
-/* have pthread_attr_getstack? */
-#undef HAVE_PTHREAD_ATTR_GETSTACK
-
-/* have pthread_attr_getstacksize? */
-#undef HAVE_PTHREAD_ATTR_GETSTACKSIZE
-
-/* have pthreads barriers? */
-#undef HAVE_PTHREAD_BARRIERS
-
-/* Define to 1 if the system has the type `ptrdiff_t'. */
-#undef HAVE_PTRDIFF_T
-
-/* Define to 1 if you have the <semaphore.h> header file. */
-#undef HAVE_SEMAPHORE_H
-
-/* Define to 1 if the system has the type `short_t'. */
-#undef HAVE_SHORT_T
-
-/* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H
-
-/* Define to 1 if you have the <stdlib.h> header file. */
-#undef HAVE_STDLIB_H
-
-/* Define to 1 if you have the `strerror' function. */
-#undef HAVE_STRERROR
-
-/* Define to 1 if you have the <strings.h> header file. */
-#undef HAVE_STRINGS_H
-
-/* Define to 1 if you have the <string.h> header file. */
-#undef HAVE_STRING_H
-
-/* Define to 1 if `st_blksize' is a member of `struct stat'. */
-#undef HAVE_STRUCT_STAT_ST_BLKSIZE
-
-/* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
-   */
-#undef HAVE_SYS_DIR_H
-
-/* Define to 1 if you have the <sys/ioctl.h> header file. */
-#undef HAVE_SYS_IOCTL_H
-
-/* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
-   */
-#undef HAVE_SYS_NDIR_H
-
-/* Define to 1 if you have the <sys/param.h> header file. */
-#undef HAVE_SYS_PARAM_H
-
-/* Define to 1 if you have the <sys/socket.h> header file. */
-#undef HAVE_SYS_SOCKET_H
-
-/* Define to 1 if you have the <sys/stat.h> header file. */
-#undef HAVE_SYS_STAT_H
-
-/* Define to 1 if you have the <sys/types.h> header file. */
-#undef HAVE_SYS_TYPES_H
-
-/* Define to 1 if you have the <time.h> header file. */
-#undef HAVE_TIME_H
-
-/* Define to 1 if the system has the type `uchar_t'. */
-#undef HAVE_UCHAR_T
-
-/* Define to 1 if the system has the type `ulong_t'. */
-#undef HAVE_ULONG_T
-
-/* Define to 1 if you have the `uname' function. */
-#undef HAVE_UNAME
-
-/* Define to 1 if you have the <unistd.h> header file. */
-#undef HAVE_UNISTD_H
-
-/* Define to 1 if the system has the type `ushort_t'. */
-#undef HAVE_USHORT_T
-
-/* Define to 1 if you have the <valgrind.h> header file. */
-#undef HAVE_VALGRIND_H
-
-/* Define to 1 if you have the <valgrind/valgrind.h> header file. */
-#undef HAVE_VALGRIND_VALGRIND_H
-
-/* Define to 1 if you have the `valloc' function. */
-#undef HAVE_VALLOC
-
-/* Define to 1 if you have the `vprintf' function. */
-#undef HAVE_VPRINTF
-
 /* operating system */
 #undef HPUX8
-
-/* huge page size */
-#undef HUGEPAGESIZE
 
 /* architecture */
 #undef I386
@@ -352,9 +493,6 @@
 /* architecture */
 #undef Mips
 
-/* no debug code included */
-#undef NDEBUG
-
 /* operating system */
 #undef OSF1
 
@@ -450,10 +588,6 @@
 #if TRACECODE==1
 #define W_TRACE
 #endif
-
-
-/*for in-memory str streams*/
-#define W_USE_COMPAT_STRSTREAM
 
 
 /* operating system */

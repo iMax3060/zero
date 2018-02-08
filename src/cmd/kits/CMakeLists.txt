@@ -1,4 +1,5 @@
-set(kits_SRCS
+# Define the source files of the kits library:
+SET(kits_SRCS
     # BASIC TABLE INFRASTRUCTURE
     ${CMAKE_CURRENT_SOURCE_DIR}/field.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/index_desc.cpp
@@ -45,15 +46,15 @@ set(kits_SRCS
 
     # KITS ZAPPS INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/kits_cmd.cpp
-    )
+   )
 
+# Copy shore.conf file to /src/ in the build directory:
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/shore.conf ${CMAKE_CURRENT_BINARY_DIR}/../shore.conf COPYONLY)
 
-# copy shore.conf file to /src/
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shore.conf
-        ${CMAKE_CURRENT_BINARY_DIR}/../shore.conf COPYONLY)
+ADD_SUBDIRECTORY(experiments)
 
-add_subdirectory(experiments)
+# Add the library of this directory kits:
+ADD_LIBRARY(kits ${kits_SRCS})
 
-add_library (kits ${kits_SRCS})
-
-target_link_libraries(kits experiments)
+# Set the shared librariy used by the library kits:
+TARGET_LINK_LIBRARIES(kits experiments)

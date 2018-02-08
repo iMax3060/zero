@@ -4,261 +4,147 @@
 # This root file specifies project-wide settings and compiler settings,
 # which were placed in root Makefile.am and Makefile.generic in original ShoreMT.
 
-cmake_minimum_required(VERSION 2.6)
+# The Project "Zero" contains the languages C (?) and C++:
+PROJECT(Zero C CXX)
 
-PROJECT(zero)
+# Version number of "Zero":
+SET(ZERO_VERSION_MAJOR 0)
+SET(ZERO_VERSION_MINOR 1)
+SET(ZERO_VERSION_PATCH 0)
+SET(ZERO_VERSION "${ZERO_VERSION_MAJOR}.${ZERO_VERSION_MINOR}.${ZERO_VERSION_PATCH}")
 
-# generate clang compilation database
-set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
+# The lowest version of CMake supprted by this project is 3.6:
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6)
 
-SET(CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/cmake-modules" ${CMAKE_MODULE_PATH})
+# Load the project specific CMake modules:
+SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-MESSAGE (STATUS)
-MESSAGE (STATUS "========================================")
-MESSAGE (STATUS "CMAKE_SYSTEM=${CMAKE_SYSTEM}")
-MESSAGE (STATUS "CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
-MESSAGE (STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-MESSAGE (STATUS "CMAKE_C_COMPILER=${CMAKE_C_COMPILER}")
-MESSAGE (STATUS "CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
-MESSAGE (STATUS "========================================")
-MESSAGE (STATUS)
+MESSAGE(STATUS)
+MESSAGE(STATUS "========================================================")
+MESSAGE(STATUS "OS Kernel:         ${CMAKE_SYSTEM}")
+MESSAGE(STATUS "CPU Architecture:  ${CMAKE_SYSTEM_PROCESSOR}")
+MESSAGE(STATUS "C-Compiler         ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} at ${CMAKE_C_COMPILER}")
+MESSAGE(STATUS "C++-Compiler:      ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} at ${CMAKE_CXX_COMPILER}")
+MESSAGE(STATUS "========================================================")
+MESSAGE(STATUS)
 
+MESSAGE(STATUS "Check if it's a 64bit system")
 IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES ".*64.*")
-  MESSAGE (STATUS "Yes, you are on 64bit OS/CPU!")
-ELSE()
-  MESSAGE (FATAL_ERROR "Foster B-tree can only be built on 64bit OS/CPU. Your system seems '${CMAKE_SYSTEM_PROCESSOR}'")
-  RETURN()
-ENDIF()
+    MESSAGE(STATUS "Check if it's a 64bit system - yes")
+ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES ".*64.*")
+    MESSAGE(STATUS "Check if it's a 64bit system - no")
+    MESSAGE(FATAL_ERROR "Foster B-tree can only be built on 64bit OS/CPU. Your system seems to be '${CMAKE_SYSTEM_PROCESSOR}'")
+    RETURN()
+ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES ".*64.*")
 
+# Generate a database with the exact compiler calls for all translation units of the project in machine readable format:
+SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+MESSAGE(STATUS "INFO: The exact compiler calls for all translation units of ${CMAKE_PROJECT_NAME} can be found at ${PROJECT_BINARY_DIR}/compile_commands.json.")
 
-#if you don't want the full compiler output, remove the following line
+# Set the used C++-Standard:
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD_REQUIRED YES)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
+# Suppress the full output (e.g. incl. full compiler calls) of the makefile:
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Default=Release build. You can choose the type of build, options are: Debug Release RelWithDebInfo Trace"
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
+# Set CMAKE_BUILD_TYPE specific settings:
+INCLUDE(SetUpConfigurations)
 
-find_package(Threads REQUIRED) # find pthread library
-
-# libprofiler x86_64 has some issue on libunwind.
-# it's so ugly and hard to fix. Just give up using libprofiler on some platform.
-# http://code.google.com/p/google-perftools/issues/detail?id=66&can=1&q=libunwind
-find_package(GooglePerftools) # google-perftools / google-perftools-devel
-IF(GOOGLEPERFTOOLS_FOUND)
-  SET (LINK_GOOGLEPROFILER " -lprofiler")
-  SET (LIBINCL_GOOGLEPROFILER "profiler")
-  # Optionally, also use tcmalloc if there is.
-  find_package(Tcmalloc) # google-perftools-devel
-  IF(TCMALLOC_FOUND)
-    # Disabled tcmalloc because the memory acquired by tcmalloc is somehow slower to access.
-    # SET (LINK_GOOGLEPROFILER "${LINK_GOOGLEPROFILER} -ltcmalloc")
-  ENDIF()
-ENDIF(GOOGLEPERFTOOLS_FOUND)
-
-# MUTrace profiles user-mode mutex locks
-# SET(ENABLE_MUTRACE_PROFILER 'ON')
-IF(ENABLE_MUTRACE_PROFILER)
-  LINTEL_REQUIRED_HEADER(MUTRACE MUTrace/mutrace.h)
-  SET (COMPILE_MUTRACE "-fPIC -fno-omit-frame-pointer -DMUTRACE_ENABLED_H")
-ENDIF(ENABLE_MUTRACE_PROFILER)
-
-find_package(Numa) # numa library
-
-ENABLE_TESTING() # we use CTest all over the project. run "make test" after cmake
-
-# compiler options. ported from Makefile.generic of original ShoreMT.
-# W_DEBUG_LEVEL enables various check logics and asserts. higher is more verbose.
-SET(CMAKE_CXX_FLAGS_DEBUG5  "-O0 -g -DDEBUG -DW_DEBUG_LEVEL=5 ${LINK_GOOGLEPROFILER}")
-SET(CMAKE_CXX_FLAGS_DEBUG3  "-O0 -g -DDEBUG -DW_DEBUG_LEVEL=3 ${LINK_GOOGLEPROFILER}")
-SET(CMAKE_CXX_FLAGS_DEBUG1  "-Og -g -DDEBUG -DW_DEBUG_LEVEL=1 ${LINK_GOOGLEPROFILER}")
-SET(CMAKE_CXX_FLAGS_DEBUG  ${CMAKE_CXX_FLAGS_DEBUG1})
-## Below is better for performance analysis; above is better for debugging
-SET(CMAKE_CXX_FLAGS_PROFILE "-O3 -g -pg -DW_DEBUG_LEVEL=0 -DNDEBUG -fPIC ${LINK_GOOGLEPROFILER} ${COMPILE_MUTRACE}")
-## Release build with most aggressive optimization
-## (leave debug symbols since they don't affect performance at all=
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -DNDEBUG -fexpensive-optimizations -finline-functions -DW_DEBUG_LEVEL=0 ${LINK_GOOGLEPROFILER}")
+# Allow the usage of pthreads:
+SET(THREADS_PREFER_PTHREAD_FLAG ON)
+FIND_PACKAGE(Threads REQUIRED)
 
 ## _REENTRANT and _POSIX_PTHREAD_SEMANTICS are needed on Solaris to ensure
 # that the posix-compliant clib interfaces are there (e.g., ctime_r)
 # (Actually, you're supposed to get them both with _POSIX_C_SOURCE > 199506L
 # but I'm not that trusting.)
+SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS _REENTRANT _POSIX_PTHREAD_SEMANTICS)
 
-SET (MANDATORY_FLAGS "-D_REENTRANT -D_POSIX_PTHREAD_SEMANTICS")
+# libprofiler x86_64 has some issue on libunwind.
+# it's so ugly and hard to fix. Just give up using libprofiler on some platform.
+# http://code.google.com/p/google-perftools/issues/detail?id=66&can=1&q=libunwind
+# Enable compilation with gperftools' profiler and tcmalloc:
+FIND_PACKAGE(gperftools)
+IF(gperftools_FOUND)
+    LINK_LIBRARIES(gperftools::gperftools)
+ELSE(gperftools_FOUND)
+    MESSAGE(STATUS "INFO: How to install gperftools: https://github.com/gperftools/gperftools")
+ENDIF(gperftools_FOUND)
 
-# -pedantic requires -Wno-long-long
-#
-SET (ALWAYS_FLAGS "-std=c++14 -Wall -Wextra -Woverloaded-virtual -fno-strict-aliasing -Wpointer-arith -Wwrite-strings -pthread")
-# NO_INLINE_FLAGS =  -fno-inline
-SET (NO_INLINE_FLAGS "")
-SET (YES_INLINE_FLAGS "-finline-functions")
+FIND_PACKAGE(TCMALLOC)
+IF(TCMALLOC_FOUND)
+    # Disabled tcmalloc because the memory acquired by tcmalloc is somehow slower to access.
+    # LINK_LIBRARIES(TCMALLOC::TCMALLOC)
+ELSE(TCMALLOC_FOUND)
+    MESSAGE(AUTHOR_WARNING "Use the probably slower build-in malloc as fallback. For information how to install: https://github.com/gperftools/gperftools")
+ENDIF(TCMALLOC_FOUND)
 
-## enabled by config option (default)
-## Now try to find out the compiler arguments needed
-SET(TUNE_FLAGS "-mtune=nocona")
-# TUNE_FLAGS = -mtune=generic
-SET(TARGET_FLAGS "-m64")
-## Assembler flags
-SET(AM_LDFLAGS "-m64")
+FIND_PACKAGE(NUMA)
+IF(NOT NUMA_FOUND)
+    MESSAGE(STATUS "INFO: How to install numa: http://oss.sgi.com/projects/libnuma/")
+ENDIF(NOT NUMA_FOUND)
 
-SET(ALL_FLAGS "${PEDANTIC} ${TUNE_FLAGS} ${DEBUGFLAGS} ${W_WARNINGS} ${OPTFLAGS} ${MANDATORY_FLAGS} ${ALWAYS_FLAGS} ${TARGET_FLAGS} ${TEMPLATEFLAGS}")
-ADD_DEFINITIONS(${ALL_FLAGS})
+FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options system filesystem regex)
 
-## end of compiler options
+FIND_PACKAGE(LibRT REQUIRED)
 
-# define a bunch of environment specific macros.
-# this replaces the old autoconf/autoheader stuffs
-INCLUDE (CheckIncludeFiles)
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckSymbolExists)
-INCLUDE (CheckLibraryExists)
-INCLUDE (CheckPrototypeExists)
-INCLUDE (CheckTypeSize)
-##########   header files and symbols #####################
-CHECK_SYMBOL_EXISTS(char_t "" HAVE_CHAR_T)
-CHECK_SYMBOL_EXISTS(long_t "" HAVE_LONG_T)
-CHECK_SYMBOL_EXISTS(short_t "" HAVE_SHORT_T)
-CHECK_SYMBOL_EXISTS(uchar_t "" HAVE_UCHAR_T)
-CHECK_SYMBOL_EXISTS(ulong_t "" HAVE_ULONG_T)
-CHECK_SYMBOL_EXISTS(ushort_t "" HAVE_USHORT_T)
+# Enable testing using CTest (run "make test"):
+ENABLE_TESTING()
 
-CHECK_INCLUDE_FILES(atomic.h HAVE_ATOMIC_H)
+# Define a bunch of environment specific macros. This replaces the old autoconf/autoheader stuffs:
+INCLUDE(ExistenceChecks)
 
-CHECK_INCLUDE_FILES(sys/mman.h HAVE_SYS_MMAN_H)
-CHECK_SYMBOL_EXISTS(MAP_ALIGN "sys/mman.h" HAVE_DECL_MAP_ALIGN)
-CHECK_SYMBOL_EXISTS(MAP_ANON "sys/mman.h" HAVE_DECL_MAP_ANON)
-CHECK_SYMBOL_EXISTS(MAP_ANONYMOUS "sys/mman.h" HAVE_DECL_MAP_ANONYMOUS)
-CHECK_SYMBOL_EXISTS(MAP_FIXED "sys/mman.h" HAVE_DECL_MAP_FIXED)
-CHECK_SYMBOL_EXISTS(MAP_NORESERVE "sys/mman.h" HAVE_DECL_MAP_NORESERVE)
+INCLUDE(CheckTypeSize)
 
-CHECK_INCLUDE_FILES(dirent.h HAVE_DIRENT_H)
-CHECK_INCLUDE_FILES(fcntl.h HAVE_FCNTL_H)
-CHECK_INCLUDE_FILES(inttypes.h HAVE_INTTYPES_H)
-CHECK_INCLUDE_FILES(memory.h HAVE_MEMORY_H)
-CHECK_INCLUDE_FILES(ndir.h HAVE_NDIR_H)
-CHECK_INCLUDE_FILES(netdb.h HAVE_NETDB_H)
-CHECK_INCLUDE_FILES(netinet/in.h HAVE_NETINET_IN_H)
-CHECK_INCLUDE_FILES(semaphore.h HAVE_SEMAPHORE_H)
-CHECK_INCLUDE_FILES(stdint.h HAVE_STDINT_H)
-CHECK_INCLUDE_FILES(stdlib.h HAVE_STDLIB_H)
-CHECK_INCLUDE_FILES(sys/ioctl.h HAVE_SYS_IOCTL_H)
-CHECK_INCLUDE_FILES(sys/param.h HAVE_SYS_PARAM_H)
-CHECK_INCLUDE_FILES(sys/stat.h HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILES(sys/types.h HAVE_SYS_TYPES_H)
-CHECK_INCLUDE_FILES(valgrind.h HAVE_VALGRIND_H)
-CHECK_INCLUDE_FILES(valgrind/valgrind.h HAVE_VALGRIND_VALGRIND_H)
-CHECK_INCLUDE_FILES(google/profiler.h HAVE_GOOGLE_PROFILER_H)
-CHECK_INCLUDE_FILES(numa.h HAVE_NUMA_H)
-
-####################   std functions #####################
-CHECK_FUNCTION_EXISTS(vprintf HAVE_VPRINTF)
-CHECK_FUNCTION_EXISTS(getopt HAVE_GETOPT)
-CHECK_FUNCTION_EXISTS(memalign HAVE_MEMALIGN)
-CHECK_FUNCTION_EXISTS(membar_enter HAVE_MEMBAR_ENTER)
-CHECK_FUNCTION_EXISTS(memcntl HAVE_MEMCNTL)
-CHECK_FUNCTION_EXISTS(posix_memalign HAVE_POSIX_MEMALIGN)
-CHECK_FUNCTION_EXISTS(posix_spawn HAVE_POSIX_SPAWN)
-CHECK_FUNCTION_EXISTS(valloc HAVE_VALLOC)
-CHECK_FUNCTION_EXISTS(strerror HAVE_STRERROR)
-
-################   non-std functions #####################
-# these need CHECK_SYMBOL_EXISTS or CHECK_PROTOTYPE_EXISTS, not CHECK_FUNCTION_EXISTS
-CHECK_PROTOTYPE_EXISTS(clock_gettime "sys/time.h;time.h" HAVE_CLOCK_GETTIME)
-CHECK_PROTOTYPE_EXISTS(gethrtime "sys/time.h;time.h" HAVE_GETHRTIME)
-CHECK_PROTOTYPE_EXISTS(gettimeofday "sys/time.h;time.h" HAVE_GETTIMEOFDAY)
-
-CHECK_PROTOTYPE_EXISTS(pthread_attr_getstack "pthread.h" HAVE_PTHREAD_ATTR_GETSTACK)
-CHECK_PROTOTYPE_EXISTS(pthread_attr_getstacksize "pthread.h" HAVE_PTHREAD_ATTR_GETSTACKSIZE)
-
-CHECK_PROTOTYPE_EXISTS(getpagesizes "sys/mman.h" HAVE_GETPAGESIZES)
-
-################   OS-dependent sizes       ###################
+# Check the (OS-dependent) size of pthread handlers (used in some places of the code):
 SET(CMAKE_EXTRA_INCLUDE_FILES "pthread.h")
 CHECK_TYPE_SIZE(pthread_t SIZEOF_PTHREAD_T)
 SET(CMAKE_EXTRA_INCLUDE_FILES)
 
-SET (HUGEPAGESIZE 2048) # so far hard-coded.
+# Set the hard-coded page size in bytes (has to be power of 2 and between 1kb and 256kb):
+SET(SM_PAGESIZE 8192)
 
-####################   parameters #####################
+# Number of bits used for dreadlocks:
+SET(SM_DREADLOCK_BITCOUNT 256)
+# Number of bits used for the dreadlock identity:
+SET(SM_DREADLOCK_FINGERS 3)
 
-# so far hard-coded...
+# Enable/disable the usage of pthread mutexes:
+SET(USE_PTHREAD_MUTEX "true")
 
-# Page size in bytes. Has to be powers of 2. 1kb-256kb
-SET (SM_PAGESIZE 8192)
-
-# # of bits used for dreadlock.
-SET (SM_DREADLOCK_BITCOUNT 256)
-# # of bits used as identity.
-SET (SM_DREADLOCK_FINGERS 3)
-
-SET (W_USE_COMPAT_STRSTREAM "true")
-SET (USE_PTHREAD_MUTEX "true")
-SET (BP_MAINTAIN_PARENT_PTR "true")
-
-####################   OS/architecture #####################
-SET (ARCH_LP64  "true") # so far, always assume 64 bits
+# Check the OS and CPU-architecture:
+SET(ARCH_LP64  "true") # so far, always assume 64 bits
 IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  SET (Linux "true")
-ENDIF()
-IF (CMAKE_SYSTEM_NAME MATCHES "(Solaris|SunOS)" )
-  MESSAGE (FATAL_ERROR "We no longer support Solaris!")
-  RETURN()
-ENDIF ()
+    SET(Linux "true")
+ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+IF(CMAKE_SYSTEM_NAME MATCHES "(Solaris|SunOS)")
+    MESSAGE(FATAL_ERROR "We no longer support Solaris!")
+    RETURN()
+ENDIF(CMAKE_SYSTEM_NAME MATCHES "(Solaris|SunOS)")
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  SET (MacOSX "true")
-ENDIF ()
-IF (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  SET (x86_64 "true")
-  SET (amd64 "true") # maybe additional check needed. but now they are almost synonyms
-ENDIF ()
-IF (CMAKE_SYSTEM_PROCESSOR STREQUAL "sparc" )
-  MESSAGE (FATAL_ERROR "We no longer support Sparc!")
-  RETURN()
-ENDIF ()
-INCLUDE (TestBigEndian)
+    MESSAGE(FATAL_ERROR "We no longer support macOS!")
+    RETURN()
+ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    SET(x86_64 "true")
+    SET(amd64 "true") # maybe additional check needed. but now they are almost synonyms
+ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "sparc")
+    MESSAGE(FATAL_ERROR "We no longer support SPARC!")
+    RETURN()
+ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "sparc")
+
+# Test if the system is big endian or if it's little endian:
+INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
-# then finally call CONFIGURE_FILE to generate shore-config-env.h
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/config/shore-config-env.h.cmake ${CMAKE_BINARY_DIR}/config/shore-config-env.h )
+# Then finally call CONFIGURE_FILE to generate shore-config-env.h:
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/config/shore-config-env.h.cmake ${CMAKE_BINARY_DIR}/config/shore-config-env.h)
 
-# configuration options passed as preprocessor flags
-option(USE_MMAP "Use mmap to read from log and log archive" ON)
-if (USE_MMAP)
-    add_definitions(-DUSE_MMAP)
-endif()
+ADD_SUBDIRECTORY(src) # main source codes
+ADD_SUBDIRECTORY(config) # to be eliminated
+ADD_SUBDIRECTORY(tests) # unit testcases
 
-add_subdirectory(src) # main source codes
-add_subdirectory(config) # to be eliminated
-add_subdirectory(gtest-1.7.0) # google-test library
-add_subdirectory(tests) # unit testcases
-# not needed so far, and causes a warning
-# add_library(shore)
-# target_link_libraries(shore fc sthread common sm)
-
-
-# add a target to generate API documentation with Doxygen
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zero.dox ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(doc
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating API documentation with Doxygen" VERBATIM
-  )
-endif(DOXYGEN_FOUND)
-
-# "make lint" will run google-cpplint
-add_custom_target(lint
-    # ALL # Enable this line if we want to enforce lint for every compilation.. not so far.
-    COMMAND python
-        ${CMAKE_SOURCE_DIR}/tools/cpplint.py
-        --linelength=95
-        --extensions=c,cpp,h,hpp,txt
-        --root=${CMAKE_SOURCE_DIR}/src
-        --filter=-,+whitespace/line_length,+whitespace/tab # So far minimal rules only
-        ${CMAKE_SOURCE_DIR}/src/*.h
-        ${CMAKE_SOURCE_DIR}/src/common/*
-        ${CMAKE_SOURCE_DIR}/src/sm/*
-)
+INCLUDE(SetUpDoxygen)

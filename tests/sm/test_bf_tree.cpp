@@ -367,14 +367,6 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
     }
     pool.debug_dump_page_pointers(std::cout, root_page);
     if (enable_swizzle) {
-#ifdef BP_MAINTAIN_PARENT_PTR
-        // EXPECT_EQ (1 + 20, root_cb._pin_cnt);
-#else // BP_MAINTAIN_PARENT_PTR
-        // EXPECT_EQ (1, root_cb._pin_cnt);
-#endif // BP_MAINTAIN_PARENT_PTR
-    } else {
-        // EXPECT_EQ (1, root_cb._pin_cnt);
-    }
     // fix again
     for (size_t i = 0; i < 20; ++i) {
         generic_page *page = NULL;

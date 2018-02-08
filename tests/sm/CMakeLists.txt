@@ -1,12 +1,12 @@
-include(../testutil.cmake)
+INCLUDE(testutil)
 
 ENABLE_TESTING()
 
-add_library(btree_test_env STATIC ${CMAKE_CURRENT_SOURCE_DIR}/btree_test_env.cpp)
-target_link_libraries(btree_test_env gtest common sm)
+ADD_LIBRARY(btree_test_env STATIC ${CMAKE_CURRENT_SOURCE_DIR}/btree_test_env.cpp)
+TARGET_LINK_LIBRARIES(btree_test_env gtest common sm)
 
-add_library(logfactory STATIC ${CMAKE_CURRENT_SOURCE_DIR}/logfactory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/stats.cpp)
-target_link_libraries(logfactory btree_test_env)
+ADD_LIBRARY(logfactory STATIC ${CMAKE_CURRENT_SOURCE_DIR}/logfactory.cpp ${CMAKE_CURRENT_SOURCE_DIR}/stats.cpp)
+TARGET_LINK_LIBRARIES(logfactory btree_test_env)
 
 #################################################
 # To add alternate configurations to be tested,
@@ -15,7 +15,7 @@ target_link_libraries(logfactory btree_test_env)
 
 X_ADD_TESTCASE(test_alloc btree_test_env)
 X_ADD_TESTCASE(test_bf_tree btree_test_env)
-#X_ADD_TESTCASE(test_fix_with_Q btree_test_env)   # should fail for now until have QSX latch integrated
+# X_ADD_TESTCASE(test_fix_with_Q btree_test_env)   # should fail for now until have QSX latch integrated
 X_ADD_TESTCASE(test_btree_create btree_test_env)
 X_ADD_TESTCASE(test_btree_cursor btree_test_env)
 X_ADD_TESTCASE(test_btree_basic btree_test_env)
@@ -54,7 +54,7 @@ X_ADD_TESTCASE(test_ringbuffer btree_test_env)
 X_ADD_TESTCASE(test_restore btree_test_env)
 
 # moved from common
-set (the_libraries gtest_main sm)
+SET(the_libraries gtest_main sm)
 X_ADD_TESTCASE(test_latch "${the_libraries}")
 
 SET(cmd_LIBS zapps_base loginspect kits restore sm)

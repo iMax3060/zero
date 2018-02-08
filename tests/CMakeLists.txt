@@ -1,26 +1,43 @@
-# global include directories
-INCLUDE_DIRECTORIES (
-  ${CMAKE_SOURCE_DIR}/config
-  ${CMAKE_SOURCE_DIR}/src/common
-  ${CMAKE_SOURCE_DIR}/src/sm
-  ${CMAKE_SOURCE_DIR}/src/cmd
+SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/tests")
+
+# Add config and src to the include directories:
+INCLUDE_DIRECTORIES(
+        ${CMAKE_SOURCE_DIR}/config
+        ${CMAKE_SOURCE_DIR}/src/common
+        ${CMAKE_SOURCE_DIR}/src/sm
+        ${CMAKE_SOURCE_DIR}/src/cmd
+        ${CMAKE_SOURCE_DIR}/src/third_party
 ) 
 
-# to look for generated headers
-INCLUDE_DIRECTORIES (
-  ${CMAKE_BINARY_DIR}/config
-  ${CMAKE_BINARY_DIR}/src/common
-  ${CMAKE_BINARY_DIR}/src/sm
-  ${CMAKE_BINARY_DIR}/src/cmd
+# Add generated headers from config and src to the include directories:
+INCLUDE_DIRECTORIES(
+        ${CMAKE_BINARY_DIR}/config
+        ${CMAKE_BINARY_DIR}/src/common
+        ${CMAKE_BINARY_DIR}/src/sm
+        ${CMAKE_BINARY_DIR}/src/cmd
 )
 
-INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/gtest-1.7.0/include)
+# Add headers of Google Test to the include directories:
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/third_party/googletest/googletest/include)
 
-IF (COMPILER_IS_GCC)
+# Generate sections for each function and each data item in the object file:
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-fdata-sections -ffunction-sections")
+ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    # strip out unused data/function. this also removes -rdynamic
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-fdata-sections -ffunction-sections")
+ELSEIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-fdata-sections -ffunction-sections")
+ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+
+IF("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-fdata-sections -ffunction-sections")
+ELSEIF("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
     # strip out unused data/function. this also removes -rdynamic
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-fdata-sections -ffunction-sections")
-    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-fdata-sections -ffunction-sections")
-ENDIF (COMPILER_IS_GCC)
+ELSEIF("${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-fdata-sections -ffunction-sections")
+ENDIF("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
-add_subdirectory(common)
-add_subdirectory(sm)
+ADD_SUBDIRECTORY(common)
+ADD_SUBDIRECTORY(sm)

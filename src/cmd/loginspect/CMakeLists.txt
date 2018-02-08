@@ -1,4 +1,5 @@
-set(loginspect_SRCS
+# Define the source files of the loginspect library:
+SET(loginspect_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/logcat.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/agglog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/verifylog.cpp
@@ -13,6 +14,7 @@ set(loginspect_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/tracerestore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/archstats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nodbgen.cpp
-    )
+   )
 
-add_library (loginspect ${loginspect_SRCS})
+# Add the library of this directory loginspect:
+ADD_LIBRARY(loginspect ${loginspect_SRCS})
