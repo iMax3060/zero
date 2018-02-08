@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "w_endian.h"
-#include <stdint.h>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

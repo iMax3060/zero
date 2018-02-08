@@ -5,7 +5,7 @@
 #ifndef __LOCK_CORE_H
 #define __LOCK_CORE_H
 
-#include <stdint.h>
+#include <cstdint>
 #include "lsn.h"
 
 struct RawLock;

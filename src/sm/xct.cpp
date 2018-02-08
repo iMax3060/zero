@@ -13,12 +13,12 @@
 #include "tls.h"
 
 #include "lock.h"
-#include <sm_base.h>
+#include "sm_base.h"
 #include "xct.h"
 #include "lock_x.h"
 #include "lock_lil.h"
 
-#include <sm.h>
+#include "sm.h"
 #include "tls.h"
 #include <sstream>
 #include "chkpt.h"

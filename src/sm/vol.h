@@ -9,7 +9,7 @@
 #include "stnode_page.h"
 
 #include <list>
-#include <stdlib.h>
+#include <cstdlib>
 
 class alloc_cache_t;
 class stnode_cache_t;

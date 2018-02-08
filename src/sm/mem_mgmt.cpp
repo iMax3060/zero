@@ -4,7 +4,7 @@
 
 #ifdef MM_TEST
     #undef NDEBUG
-    #include <assert.h>  // force assertions
+    #include <cassert>  // force assertions
 #endif
 
 #ifdef MM_TEST

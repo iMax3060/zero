@@ -10,7 +10,7 @@
 #include "logarchive_scanner.h" // CS TODO just for RunMerger -- remove
 
 #include <algorithm>
-#include <sm_base.h>
+#include "sm_base.h"
 
 #include "stopwatch.h"
 

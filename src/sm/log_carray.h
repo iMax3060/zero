@@ -82,7 +82,7 @@
  * The VLDB Journal 21, no. 2 (2012): 239-263.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <boost/static_assert.hpp>
 #include "w_base.h"
 #include "w_error.h"

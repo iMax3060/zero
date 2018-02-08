@@ -43,10 +43,10 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * on the compiler.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #ifndef __W_WORKAROUND_H
-#include <w_workaround.h>
+#include "w_workaround.h"
 #endif // __W_WORKAROUND_H
 
 // Simple byte-by-byte comparisions

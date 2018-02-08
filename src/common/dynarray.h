@@ -54,9 +54,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /**\cond skip */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <errno.h>
+#include <cstddef>
+#include <cstdint>
+#include <cerrno>
 #include <algorithm>
 
 /* A memory-mapped array which exploits the capabilities provided by

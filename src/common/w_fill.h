@@ -1,7 +1,7 @@
 #ifndef __W_FILL_H
 #define __W_FILL_H
 
-#include <stdint.h>
+#include <cstdint>
 
 /*
  * These types are auto-initialized filler space for alignment

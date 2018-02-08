@@ -2,7 +2,7 @@
  * (c) Copyright 2014, Hewlett-Packard Development Company, LP
  */
 #include "lock_raw.h"
-#include <time.h>
+#include <ctime>
 #include <set>
 #include "w_okvl_inl.h"
 #include "w_debug.h"

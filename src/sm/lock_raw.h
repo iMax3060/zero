@@ -84,10 +84,10 @@
  *   \li Also see MarkablePointer, [MICH02], and [HERLIHY].
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <ostream>
 #include <pthread.h>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "w_defines.h"
 #include "w_okvl.h"
 #include "w_rc.h"

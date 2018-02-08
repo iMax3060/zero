@@ -107,7 +107,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include <cstdlib>
 #include <climits>
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <unistd.h>
 

@@ -33,11 +33,11 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#include <w_base.h>
-#include <w_error.h>
-#include <w_rc.h>
-#include <w_minmax.h>
-#include <w_list.h>
+#include "w_base.h"
+#include "w_error.h"
+#include "w_rc.h"
+#include "w_minmax.h"
+#include "w_list.h"
 #include <sys/time.h>
 
 /*<std-footer incl-file-exclusion='W_H'>  -- do not edit anything below this line -- */

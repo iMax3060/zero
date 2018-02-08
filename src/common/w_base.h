@@ -439,8 +439,8 @@ public:
 };
 
 #include "w_fill.h"
-#include <w_error.h>
-#include <w_rc.h>
+#include "w_error.h"
+#include "w_rc.h"
 
 template<bool B> struct CompileTimeAssertion;
 /** \brief Compile-time assertion trick.

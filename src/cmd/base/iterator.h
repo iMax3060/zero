@@ -6,7 +6,7 @@
 #include "sm_base.h"
 #include "generic_page.h"
 
-#include<fstream>
+#include <fstream>
 
 #include "ringbuffer.h"
 

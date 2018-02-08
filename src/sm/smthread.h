@@ -65,15 +65,14 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * \ingroup MACROS
  */
 
-#include <assert.h>
+#include <cassert>
 #ifndef __W_H
-#include <w.h>
+#include "w.h"
 #endif // __W_H
 #ifndef __SM_BASE_H
-#include <sm_base.h>
+#include "sm_base.h"
 #endif // __SM_BASE_H
-#include <w_bitvector.h>
-
+#include "w_bitvector.h"
 #include <mutex>
 #include <memory>
 #include <list>

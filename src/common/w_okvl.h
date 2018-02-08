@@ -56,8 +56,8 @@
  * It's a full-length paper, but it must be worth reading (otherwise punch us).
  */
 
-#include <string.h> // for memset/memcpy/memcmp
-#include <stdint.h>
+#include <cstring> // for memset/memcpy/memcmp
+#include <cstdint>
 
 /**
  * \brief The number of partitions in OKVL.

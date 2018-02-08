@@ -32,7 +32,7 @@
 #define __TRACE_H
 
 #include <cstdarg>             /* for varargs */
-#include <stdint.h>            /* for uint32_t */
+#include <cstdint>            /* for uint32_t */
 
 #include "util/compat.h"
 #include "trace_types.h"

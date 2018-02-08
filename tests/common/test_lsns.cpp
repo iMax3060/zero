@@ -3,7 +3,7 @@
 #include <cstddef>
 #include "w.h"
 #include "lsn.h"
-#include <stdint.h>
+#include <cstdint>
 #include "gtest/gtest.h"
 
 TEST (LsnTest, All) {

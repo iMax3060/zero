@@ -1,5 +1,5 @@
 #include <pthread.h>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "gtest/gtest.h"
 #include "log_lsn_tracker.h"
 #include "../common/local_random.h"

@@ -2,7 +2,7 @@
 #define __W_ENDIAN_H
 
 #include "shore-config.h"
-#include <stdint.h>
+#include <cstdint>
 
 /** A few helper functions about endianness. */
 

@@ -61,7 +61,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *
  * Any code that uses the SHORE Storage Manager requires
  * \code
- * #include <sm_vas.h>
+ * #include "sm_vas.h"
  * \endcode
  * This header file encapsulates all the storage manager header files needed
  * by a value-added server.

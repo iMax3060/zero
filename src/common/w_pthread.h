@@ -57,7 +57,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define __W_PTHREAD_H
 
 #include <pthread.h>
-#include <string.h>
+#include <cstring>
 #include <sstream>
 
 #define DO_PTHREAD_BARRIER(x) \

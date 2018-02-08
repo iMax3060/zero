@@ -10,7 +10,7 @@
 #ifndef LINTEL_MERSENNE_TWISTER_RANDOM_HPP
 #define LINTEL_MERSENNE_TWISTER_RANDOM_HPP
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #include "RandomBase.hpp"

@@ -59,7 +59,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "w_defines.h"
 
 #include "sm_options.h"
-#include <partition.h>
+#include "partition.h"
 #include <map>
 #include <vector>
 #include <memory>

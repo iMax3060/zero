@@ -6,7 +6,7 @@
 #include <map>
 
 #undef NDEBUG
-#include <assert.h>  // force assertions
+#include <cassert>  // force assertions
 
 typedef mem_mgmt_t::slot_t slot_t;
 

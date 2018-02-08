@@ -35,8 +35,8 @@
 #include <cassert>
 #include <functional>
 #include <cstdarg>
-#include <stdint.h>
-#include <time.h>
+#include <cstdint>
+#include <ctime>
 
 #include "util/exception.h"
 #include "util/randgen.h"

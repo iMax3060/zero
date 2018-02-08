@@ -4,9 +4,9 @@
 #ifndef __W_GC_POOL_FOREST_H
 #define __W_GC_POOL_FOREST_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "w_defines.h"
 #include "w_debug.h"
 #include "lsn.h"

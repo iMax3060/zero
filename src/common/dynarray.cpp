@@ -50,10 +50,10 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 */
 
 /**\cond skip */
-#include <stdio.h>
+#include <cstdio>
 #include "dynarray.h"
 #include "shore-config.h"
-#include <errno.h>
+#include <cerrno>
 #include <sys/mman.h>
 #include <algorithm>
 #include <cstdlib>

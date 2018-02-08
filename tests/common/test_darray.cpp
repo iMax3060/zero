@@ -1,7 +1,7 @@
 #include "shore-config.h"
 #include "w_base.h"
 #include "dynarray.h"
-#include <errno.h>
+#include <cerrno>
 #include <sys/mman.h>
 #include <algorithm>
 #include <cstdlib>

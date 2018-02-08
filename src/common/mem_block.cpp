@@ -59,7 +59,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "mem_block.h"
 #include "AtomicCounter.hpp"
 #include <cstdlib>
-#include <stdio.h>
+#include <cstdio>
 #include <algorithm>
 #ifdef __linux
 #include <malloc.h>

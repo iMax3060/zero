@@ -7,7 +7,7 @@
 #endif
 #include <vector>
 #include <new>
-#include <stdlib.h>
+#include <cstdlib>
 #include "gtest/gtest.h"
 
 #define TEMPLATE_ARGS chip_size, chip_count, block_size

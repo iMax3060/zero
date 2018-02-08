@@ -8,10 +8,10 @@
 #include "w_defines.h"
 #include "latch.h"
 #include "bf_tree.h"
-#include <string.h>
+#include <cstring>
 #include <atomic>
 
-#include <assert.h>
+#include <cassert>
 
 /**
  * \brief Control block in the new buffer pool class.

@@ -61,7 +61,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include <vector> // only for _collect_single_page_recovery_logs()
 #include <limits>
 
@@ -77,7 +77,7 @@ class ticker_thread_t;
 class fetch_buffer_loader_t;
 class flush_daemon_thread_t;
 
-#include <partition.h>
+#include "partition.h"
 #include "mcs_lock.h"
 #include "tatas.h"
 #include "log_storage.h"

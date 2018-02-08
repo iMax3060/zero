@@ -82,7 +82,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include <chrono>
 #include <set>
 #include <atomic>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "w_key.h"
 #include "lsn.h"
 #include "allocator.h"

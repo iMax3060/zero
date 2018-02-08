@@ -1,7 +1,7 @@
 #ifndef LINTEL_RANDOM_BASE_HPP
 #define LINTEL_RANDOM_BASE_HPP
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #ifndef UINT32_MAX 

@@ -1,15 +1,15 @@
 #include "basethread.h"
 
-#include <chkpt.h>
-#include <sm.h>
-#include <restart.h>
-#include <vol.h>
-#include <btree.h>
-#include <bf_tree.h>
+#include "chkpt.h"
+#include "sm.h"
+#include "restart.h"
+#include "vol.h"
+#include "btree.h"
+#include "bf_tree.h"
 
-#include <log_lsn_tracker.h>
-#include <log_core.h>
-#include <log_carray.h>
+#include "log_lsn_tracker.h"
+#include "log_core.h"
+#include "log_carray.h"
 
 sm_options basethread_t::_options;
 

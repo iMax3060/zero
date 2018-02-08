@@ -453,7 +453,7 @@ worker_stats_t base_worker_t::get_stats()
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <errno.h>
+#include <cerrno>
 void base_worker_t::create_trace_dir(string dir)
 {
     mkdir(dir.c_str(),0777);

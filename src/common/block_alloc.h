@@ -8,8 +8,8 @@
 
 // for placement new support, which users need
 #include <new>
-#include <w.h>
-#include <stdlib.h>
+#include "w.h"
+#include <cstdlib>
 #include <deque>
 
 /* Forward decls so we can do proper friend declarations later

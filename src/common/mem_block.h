@@ -53,7 +53,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define __MEM_BLOCK_H
 
 /**\cond skip */
-#include <stddef.h>
+#include <cstddef>
 #include <cassert>
 #include "w_base.h"
 

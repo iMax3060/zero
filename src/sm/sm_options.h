@@ -5,7 +5,7 @@
 #ifndef __SM_OPTIONS_H
 #define __SM_OPTIONS_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <map>
 

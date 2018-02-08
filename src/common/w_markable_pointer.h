@@ -5,10 +5,10 @@
 #define __W_MARKABLE_POINTER_H
 
 #include "w_defines.h"
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 #include <iostream>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 
 /**
  * \brief Lock-Free Data Structures and Algorithm

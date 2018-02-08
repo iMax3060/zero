@@ -4,7 +4,7 @@
 #ifndef __LOG_LSN_TRACKER_H
 #define __LOG_LSN_TRACKER_H
 
-#include <stdint.h>
+#include <cstdint>
 #include "lsn.h"
 
 /**

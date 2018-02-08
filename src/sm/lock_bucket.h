@@ -5,7 +5,7 @@
 #ifndef __LOCK_BUCKET_H
 #define __LOCK_BUCKET_H
 
-#include <stdint.h>
+#include <cstdint>
 #include "w_okvl.h"
 #include "w_okvl_inl.h"
 #include "lsn.h"

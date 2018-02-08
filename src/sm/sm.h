@@ -68,11 +68,11 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  */
 
 #ifndef __SM_BASE_H
-#include <sm_base.h>
+#include "sm_base.h"
 #endif // __SM_BASE_H
 
-#include <smstats.h> // declares sm_stats_t and sm_config_info_t
-#include <lsn.h>
+#include "smstats.h" // declares sm_stats_t and sm_config_info_t
+#include "lsn.h"
 #include <string>
 #include "sm_options.h"
 
@@ -1432,7 +1432,7 @@ ostream& operator<<(ostream& o, const sm_config_info_t& s)
 }
 
 #ifndef __VEC_T_H
-#include <vec_t.h>
+#include "vec_t.h"
 #endif // __VEC_T_H
 
 /*<std-footer incl-file-exclusion='SM_H'>  -- do not edit anything below this line -- */

@@ -9,7 +9,7 @@
 #include "w.h"
 #include "sthread.h"
 // for PTHREAD_THREAD_MAX:
-#include <limits.h>
+#include <climits>
 // for _SC_PTHREAD_THREAD_MAX:
 #include <unistd.h>
 #include "gtest/gtest.h"

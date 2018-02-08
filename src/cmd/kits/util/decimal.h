@@ -24,7 +24,7 @@
 #ifndef __DECIMAL_H
 #define __DECIMAL_H
 
-#include <stdint.h>
+#include <cstdint>
 
 /** A fixed-point decimal class. Able to represent up to 2^50 cents
     accurately, allowing numbers approaching 4 trillion or so.

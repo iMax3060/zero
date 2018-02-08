@@ -3,7 +3,7 @@
 #include <memory.h>
 #include <set>
 #include <pthread.h>
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "gtest/gtest.h"
 #include "local_random.h"
 

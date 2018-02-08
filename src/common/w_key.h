@@ -2,11 +2,11 @@
 #define __W_KEY_H
 
 #include <cassert>
-#include <string.h> //#include <cstring>
+#include <cstring>
 #include <string>
 #include <ostream>
 #include <iostream> // for cout
-#include <stdint.h>
+#include <cstdint>
 #include "w_endian.h"
 
 class w_keystr_t_test;

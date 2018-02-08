@@ -9,7 +9,7 @@
 #include "basics.h"
 #include "bf_hashtable.h"
 #include "latch.h"
-#include <string.h>
+#include <cstring>
 
 const size_t HASHBUCKET_INITIAL_CHUNK_SIZE = 4;
 const uint32_t BF_HASH_SEED = 0x35D0B891;

@@ -59,7 +59,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #ifndef __W_BASE_H
 /* NB: DO NOT make this include w.h -- not yet */
-#include <w_base.h>
+#include "w_base.h"
 #endif // __W_BASE_H
 
 /**\file w_debug.h

@@ -28,7 +28,7 @@
 
 // #include "k_defines.h"
 
-#include "assert.h"
+#include <cassert>
 #include "tpcb_input.h"
 
 // Uncomment below to execute only local xcts

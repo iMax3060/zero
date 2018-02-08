@@ -6,9 +6,9 @@
     modifications from M. Matsumoto and T. Nishimura
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #ifdef SYS_POSIX
 #include <sys/time.h>
 #include <unistd.h>
@@ -18,7 +18,7 @@
 #include <Wincrypt.h>
 #endif
 
-#include <util/MersenneTwisterRandom.hpp>
+#include "util/MersenneTwisterRandom.hpp"
 
 /*
    A C-program for MT19937, with initialization improved 2002/1/26.

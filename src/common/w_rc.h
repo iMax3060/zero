@@ -46,7 +46,7 @@
  * We do not use TLS for w_rc_t. We do not have a perl script to generate error code enum. etc.
  * This file is completely independent and header-only. Just include w_rc.h to use.
  */
-#include <stdint.h>
+#include <cstdint>
 #include <memory.h> // for memcpy
 #include <ostream> // for pretty-printing w_rc_t
 #include <iostream> // for cout

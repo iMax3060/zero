@@ -63,16 +63,16 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #include <vector>
 #include "basics.h"
-#include <w_debug.h>
+#include "w_debug.h"
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <climits>
-#include <w.h>
-#include <vec_t.h>
-#include <latch.h>
-#include <smthread.h>
-#include <tid_t.h>
+#include "w.h"
+#include "vec_t.h"
+#include "latch.h"
+#include "smthread.h"
+#include "tid_t.h"
 #include "smstats.h"
 
 

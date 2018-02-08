@@ -33,7 +33,7 @@
 #define __TPCC_SCHEMA_H
 
 
-#include <math.h>
+#include <cmath>
 
 #include "sm_vas.h"
 

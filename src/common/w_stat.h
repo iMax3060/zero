@@ -35,10 +35,10 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /*  -- do not edit anything above this line --   </std-header>*/
 
 #ifndef __W_BASE_H
-#include <w_base.h>
+#include "w_base.h"
 #endif // __W_BASE_H
 #ifndef __W_RC_H
-#include <w_rc.h>
+#include "w_rc.h"
 #endif // __W_RC_H
 
 class w_statistics_t; // forward

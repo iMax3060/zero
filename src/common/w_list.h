@@ -58,7 +58,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /*  -- do not edit anything above this line --   </std-header>*/
 
 #ifndef __W_BASE_H
-#include <w_base.h>
+#include "w_base.h"
 #endif // __W_BASE_H
 
 #include <iostream>

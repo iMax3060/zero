@@ -53,7 +53,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #ifndef __W_BITVECTOR_H
 #define __W_BITVECTOR_H
 
-#include <w.h>
+#include "w.h"
 
 /**\brief Templated bitmap for arbitrary size in bits
  *

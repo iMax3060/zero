@@ -24,7 +24,7 @@
 */
 
 // -*- mode:c++; c-basic-offset:4 -*-
-#include <AtomicCounter.hpp>
+#include "AtomicCounter.hpp"
 #include "w_defines.h"
 
 /**
