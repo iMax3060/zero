@@ -1,3 +1,5 @@
+[![Documentation](https://codedocs.xyz/iMax3060/zero.svg)](https://codedocs.xyz/iMax3060/zero/)
+
 # About
 
 Zero is a transactional storage manager used mainly for prototyping in Database Systems research. It supports operations on a [Foster B-tree](http://dl.acm.org/citation.cfm?id=2338630) data structure with ACID semantics. Zero is designed for highly scalable, high-throughput OLTP. Being a research prototype, it does not provide certain usability features expected on a real production-level system.
