@@ -9,11 +9,10 @@
 #include "w_defines.h"
 #include <utility>
 
-typedef uint32_t bf_idx;
-
 template<class T>
 class bf_hashbucket;
 
+typedef uint32_t bf_idx;
 typedef pair<bf_idx, bf_idx> bf_idx_pair;
 
 /**
