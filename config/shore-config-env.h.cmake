@@ -344,15 +344,6 @@
 /* 64 bits? */
 #cmakedefine ARCH_LP64
 
-/* operating system */
-#cmakedefine Linux
-
-/* architecture */
-#cmakedefine amd64
-
-/* architecture */
-#cmakedefine x86_64
-
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

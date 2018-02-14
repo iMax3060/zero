@@ -14,7 +14,7 @@ SET(ZERO_VERSION_PATCH 0)
 SET(ZERO_VERSION "${ZERO_VERSION_MAJOR}.${ZERO_VERSION_MINOR}.${ZERO_VERSION_PATCH}")
 
 # The lowest version of CMake supprted by this project is 3.6:
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
 
 # Load the project specific CMake modules:
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -86,9 +86,11 @@ IF(NOT NUMA_FOUND)
     MESSAGE(STATUS "INFO: How to install numa: http://oss.sgi.com/projects/libnuma/")
 ENDIF(NOT NUMA_FOUND)
 
-FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options system filesystem regex)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options system thread atomic filesystem regex)
 
 FIND_PACKAGE(LibRT REQUIRED)
+
+FIND_PACKAGE(LibCDS REQUIRED)
 
 # Enable testing using CTest (run "make test"):
 ENABLE_TESTING()

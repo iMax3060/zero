@@ -8,6 +8,7 @@
 #include "bf_hashtable.h"
 #include "exception.hpp"
 
+#include "cds/container/fcqueue.h"
 #include "MPMCQueue/MPMCQueue.h"
 
 class bf_tree_m;
@@ -39,6 +40,27 @@ namespace zero::buffer_pool {
 
     private:
         bf_tree_m* bufferPool;
+
+    };
+
+    class FreeListLowContention : public FreeList {
+    public:
+        FreeListLowContention(bf_tree_m* bufferpool, const sm_options& options) noexcept;
+
+        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final {
+            list.enqueue(freeFrame);
+        }
+
+        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept final {
+            return list.dequeue(freeFrame);
+        }
+
+        virtual bf_idx  getCount() final {
+            return list.size();
+        };
+
+    private:
+        cds::container::FCQueue<bf_idx> list;
 
     };
 

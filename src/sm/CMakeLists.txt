@@ -68,9 +68,10 @@ SET(sm_LIBS
     # Third-party dependencies:
     boost_program_options
     boost_system
+    boost_thread
+    boost_atomic
     boost_filesystem
     boost_regex
-    ${CDS_STATIC_LIBRARY}
    )
 
 TARGET_LINK_LIBRARIES(sm ${sm_LIBS})
