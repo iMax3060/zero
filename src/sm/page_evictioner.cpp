@@ -228,7 +228,7 @@ bf_idx page_evictioner_base::pick_victim() {
         }
 
         // Only evict actually evictable pages (not required to stay in the buffer pool)
-        if (!_bufferpool->is_evictable(idx, _flush_dirty)) {
+        if (!_bufferpool->isEvictable(idx, _flush_dirty)) {
             cb.latch().latch_release();
             continue;
         }
@@ -294,7 +294,7 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx) {
     // STEP 2: Unswizzle pointer on parent before evicting.
     //==========================================================================
     if (_swizzling_enabled && cb._swizzled) {
-        bool ret = _bufferpool->unswizzle(parent, child_slotid);
+        bool ret = _bufferpool->unswizzlePagePointer(parent, child_slotid);
         w_assert0(ret);
         w_assert1(!cb._swizzled);
     }

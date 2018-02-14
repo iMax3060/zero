@@ -793,7 +793,7 @@ void bf_tree_m::switch_parent(PageID pid, generic_page* parent)
     if (is_swizzled_pointer(pid)) {
         general_recordid_t child_slotid = find_page_id_slot(parent, pid);
         // passing apply=false just to convert pointer without actually unswizzling it
-        bool success = unswizzle(parent, child_slotid, false, &pid);
+        bool success = unswizzlePagePointer(parent, child_slotid, false, &pid);
         w_assert0(success);
     }
     w_assert1(!is_swizzled_pointer(pid));
@@ -880,10 +880,11 @@ bool bf_tree_m::has_swizzled_child(bf_idx node_idx) {
  *
  * Parent and child must me latched in EX mode if apply == true.
  */
-bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, bool apply,
-        PageID* ret_pid)
+bool bf_tree_m::unswizzlePagePointer(generic_page *parentPage, general_recordid_t childSlotInParentPage,
+                                     bool doUnswizzle,
+                                     PageID *childPageID)
 {
-    bf_idx parent_idx = parent - _buffer;
+    bf_idx parent_idx = parentPage - _buffer;
     bf_tree_cb_t &parent_cb = get_cb(parent_idx);
     // CS TODO: foster parent of a node created during a split will not have a
     // swizzled pointer to the new node; breaking the rule for now
@@ -892,10 +893,10 @@ bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, b
     w_assert1(parent_cb.latch().held_by_me());
 
     fixable_page_h p;
-    p.fix_nonbufferpool_page(parent);
-    w_assert1(child_slot <= p.max_child_slot());
+    p.fix_nonbufferpool_page(parentPage);
+    w_assert1(childSlotInParentPage <= p.max_child_slot());
 
-    PageID* pid_addr = p.child_slot_address(child_slot);
+    PageID* pid_addr = p.child_slot_address(childSlotInParentPage);
     PageID pid = *pid_addr;
     if (!is_swizzled_pointer(pid)) {
         return false;
@@ -907,7 +908,7 @@ bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, b
     w_assert1(child_cb._used);
     w_assert1(child_cb._swizzled);
 
-    if (apply) {
+    if (doUnswizzle) {
         // Since we have EX latch, we can just set the _swizzled flag
         // Otherwise there would be a race between swizzlers and unswizzlers
         // Parent is updated without requiring EX latch. This is correct as
@@ -921,12 +922,12 @@ bool bf_tree_m::unswizzle(generic_page* parent, general_recordid_t child_slot, b
         *pid_addr = child_cb._pid;
         w_assert1(!is_swizzled_pointer(*pid_addr));
 #if W_DEBUG_LEVEL > 0
-        general_recordid_t child_slotid = find_page_id_slot(parent, child_cb._pid);
+        general_recordid_t child_slotid = find_page_id_slot(parentPage, child_cb._pid);
         w_assert1(child_slotid != GeneralRecordIds::INVALID);
 #endif
     }
 
-    if (ret_pid) { *ret_pid = child_cb._pid; }
+    if (childPageID) { *childPageID = child_cb._pid; }
 
     return true;
 }
@@ -1198,12 +1199,12 @@ bool bf_tree_m::is_dirty(const bf_idx idx) const {
     return get_cb(idx).is_dirty();
 }
 
-bool bf_tree_m::is_evictable(const bf_idx idx, const bool flush_dirty) const {
-    bool ignore_dirty = flush_dirty || _no_db_mode || _write_elision;
+bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) const {
+    bool ignore_dirty = doFlushIfDirty || _no_db_mode || _write_elision;
 
-    auto &cb = get_cb(idx);
+    auto &cb = get_cb(indexToCheck);
     btree_page_h p;
-    p.fix_nonbufferpool_page(_buffer + idx);
+    p.fix_nonbufferpool_page(_buffer + indexToCheck);
     // We do not consider for eviction...
     if (// ... the stnode page
            p.tag() == t_stnode_p
@@ -1211,7 +1212,7 @@ bool bf_tree_m::is_evictable(const bf_idx idx, const bool flush_dirty) const {
         // (note, single-node B-tree is both root and leaf)
         || (p.tag() == t_btree_p && p.pid() == p.root())
     ) {
-        _evictioner->block_ref(idx);
+        _evictioner->block_ref(indexToCheck);
         DBG5(<< "Eviction failed on node type for " << idx);
         return false;
     }
@@ -1222,14 +1223,14 @@ bool bf_tree_m::is_evictable(const bf_idx idx, const bool flush_dirty) const {
         // (requires unswizzling, which is not supported)
         || (_enable_swizzling && p.tag() == t_btree_p && p.get_foster() != 0)
     ) {
-        _evictioner->swizzle_ref(idx);
+        _evictioner->swizzle_ref(indexToCheck);
         DBG5(<< "Eviction failed on swizzled for " << idx);
         return false;
     }
     if (// ... dirty pages, unless we're told to ignore them
            (!ignore_dirty && cb.is_dirty())
     ) {
-        _evictioner->dirty_ref(idx);
+        _evictioner->dirty_ref(indexToCheck);
         DBG5(<< "Eviction failed on dirty for " << idx);
         return false;
     }
@@ -1242,7 +1243,7 @@ bool bf_tree_m::is_evictable(const bf_idx idx, const bool flush_dirty) const {
     if (// ... pinned frames, i.e., someone required it not be evicted
            cb._pin_cnt != 0
     ) {
-        _evictioner->used_ref(idx);
+        _evictioner->used_ref(indexToCheck);
         DBG5(<< "Eviction failed on pinned for " << idx);
         return false;
     }

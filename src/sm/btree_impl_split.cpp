@@ -268,8 +268,8 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
 
     PageID new_child_pid = child.get_foster();
     if (smlevel_0::bf->is_swizzled_pointer(new_child_pid)) {
-        smlevel_0::bf->unswizzle(parent.get_generic_page(),
-                GeneralRecordIds::FOSTER_CHILD, true, &new_child_pid);
+        smlevel_0::bf->unswizzlePagePointer(parent.get_generic_page(),
+                                            GeneralRecordIds::FOSTER_CHILD, true, &new_child_pid);
     }
     w_assert1(!smlevel_0::bf->is_swizzled_pointer(new_child_pid));
 

@@ -199,7 +199,7 @@ public:
      */
     bool is_dirty(const bf_idx idx) const;
 
-    /*!\fn      is_evictable(const bf_idx idx, bool flush_dirty) const
+    /*!\fn      isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) const
      * \brief   Check if a page can be evicted
      * \details The following conditions make a page unevictable:
      *          - It is the store node page (\link generic_page_h::tag() \endlink \c ==
@@ -234,20 +234,20 @@ public:
      *            The page is either pinned or it gets currently evicted by another
      *            thread.
      *
-     * \pre     The buffer frame with index \c idx is latched in
+     * \pre     The buffer frame with index \c indexToCheck is latched in
      *          \link latch_mode_t::LATCH_EX \endlink mode by this thread.
      *
      * \remark  The example implementations for the conditions are given in the
      *          documentation because it is hard to figure out which pages cannot be
      *          evicted.
      *
-     * @param idx         The index of the buffer frame that is supposed to be freed
-     *                    by evicting the contained page.
-     * @param flush_dirty \c true if the page gets flushed during the eviction,
-     *                    \c false else.
-     * @return            \c true if the page could be evicted, \c false else.
+     * @param indexToCheck   The index of the buffer frame that is supposed to be freed
+     *                       by evicting the contained page.
+     * @param doFlushIfDirty \c true if the page gets flushed during the eviction,
+     *                       \c false else.
+     * @return               \c true if the page could be evicted, \c false else.
      */
-    bool is_evictable(const bf_idx idx, const bool flush_dirty) const;
+    bool isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) const;
 
     bf_idx lookup(PageID pid) const;
 
@@ -357,25 +357,29 @@ public:
 
     void fuzzy_checkpoint(chkpt_t& chkpt) const;
 
-    /*!\fn      unswizzle(generic_page* parent, general_recordid_t child_slot, bool apply = true, PageID* ret_pid = nullptr)
-     * \brief
-     * \details Tries to unswizzle the given child page from the parent page. If, for some reason,
-     *          unswizzling was impossible or troublesome, gives up and returns \c false.
+    /*!\fn      unswizzlePagePointer(generic_page *parentPage, general_recordid_t childSlotInParentPage, bool doUnswizzle = true, PageID *childPageID = nullptr)
+     * \brief   Unswizzle a page pointer in a page's parent page
+     * \details Tries to unswizzle the given child page (\c childSlotInParentPage) from the parent
+     *          page (\c parentPage). If, for some reason, unswizzling was impossible or troublesome,
+     *          gives up and returns \c false.
      *
-     * @pre parent is latched in any mode; child is latched in EX mode (if apply=true)
+     * @pre The parent page is latched in any mode and the child page is latched in mode
+     *      \link latch_mode_t::LATCH_EX \endlink (if \c doUnswizzle \c == \c true).
      *
-     * @param[in]     parent     The parent page where to unswizzle the child page.
-     * @param[in]     child_slot The slot within the parent page where to find the swizzled pointer to
-     *                           the child page.
-     * @param[in]     apply      If \c true, pointer is actually unswizzled in parent; otherwise just
-     *                           return what the unswizzled pointer would be (i.e., the \c ret_pid)
-     * @param[in,out] ret_pid    If it wasn't set to the \c nullptr, the unswizzled \link PageID \endlink
-     *                           of the child page is returned.
+     * @param[in]     parentPage            The parent page where to unswizzle the child page.
+     * @param[in]     childSlotInParentPage The slot within the parent page where to find the swizzled
+     *                                      pointer to the child page.
+     * @param[in]     doUnswizzle           If \c true, pointer is actually unswizzled in parent,
+     *                                      otherwise just return what the unswizzled pointer would be
+     *                                      (i.e., the \c childPageID).
+     * @param[in,out] childPageID           If it wasn't set to the \c nullptr, the unswizzled
+     *                                      \link PageID \endlink of the child page is returned.
      *
-     * @return                   Whether the child page has been unswizzled.
+     * @return                              \c false if the unswizzling was not successful, else \c true.
      */
-    bool unswizzle(generic_page* parent, general_recordid_t child_slot, bool apply = true,
-            PageID* ret_pid = nullptr);
+    bool unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
+                              bool doUnswizzle = true,
+                              PageID* childPageID = nullptr);
 
     // Used for debugging
     void print_page(PageID pid);
