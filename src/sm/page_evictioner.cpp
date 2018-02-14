@@ -37,7 +37,7 @@ void page_evictioner_base::do_work() {
 
     // In principle, _freelist_len requires a fence, but here it should be OK
     // because we don't need to read a consistent value every time.
-    while (_bufferpool->_freelist_len < preferred_count) {
+    while (_bufferpool->_freeList.get()->getCount() < preferred_count) {
         bf_idx victim = pick_victim();
 
         if (evict_one(victim)) {

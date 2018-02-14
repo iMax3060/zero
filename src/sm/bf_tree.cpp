@@ -195,15 +195,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
         }
     }
 
-    // initially, all blocks are free
-    _freelist = new bf_idx[nbufpages];
-    w_assert0(_freelist != NULL);
-    _freelist[0] = 1; // [0] is a special entry. it's the list head
-    for (bf_idx i = 1; i < nbufpages - 1; ++i) {
-        _freelist[i] = i + 1;
-    }
-    _freelist[nbufpages - 1] = 0;
-    _freelist_len = nbufpages - 1; // -1 because [0] isn't a valid block
+    _freeList = std::make_shared<zero::buffer_pool::FreeListHighContention>(this, options);
 
     //initialize hashtable
     int buckets = w_findprime(1024 + (nbufpages / 4)); // maximum load factor is 25%. this is lower than original shore-mt because we have swizzling
@@ -251,10 +243,6 @@ bf_tree_m::~bf_tree_m()
         ::free (buf);
         _control_blocks = NULL;
     }
-    if (_freelist != NULL) {
-        delete[] _freelist;
-        _freelist = NULL;
-    }
     if (_hashtable != NULL) {
         delete _hashtable;
         _hashtable = NULL;
@@ -292,32 +280,9 @@ w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret)
     auto time1 = steady_clock::now();
 
     while (true) {
-        // once the bufferpool becomes full, getting _freelist_lock everytime will be
-        // too costly. so, we check _freelist_len without lock first.
-        //   false positive : fine. we do real check with locks in it
-        //   false negative : fine. we will eventually get some free block anyways.
-        if (_freelist_len > 0) {
-            CRITICAL_SECTION(cs, &_freelist_lock);
-            if (_freelist_len > 0) { // here, we do the real check
-                bf_idx idx = FREELIST_HEAD;
-                DBG5(<< "Grabbing idx " << idx);
-                w_assert1(_is_valid_idx(idx));
-                w_assert1 (!get_cb(idx)._used);
-                w_assert1 (get_cb(idx)._pin_cnt < 0);
-                ret = idx;
-
-                --_freelist_len;
-                if (_freelist_len == 0) {
-                    FREELIST_HEAD = 0;
-                } else {
-                    FREELIST_HEAD = _freelist[idx];
-                    w_assert1 (FREELIST_HEAD > 0 && FREELIST_HEAD < _block_cnt);
-                }
-                DBG5(<< "New head " << FREELIST_HEAD);
-                w_assert1(ret != FREELIST_HEAD);
-                break;
-            }
-        } // exit the scope to do the following out of the critical section
+        if (_freeList.get()->grabFreeBufferpoolFrame(ret)) {
+            break;
+        }
 
         // no free frames -> warmup is done
         set_warmup_done();
@@ -375,14 +340,10 @@ void bf_tree_m::check_warmup_done()
 
 void bf_tree_m::_add_free_block(bf_idx idx)
 {
-    CRITICAL_SECTION(cs, &_freelist_lock);
-    w_assert1(idx != FREELIST_HEAD);
     w_assert1(!get_cb(idx)._used);
     w_assert1(get_cb(idx)._pin_cnt < 0);
     if(_evictioner) _evictioner->unbuffered(idx);
-    ++_freelist_len;
-    _freelist[idx] = FREELIST_HEAD;
-    FREELIST_HEAD = idx;
+    _freeList.get()->addFreeBufferpoolFrame(idx);
 }
 
 void bf_tree_m::post_init()
@@ -937,7 +898,7 @@ bool bf_tree_m::unswizzlePagePointer(generic_page *parentPage, general_recordid_
 void bf_tree_m::debug_dump(std::ostream &o) const
 {
     o << "dumping the bufferpool contents. _block_cnt=" << _block_cnt << "\n";
-    o << "  _freelist_len=" << _freelist_len << ", HEAD=" << FREELIST_HEAD << "\n";
+    o << "  _freeList.get()->getCount()=" << _freeList.get()->getCount() << "\n";
 
     for (uint32_t store = 1; store < stnode_page::max; ++store) {
         if (_root_pages[store] != 0) {
@@ -960,7 +921,7 @@ void bf_tree_m::debug_dump(std::ostream &o) const
             o << ", ";
             cb.latch().print(o);
         } else {
-            o << "unused (next_free=" << _freelist[idx] << ")";
+            o << "unused";
         }
         o << std::endl;
     }

@@ -19,6 +19,7 @@ SET(sm_STAT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/btree_logrec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/btree_page.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/btree_page_h.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/buffer_pool_free_list.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chkpt.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/eventlog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fixable_page_h.cpp

@@ -13,6 +13,7 @@
 #include "bf_hashtable.h"
 #include "bf_tree_cb.h"
 #include <iosfwd>
+#include "buffer_pool_free_list.hpp"
 #include "page_cleaner.h"
 #include "page_evictioner.h"
 #include "restart.h"
@@ -495,20 +496,7 @@ private:
     /** hashtable to locate a page in this bufferpool. swizzled pages are removed from bufferpool. */
     bf_hashtable<bf_idx_pair>*        _hashtable;
 
-    /**
-     * singly-linked freelist. index is same as _buffer/_control_blocks. zero means no link.
-     * This logically belongs to _control_blocks, but is an array by itself for efficiency.
-     * index 0 is always the head of the list (points to the first free block, or 0 if no free block).
-     */
-    bf_idx*              _freelist;
-
-    /** count of free blocks. */
-    uint32_t _freelist_len;
-
-// Be VERY careful on deadlock to use the following.
-
-    /** spin lock to protect all freelist related stuff. */
-    tatas_lock           _freelist_lock;
+    std::shared_ptr<zero::buffer_pool::FreeListHighContention> _freeList;
 
     /** the dirty page cleaner. */
     std::shared_ptr<page_cleaner_base>   _cleaner;
@@ -720,13 +708,5 @@ private:
         }
     }
 };
-
-// tiny macro to help swizzled-LRU and freelist access
-#define FREELIST_HEAD _freelist[0]
-// #define SWIZZLED_LRU_HEAD _swizzled_lru[0]
-// #define SWIZZLED_LRU_TAIL _swizzled_lru[1]
-// #define SWIZZLED_LRU_PREV(x) _swizzled_lru[x * 2]
-// #define SWIZZLED_LRU_NEXT(x) _swizzled_lru[x * 2 + 1]
-
 
 #endif // __BF_TREE_H
