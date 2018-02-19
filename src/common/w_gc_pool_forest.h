@@ -128,11 +128,11 @@ union gc_pointer_raw {
     uint64_t word;
 
     bool operator==(const gc_pointer_raw& other) const {
-        return word == word;
+        return word == other.word;
     }
 
     bool operator!=(const gc_pointer_raw& other) const {
-        return word != word;
+        return word != other.word;
     }
 
 };

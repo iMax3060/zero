@@ -478,7 +478,7 @@ w_rc_t table_man_t<T>::update_tuple(ss_m* db,
 }
 
 template<class T>
-w_rc_t table_man_t<T>::print_table(ostream& os, int num_lines)
+w_rc_t table_man_t<T>::print_table(ostream& os, unsigned int num_lines)
 {
     table_row_t* row = get_tuple();
     rep_row_t rep(ts());
@@ -507,7 +507,7 @@ w_rc_t table_man_t<T>::print_table(ostream& os, int num_lines)
 
 template<class T>
 w_rc_t table_man_t<T>::print_index(unsigned ind, ostream& os,
-        int num_lines, bool need_tuple)
+        unsigned int num_lines, bool need_tuple)
 {
     table_row_t* row = get_tuple();
     rep_row_t rep(ts());

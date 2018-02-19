@@ -19,15 +19,16 @@ BackupReader::BackupReader(size_t bufferSize)
 {
     // Using direct I/O
     w_assert1(bufferSize % IO_ALIGN == 0);
-    posix_memalign((void**) &buffer, IO_ALIGN, bufferSize);
-    // buffer = new char[bufferSize];
+    int allocReturn = posix_memalign((void**) &buffer, IO_ALIGN, bufferSize);
+    if (allocReturn) {
+        throw std::bad_alloc();
+    }
 }
 
 BackupReader::~BackupReader()
 {
     // Using direct I/O
     free(buffer);
-    // delete[] buffer;
 }
 
 BackupOnDemandReader::BackupOnDemandReader(vol_t* volume, size_t segmentSize, size_t numThreads)

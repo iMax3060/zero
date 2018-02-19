@@ -79,7 +79,7 @@ string AggLog::jsonReply()
 AggregateHandler::AggregateHandler(bitset<logrec_t::t_max_logrec> filter,
         int interval, logrec_t::kind_t begin, logrec_t::kind_t end)
     : filter(filter), interval(interval), currentTick(0),
-    begin(begin), end(end), seenBegin(false), jsonResultIndex(0)
+      jsonResultIndex(0), begin(begin), end(end), seenBegin(false)
 {
     assert(interval > 0);
     counts.reserve(logrec_t::t_max_logrec);

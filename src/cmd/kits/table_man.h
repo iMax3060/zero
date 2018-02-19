@@ -299,9 +299,9 @@ public:
     /*
      * print the table on screen or to files
      */
-    virtual w_rc_t print_table(ostream& os, int num_lines = 0);
+    virtual w_rc_t print_table(ostream& os, unsigned int num_lines = 0);
     virtual w_rc_t print_index(unsigned i, ostream& os,
-            int num_lines = 0, bool need_tuple = false);
+            unsigned int num_lines = 0, bool need_tuple = false);
 
 
     /* --------------- */

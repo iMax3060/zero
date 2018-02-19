@@ -37,4 +37,4 @@ protected:
     bool _write_elision;
 };
 
-#endif __PAGE_CLEANER_H
+#endif // __PAGE_CLEANER_H
