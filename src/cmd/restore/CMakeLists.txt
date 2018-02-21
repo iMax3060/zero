@@ -6,3 +6,5 @@ SET(restore_SRCS
 
 # Add the library of this directory restore:
 ADD_LIBRARY(restore ${restore_SRCS})
+
+SET_PROPERTY(TARGET restore PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)

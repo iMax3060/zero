@@ -26,8 +26,12 @@ SET(webserver_SRCS
 # Add the library of this directory webserverLib:
 ADD_LIBRARY(webserverLib ${webserver_SRCS})
 
+SET_PROPERTY(TARGET webserverLib PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+
 # Add the webserver executable:
 ADD_EXECUTABLE(webserver main.cpp)
+
+SET_PROPERTY(TARGET webserver PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
 
 # Set the shared libraries used by the executable webserver:
 SET(webserver_LIBS

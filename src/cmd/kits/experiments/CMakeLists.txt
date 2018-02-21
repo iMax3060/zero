@@ -5,3 +5,5 @@ SET(experiments_SRCS
 
 # Add the library of this directory experiments:
 ADD_LIBRARY(experiments ${experiments_SRCS})
+
+SET_PROPERTY(TARGET experiments PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)

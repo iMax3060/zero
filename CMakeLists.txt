@@ -13,8 +13,8 @@ SET(ZERO_VERSION_MINOR 1)
 SET(ZERO_VERSION_PATCH 0)
 SET(ZERO_VERSION "${ZERO_VERSION_MAJOR}.${ZERO_VERSION_MINOR}.${ZERO_VERSION_PATCH}")
 
-# The lowest version of CMake supprted by this project is 3.6:
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+# The lowest version of CMake supprted by this project is 3.9:
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 
 # Load the project specific CMake modules:
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake/Modules/")

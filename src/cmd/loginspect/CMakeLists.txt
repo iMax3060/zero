@@ -18,3 +18,5 @@ SET(loginspect_SRCS
 
 # Add the library of this directory loginspect:
 ADD_LIBRARY(loginspect ${loginspect_SRCS})
+
+SET_PROPERTY(TARGET loginspect PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)

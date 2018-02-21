@@ -56,5 +56,7 @@ ADD_SUBDIRECTORY(experiments)
 # Add the library of this directory kits:
 ADD_LIBRARY(kits ${kits_SRCS})
 
+SET_PROPERTY(TARGET kits PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+
 # Set the shared librariy used by the library kits:
 TARGET_LINK_LIBRARIES(kits experiments)

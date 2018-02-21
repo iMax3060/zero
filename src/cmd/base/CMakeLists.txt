@@ -8,3 +8,5 @@ SET(zapps_base_SRCS
 
 # Add the library of this directory zapps_base:
 ADD_LIBRARY(zapps_base ${zapps_base_SRCS})
+
+SET_PROPERTY(TARGET zapps_base PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
