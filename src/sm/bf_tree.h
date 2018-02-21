@@ -69,10 +69,12 @@ class bf_tree_m {
     friend class test_bf_fixed; // for testcases
     friend class bf_tree_cleaner; // for page cleaning
     friend class page_evictioner_base;  // for page evictioning
+    friend class page_evictioner_gclock;
     friend class WarmupThread;
     friend class page_cleaner_decoupled;
-    friend class page_evictioner_gclock;
     friend class GenericPageIterator;
+    friend class zero::buffer_pool::FreeListLowContention;
+    friend class zero::buffer_pool::FreeListHighContention;
 
 public:
     /** constructs the buffer pool. */
@@ -404,9 +406,6 @@ private:
      */
     void   _convert_to_disk_page (generic_page* page) const;
 
-    /** finds a free block and returns its index. if free list is empty and 'evict' = true, it evicts some page. */
-    w_rc_t _grab_free_block(bf_idx& ret);
-
     /**
      * try to evict a given block.
      * @return whether evicted the page or not
@@ -426,9 +425,6 @@ private:
      */
     bool _try_evict_block_update_emlsn(bf_tree_cb_t &parent_cb, bf_tree_cb_t &cb,
         bf_idx parent_idx, bf_idx idx, general_recordid_t child_slotid);
-
-    /** Adds a free block to the freelist. */
-    void   _add_free_block(bf_idx idx);
 
     /// returns true iff idx is in the valid range.  for assertion.
     bool   _is_valid_idx (bf_idx idx) const;
@@ -496,7 +492,7 @@ private:
     /** hashtable to locate a page in this bufferpool. swizzled pages are removed from bufferpool. */
     bf_hashtable<bf_idx_pair>*        _hashtable;
 
-    std::shared_ptr<zero::buffer_pool::FreeListHighContention> _freeList;
+    std::shared_ptr<zero::buffer_pool::FreeListLowContention> _freeList;
 
     /** the dirty page cleaner. */
     std::shared_ptr<page_cleaner_base>   _cleaner;

@@ -41,7 +41,7 @@ void page_evictioner_base::do_work() {
         bf_idx victim = pick_victim();
 
         if (evict_one(victim)) {
-            _bufferpool->_add_free_block(victim);
+            _bufferpool->_freeList->addFreeBufferpoolFrame(victim);
         }
 
         /* Rather than waiting for all the pages to be evicted, we notify

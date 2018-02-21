@@ -195,7 +195,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
         }
     }
 
-    _freeList = std::make_shared<zero::buffer_pool::FreeListHighContention>(this, options);
+    _freeList = std::make_shared<zero::buffer_pool::FreeListLowContention>(this, options);
 
     //initialize hashtable
     int buckets = w_findprime(1024 + (nbufpages / 4)); // maximum load factor is 25%. this is lower than original shore-mt because we have swizzling
@@ -272,45 +272,6 @@ bf_idx bf_tree_m::lookup(PageID pid) const
     return idx;
 }
 
-w_rc_t bf_tree_m::_grab_free_block(bf_idx& ret)
-{
-    ret = 0;
-
-    using namespace std::chrono;
-    auto time1 = steady_clock::now();
-
-    while (true) {
-        if (_freeList.get()->grabFreeBufferpoolFrame(ret)) {
-            break;
-        }
-
-        // no free frames -> warmup is done
-        set_warmup_done();
-
-        // no more free pages -- invoke eviction
-        if (_async_eviction) {
-            // this will block until we get a notification that a frame was evicted
-            _evictioner->wakeup(true);
-        }
-        else {
-            bool success = false;
-            bf_idx victim = 0;
-            while (!success) {
-                victim = _evictioner->pick_victim();
-                w_assert0(victim > 0);
-                success = _evictioner->evict_one(victim);
-            }
-            ret = victim;
-            break;
-        }
-    }
-
-    auto time2 = steady_clock::now();
-    ADD_TSTAT(bf_evict_duration, duration_cast<nanoseconds>(time2-time1).count());
-
-    return RCOK;
-}
-
 void bf_tree_m::set_warmup_done()
 {
     // CS: no CC needed, threads can race on blind updates and visibility not an issue
@@ -336,14 +297,6 @@ void bf_tree_m::check_warmup_done()
             set_warmup_done();
         }
     }
-}
-
-void bf_tree_m::_add_free_block(bf_idx idx)
-{
-    w_assert1(!get_cb(idx)._used);
-    w_assert1(get_cb(idx)._pin_cnt < 0);
-    if(_evictioner) _evictioner->unbuffered(idx);
-    _freeList.get()->addFreeBufferpoolFrame(idx);
 }
 
 void bf_tree_m::post_init()
@@ -483,7 +436,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             }
 
             // STEP 1) Grab a free frame to read into
-            W_DO(_grab_free_block(idx));
+            _freeList->grabFreeBufferpoolFrame(idx);
             bf_tree_cb_t &cb = get_cb(idx);
 
             // STEP 2) Acquire EX latch before hash table insert, to make sure
@@ -492,7 +445,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     timeout_t::WAIT_IMMEDIATE);
             if (check_rc.is_error())
             {
-                _add_free_block(idx);
+                if (_evictioner) _evictioner->unbuffered(idx);
+                _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
 
@@ -503,7 +457,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     bf_idx_pair(idx, parent_idx));
             if (!registered) {
                 cb.latch().latch_release();
-                _add_free_block(idx);
+                if (_evictioner) _evictioner->unbuffered(idx);
+                _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
 
@@ -527,7 +482,8 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 {
                     _hashtable->remove(pid);
                     cb.latch().latch_release();
-                    _add_free_block(idx);
+                    if (_evictioner) _evictioner->unbuffered(idx);
+                    _freeList->addFreeBufferpoolFrame(idx);
                     return read_rc;
                 }
                 cb.init(pid, page->lsn);
@@ -992,7 +948,8 @@ void bf_tree_m::_delete_block(bf_idx idx) {
     w_assert1(removed);
 
     // after all, give back this block to the freelist. other threads can see this block from now on
-    _add_free_block(idx);
+    if (_evictioner) _evictioner->unbuffered(idx);
+    _freeList->addFreeBufferpoolFrame(idx);
 }
 
 bf_tree_cb_t* bf_tree_m::get_cbp(bf_idx idx) const {
@@ -1137,7 +1094,8 @@ void bf_tree_m::unfix(const generic_page* p, bool evict)
         bool removed = _hashtable->remove(p->pid);
         w_assert1(removed);
 
-        _add_free_block(idx);
+        if (_evictioner) _evictioner->unbuffered(idx);
+        _freeList->addFreeBufferpoolFrame(idx);
     }
     else {
         w_assert1(cb._pin_cnt >= 0);

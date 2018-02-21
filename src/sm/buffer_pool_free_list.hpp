@@ -38,7 +38,7 @@ namespace zero::buffer_pool {
                                    + " to the free list of the buffer pool.") {};
         };
 
-    private:
+    protected:
         bf_tree_m* bufferPool;
 
     };
@@ -47,17 +47,11 @@ namespace zero::buffer_pool {
     public:
         FreeListLowContention(bf_tree_m* bufferpool, const sm_options& options) noexcept;
 
-        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final {
-            list.enqueue(freeFrame);
-        }
+        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final;
 
-        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept final {
-            return list.dequeue(freeFrame);
-        }
+        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept final;
 
-        virtual bf_idx  getCount() final {
-            return list.size();
-        };
+        virtual bf_idx  getCount() final;
 
     private:
         cds::container::FCQueue<bf_idx> list;
@@ -68,25 +62,11 @@ namespace zero::buffer_pool {
     public:
         FreeListHighContention(bf_tree_m* bufferpool, const sm_options& options);
 
-        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) final {
-            bool pushSuccessful = list.try_push(std::move(freeFrame));
-            throw1(!pushSuccessful, AddFreeBufferpoolFrameException(freeFrame));
-            approximateListLength++;
-        };
+        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) final;
 
-        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) final {
-            if (list.try_pop(freeFrame)) {
-                approximateListLength--;
-                return true;
-            } else {
-                freeFrame = 0;
-                return false;
-            }
-        };
+        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) final;
 
-        virtual bf_idx  getCount() final {
-            return approximateListLength;
-        };
+        virtual bf_idx  getCount() final;
 
     private:
         rigtorp::MPMCQueue<bf_idx>  list;
