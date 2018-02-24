@@ -173,6 +173,9 @@ private:
     /** Whether to generate page read log records */
     bool _log_page_reads;
 
+    /** Whether to generate page write log records */
+    bool _log_page_writes;
+
     /** Whether to fetch as many log records as possible from archive
      * when performing single-page recovery */
     bool _prioritize_archive;

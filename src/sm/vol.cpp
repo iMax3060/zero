@@ -58,12 +58,12 @@ vol_t::vol_t(const sm_options& options)
                _failed(false),
                _restore_mgr(NULL), _backup_fd(-1),
                _current_backup_lsn(lsn_t::null), _backup_write_fd(-1),
-               _log_page_reads(false),
+               _log_page_reads(options.get_bool_option("sm_vol_log_reads", false)),
+               _log_page_writes(options.get_bool_option("sm_vol_log_writes", false)),
                _prioritize_archive(true)
 {
     string dbfile = options.get_string_option("sm_dbfile", "db");
     bool truncate = options.get_bool_option("sm_format", false);
-    _log_page_reads = options.get_bool_option("sm_vol_log_reads", false);
     _use_o_sync = options.get_bool_option("sm_vol_o_sync", false);
     _use_o_direct = options.get_bool_option("sm_vol_o_direct", false);
     _readonly = options.get_bool_option("sm_vol_readonly", false);
@@ -689,6 +689,10 @@ rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, i
 
     ADD_TSTAT(vol_blks_written, cnt);
     INC_TSTAT(vol_writes);
+
+    if (_log_page_writes) {
+        Logger::log_sys<page_write_log>(first_page, cnt);
+    }
 
     return RCOK;
 }
