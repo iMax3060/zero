@@ -177,10 +177,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Enables page-image compression for every N log bytes (N=0 turns off)")
     ("sm_bufpoolsize", po::value<int>()->default_value(1024),
         "Size of buffer pool in MB")
-    ("sm_fakeiodelay-enable", po::value<int>()->default_value(0),
-        "Enables a artificial delay whenever there is a I/O operation")
-    ("sm_fakeiodelay", po::value<uint>()->default_value(0),
-            "Specify the imposed delay in usec")
     ("sm_errlog", po::value<string>()->default_value("shoremt.err.log"),
             "Path to the error log of the storage manager")
     ("sm_chkpt_interval", po::value<int>(),
@@ -213,6 +209,10 @@ void Command::setupSMOptions(po::options_description& options)
         "Generate log records for every page read")
     ("sm_vol_log_writes", po::value<bool>(),
         "Generate log records for every page write")
+    ("sm_vol_simulate_read_latency", po::value<int>()->default_value(0),
+        "Simulated IO-latency of page-reads in ns (actually the min of simulated and actual).")
+    ("sm_vol_simulate_write_latency", po::value<int>()->default_value(0),
+        "Simulated IO-latency of page-writes in ns (actually the min of simulated and actual).")
     ("sm_vol_readonly", po::value<bool>(),
         "Volume will be opened in read-only mode and all writes from buffer pool \
          will be ignored (uses write elision and single-page recovery)")

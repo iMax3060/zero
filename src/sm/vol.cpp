@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <fcntl.h>
+#include <thread>
 
 #include "sm.h"
 
@@ -51,13 +52,14 @@ int64_t gethrtime()
 
 vol_t::vol_t(const sm_options& options)
              : _fd(-1),
-               _apply_fake_disk_latency(false),
-               _fake_disk_latency(0),
+               _fake_read_latency(options.get_int_option("sm_vol_simulate_read_latency", 0)),
+               _fake_write_latency(options.get_int_option("sm_vol_simulate_write_latency", 0)),
                _alloc_cache(NULL), _stnode_cache(NULL),
                _failed(false),
                _restore_mgr(NULL), _backup_fd(-1),
                _current_backup_lsn(lsn_t::null), _backup_write_fd(-1),
-               _log_page_reads(false), _prioritize_archive(true)
+               _log_page_reads(false),
+               _prioritize_archive(true)
 {
     string dbfile = options.get_string_option("sm_dbfile", "db");
     bool truncate = options.get_bool_option("sm_format", false);
@@ -372,51 +374,6 @@ PageID vol_t::get_store_root(StoreID f) const
     return _stnode_cache->get_root_pid(f);
 }
 
-void vol_t::fake_disk_latency(long start)
-{
-    if(!_apply_fake_disk_latency)
-        return;
-    long delta = gethrtime() - start;
-    delta = _fake_disk_latency - delta;
-    if(delta <= 0)
-        return;
-    int max= 99999999;
-    if(delta > max) delta = max;
-
-    struct timespec req, rem;
-    req.tv_sec = 0;
-    w_assert0(delta > 0);
-    w_assert0(delta <= max);
-    req.tv_nsec = delta;
-    while(nanosleep(&req, &rem) != 0)
-    {
-        if (errno != EINTR)  return;
-        req = rem;
-    }
-}
-
-void vol_t::enable_fake_disk_latency(void)
-{
-    spinlock_write_critical_section cs(&_mutex);
-    _apply_fake_disk_latency = true;
-}
-
-void vol_t::disable_fake_disk_latency(void)
-{
-    spinlock_write_critical_section cs(&_mutex);
-    _apply_fake_disk_latency = false;
-}
-
-bool vol_t::set_fake_disk_latency(const int adelay)
-{
-    spinlock_write_critical_section cs(&_mutex);
-    if (adelay<0) {
-        return (false);
-    }
-    _fake_disk_latency = adelay;
-    return (true);
-}
-
 /*********************************************************************
  *
  *  vol_t::read_page(pnum, page)
@@ -506,11 +463,18 @@ rc_t vol_t::read_many_pages(PageID first_page, generic_page* const buf, int cnt,
         else { check_restore_finished(); }
     }
 
+    std::chrono::high_resolution_clock::time_point sleep_until;
+    if(_fake_read_latency.count()) {
+        sleep_until = std::chrono::high_resolution_clock::now() + _fake_read_latency;
+    }
+
     w_assert1(cnt > 0);
     size_t offset = size_t(first_page) * sizeof(generic_page);
     memset(buf, '\0', cnt * sizeof(generic_page));
     int read_count = pread(_fd, (char *) buf, cnt * sizeof(generic_page), offset);
     CHECK_ERRNO(read_count);
+
+    std::this_thread::sleep_until(sleep_until);
 
     if (_log_page_reads) {
         Logger::log_sys<page_read_log>(first_page, cnt);
@@ -706,20 +670,23 @@ rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, i
     w_assert1(cnt > 0);
     size_t offset = size_t(first_page) * sizeof(generic_page);
 
-    long start = 0;
-    if(_apply_fake_disk_latency) start = gethrtime();
-
 #if W_DEBUG_LEVEL>0
     for (int i = 0; i < cnt; i++) {
         w_assert1(buf[i].pid == first_page + i);
     }
 #endif
 
+    std::chrono::high_resolution_clock::time_point sleep_until;
+    if(_fake_write_latency.count()) {
+        sleep_until = std::chrono::high_resolution_clock::now() + _fake_write_latency;
+    }
+
     // do the actual write now
     auto ret = pwrite(_fd, buf, sizeof(generic_page)*cnt, offset);
     CHECK_ERRNO(ret);
 
-    fake_disk_latency(start);
+    std::this_thread::sleep_until(sleep_until);
+
     ADD_TSTAT(vol_blks_written, cnt);
     INC_TSTAT(vol_writes);
 

@@ -10,6 +10,7 @@
 
 #include <list>
 #include <cstdlib>
+#include <chrono>
 
 class alloc_cache_t;
 class stnode_cache_t;
@@ -71,17 +72,6 @@ public:
 
     void sync();
 
-    /**
-     *  Impose a fake IO penalty. Assume that each batch of pages requires
-     *  exactly one seek. A real system might perform better due to sequential
-     *  access, or might be worse because the pages in the batch are not
-     *  actually contiguous. Close enough...
-     */
-    void            enable_fake_disk_latency(void);
-    void            disable_fake_disk_latency(void);
-    bool            set_fake_disk_latency(const int adelay);
-    void            fake_disk_latency(long start);
-
     rc_t            alloc_a_page(PageID& pid, StoreID stid = 0);
     rc_t            deallocate_page(const PageID& pid);
 
@@ -139,10 +129,14 @@ private:
 
     mutable srwlock_t _mutex;
 
-
-    // fake disk latency
-    bool             _apply_fake_disk_latency;
-    int              _fake_disk_latency;
+    /**
+     *  Impose a fake IO penalty. Assume that each batch of pages requires
+     *  exactly one seek. A real system might perform better due to sequential
+     *  access, or might be worse because the pages in the batch are not
+     *  actually contiguous. Close enough...
+     */
+    std::chrono::high_resolution_clock::duration  _fake_read_latency;
+    std::chrono::high_resolution_clock::duration  _fake_write_latency;
 
     alloc_cache_t*   _alloc_cache;
     stnode_cache_t*  _stnode_cache;

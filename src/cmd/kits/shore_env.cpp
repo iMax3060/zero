@@ -889,23 +889,6 @@ int ShoreEnv::start_sm()
         _loaded = true;
     }
 
-    // CS TODO: latency is set on vol_t directly
-    // setting the fake io disk latency - after we mount
-    // (let the volume be formatted and mounted without any fake io latency)
-    // int enableFakeIO = optionValues["sm_fakeiodelay-enable"].as<int>();
-    // TRACE( TRACE_DEBUG, "Is fake I/O delay enabled: (%d)\n", enableFakeIO);
-    // if (enableFakeIO) {
-    //     _pssm->enable_fake_disk_latency(_vid);
-    // }
-    // else {
-    //     _pssm->disable_fake_disk_latency(_vid);
-    // }
-    // int ioLatency = optionValues["sm_fakeiodelay"].as<uint>();
-    // TRACE( TRACE_DEBUG, "I/O delay latency set: (%d)\n", ioLatency);
-    // W_COERCE(_pssm->set_fake_disk_latency(_vid,ioLatency));
-
-    // Using the physical ID interface
-
     // Get the configuration info so we have the max size of a small record
     // for use in _post_init_impl()
     if (ss_m::config_info(sm_config_info).is_error()) return (1);
