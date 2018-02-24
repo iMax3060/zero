@@ -654,14 +654,6 @@ public:
     void setAsynchCommit(const bool bAsynch);
 
 
-    // SLI
-public:
-    bool isSLIEnabled() const { return (_bUseSLI); }
-    void setSLIEnabled(const bool bUseSLI) { _bUseSLI = bUseSLI; }
-protected:
-    bool _bUseSLI;
-
-
     // ELR
 public:
     bool isELREnabled() const { return (_bUseELR); }

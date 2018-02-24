@@ -194,12 +194,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *
  * This section contains a small subset of the published papers whose work used the SHORE storage manager. 
  *
- * \section JPA2 [JPA2]
- * R. Johnson, I. Pandis, A. Ailamaki
- * "Improving OLTP Scalability Using Speculative Lock Inheritance"
- * in Proceedings of the VLDB Endowment, Volume 2, Issue 1 August 2009
- * (http://www.cs.cmu.edu/~ipandis/resources/vldb09johnson.pdf)
- *
  * \section JPSAA1 [JPSAA1]
  * R. Johnson, I. Pandis, R. Stoica, M. Athanassoulis, A. Ailamaki
  * "Aether: A Scalable Approach to Logging"

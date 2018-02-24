@@ -173,9 +173,6 @@ protected:
     bool                     _is_bound;
     int            _prs_id;
 
-    // sli
-    int                      _use_sli;
-
     // states
     virtual int _work_PAUSED_impl();
     virtual int _work_ACTIVE_impl()=0;
@@ -187,11 +184,11 @@ protected:
 
 public:
 
-    base_worker_t(ShoreEnv* env, std::string tname, int aprsid, const int use_sli)
+    base_worker_t(ShoreEnv* env, std::string tname, int aprsid)
         : thread_t(tname),
           _control(WC_PAUSED), _data_owner(DOS_UNDEF), _ws(WS_UNDEF),
           _env(env),
-          _next(NULL), _is_bound(false), _prs_id(aprsid), _use_sli(use_sli)
+          _next(NULL), _is_bound(false), _prs_id(aprsid)
     {
     }
 
@@ -578,8 +575,7 @@ private:
 public:
 
     trx_worker_t(ShoreEnv* env, std::string tname,
-                 int aprsid = -1, //PBIND_NONE,
-                 const int use_sli = 0);
+                 int aprsid = -1/*, PBIND_NONE,*/);
     ~trx_worker_t();
 
     // Enqueues a request to the queue of the worker thread

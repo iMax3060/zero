@@ -42,9 +42,8 @@
  ******************************************************************/
 
 trx_worker_t::trx_worker_t(ShoreEnv* env, std::string tname,
-                           int aprsid,
-                           const int use_sli)
-    : base_worker_t(env, tname, aprsid, use_sli)
+                           int aprsid)
+    : base_worker_t(env, tname, aprsid)
 {
     assert (env);
     _actionpool = new Pool(sizeof(Request*),REQUESTS_PER_WORKER_POOL_SZ);

@@ -112,7 +112,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
       _skew_type(SKEW_NONE),
       stop_benchmark(false),
       _request_pool(sizeof(trx_request_t)),
-      _bUseSLI(false),
       _bUseELR(false),
       _bUseFlusher(false)
       // _logger(NULL)
@@ -130,7 +129,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
     if(optionValues["physical-hacks-enable"].as<int>()) {
         add_pd(PD_PADDED);
     }
-    setSLIEnabled(optionValues["db-worker-sli"].as<bool>());
     set_rec_to_access(optionValues["records-to-access"].as<uint>());
 
     _last_sm_stats.fill(0);
@@ -539,7 +537,7 @@ int ShoreEnv::start()
     WorkerPtr aworker;
     for (uint i=0; i<_worker_cnt; i++) {
 
-        aworker = new Worker(this,std::string("work-%d", i), -1,_bUseSLI);
+        aworker = new Worker(this,std::string("work-%d", i), -1);
         _workers.push_back(aworker);
 
         aworker->init(lc);

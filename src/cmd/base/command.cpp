@@ -125,8 +125,6 @@ void Command::setupSMOptions(po::options_description& options)
        "")
     ("physical-hacks-enable", po::value<int>()->default_value(0),
         "Enables physical hacks, such as padding of records")
-    ("db-worker-sli", po::value<bool>()->default_value(0),
-        "Speculative Lock inheritance")
     ("db-loaders", po::value<int>()->default_value(10),
         "Specifies the number of threads that are used to load the db")
     ("db-worker-queueloops", po::value<int>()->default_value(10),
