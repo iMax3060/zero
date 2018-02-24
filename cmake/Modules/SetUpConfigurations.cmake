@@ -179,6 +179,11 @@ IF(NOT SET_UP_CONFIGURATIONS_DONE)
     ENDIF(COMPILE_GENERIC)
 
     OPTION(LINK_TIME_OPTIMIZATION "Use link-time optimization between compilation units." ON)
+    IF(LINK_TIME_OPTIMIZATION)
+        MESSAGE(STATUS "Link-time optimization is used as -DLINK_TIME_OPTIMIZATION=OFF wasn't specified.")
+    ELSE(LINK_TIME_OPTIMIZATION)
+        MESSAGE(STATUS "Link-time optimization is disabled as -DLINK_TIME_OPTIMIZATION=OFF wasn't specified. This may degrade the performance of the program.")
+    ENDIF(LINK_TIME_OPTIMIZATION)
 
     # The profile build is intended to be used for performance analysis:
     ## Based on the release build with debug info:
