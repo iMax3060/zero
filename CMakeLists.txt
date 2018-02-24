@@ -86,7 +86,7 @@ IF(NOT NUMA_FOUND)
     MESSAGE(STATUS "INFO: How to install numa: http://oss.sgi.com/projects/libnuma/")
 ENDIF(NOT NUMA_FOUND)
 
-FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options system thread atomic filesystem regex)
+FIND_PACKAGE(Boost 1.4.8 REQUIRED COMPONENTS program_options system thread atomic filesystem regex)
 
 FIND_PACKAGE(LibRT REQUIRED)
 
