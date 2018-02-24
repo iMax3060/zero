@@ -105,9 +105,7 @@ void ShoreTPCCEnv::reset_stats()
 void ShoreTPCCEnv::print_throughput(const double iQueriedSF,
                                     const int iSpread,
                                     const int iNumOfThreads,
-                                    const double delay,
-                                    const unsigned long mioch,
-                                    const double avgcpuusage)
+                                    const double delay)
 {
     CRITICAL_SECTION(last_stats_cs, _last_stats_mutex);
 
@@ -131,16 +129,12 @@ void ShoreTPCCEnv::print_throughput(const double iQueriedSF,
            "Trxs Dld:  (%d)\n"                      \
            "NOrd Com:  (%d)\n"                      \
            "Secs:      (%.2f)\n"                    \
-           "IOChars:   (%.2fM/s)\n"                 \
-           "AvgCPUs:   (%.1f) (%.1f%%)\n"           \
            "TPS:       (%.2f)\n"                    \
            "tpm-C:     (%.2f)\n",
            iQueriedSF,
            (iSpread ? "Yes" : "No"),
            iNumOfThreads, trxs_att, trxs_abt, trxs_dld, nords_com,
-           delay, mioch/delay, avgcpuusage,
-           100*avgcpuusage/get_max_cpu_count(),
-           (trxs_att-trxs_abt-trxs_dld)/delay,
+           delay, (trxs_att-trxs_abt-trxs_dld)/delay,
            60*nords_com/delay);
 }
 

@@ -187,9 +187,7 @@ public:
     virtual void print_throughput(const double iQueriedSF,
                                   const int iSpread,
                                   const int iNumOfThreads,
-                                  const double delay,
-                                  const unsigned long mioch,
-                                  const double avgcpuusage);
+                                  const double delay);
 
 
     // Public methods //

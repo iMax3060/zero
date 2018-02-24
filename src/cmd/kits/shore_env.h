@@ -376,10 +376,6 @@ protected:
     // Configuration variables
     sm_options _popts;
 
-    // Processor info
-    uint _max_cpu_count;    // hard limit
-    uint _active_cpu_count; // soft limit
-
     // List of worker threads
     WorkerPool      _workers;
     uint            _worker_cnt;
@@ -537,15 +533,6 @@ public:
     void set_init_no_cs(const bool b_is_init) { _initialized = b_is_init; }
     void set_loaded_no_cs(const bool b_is_loaded) { _loaded = b_is_loaded; }
 
-    // CPU count functions
-    void print_cpus() const;
-    uint get_max_cpu_count() const;
-    void set_max_cpu_count(const uint cpucnt);
-    uint get_active_cpu_count() const;
-    void set_active_cpu_count(const uint actcpucnt);
-    // disabled - max_count can be set only on conf
-    //    void set_max_cpu_count(const int maxcpucnt);
-
     void set_clobber(bool c) { _clobber = c; }
     void set_loaders(int l) { _loaders_to_use = l; }
 
@@ -649,9 +636,7 @@ public:
     virtual void print_throughput(const double iQueriedSF,
                                   const int iSpread,
                                   const int iNumOfThreads,
-                                  const double delay,
-                                  const unsigned long mioch,
-                                  const double avgcpuusage)=0;
+                                  const double delay)=0;
 
     virtual void reset_stats()=0;
 

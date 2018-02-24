@@ -143,11 +143,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Specify the number of workers executing transactions")
     ("dir-trace", po::value<string>()->default_value("RAT"),
         "")
-    /** System related options **/
-    ("sys-maxcpucount", po::value<uint>()->default_value(0),
-        "Maximum CPU Count of a system")
-    ("sys-activecpucount", po::value<uint>()->default_value(0),
-        "Active CPU Count of a system")
     /**SM Options**/
     ("sm_logdir", po::value<string>()->default_value("log"),
         "Path to log directory")

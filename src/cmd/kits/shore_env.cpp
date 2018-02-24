@@ -99,8 +99,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
       _statmap_mutex(thread_mutex_create()),
       _last_stats_mutex(thread_mutex_create()),
       _vol_mutex(thread_mutex_create()),
-      _max_cpu_count(0),
-      _active_cpu_count(0),
       _worker_cnt(0),
       _measure(MST_UNDEF),
       _pd(PD_NORMAL),
@@ -209,24 +207,6 @@ w_rc_t ShoreEnv::load()
 
     _loaded = true;
     return RCOK;
-}
-
-void ShoreEnv::set_max_cpu_count(const uint cpucnt)
-{
-    _max_cpu_count = ( cpucnt>0 ? cpucnt : _max_cpu_count);
-    if (_active_cpu_count>_max_cpu_count) {
-        _active_cpu_count = _max_cpu_count;
-    }
-}
-
-uint ShoreEnv::get_max_cpu_count() const
-{
-    return (_max_cpu_count);
-}
-
-uint ShoreEnv::get_active_cpu_count() const
-{
-    return (_active_cpu_count);
 }
 
 
@@ -889,6 +869,8 @@ int ShoreEnv::start_sm()
         _loaded = true;
     }
 
+    // Using the physical ID interface
+
     // Get the configuration info so we have the max size of a small record
     // for use in _post_init_impl()
     if (ss_m::config_info(sm_config_info).is_error()) return (1);
@@ -943,24 +925,6 @@ unsigned ShoreEnv::get_trx_com() const
 
 
 
-/******************************************************************
- *
- *  @fn:    set_{max/active}_cpu_count()
- *
- *  @brief: Setting new cpu counts
- *
- *  @note:  Setting max cpu count is disabled. This value can be set
- *          only at the config file.
- *
- ******************************************************************/
-
-void ShoreEnv::set_active_cpu_count(const unsigned actcpucnt)
-{
-    _active_cpu_count = ( actcpucnt>0 ? actcpucnt : _active_cpu_count );
-}
-
-
-
 /** Helper functions */
 
 
@@ -976,29 +940,8 @@ void ShoreEnv::set_active_cpu_count(const unsigned actcpucnt)
 
 int ShoreEnv::_set_sys_params()
 {
-    // procmonitor returns 0 if it cannot find the number of processors
-
-    _max_cpu_count = optionValues["sys-maxcpucount"].as<uint>();
-
-    // Set active CPU info
-    uint tmp_active_cpu_count = optionValues["sys-activecpucount"].as<uint>();
-    if (tmp_active_cpu_count>_max_cpu_count) {
-        _active_cpu_count = _max_cpu_count;
-    }
-    else {
-        _active_cpu_count = tmp_active_cpu_count;
-    }
-    print_cpus();
-
     _activation_delay = optionValues["activation_delay"].as<uint>();
     return (0);
-}
-
-
-void ShoreEnv::print_cpus() const
-{
-    TRACE( TRACE_ALWAYS, "MaxCPU=(%d) - ActiveCPU=(%d)\n",
-           _max_cpu_count, _active_cpu_count);
 }
 
 
