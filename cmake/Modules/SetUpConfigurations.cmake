@@ -15,6 +15,7 @@
 ## - PEDANTIC: Warn about non-C++-Standard-conform code.
 ## - COMPILE_GENERIC: Create generic instead of CPU-specific code.
 ## - USE_MMAP: Use mmap to read from log and log archive.
+## - LINK_TIME_OPTIMIZATION: Use link-time optimization between compilation units.
 ## =====================================================================================================================
 ## = Preconditions: ====================================================================================================
 ## - CMAKE_CXX_COMPILER_ID either matches Clang (->Clang), GNU (->GCC), Intel (->IPCP) or MSVC (->Microsoft Visual
@@ -25,6 +26,7 @@
 ## - PEDANTIC (boolean) probably set.
 ## - COMPILE_GENERIC (boolean) probably set.
 ## - USE_MMAP (boolean) probably set.
+## - LINK_TIME_OPTIMIZATION (boolean) probably set.
 ## =====================================================================================================================
 ## = Postconditions: ===================================================================================================
 ## - If CMAKE_BUILD_TYPE wasn't set, it is set to RelWithDebInfo.
@@ -42,6 +44,7 @@
 ## - W_PEDANTIC is set according to the compiler if PEDANTIC is set.
 ## - ALWAYS_FLAGS are set according to the compiler.
 ## - MARGE_NATIVE_FLAGS are set according to the compiler if COMPILE_GENERIC isn't set.
+## - INTERPROCEDURAL_OPTIMIZATION is used for all targets if LINK_TIME_OPTIMIZATION isn't set to OFF.
 ## =====================================================================================================================
 IF(NOT SET_UP_CONFIGURATIONS_DONE)
     SET(SET_UP_CONFIGURATIONS_DONE 1)
@@ -150,7 +153,7 @@ IF(NOT SET_UP_CONFIGURATIONS_DONE)
         MESSAGE(AUTHOR_WARNING "The C++-Compiler is neither Clang, GCC, ICPC nor MSVC so some compiler-specific flags cannot be set.")
     ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
-        
+
     OPTION(NOWARN "Use the default warning level of the compiler." OFF)
     IF(NOWARN)
         UNSET(W_WARNINGS)
@@ -174,6 +177,8 @@ IF(NOT SET_UP_CONFIGURATIONS_DONE)
     ELSE(COMPILE_GENERIC)
         MESSAGE(STATUS "CPU-specific binaries are produced as -DCOMPILE_GENERIC=ON wasn't specified.")
     ENDIF(COMPILE_GENERIC)
+
+    OPTION(LINK_TIME_OPTIMIZATION "Use link-time optimization between compilation units." ON)
 
     # The profile build is intended to be used for performance analysis:
     ## Based on the release build with debug info:
