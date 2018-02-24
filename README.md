@@ -18,17 +18,188 @@ For a list of publications based on the Zero storage manager, see below.
 
 ## Dependencies
 
-Zero is developed in C++ and uses the CMake building system. Its only dependency is on a few Boost libraries, widely available in the major Linux distributions. Currently, is it supported only on Linux.
+Zero is developed in C++14 and uses the CMake build system (version 3.9 or later). Its dependencies are a few [Boost libraries](http://www.boost.org/) (Program Options, System, Thread, Atomic, Filesystem and Regex in version 1.48 or later), which are widely available in the major Linux distributions and the [CDS library](http://libcds.sourceforge.net/doc/cds-api/index.html) (Concurrent Data Structures library) which needs to be build from source (it's planned to integrate it as a git submodule).
 
-On an Ubuntu system, the dependencies can usually be installed with the following commands:
+Currently, Zero is supported only on **Linux**.
 
-```
-sudo apt-get install git cmake build-essential
-sudo apt-get install liboost-dev libboost-thread-dev libboost-program-options-dev libboost-random-dev
-```
+### CMake, GCC, Boost and git
 
-Zero requires libboost version 1.48. Please make sure that this version or a higher one is installed.
+- **Ubuntu 12.04 Precise Pangolin (and possibly most other unsupported versions)**
+  
+  The GCC version of older and unsupported Ubuntu versions is too outdated and a later version of GCC (e.g. 7.3.0) needs to be installed from source. Unfortunately, the compilation takes a long time.
 
+  The CMake version of older and unsupported Ubuntu versions is too outdated, so a later version of CMake (e.g. 3.10.2) has to be installed manually.
+
+  The Boost version of older and unsupported Ubuntu versions is too outdated, so a later version of the Boost library (e.g. 1.66.0) has to be installed from source. Unfortunately, the compilation takes a long time.
+  ```
+  sudo apt-get install git build-essential gcc-multilib
+  
+  wget --no-check-certificate ftp://ftp.gnu.org/gnu/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz
+  tar -xvf gcc-7.3.0.tar.xz
+  cd gcc-7.3.0
+  ./contrib/download_prerequisites
+  mkdir ../objdir
+  cd ../objdir
+  ../gcc-7.3.0/configure --prefix=/usr/local --enable-languages=c,c++
+  make -j `cat /proc/cpuinfo | grep processor | wc -l`
+  sudo make install
+  rm -rf gcc-7.3.0.tar.xz gcc-7.3.0 objdir
+  sudo ln -sf /usr/bin/g++-7 /usr/bin/g++
+  sudo ln -sf /usr/bin/gcc-7 /usr/bin/gcc
+  
+  wget --no-check-certificate https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.sh
+  sudo sh ./cmake-3.10.2-Linux-x86_64.sh --prefix=/usr/local --skip-license
+  rm cmake-3.10.2-Linux-x86_64.sh
+  
+  wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2
+  tar -xjf boost_1_66_0.tar.bz2
+  cd boost_1_66_0
+  ./bootstrap.sh --prefix=/usr/local
+  sudo ./b2 install
+  cd ..
+  sudo rm -rf boost_1_66_0 boost_1_66_0.tar.bz2
+  ```
+
+- **Ubuntu 14.04 Trusty Tahr**
+  
+  The default GCC version of Ubuntu 14.04 *Trusty Tahr* is too outdated, but a later version of GCC (e.g. 7) is available in a testing repository.
+
+  The CMake version of Ubuntu 14.04 *Trusty Tahr* is too outdated, so a later version of CMake (e.g. 3.10.2) has to be installed manually.
+  ```
+  sudo apt install git
+  sudo apt install libboost-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-atomic-dev libboost-filesystem-dev libboost-regex-dev
+  
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt update
+  sudo apt install gcc-7 g++-7
+  sudo ln -sf /usr/bin/g++-7 /usr/bin/g++
+  sudo ln -sf /usr/bin/gcc-7 /usr/bin/gcc
+  
+  wget --no-check-certificate https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.sh
+  sudo sh ./cmake-3.10.2-Linux-x86_64.sh --prefix=/usr/local --skip-license
+  rm cmake-3.10.2-Linux-x86_64.sh
+  ```
+
+- **Ubuntu 16.04 Xenial Xerus**
+  
+  The default GCC version of Ubuntu 16.04 *Xenial Xerus* is too outdated, but a later version of GCC (e.g. 7) is available in a testing repository.
+
+  The default CMake version of Ubuntu 16.04 *Xenial Xerus* is too outdated, but a later version of CMake (3.10.1) is available in a nightly repository.
+
+  The default Boost version of Ubuntu 16.04 *Xenial Xerus* doesn't compiler with later GCC versions, so another version of the Boost library (e.g. 1.66.0) has to be installed from source. Unfortunately, the compilation takes a long time.
+  ```
+  sudo apt install git
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo add-apt-repository ppa:nschloe/cmake-nightly
+  sudo apt update
+  sudo apt install gcc-7 g++-7 cmake
+  sudo ln -sf /usr/bin/g++-7 /usr/bin/g++
+  sudo ln -sf /usr/bin/gcc-7 /usr/bin/gcc
+  
+  wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2
+  tar -xjf boost_1_66_0.tar.bz2
+  cd boost_1_66_0
+  ./bootstrap.sh --prefix=/usr/local
+  sudo ./b2 install
+  cd ..
+  sudo rm -rf boost_1_66_0 boost_1_66_0.tar.bz2
+  ```
+
+- **Ubuntu 17.04 Zesty Zapus**
+
+  Ubuntu 17.04 *Zesty Zapus* isn't supported anymore and the ``old-releases``-repositories on the archive server needs to be added to the ``sources.list``.
+
+  The default CMake version of Ubuntu 17.04 *Zesty Zapus* is too outdated, but a later version of CMake (3.10.1) is available in a nightly repository.
+  ```
+  sudo sh -c 'echo "deb http://old-releases.ubuntu.com/ubuntu/ zesty main restricted universe multiverse\ndeb http://old-releases.ubuntu.com/ubuntu/ zesty-updates main restricted universe multiverse\ndeb http://old-releases.ubuntu.com/ubuntu/ zesty-security main restricted universe multiverse\ndeb http://old-releases.ubuntu.com/ubuntu/ zesty-backports main restricted universe multiverse" > /etc/apt/sources.list'
+  sudo apt update
+  sudo apt install git build-essential gcc-6 g++-6
+  sudo apt install libboost-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-atomic-dev libboost-filesystem-dev libboost-regex-dev
+  sudo add-apt-repository ppa:nschloe/cmake-nightly
+  sudo apt update
+  sudo apt install cmake
+  ```
+
+- **Ubuntu 17.10 Artful Aardvard (and newer)**
+  ```
+  sudo apt install git cmake build-essential
+  sudo apt install libboost-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-atomic-dev libboost-filesystem-dev libboost-regex-dev
+  ```
+
+- **Debian (Stretch)**
+
+  The CMake version of Debian Stretch is too outdated, so a later version of CMake (e.g. 3.10.2) has to be installed manually.
+  ```
+  su
+  apt-get install git build-essential
+  apt-get install libboost-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-atomic-dev libboost-filesystem-dev libboost-regex-dev
+  wget https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.sh
+  sh ./cmake-3.10.2-Linux-x86_64.sh --prefix=/usr/local --skip-license
+  rm cmake-3.10.2-Linux-x86_64.sh
+  exit
+  ```
+- **Debian (Buster and later)**
+  ```
+  su
+  apt-get install git cmake build-essential
+  sudo apt install libboost-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libboost-atomic-dev libboost-filesystem-dev libboost-regex-dev
+  exit
+  ```
+
+- **CentOS (6 and later)**
+
+  The default GCC version of CentOS is too outdated, but there is a later version of GCC (e.g. 7) in the SCLo RH repository.
+  
+  The CMake version of CentOS is too outdated, so a later version of CMake (e.g. 3.10.2) has to be installed manually.
+  ```
+  sudo yum install centos-release-scl
+  sudo yum install devtoolset-7-gcc-c++
+  export PATH=/opt/rh/devtoolset-7/root/usr/bin:${PATH}
+  
+  sudo yum install make git
+  sudo yum install boost-devel
+  
+  wget https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.sh
+  sudo sh ./cmake-3.10.2-Linux-x86_64.sh --prefix=/usr/local --skip-license
+  rm cmake-3.10.2-Linux-x86_64.sh
+  ```
+
+- **Arch Linux**
+
+  The default CMake version of Arch Linux is too outdated, but a later version of CMake (e.g. 3.10.2) is available as package that needs to be downloaded manually.
+  ```
+  sudo pacman -S git boost-libs boost
+  wget -O cmake-x86_64.pkg.tar.xz https://www.archlinux.org/packages/extra/x86_64/cmake/download/
+  sudo pacman -U cmake-x86_64.pkg.tar.xz
+  rm cmake-x86_64.pkg.tar.xz
+  ```
+
+### CDS library
+- Download and compile the CDS library:
+  ```
+  git clone https://github.com/khizmax/libcds.git
+  mkdir libcds/build-release
+  cd libcds/build-release
+  cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/usr/local ..
+  make
+  ```
+- Install the CDS library
+  * Without `sudo` (isn't installed on Debian by default)
+    ```
+    su
+    make install
+    exit
+    ```
+  * With `sudo`
+    ```
+    sudo make install
+    ```
+- Clean up the download directory
+  ```
+  cd ../..
+  rm -rf libcds
+  ```
+  
 ## Compilation
 
 CMake supports out-of-source builds, which means that binaries are generated in a different directory than the source files. This not only maintains a clean source directory, but also allows multiple coexisting builds with different configurations.
@@ -36,8 +207,10 @@ CMake supports out-of-source builds, which means that binaries are generated in 
 The typical approach is to create a `build` folder inside the project root after cloning it with git:
 
 ```
-git clone https://github.com/caetanosauer/zero
+git clone https://github.com/iMax3060/zero
 cd zero
+git submodule init
+git submodule update
 mkdir build
 ```
 
@@ -48,19 +221,25 @@ cd build
 cmake ..
 ```
 
-Alternatively, a debug version without optimizations is also supported:
+On some older Ubuntu versions there are issues with the interprocedural optimization. If the compilation with ``make`` causes linker errors, it might help to deactivate interprocedural optimization, which causes a significantly lower performance of Zero.
 
 ```
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DINTERPROCEDURAL_OPTIMIZATION=OFF ..
 ```
+
+By default, a release version with debug symbols (many compiler optimizations) of Zero is compiled. But there are build types which support a more elaborate debugging of Zero with additional checks that are disabled by default:
+
+- ```cmake -DCMAKE_BUILD_TYPE=Debug1 ..```
+- ```cmake -DCMAKE_BUILD_TYPE=Debug3 ..```
+- ```cmake -DCMAKE_BUILD_TYPE=Debug5 ..```
 
 Finally, to compile:
 
 ```
-make -j <number_of_cores> sm
+make -j `cat /proc/cpuinfo | grep processor | wc -l` sm; make -j `cat /proc/cpuinfo | grep processor | wc -l` zapps
 ```
 
-The `-j` flag enables compilation in parallel on multi-core CPUs. It is a standard feature of the Make building system. The `sm` target builds the static storage manager library, `libsm`.
+The `-j` flag enables compilation in parallel on multi-core CPUs. It is a standard feature of the Make build system. The `sm` target builds the static storage manager library, `libsm` and the `zapps` target builds an executable used to benchmark Zero.
 
 ## Testing
 
@@ -91,4 +270,4 @@ The following publications describe novel techniques which were implemented and 
 
 # Contact
 
-This repository is maintained by Caetano Sauer at the University of Kaiserslautern. If you wish to experiment with Zero, feel free to contact me at `csauer@cs.uni-kl.de`. Being a research prototype used by many developers over the course of two decades, getting started in the code may be a daunting task, due to the lack of thorough documentation and the high heterogeneity of the code.
+This repository is maintained by Max Gilbert at the University of Kaiserslautern. If you wish to experiment with Zero, feel free to contact me at `m_gilbert13@cs.uni-kl.de`. Being a research prototype used by many developers over the course of two decades, getting started in the code may be a daunting task, due to the lack of thorough documentation and the high heterogeneity of the code.
