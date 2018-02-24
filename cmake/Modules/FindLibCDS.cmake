@@ -36,7 +36,10 @@ FIND_PATH(LibCDS_INCLUDE_DIR
 # Find the LibCDS library:
 FIND_LIBRARY(LibCDS_LIBRARY
              NAMES cds_d
+                   cds
              HINTS ${SPEC_LibCDS_LIBRARY_DIR}
+                   /usr/lib64
+                   /usr/local/lib64
              DOC "The LibCDS library."
             )
 
