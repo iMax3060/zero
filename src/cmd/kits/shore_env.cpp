@@ -122,14 +122,9 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
     pthread_mutex_init(&_queried_mutex, NULL);
 
 
-    string physical = optionValues["db-config-design"].as<string>();
-    if(physical.compare("normal")==0) {
-        set_pd(PD_NORMAL);
-    }
     if(optionValues["physical-hacks-enable"].as<int>()) {
         add_pd(PD_PADDED);
     }
-    set_rec_to_access(optionValues["records-to-access"].as<uint>());
 
     _last_sm_stats.fill(0);
 }

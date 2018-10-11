@@ -411,7 +411,7 @@ log_core::log_core(const sm_options& options)
     DO_PTHREAD(pthread_cond_init(&_wait_cond, NULL));
     DO_PTHREAD(pthread_cond_init(&_flush_cond, NULL));
 
-    uint32_t carray_slots = options.get_int_option("sm_carray_slots",
+    uint32_t carray_slots = options.get_int_option("sm_log_carray_slots",
                         ConsolidationArray::DEFAULT_ACTIVE_SLOT_COUNT);
     _carray = new ConsolidationArray(carray_slots);
 
@@ -462,7 +462,7 @@ log_core::log_core(const sm_options& options)
     _group_commit_size = options.get_int_option("sm_group_commit_size", 0);
     _group_commit_timeout = options.get_int_option("sm_group_commit_timeout", 0);
 
-    _page_img_compression = options.get_int_option("sm_page_img_compression", 0);
+    _page_img_compression = options.get_int_option("sm_log_page_img_compression", 0);
 
     // Load fetch buffers
     int fetchbuf_partitions = options.get_int_option("sm_log_fetch_buf_partitions", 0);

@@ -70,7 +70,7 @@
  * should keep an eye. CARRAY_RELEASE_DELEGATION option turns on/off this feature.
  *
  * Also, consider adjusting the number of active slots depending on the number of worker
- * threads as suggested in the paper. The startup option \b sm_carray_slots does it.
+ * threads as suggested in the paper. The startup option \b sm_log_carray_slots does it.
  * The default value for this option is ConsolidationArray#DEFAULT_ACTIVE_SLOT_COUNT
  *
  * \section REF Reference

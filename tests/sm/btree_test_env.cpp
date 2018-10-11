@@ -55,7 +55,7 @@ sm_options btree_test_env::make_sm_options(
     sm_options options;
     options.set_bool_option("sm_truncate", true);
     options.set_bool_option("sm_restart_instant", false);
-    options.set_int_option("sm_bufpoolsize", SM_PAGESIZE / 1024 * bufferpool_size_in_pages);
+    options.set_int_option("sm_bf_size", SM_PAGESIZE / 1024 * bufferpool_size_in_pages);
     options.set_int_option("sm_locktablesize", locktable_size);
     // Most testcases make little locks. to speed them up, use small number here.
     // In a few testcases that need many locks, specify larger number in sm_options.
@@ -174,11 +174,8 @@ testdriver_thread_t::do_construct()
     if (_options.get_string_option("sm_archdir", not_set) == not_set) {
         _options.set_string_option("sm_archdir", global_archive_dir);
     }
-    if (_options.get_string_option("sm_backup_dir", not_set) == not_set) {
-        _options.set_string_option("sm_backup_dir", global_backup_dir);
-    }
-    if (_options.get_int_option("sm_bufpoolsize", not_set_int) == not_set_int) {
-        _options.set_int_option("sm_bufpoolsize",
+    if (_options.get_int_option("sm_bf_size", not_set_int) == not_set_int) {
+        _options.set_int_option("sm_bf_size",
                  SM_PAGESIZE / 1024 * default_bufferpool_size_in_pages);
     }
 

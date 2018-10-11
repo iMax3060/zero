@@ -31,9 +31,9 @@ bool zero::buffer_pool::FreeListLowContention::grabFreeBufferpoolFrame(bf_idx &f
                 freeFrame = 0;
                 bool success = false;
                 while (!success) {
-                    freeFrame = bufferPool->_evictioner->pick_victim();
+                    freeFrame = bufferPool->_evictioner->pickVictim();
                     w_assert0(freeFrame > 0);
-                    success = bufferPool->_evictioner->evict_one(freeFrame);
+                    success = bufferPool->_evictioner->evictOne(freeFrame);
                 }
                 return true;
             }
@@ -78,9 +78,9 @@ bool zero::buffer_pool::FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &
                 freeFrame = 0;
                 bool success = false;
                 while (!success) {
-                    freeFrame = bufferPool->_evictioner->pick_victim();
+                    freeFrame = bufferPool->_evictioner->pickVictim();
                     w_assert0(freeFrame > 0);
-                    success = bufferPool->_evictioner->evict_one(freeFrame);
+                    success = bufferPool->_evictioner->evictOne(freeFrame);
                 }
                 return true;
             }

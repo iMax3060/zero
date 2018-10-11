@@ -34,12 +34,11 @@ LogArchiver::LogArchiver(const sm_options& options)
     shutdownFlag(false), control(&shutdownFlag), selfManaged(true),
     flushReqLSN(lsn_t::null)
 {
-    constexpr size_t defaultWorkspaceSize = 1600;
-    size_t workspaceSize = 1024 * 1024 * // convert MB -> B
-        options.get_int_option("sm_archiver_workspace_size", defaultWorkspaceSize);
+    size_t workspaceSize = 1024 * 1024 * // convert MiB -> B
+        options.get_int_option("sm_archiver_workspace_size", 1600);
 
     size_t blockSize = DFT_BLOCK_SIZE;
-    // CS TODO: archiver currently only works with 1MB blocks
+    // CS TODO: archiver currently only works with 1MiB blocks
         // options.get_int_option("sm_archiver_block_size", DFT_BLOCK_SIZE);
 
     eager = options.get_bool_option("sm_archiver_eager", DFT_EAGER);
@@ -47,7 +46,7 @@ LogArchiver::LogArchiver(const sm_options& options)
             "sm_archiver_read_whole_blocks", DFT_READ_WHOLE_BLOCKS);
     slowLogGracePeriod = options.get_int_option(
             "sm_archiver_slow_log_grace_period", DFT_GRACE_PERIOD);
-    bool compression = options.get_int_option("sm_page_img_compression", 0);
+    bool compression = options.get_int_option("sm_log_page_img_compression", 0);
 
     index = std::make_shared<ArchiveIndex>(options);
     nextActLSN = index->getLastLSN();
@@ -681,7 +680,7 @@ MergerDaemon::MergerDaemon(const sm_options& options,
      indir(in), outdir(out)
 {
     _fanin = options.get_int_option("sm_archiver_fanin", 5);
-    _compression = options.get_int_option("sm_page_img_compression", 0) > 0;
+    _compression = options.get_int_option("sm_log_page_img_compression", 0) > 0;
     if (!outdir) { outdir = indir; }
     w_assert0(indir && outdir);
 }

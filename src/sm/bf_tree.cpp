@@ -12,8 +12,8 @@
 
 #include "smthread.h"
 #include "generic_page.h"
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "sm_base.h"
 #include "sm.h"
@@ -89,7 +89,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     : _cleaner(nullptr)
 {
     // sm_bufboolsize given in MB -- default 8GB
-    long bufpoolsize = options.get_int_option("sm_bufpoolsize", 8192) * 1024 * 1024;
+    long bufpoolsize = options.get_int_option("sm_bf_size", 8192) * 1024 * 1024;
     uint32_t  nbufpages = (bufpoolsize - 1) / sizeof(generic_page) + 1;
     if (nbufpages < 10)  {
         cerr << "ERROR: buffer size ("
@@ -110,7 +110,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     _batch_segment_size = options.get_int_option("sm_batch_segment_size", 1);
     _batch_warmup = _batch_segment_size > 1;
 
-    _log_fetches = options.get_bool_option("sm_log_page_fetches", false);
+    _log_fetches = options.get_bool_option("sm_bf_log_page_fetches", false);
 
     // Warm-up options
     // Warm-up hit ratio must be an int between 0 and 100
@@ -132,7 +132,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
             << SM_PAGESIZE << "-bytes pages... enable_swizzling=" <<
             _enable_swizzling);
 
-    // use posix_memalign to allow unbuffered disk I/O
+    // use posix_memalign to allow updateOnPageExplicitlyUnbuffered disk I/O
     void *buf = NULL;
     if (::posix_memalign(&buf, SM_PAGESIZE, SM_PAGESIZE * ((uint64_t)
                     nbufpages)) != 0)
@@ -216,7 +216,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
         W_FATAL(eCRASH);
     }
 
-    _async_eviction = options.get_bool_option("sm_async_eviction", false);
+    _async_eviction = options.get_bool_option("sm_bf_evictioner_run_async", false);
     if (_async_eviction) { _evictioner->fork(); }
 }
 
@@ -388,7 +388,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         w_assert1(cb._pid == _buffer[idx].pid);
 
         cb.inc_ref_count();
-        _evictioner->hit_ref(idx);
+        _evictioner->updateOnPageHit(idx);
         if (mode == LATCH_EX) { cb.inc_ref_count_ex(); }
 
         page = &(_buffer[idx]);
@@ -445,7 +445,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     timeout_t::WAIT_IMMEDIATE);
             if (check_rc.is_error())
             {
-                if (_evictioner) _evictioner->unbuffered(idx);
+                if (_evictioner) _evictioner->updateOnPageExplicitlyUnbuffered(idx);
                 _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
@@ -457,7 +457,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     bf_idx_pair(idx, parent_idx));
             if (!registered) {
                 cb.latch().latch_release();
-                if (_evictioner) _evictioner->unbuffered(idx);
+                if (_evictioner) _evictioner->updateOnPageExplicitlyUnbuffered(idx);
                 _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
@@ -482,7 +482,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                 {
                     _hashtable->remove(pid);
                     cb.latch().latch_release();
-                    if (_evictioner) _evictioner->unbuffered(idx);
+                    if (_evictioner) _evictioner->updateOnPageExplicitlyUnbuffered(idx);
                     _freeList->addFreeBufferpoolFrame(idx);
                     return read_rc;
                 }
@@ -503,7 +503,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             w_assert1(_is_active_idx(idx));
 
-            if (_evictioner) _evictioner->miss_ref(idx, pid);
+            if (_evictioner) _evictioner->updateOnPageMiss(idx, pid);
 
             // STEP 6) Fix successful -- pin page and downgrade latch
             w_assert1(cb.latch().is_mine());
@@ -533,7 +533,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             w_assert1(_is_active_idx(idx));
             cb.inc_ref_count();
-            if(_evictioner) _evictioner->hit_ref(idx);
+            if(_evictioner) _evictioner->updateOnPageHit(idx);
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
             }
@@ -692,7 +692,7 @@ void bf_tree_m::unpin_for_refix(bf_idx idx) {
     // the btcursor code in detail before taking further action on this.
     // w_assert1(get_cb(idx).latch().held_by_me());
     get_cb(idx).unpin();
-    if(_evictioner) _evictioner->unfix_ref(idx);
+    if(_evictioner) _evictioner->updateOnPageUnfix(idx);
     DBG(<< "Unpin for refix set pin cnt to " << get_cb(idx)._pin_cnt);
     w_assert1(get_cb(idx)._pin_cnt >= 0);
 }
@@ -948,7 +948,7 @@ void bf_tree_m::_delete_block(bf_idx idx) {
     w_assert1(removed);
 
     // after all, give back this block to the freelist. other threads can see this block from now on
-    if (_evictioner) _evictioner->unbuffered(idx);
+    if (_evictioner) _evictioner->updateOnPageExplicitlyUnbuffered(idx);
     _freeList->addFreeBufferpoolFrame(idx);
 }
 
@@ -1013,7 +1013,7 @@ w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
     // cb.pin();
     DBG(<< "Refix direct of " << idx << " set pin cnt to " << cb._pin_cnt);
     cb.inc_ref_count();
-    _evictioner->hit_ref(idx);
+    _evictioner->updateOnPageHit(idx);
     if (mode == LATCH_EX) { cb.inc_ref_count_ex(); }
     page = &(_buffer[idx]);
     return RCOK;
@@ -1094,14 +1094,14 @@ void bf_tree_m::unfix(const generic_page* p, bool evict)
         bool removed = _hashtable->remove(p->pid);
         w_assert1(removed);
 
-        if (_evictioner) _evictioner->unbuffered(idx);
+        if (_evictioner) _evictioner->updateOnPageExplicitlyUnbuffered(idx);
         _freeList->addFreeBufferpoolFrame(idx);
     }
     else {
         w_assert1(cb._pin_cnt >= 0);
     }
     DBG(<< "Unfixed " << idx << " pin count " << cb._pin_cnt);
-    if(_evictioner) _evictioner->unfix_ref(idx);
+    if(_evictioner) _evictioner->updateOnPageUnfix(idx);
     cb.latch().latch_release();
 }
 
@@ -1131,7 +1131,7 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
         // (note, single-node B-tree is both root and leaf)
         || (p.tag() == t_btree_p && p.pid() == p.root())
     ) {
-        _evictioner->block_ref(indexToCheck);
+        _evictioner->updateOnPageBlocked(indexToCheck);
         DBG5(<< "Eviction failed on node type for " << idx);
         return false;
     }
@@ -1142,14 +1142,14 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
         // (requires unswizzling, which is not supported)
         || (_enable_swizzling && p.tag() == t_btree_p && p.get_foster() != 0)
     ) {
-        _evictioner->swizzle_ref(indexToCheck);
+        _evictioner->updateOnPageSwizzled(indexToCheck);
         DBG5(<< "Eviction failed on swizzled for " << idx);
         return false;
     }
     if (// ... dirty pages, unless we're told to ignore them
            (!ignore_dirty && cb.is_dirty())
     ) {
-        _evictioner->dirty_ref(indexToCheck);
+        _evictioner->updateOnPageDirty(indexToCheck);
         DBG5(<< "Eviction failed on dirty for " << idx);
         return false;
     }
@@ -1162,7 +1162,7 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
     if (// ... pinned frames, i.e., someone required it not be evicted
            cb._pin_cnt != 0
     ) {
-        _evictioner->used_ref(indexToCheck);
+        _evictioner->updateOnPageFixed(indexToCheck);
         DBG5(<< "Eviction failed on pinned for " << idx);
         return false;
     }

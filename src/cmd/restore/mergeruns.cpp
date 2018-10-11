@@ -38,7 +38,7 @@ void MergeRuns::run()
     opt.set_string_option("sm_archdir", indir);
     opt.set_int_option("sm_archiver_block_size", BLOCK_SIZE);
     opt.set_int_option("sm_archiver_bucket_size", bucketSize);
-    opt.set_int_option("sm_page_img_compression", 16384);
+    opt.set_int_option("sm_log_page_img_compression", 16384);
     ArchiveIndex* in = new ArchiveIndex(opt);
 
     ArchiveIndex* out = in;

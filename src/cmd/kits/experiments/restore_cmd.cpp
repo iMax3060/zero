@@ -86,7 +86,6 @@ void RestoreCmd::loadOptions(sm_options& options)
     options.set_bool_option("sm_restore_instant", opt_instant);
     options.set_bool_option("sm_restore_sched_singlepass", opt_singlePass);
     options.set_bool_option("sm_restore_sched_ondemand", opt_onDemand);
-    options.set_bool_option("sm_restore_sched_random", opt_randomOrder);
 }
 
 void RestoreCmd::run()

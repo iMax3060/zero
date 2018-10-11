@@ -16,7 +16,6 @@ sm_options make_options(bool has_init = true, bool small = true) {
     sm_options options;
     options.set_int_option("sm_locktablesize", small ? 100 : 6400);
     options.set_bool_option("sm_truncate", true);
-    options.set_bool_option("sm_testenv_init_vol", true);
     options.set_int_option("sm_rawlock_lockpool_initseg", has_init ? 2 : 0);
     options.set_int_option("sm_rawlock_xctpool_initseg", has_init ? 2 : 0);
     options.set_int_option("sm_rawlock_lockpool_segsize", small ? 1 << 3 : 1 << 5);
@@ -56,7 +55,6 @@ sm_options make_options_huge(bool catchup) {
     sm_options options;
     options.set_int_option("sm_locktablesize", 1 << 8); // small so that more races happen
     options.set_bool_option("sm_truncate", true);
-    options.set_bool_option("sm_testenv_init_vol", true);
     options.set_int_option("sm_rawlock_lockpool_initseg", catchup ? 2 : 20);
     options.set_int_option("sm_rawlock_xctpool_initseg", catchup ? 2 : 20);
     options.set_int_option("sm_rawlock_lockpool_segsize", catchup ? 1 << 10 : 1 << 12);

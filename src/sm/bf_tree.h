@@ -7,7 +7,6 @@
 
 #include "w_defines.h"
 #include "latch.h"
-#include "tatas.h"
 #include "vol.h"
 #include "generic_page.h"
 #include "bf_hashtable.h"
@@ -15,7 +14,7 @@
 #include <iosfwd>
 #include "buffer_pool_free_list.hpp"
 #include "page_cleaner.h"
-#include "page_evictioner.h"
+#include "page_evictioner.hpp"
 #include "restart.h"
 #include "restore.h"
 
@@ -26,11 +25,8 @@ class lsn_t;
 struct bf_tree_cb_t; // include bf_tree_cb.h in implementation codes
 
 class test_bf_tree;
-class test_bf_fixed;
-class page_evictioner_base;
 class bf_tree_cleaner;
 class btree_page_h;
-struct EvictionContext;
 
 /** Specifies how urgent we are to evict pages. \note Order does matter.  */
 enum evict_urgency_t {
@@ -68,13 +64,12 @@ class bf_tree_m {
     friend class test_bf_tree; // for testcases
     friend class test_bf_fixed; // for testcases
     friend class bf_tree_cleaner; // for page cleaning
-    friend class page_evictioner_base;  // for page evictioning
-    friend class page_evictioner_gclock;
     friend class WarmupThread;
     friend class page_cleaner_decoupled;
     friend class GenericPageIterator;
     friend class zero::buffer_pool::FreeListLowContention;
     friend class zero::buffer_pool::FreeListHighContention;
+    friend class zero::buffer_pool::PageEvictioner;
 
 public:
     /** constructs the buffer pool. */
@@ -114,6 +109,10 @@ public:
 
     static bool is_swizzled_pointer (PageID pid) {
         return (pid & SWIZZLED_PID_BIT) != 0;
+    }
+
+    bool is_active_index(bf_idx idx) {
+        return _is_active_idx(idx);
     }
 
     // Used for debugging
@@ -354,6 +353,8 @@ public:
 
     bool is_no_db_mode() const { return _no_db_mode; }
 
+    bool uses_write_elision() const { return _write_elision; }
+
     bool is_warmup_done() const { return _warmup_done; }
 
     bool has_dirty_frames() const;
@@ -383,6 +384,10 @@ public:
     bool unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
                               bool doUnswizzle = true,
                               PageID* childPageID = nullptr);
+
+    w_rc_t sx_update_child_emlsn(btree_page_h& parent, general_recordid_t child_slotid, lsn_t child_emlsn) {
+        return _sx_update_child_emlsn(parent, child_slotid, child_emlsn);
+    }
 
     // Used for debugging
     void print_page(PageID pid);
@@ -498,7 +503,7 @@ private:
     std::shared_ptr<page_cleaner_base>   _cleaner;
 
     /** worker thread responsible for evicting pages. */
-    std::shared_ptr<page_evictioner_base> _evictioner;
+    std::shared_ptr<zero::buffer_pool::PageEvictioner> _evictioner;
 
     /** Perform eviction on dedicated thread; fixing threads just wait until a free
      * frame is available */

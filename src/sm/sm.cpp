@@ -249,7 +249,7 @@ ss_m::_construct_once()
 
     ERROUT(<< "[" << timer.time_ms() << "] Initializing restart manager");
 
-    if (_options.get_bool_option("sm_log_benchmark_start", false)) {
+    if (_options.get_bool_option("sm_log_log_benchmark_start", false)) {
             Logger::log_sys<benchmark_start_log>();
     }
 

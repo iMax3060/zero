@@ -58,7 +58,7 @@ void run_bf_test(w_rc_t (*func)(ss_m*, test_volume_t*),
     options.set_int_option("sm_logbufsize", 512 << 10);
     options.set_int_option("sm_logsize", 8192 << 10);
     options.set_int_option("sm_locktablesize", default_locktable_size);
-    options.set_int_option("sm_bufpoolsize", (sizeof(generic_page) * npages) / 1048576);
+    options.set_int_option("sm_bf_size", (sizeof(generic_page) * npages) / 1048576);
     options.set_int_option("sm_num_page_writers", 1);
     options.set_int_option("sm_cleaner_interval_millisec_min",
         (size == LARGE ? 10000 : (size == NORMAL ? 1000 : 20)));

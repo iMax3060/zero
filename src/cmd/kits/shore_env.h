@@ -421,9 +421,6 @@ protected:
     // Helper functions
     void readconfig();
 
-    // Used for some benchmarks - number of records to access
-    volatile uint _rec_to_acc;
-
     // The insert/delete/probe frequencies for microbenchmarks
     int _insert_freq;
     int _delete_freq;
@@ -639,10 +636,6 @@ public:
                                   const double delay)=0;
 
     virtual void reset_stats()=0;
-
-    inline uint get_rec_to_access() { return *&_rec_to_acc; }
-
-    void set_rec_to_access(uint rec_to_acc){ _rec_to_acc =  rec_to_acc; }
 
     // Run one transaction
     virtual w_rc_t run_one_xct(Request* prequest)=0;

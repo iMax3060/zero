@@ -95,7 +95,7 @@ log_storage::log_storage(const sm_options& options)
     }
 
     off_t psize = off_t(options.get_int_option("sm_log_partition_size", 1024));
-    // option given in MB -> convert to B
+    // option given in MiB -> convert to B
     psize = psize * 1024 * 1024;
     // round to next multiple of the log buffer segment size
     psize = (psize / log_core::SEGMENT_SIZE) * log_core::SEGMENT_SIZE;
