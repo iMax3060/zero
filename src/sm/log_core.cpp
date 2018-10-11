@@ -135,8 +135,11 @@ public:
                     prev_st[enum_to_base(sm_stat_id::bf_evict_duration)];
                 auto count = st[enum_to_base(sm_stat_id::bf_evict)] -
                     prev_st[enum_to_base(sm_stat_id::bf_evict)];
+                auto evict_attempts = st[enum_to_base(sm_stat_id::bf_eviction_attempts)] -
+                    prev_st[enum_to_base(sm_stat_id::bf_eviction_attempts)];
                 auto evict_time = count > 0 ? (duration / count) : 0;
-                ofs2 << evict_time << std::endl;
+
+                ofs2 << evict_time << "\t" << evict_attempts << std::endl;
             }
 
             if (msec) { Logger::log_sys<tick_msec_log>(); }
@@ -455,7 +458,7 @@ log_core::log_core(const sm_options& options)
     _ticker = NULL;
     if (options.get_bool_option("sm_ticker_enable", false)) {
         bool msec = options.get_bool_option("sm_ticker_msec", false);
-        bool print_tput = options.get_bool_option("sm_ticker_print_tput", false);
+        bool print_tput = options.get_bool_option("sm_ticker_print_tput", true);
         _ticker = new ticker_thread_t(msec, print_tput);
     }
 
@@ -928,6 +931,7 @@ rc_t log_core::insert(logrec_t &rec, lsn_t* rlsn)
     }
     DBGOUT3(<< " insert @ lsn: " << rec_lsn << " type " << rec.type() << " length " << rec.length() );
 
+    INC_TSTAT(log_inserts);
     ADD_TSTAT(log_bytes_generated,size);
     return RCOK;
 }

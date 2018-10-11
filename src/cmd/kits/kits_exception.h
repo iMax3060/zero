@@ -1,6 +1,6 @@
 // -*- mode:C++; c-basic-offset:4 -*-
-#ifndef __UTIL_EXCEPTION_H
-#define __UTIL_EXCEPTION_H
+#ifndef __KITS_EXCEPTION_H
+#define __KITS_EXCEPTION_H
 
 #include <exception>
 #include <cstring>
@@ -145,4 +145,4 @@ inline void unreachable() {
 #define unreachable() THROW(Unreachable)
 #endif
 
-#endif // __UTIL_EXCEPTION_H
+#endif // __KITS_EXCEPTION_H

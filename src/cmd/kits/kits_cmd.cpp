@@ -17,6 +17,7 @@ namespace fs = boost::filesystem;
 #include "tpcc/tpcc_env.h"
 #include "tpcc/tpcc_client.h"
 #include "tpcc/tpcc_input.h"
+#include "ycsb/ycsb.h"
 
 #include "util/stopwatch.h"
 
@@ -64,12 +65,10 @@ public:
     {
         ::sleep(delay);
 
-        vol_t* vol = smlevel_0::vol;
-        w_assert0(vol);
-        vol->mark_failed();
+        smlevel_0::bf->set_media_failure();
 
         // disable eager archiving
-        smlevel_0::logArchiver->setEager(false);
+        // smlevel_0::logArchiver->setEager(false);
 
         *flag = true;
         lintel::atomic_thread_fence(lintel::memory_order_release);
@@ -117,7 +116,7 @@ void KitsCommand::setupOptions()
     boost::program_options::options_description kits("Kits Options");
     kits.add_options()
         ("benchmark,b", po::value<string>(&opt_benchmark)->required(),
-            "Benchmark to execute. Possible values: tpcb, tpcc")
+            "Benchmark to execute. Possible values: tpcb, tpcc, ycsb")
         ("load", po::value<bool>(&opt_load)->default_value(false)
             ->implicit_value(true),
             "If set, log and archive folders are emptied, database files \
@@ -140,7 +139,9 @@ void KitsCommand::setupOptions()
             "Transaction code or mix identifier (0 = all trxs)")
         ("queried_sf,q", po::value<int>(&opt_queried_sf)->default_value(1),
             "Scale factor to which to restrict queries")
-        ("asyncCommit", po::value<bool>(&opt_asyncCommit)->default_value(false)
+        ("updateFreq", po::value<int>(&opt_update_freq)->default_value(50),
+            "Workload update frequency beteen 0 and 100")
+        ("asyncCommit", po::value<bool>(&opt_asyncCommit)->default_value(true)
             ->implicit_value(true),
             "Whether to use asynchronous commit (non-durable) for Kits transactions")
         ("spread", po::value<bool>(&opt_spread)->default_value(true)
@@ -249,6 +250,9 @@ void KitsCommand::init()
     else if (opt_benchmark == "tpcc") {
         initShoreEnv<tpcc::ShoreTPCCEnv>();
     }
+    else if (opt_benchmark == "ycsb") {
+        initShoreEnv<ycsb::ShoreYCSBEnv>();
+    }
     else {
         throw runtime_error("Unknown benchmark string");
     }
@@ -261,6 +265,9 @@ void KitsCommand::runBenchmark()
     }
     else if (opt_benchmark == "tpcc") {
         runBenchmarkSpec<tpcc::baseline_tpcc_client_t, tpcc::ShoreTPCCEnv>();
+    }
+    else if (opt_benchmark == "ycsb") {
+        runBenchmarkSpec<ycsb::baseline_ycsb_client_t, ycsb::ShoreYCSBEnv>();
     }
     else {
         throw runtime_error("Unknown benchmark string");
@@ -280,6 +287,8 @@ void KitsCommand::runBenchmarkSpec()
     if (opt_queried_sf <= 0) {
         opt_queried_sf = shoreEnv->get_sf();
     }
+    // TODO only update frequency supported for now, and only on YCSB
+    shoreEnv->set_freqs(0, 0, 0, opt_update_freq);
 
     stopwatch_t timer;
 
@@ -330,7 +339,6 @@ template<class Client, class Environment>
 void KitsCommand::createClients()
 {
     // reset starting cpu and wh id
-    int current_prs_id = -1;
     int wh_id = 0;
 
     mtype = MT_UNDEF;
@@ -356,17 +364,11 @@ void KitsCommand::createClients()
             wh_id = (i%(int)opt_queried_sf)+1;
         }
 
-        // CS: 1st arg is binding type, which I don't know what it is for It
-        // seems like it is a way to specify what the next CPU id is.  If
-        // BT_NONE is given, it simply returns -1 TODO: this is required to
-        // implement opt_spread -- take a look!  current_prs_id =
-        // next_cpu(BT_NONE, current_prs_id);
         Client* client = new Client(
                 "client-" + std::to_string(i), i,
                 (Environment*) shoreEnv,
                 mtype, opt_select_trx,
                 trxsPerThread,
-                current_prs_id /* cpu id -- see below */,
                 wh_id, opt_queried_sf,
                 opt_num_threads);
         w_assert0(client);
@@ -414,13 +416,10 @@ void KitsCommand::doWork()
             lintel::atomic_thread_fence(lintel::memory_order_consume);
         }
 
-        vol_t* vol = smlevel_0::vol;
-        w_assert0(vol);
-
         // Now wait for device to be restored -- check every 1 second
-        while (vol->is_failed()) {
+        while (smlevel_0::bf->is_media_failure()) {
             sleep(1);
-            vol->check_restore_finished();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 

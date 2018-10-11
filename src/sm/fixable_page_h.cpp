@@ -19,11 +19,13 @@ int fixable_page_h::force_Q_fixing = 0;  // <<<>>>
 
 void check_page_tags(generic_page* s)
 {
-    w_assert1(s->tag != t_alloc_p  || (s->pid % alloc_cache_t::extent_size == 0));
-    w_assert1(s->tag != t_stnode_p || s->pid == stnode_page::stpid);
-    w_assert1(s->tag != t_btree_p  || (s->pid != stnode_page::stpid &&
-                (s->pid % alloc_cache_t::extent_size > 0)));
-    w_assert1(s->tag == t_alloc_p || s->tag == t_stnode_p || s->tag == t_btree_p);
+    // CS: these fail during restore, which might fix pages with garbage content
+    // from the backup before replaying a page-image format log record
+    // w_assert1(s->tag != t_alloc_p  || (s->pid % alloc_cache_t::extent_size == 0));
+    // w_assert1(s->tag != t_stnode_p || s->pid == stnode_page::stpid);
+    // w_assert1(s->tag != t_btree_p  || (s->pid != stnode_page::stpid &&
+    //             (s->pid % alloc_cache_t::extent_size > 0)));
+    // w_assert1(s->tag == t_alloc_p || s->tag == t_stnode_p || s->tag == t_btree_p);
 }
 
 void fixable_page_h::unfix(bool evict)
@@ -173,6 +175,13 @@ void fixable_page_h::reset_log_volume()
     smlevel_0::bf->reset_log_volume(_pp);
 }
 
+bool fixable_page_h::has_check_recovery()
+{
+    w_assert1(_pp);
+    auto cb = smlevel_0::bf->get_cb(_pp);
+    return cb->_check_recovery;
+}
+
 bool fixable_page_h::is_to_be_deleted() {
     return (_pp->page_flags&t_to_be_deleted) != 0;
 }
@@ -246,9 +255,12 @@ void fixable_page_h::setup_for_restore(generic_page* pp)
     // check_page_tags(_pp);
 }
 
-
-
-
+bool fixable_page_h::is_pinned_for_restore()
+{
+    if (!_pp) { return false; }
+    auto cb = smlevel_0::bf->get_cb(_pp);
+    return cb->is_pinned_for_restore();
+}
 
 // <<<>>>
 

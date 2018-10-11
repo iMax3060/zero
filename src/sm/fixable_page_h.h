@@ -151,6 +151,9 @@ public:
     void increment_log_volume(uint32_t);
     void reset_log_volume();
 
+    /// return value of _check_recovery flag on CB
+    bool has_check_recovery();
+
     /// Updates lsn field inside generic_page (i.e., in the page image)
     void set_img_page_lsn(const lsn_t& lsn);
 
@@ -215,6 +218,8 @@ public:
      * log record interface requires a fixable_page_h to perform REDO.
      */
      void setup_for_restore(generic_page* pp);
+
+     bool is_pinned_for_restore();
 
 protected:
     friend class borrowed_btree_page_h;

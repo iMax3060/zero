@@ -8,26 +8,33 @@
 // Template definitions
 #include "bf_hashtable.cpp"
 
-page_evictioner_base::page_evictioner_base(bf_tree_m *bufferpool, const sm_options &options)
-        :
-        worker_thread_t(options.get_int_option("sm_evictioner_interval_millisec", 1000)),
-        _bufferpool(bufferpool),
-        _rnd_distr(1, _bufferpool->get_block_cnt() - 1) {
+page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options)
+    :
+    worker_thread_t(options.get_int_option("sm_eviction_interval", 100)),
+    _bufferpool(bufferpool),
+    _rnd_distr(1, _bufferpool->get_block_cnt() - 1)
+{
     _swizzling_enabled = options.get_bool_option("sm_bufferpool_swizzle", false);
     _maintain_emlsn = options.get_bool_option("sm_bf_maintain_emlsn", false);
-    _flush_dirty = options.get_bool_option("sm_evict_dirty_pages", false);
     _random_pick = options.get_bool_option("sm_evict_random", false);
-    _use_clock = options.get_bool_option("sm_evict_use_clock", false);
+    _use_clock = options.get_bool_option("sm_evict_use_clock", true);
     _log_evictions = options.get_bool_option("sm_log_page_evictions", false);
+    _wakeup_cleaner_attempts = options.get_int_option("sm_evict_wakeup_cleaner_attempts", 0);
+    _clean_only_attempts = options.get_int_option("sm_evict_clean_only_attempts", 0);
+    _write_elision = options.get_bool_option("sm_write_elision", false);
+    _no_db_mode = options.get_bool_option("sm_no_db", false);
+
+    if (options.get_bool_option("sm_evict_dirty_pages", false)) {
+        // this option overrides clean_only_attempts
+        _clean_only_attempts = 1;
+    }
 
     if (_use_clock) { _clock_ref_bits.resize(_bufferpool->get_block_cnt(), false); }
 
     _current_frame = 0;
 
-    // CS: Warning! Magical arbitrary constants without any empirical decision support below!
     constexpr unsigned max_rounds = 1000;
     _max_attempts = max_rounds * _bufferpool->get_block_cnt();
-    _wakeup_cleaner_attempts = 42;
 }
 
 page_evictioner_base::~page_evictioner_base() {}
@@ -74,24 +81,31 @@ bool page_evictioner_base::evict_one(bf_idx victim) {
         return false;
     }
 
+    // When media failure is detected, all pages currently in buffer pool should be
+    // considered dirty. Since that's tricky to do without quiescing the system,
+    // we just detect those frames here and add to the dirty page table, so that
+    // single-page recovery takes care of bringing them to correct state after
+    // restore.
+    // bool media_failure = _bufferpool->is_media_failure() && !cb._check_recovery;
+    lsn_t page_lsn = cb.get_page_lsn();
+    bool media_failure = _bufferpool->is_media_failure(cb._pid);
+    if (_no_db_mode || _write_elision || cb.is_dirty() || media_failure) {
+        // CS TODO: apparently page LSN can be null for unallocated pages
+        // (i.e., "holes" in extents)
+        if (!page_lsn.is_null()) {
+            smlevel_0::recovery->add_dirty_page(cb._pid, page_lsn);
+        }
+    }
+
     // We're passed the point of no return: eviction must happen no mather what
 
     // Check if page needs to be flushed
-    bool was_dirty = false;
-    if (_flush_dirty && cb.is_dirty()) {
-        // is_dirty acquires SH latch, which must succeed since we already hold EX
-        flush_dirty_page(cb);
-        was_dirty = true;
-    }
+    bool was_dirty = cb.is_dirty();
+    if (was_dirty && !_write_elision) { flush_dirty_page(cb); }
     w_assert1(cb.latch().is_mine());
 
     if (_log_evictions) {
-        Logger::log_sys<evict_page_log>(cb._pid, was_dirty);
-    }
-
-    if (_bufferpool->is_no_db_mode()) {
-        smlevel_0::recovery->add_dirty_page(cb._pid, cb.get_page_lsn());
-        w_assert0(cb.get_page_lsn() != lsn_t::null);
+        Logger::log_sys<evict_page_log>(cb._pid, was_dirty, page_lsn);
     }
 
     // remove it from hashtable.
@@ -114,7 +128,10 @@ bool page_evictioner_base::evict_one(bf_idx victim) {
     return true;
 }
 
-void page_evictioner_base::flush_dirty_page(const bf_tree_cb_t &cb) {
+void page_evictioner_base::flush_dirty_page(const bf_tree_cb_t& cb) {
+    // WAL rule
+    W_COERCE(smlevel_0::log->flush(cb.get_page_lsn()));
+
     // Straight-forward write -- no need to do it asynchronously or worry about
     // any race conditions. We hold EX latch and the entry hasn't been removed
     // from the buffer-pool hash table yet. Any thread attempting to fix the
@@ -182,8 +199,7 @@ bf_idx page_evictioner_base::pick_victim() {
         attempts++;
         if (attempts >= _max_attempts) {
             W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
-        } else if (!(_flush_dirty && _bufferpool->_no_db_mode && _bufferpool->_write_elision)
-                && attempts % _wakeup_cleaner_attempts == 0) {
+        } else if (_wakeup_cleaner_attempts > 0 && attempts % _wakeup_cleaner_attempts == 0) {
             _bufferpool->wakeup_cleaner();
         }
 

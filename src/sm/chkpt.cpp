@@ -123,7 +123,7 @@ public:
                 || lsn + lr->length() == prev_lsn);
 
         prev_lsn = lsn;
-        return lr->lsn() > stop_lsn;
+        return lr->lsn() >= stop_lsn;
     }
 
     bool nextBlock()
@@ -188,10 +188,17 @@ chkpt_m::chkpt_m(const sm_options& options, chkpt_t* chkpt_info)
     if (_last_end_lsn.is_null()) { _last_end_lsn = lsn_t(1, 0); }
     _use_log_archive = options.get_bool_option("sm_chkpt_use_log_archive", false);
     _log_based = options.get_bool_option("sm_chkpt_log_based", false);
+    _print_propstats = options.get_bool_option("sm_chkpt_print_propstats", false);
 
     // _use_log_archive mandatory with nodb mode
-    if (options.get_bool_option("sm_no_db", false)) {
+    bool no_db_mode = options.get_bool_option("sm_no_db", false);
+    bool write_elision = options.get_bool_option("sm_write_elision", false);
+    if (no_db_mode || write_elision) {
         _use_log_archive = true;
+    }
+
+    if (_print_propstats) {
+        _propstats_ofs.open("propstats_chkpt.txt", std::ofstream::out | std::ofstream::trunc);
     }
 
     fork();
@@ -201,11 +208,21 @@ void chkpt_m::do_work()
 {
     take();
     ss_m::log->get_storage()->wakeup_recycler(true /* chkpt_only */);
+
+    if (_print_propstats) {
+        auto redo_length = smlevel_0::log->get_storage()->get_byte_distance(
+                _min_rec_lsn, _last_end_lsn);
+        _propstats_ofs << _dirty_page_count << '\t' << redo_length << std::endl;
+    }
 }
 
 chkpt_m::~chkpt_m()
 {
     stop();
+
+    if (_print_propstats) {
+        _propstats_ofs.close();
+    }
 }
 
 /*********************************************************************
@@ -230,6 +247,7 @@ void chkpt_t::scan_log(lsn_t scan_start, lsn_t archived_lsn)
     lsn_t scan_stop = lsn_t(1,0);
 
 #ifdef USE_MMAP
+    // CS TODO: using BackwardLogScanner for current experiments, but Fetch variant is preferred in the long run
     // BackwardFetchLogScanner scan {scan_start};
     constexpr size_t bufferSize = 8 * 1024 * 1024;
     BackwardLogScanner scan {bufferSize, scan_start, scan_stop};
@@ -595,6 +613,7 @@ void chkpt_m::take(chkpt_t* chkpt)
     // Insert chkpt_begin log record.
     lsn_t begin_lsn = Logger::log_sys<chkpt_begin_log>();
     W_COERCE(ss_m::log->flush(begin_lsn));
+    w_assert0(!begin_lsn.is_null());
 
     lsn_t archived_lsn = lsn_t::null;
     if (_use_log_archive) {
@@ -639,6 +658,7 @@ void chkpt_m::take(chkpt_t* chkpt)
     }
     _min_xct_lsn = chkpt->get_min_xct_lsn();
     _last_end_lsn = chkpt->get_last_scan_start();
+    _dirty_page_count = chkpt->buf_tab.size();
 }
 
 void chkpt_t::serialize_binary(ofstream& ofs)

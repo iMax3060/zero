@@ -3,7 +3,6 @@ SET(sm_STAT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/alloc_cache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/alloc_page.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/allocator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/backup_reader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bf_hashtable.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bf_tree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bf_tree_cleaner.cpp
@@ -71,7 +70,6 @@ SET(sm_LIBS
     boost_thread
     boost_atomic
     boost_filesystem
-    boost_regex
    )
 
 IF(LINK_TIME_OPTIMIZATION)

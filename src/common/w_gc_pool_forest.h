@@ -127,15 +127,11 @@ union gc_pointer_raw {
     /** Integer representation, which is handy for single-word CAS. */
     uint64_t word;
 
-    bool operator==(const gc_pointer_raw& other) const {
-        return word == other.word;
-    }
-
-    bool operator!=(const gc_pointer_raw& other) const {
-        return word != other.word;
-    }
-
 };
+
+// csauer: gcc 6+ needs this
+inline bool operator==(const gc_pointer_raw& a, const gc_pointer_raw& b) { return a.word == b.word; };
+inline bool operator!=(const gc_pointer_raw& a, const gc_pointer_raw& b) { return a.word != b.word; };
 
 /**
  * \brief Wrapper for gc_pointer_raw

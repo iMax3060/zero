@@ -20,6 +20,8 @@ enum class cleaner_policy {
     lowest_refcount,
     oldest_lsn,
     mixed,
+    highest_density,
+    lru,
     no_policy
 };
 
@@ -52,17 +54,15 @@ using policy_predicate_t =
 class bf_tree_cleaner : public page_cleaner_base
 {
 public:
-    /*!\fn      bf_tree_cleaner(bf_tree_m* bufferpool, const sm_options& _options)
+    /*!\fn      bf_tree_cleaner(const sm_options& _options)
      * \brief   Constructor for \c bf_tree_cleaner
      * \details This merely allocates arrays and objects. The real start-up is done in
      *          \link do_work() \endlink because a constructor can't return error codes.
      *
-     * @param bufferpool The \link bf_tree_m \endlink the constructed page cleaner is  used to clean
-     *                   pages for.
      * @param _options   Contains the set cleaner policy and options with regard to the selection
      *                   of pages to clean.
      */
-    bf_tree_cleaner(bf_tree_m* bufferpool, const sm_options& _options);
+    bf_tree_cleaner(const sm_options& _options);
 
     /**
      * Destructs this object. This merely de-allocates arrays and objects.
@@ -115,7 +115,10 @@ inline cleaner_policy make_cleaner_policy(string s)
     if (s == "lowest_refcount") { return cleaner_policy::lowest_refcount; }
     if (s == "oldest_lsn") { return cleaner_policy::oldest_lsn; }
     if (s == "mixed") { return cleaner_policy::mixed; }
-    return cleaner_policy::oldest_lsn;
+    if (s == "highest_density") { return cleaner_policy::highest_density; }
+    if (s == "lru") { return cleaner_policy::lru; }
+    if (s == "no_policy") { return cleaner_policy::no_policy; }
+    w_assert0(false);
 }
 
 #endif // __BF_TREE_CLEANER_H

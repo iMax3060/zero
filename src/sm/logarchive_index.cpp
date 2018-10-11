@@ -1,6 +1,6 @@
 #include "logarchive_index.h"
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -15,6 +15,7 @@
 #include "stopwatch.h"
 #include "worker_thread.h"
 #include "restart.h"
+#include "bf_tree.h"
 
 class RunRecycler : public worker_thread_t
 {
@@ -57,9 +58,9 @@ skip_log SKIP_LOGREC;
 
 bool ArchiveIndex::parseRunFileName(string fname, RunId& fstats)
 {
-    boost::regex run_rx(run_regex, boost::regex::perl);
-    boost::smatch res;
-    if (!boost::regex_match(fname, res, run_rx)) { return false; }
+    std::regex run_rx(run_regex);
+    std::smatch res;
+    if (!std::regex_match(fname, res, run_rx)) { return false; }
 
     fstats.level = std::stoi(res[1]);
 
@@ -111,7 +112,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
     maxLevel = 0;
     archpath = archdir;
     fs::directory_iterator it(archpath), eod;
-    boost::regex current_rx(current_regex, boost::regex::perl);
+    std::regex current_rx(current_regex);
 
     // create/load index
     unsigned runsFound = 0;
@@ -134,7 +135,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
 
             runsFound++;
         }
-        else if (boost::regex_match(fname, current_rx)) {
+        else if (std::regex_match(fname, current_rx)) {
             DBGTHRD(<< "Found unfinished log archive run. Deleting");
             fs::remove(fpath);
         }
@@ -322,9 +323,14 @@ rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPI
             lastFinished[level]++;
         }
 
-        // This is used for nodb mode only
-        if (smlevel_0::recovery && level == 1) {
-            smlevel_0::recovery->notify_archived_lsn(runEndLSN);
+        // Notify other services that depend on archived LSN
+        if (level == 1) {
+            if (smlevel_0::recovery) {
+                smlevel_0::recovery->notify_archived_lsn(runEndLSN);
+            }
+            if (smlevel_0::bf) {
+                smlevel_0::bf->notify_archived_lsn(runEndLSN);
+            }
         }
     }
 
@@ -475,10 +481,10 @@ void ArchiveIndex::deleteRuns(unsigned replicationFactor)
 
     if (replicationFactor == 0) { // delete all runs
         fs::directory_iterator it(archpath), eod;
-        boost::regex run_rx(run_regex, boost::regex::perl);
+        std::regex run_rx(run_regex);
         for (; it != eod; it++) {
             string fname = it->path().filename().string();
-            if (boost::regex_match(fname, run_rx)) {
+            if (std::regex_match(fname, run_rx)) {
                 fs::remove(it->path());
             }
         }
@@ -880,87 +886,6 @@ size_t ArchiveIndex::findEntry(RunInfo* run,
     }
     else {
         return findEntry(run, pid, i+1, to);
-    }
-}
-
-bool ArchiveIndex::probeInRun(ProbeResult& res)
-{
-    INC_TSTAT(la_index_probes);
-
-    // Assmuptions: mutex is held; run index and pid are set in given result
-    size_t index = res.runIndex;
-    auto level = res.level;
-    w_assert1((int) index <= lastFinished[level]);
-    RunInfo* run = &runs[level][index];
-
-    if (res.pidBegin > run->maxPID) {
-        INC_TSTAT(la_avoided_probes);
-        return false;
-    }
-
-    res.runBegin = run->firstLSN;
-    res.runEnd = run->lastLSN;
-
-    size_t entryBegin = 0;
-    if (res.pidBegin == 0) {
-        res.offset = 0;
-    }
-    else {
-        entryBegin = findEntry(run, res.pidBegin);
-
-        if (bucketSize == 1 && res.pidBegin == res.pidEnd-1 &&
-                run->entries[entryBegin].pid != res.pidBegin)
-        {
-            // With bucket size one, we know precisely which PIDs are contained
-            // in this run, so what we have is a filter with 100% precision
-            INC_TSTAT(la_avoided_probes);
-            return false;
-        }
-
-        // decide if we mean offset zero or entry zero
-        if (entryBegin == 0 && run->entries[0].pid >= res.pidBegin)
-        {
-            res.offset = 0;
-        }
-        else {
-            res.offset = run->entries[entryBegin].offset;
-        }
-    }
-
-    return true;
-}
-
-void ArchiveIndex::probe(std::vector<ProbeResult>& probes,
-        PageID startPID, PageID endPID, lsn_t startLSN)
-{
-    spinlock_read_critical_section cs(&_mutex);
-
-    probes.clear();
-    unsigned level = maxLevel;
-
-    // Start collecting runs on the max level, which has the largest runs
-    // and therefore requires the least random reads
-    while (level > 0) {
-        size_t index = findRun(startLSN, level);
-
-        ProbeResult res;
-        res.level = level;
-        while ((int) index <= lastFinished[level]) {
-            if (runs[level][index].entries.size() > 0) {
-                res.pidBegin = startPID;
-                res.pidEnd = endPID;
-                res.runIndex = index;
-                if (probeInRun(res)) {
-                    probes.push_back(res);
-                }
-            }
-            index++;
-        }
-
-        // Now go to the next level, starting on the last LSN covered
-        // by the current level
-        startLSN = res.runEnd;
-        level--;
     }
 }
 

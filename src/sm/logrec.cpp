@@ -727,7 +727,7 @@ void add_backup_log::construct(const string& path, lsn_t backupLSN)
     set_size(sizeof(lsn_t) + path.length());
 }
 
-void evict_page_log::construct(PageID pid, bool was_dirty)
+void evict_page_log::construct(PageID pid, bool was_dirty, lsn_t page_lsn)
 {
     char* data = data_ssx();
     *(reinterpret_cast<PageID*>(data)) = pid;
@@ -735,6 +735,9 @@ void evict_page_log::construct(PageID pid, bool was_dirty)
 
     *(reinterpret_cast<bool*>(data)) = was_dirty;
     data += sizeof(bool);
+
+    *(reinterpret_cast<lsn_t*>(data)) = page_lsn;
+    data += sizeof(lsn_t);
 
     set_size(sizeof(data - data_ssx()));
 }
@@ -789,14 +792,6 @@ template <class PagePtr>
 void restore_end_log::redo(PagePtr)
 {
     return; // CS TODO: disabled for now
-
-    vol_t* volume = smlevel_0::vol;
-    // volume must be mounted and failed
-    w_assert0(volume && volume->is_failed());
-
-    // CS TODO: fix this
-    // bool finished = volume->check_restore_finished(true /* redo */);
-    // w_assert0(finished);
 }
 
 void restore_segment_log::construct(uint32_t segment)
@@ -840,7 +835,8 @@ void alloc_page_log::redo(PagePtr p)
     }
     PageID pid = *((PageID*) data_ssx());
     alloc_page* page = (alloc_page*) p->get_generic_page();
-    w_assert1(!page->get_bit(pid - alloc_pid));
+    // assertion fails after page-img compression
+    // w_assert1(!page->get_bit(pid - alloc_pid));
     page->set_bit(pid - alloc_pid);
 }
 
@@ -857,7 +853,8 @@ void dealloc_page_log::redo(PagePtr p)
     PageID alloc_pid = p->pid();
     PageID pid = *((PageID*) data_ssx());
     alloc_page* page = (alloc_page*) p->get_generic_page();
-    w_assert1(page->get_bit(pid - alloc_pid));
+    // assertion fails after page-img compression
+    // w_assert1(page->get_bit(pid - alloc_pid));
     page->unset_bit(pid - alloc_pid);
 }
 
@@ -964,7 +961,9 @@ operator<<(ostream& o, logrec_t& l)
             {
                 PageID pid = *(reinterpret_cast<PageID*>(l.data_ssx()));
                 bool was_dirty = *(reinterpret_cast<bool*>(l.data_ssx() + sizeof(PageID)));
-                o << " pid: " << pid << (was_dirty ? " dirty" : " clean");
+                lsn_t page_lsn = *(reinterpret_cast<lsn_t*>(l.data_ssx() + sizeof(PageID) + sizeof(bool)));
+                o << " pid: " << pid << (was_dirty ? " dirty" : " clean") << " page_lsn: "
+                    << page_lsn;
                 break;
             }
         case logrec_t::t_fetch_page:

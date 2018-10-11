@@ -305,6 +305,18 @@ protected:
      */
     bool                                  _swizzling_enabled;
 
+    /*!\var     _write_elision
+     * \brief   TODO
+     * \details TODO
+     */
+    bool                                  _write_elision;
+
+    /*!\var     _no_db_mode
+     * \brief   TODO
+     * \details TODO
+     */
+    bool                                  _no_db_mode;
+
     /*!\var     _maintain_emlsn
      * \brief   Maintain parent's EMLSN
      * \details Set if the parent's EMLSN should be updated during eviction.
@@ -384,6 +396,13 @@ protected:
      *          page evictions.
      */
     unsigned                              _wakeup_cleaner_attempts;
+
+    // Dirty pages are flushed after this many eviction attempts
+    /*!\var     _clean_only_attempts
+     * \brief   TODO
+     * \details TODO
+     */
+    unsigned                              _clean_only_attempts;
 
 private:
     /*!\var     EVICT_BATCH_RATIO

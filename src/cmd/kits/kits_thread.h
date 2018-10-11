@@ -38,28 +38,10 @@
 #include <cstdint>
 #include <ctime>
 
-#include "util/exception.h"
+#include "kits_exception.h"
 #include "util/randgen.h"
 
 #include "thread_wrapper.h"
-
-#ifdef __spacrv9
-// Macro that tries to bind a thread to a specific CPU
-#define TRY_TO_BIND(cpu,boundflag)                                      \
-    if (processor_bind(P_LWPID, P_MYID, cpu, NULL)) {                   \
-       TRACE( TRACE_CPU_BINDING, "Cannot bind to processor (%d)\n", cpu);  \
-       boundflag = false; }                                             \
-    else {                                                              \
-    TRACE( TRACE_CPU_BINDING, "Binded to processor (%d)\n", cpu);       \
-    boundflag = true; }
-
-#else
-
-// No-op
-#define TRY_TO_BIND(cpu,boundflag)              \
- /*    TRACE( TRACE_DEBUG, "Should bind me to (%d)\n", _prs_id); */
-
-#endif
 
 #ifndef __GCC
 //using std::rand_r;
@@ -131,15 +113,7 @@ struct thread_pool
 }; // EOF: thread_pool
 
 
-/** define USE_SMTHREAD_AS_BASE if there is need the base thread class
- *  to derive from the smthread_t class (Shore threads)
- */
-#define USE_SMTHREAD_AS_BASE
-
-#ifdef USE_SMTHREAD_AS_BASE
 #include "sm_vas.h"
-#endif
-
 
 /***********************************************************************
  *
@@ -148,27 +122,18 @@ struct thread_pool
  *  @brief shore-mt-client thread base class. Basically a thin wrapper around an
  *         internal method and a thread name.
  *
- *  @note  if USE_SMTHREAD_AS_BASE is defined it uses the smthread_t class
- *         as base class (for Shore code execution)
- *
  ***********************************************************************/
 
-#ifdef USE_SMTHREAD_AS_BASE
 class thread_t : public thread_wrapper_t
-#else
-class thread_t
-#endif
 {
 private:
     std::string        _thread_name;
     randgen_t    _randgen;
 
-#ifdef USE_SMTHREAD_AS_BASE
     void run(); /** smthread_t::fork() is going to call run() */
     thread_pool* _ppool;
     void setuppool(thread_pool* apool) { _ppool = apool; }
     void setupthr();
-#endif
 
 protected:
     bool _delete_me;
@@ -222,11 +187,6 @@ protected:
     thread_t(const std::string &name);
 
 }; // EOF: thread_t
-
-
-#ifdef USE_SMTHREAD_AS_BASE
-// void wait_for_sthread_clients(sthread_t** threads, int num_thread_ids);
-#endif
 
 
 /**

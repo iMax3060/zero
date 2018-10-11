@@ -88,16 +88,6 @@ public:
     ArchiveIndex(const sm_options& options);
     virtual ~ArchiveIndex();
 
-    struct ProbeResult {
-        PageID pidBegin;
-        PageID pidEnd;
-        lsn_t runBegin;
-        lsn_t runEnd;
-        unsigned level;
-        size_t offset;
-        size_t runIndex;
-    };
-
     struct BlockEntry {
         size_t offset;
         PageID pid;
@@ -159,11 +149,10 @@ public:
 
     rc_t finishRun(lsn_t first, lsn_t last, PageID maxPID,
             int fd, off_t offset, unsigned level);
-    void probe(std::vector<ProbeResult>& probes,
-            PageID startPID, PageID endPID, lsn_t startLSN);
 
     template <class Input>
-    void probe(std::vector<Input>&, PageID, PageID, lsn_t);
+    void probe(std::vector<Input>&, PageID, PageID, lsn_t startLSN,
+            lsn_t endLSN = lsn_t::null);
 
     void getBlockCounts(RunFile*, size_t* indexBlocks, size_t* dataBlocks);
     void loadRunInfo(RunFile*, const RunId&);
@@ -205,7 +194,6 @@ private:
 
     void appendNewRun(unsigned level);
     size_t findRun(lsn_t lsn, unsigned level);
-    bool probeInRun(ProbeResult&);
     // binary search
     size_t findEntry(RunInfo* run, PageID pid,
             int from = -1, int to = -1);
@@ -264,7 +252,7 @@ public:
 
 template <class Input>
 void ArchiveIndex::probe(std::vector<Input>& inputs,
-        PageID startPID, PageID endPID, lsn_t startLSN)
+        PageID startPID, PageID endPID, lsn_t startLSN, lsn_t endLSN)
 {
     spinlock_read_critical_section cs(&_mutex);
 
@@ -280,6 +268,8 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
             auto& run = runs[level][index];
             index++;
             startLSN = run.lastLSN;
+
+            if (!endLSN.is_null() && startLSN >= endLSN) { return; }
 
             if (startPID > run.maxPID) {
                 // INC_TSTAT(la_avoided_probes);

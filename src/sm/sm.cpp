@@ -356,9 +356,12 @@ ss_m::_destruct_once()
     ERROUT(<< "Terminating recovery manager");
 
     if (recovery) {
-        recovery->stop();
+        if (shutdown_clean) {
+            recovery->wakeup();
+            recovery->join();
+        }
+        else { recovery->stop(); }
     }
-    vol->finish_restore();
 
     // remove all transactions, aborting them in case of clean shutdown
     xct_t::cleanup(shutdown_clean);

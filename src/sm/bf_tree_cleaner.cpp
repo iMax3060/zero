@@ -17,14 +17,14 @@
 #include "xct.h"
 #include <vector>
 
-bf_tree_cleaner::bf_tree_cleaner(bf_tree_m* bufferpool, const sm_options& options)
-    : page_cleaner_base(bufferpool, options)
+bf_tree_cleaner::bf_tree_cleaner(const sm_options& options)
+    : page_cleaner_base(options)
 {
     num_candidates = options.get_int_option("sm_cleaner_num_candidates", 0);
     min_write_size = options.get_int_option("sm_cleaner_min_write_size", 1);
     min_write_ignore_freq = options.get_int_option("sm_cleaner_min_write_ignore_freq", 0);
 
-    string pstr = options.get_string_option("sm_cleaner_policy", "");
+    string pstr = options.get_string_option("sm_cleaner_policy", "oldest_lsn");
     policy = make_cleaner_policy(pstr);
 
     if (num_candidates == 0) {
@@ -98,7 +98,7 @@ void bf_tree_cleaner::flush_workspace_no_clusters(size_t count)
     w_assert1(count <= _workspace_size);
 
     for (size_t i = 0; i < count; i++) {
-        write_pages(i, 1);
+        write_pages(i, i+1);
     }
 
     smlevel_0::vol->sync();
@@ -220,11 +220,14 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
 
     fixable_page_h page;
     page.fix_nonbufferpool_page(const_cast<generic_page*>(&page_buffer[idx]));
-    if (page.pid() != pid || !cb.is_in_use()) {
+    if (cb.is_pinned_for_restore() || page.pid() != pid || !cb.is_in_use()) {
         // New page was loaded in the frame -- skip it
         cb.latch().latch_release();
         return false;
     }
+
+    // Pages can be cleaned with the check_recovery flag as long as their
+    // expected LSN is registered in the dirty page table by the evictioner
 
     // CS TODO: get rid of this buggy and ugly deletion mechanism
     if (page.is_to_be_deleted()) {
@@ -274,6 +277,8 @@ policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p)
     // comparison function should be used, e.g., in a "highest" policy, an
     // incoming element enters the heap if it is greater than the heap's
     // lowest.
+    // IN SUMMARY: greater-than --> highest
+    //             lower-than --> lowest
     switch (p) {
         case cleaner_policy::highest_refcount:
             return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
@@ -285,10 +290,28 @@ policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p)
             {
                 return a.ref_count < b.ref_count;
             };
+        case cleaner_policy::lru:
+            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
+            {
+                return a.page_lsn < b.page_lsn;
+            };
+        case cleaner_policy::highest_density:
+            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
+            {
+                lsndata_t a_window = a.page_lsn.data() - a.rec_lsn.data();
+                if (a_window == 0) { a_window = std::numeric_limits<lsndata_t>::max(); }
+                auto a_density = (a.ref_count / a_window);
+
+                lsndata_t b_window = b.page_lsn.data() - b.rec_lsn.data();
+                if (b_window == 0) { b_window = std::numeric_limits<lsndata_t>::max(); }
+                auto b_density = (b.ref_count / b_window);
+
+                return a_density > b_density;
+            };
         case cleaner_policy::mixed:
-            // mixed policy = oldest_lsn 3/4 of the time, hihgest_refcount 1/4 of the time
-            if (get_rounds_completed() % 4 == 0) {
-                return get_policy_predicate(cleaner_policy::highest_refcount);
+            // mixed policy = LRU half of the time, oldest_lsn the other half
+            if (get_rounds_completed() % 2 == 0) {
+                return get_policy_predicate(cleaner_policy::lru);
             }
             else {
                 return get_policy_predicate(cleaner_policy::oldest_lsn);
@@ -316,7 +339,9 @@ void bf_tree_cleaner::collect_candidates()
         if (!cb.pin()) { continue; }
 
         // If page is not dirty or not in use, no need to flush
-        if (!cb.is_dirty() || !cb._used || cb.get_rec_lsn().is_null()) {
+        if (!cb.is_dirty() || !cb._used || cb.get_rec_lsn().is_null() ||
+                cb.is_pinned_for_restore())
+        {
             cb.unpin();
             continue;
         }

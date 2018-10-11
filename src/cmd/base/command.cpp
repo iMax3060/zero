@@ -160,9 +160,9 @@ void Command::setupSMOptions(po::options_description& options)
         "Maximum number of partitions maintained in log directory")
     ("sm_log_delete_old_partitions", po::value<bool>()->default_value(true),
         "Whether to delete old log partitions as cleaner and chkpt make progress")
-    ("sm_group_commit_size", po::value<int>()->default_value(0),
+    ("sm_group_commit_size", po::value<int>(),
         "Size in bytes of group commit window (higher -> larger log writes)")
-    ("sm_group_commit_timeout", po::value<int>()->default_value(0),
+    ("sm_group_commit_timeout", po::value<int>(),
         "Max time to wait (in ms) to fill up group commit window")
     ("sm_log_benchmark_start", po::value<bool>()->default_value(false),
         "Whether to generate benchmark_start log record on SM constructor")
@@ -178,6 +178,8 @@ void Command::setupSMOptions(po::options_description& options)
         "Take checkpoints decoupled from buffer and transaction manager, using log scans")
     ("sm_chkpt_use_log_archive", po::value<bool>(),
         "Checkpoints use archived LSN to compute min_rec_lsn")
+    ("sm_chkpt_print_propstats", po::value<bool>(),
+        "Print min recl lsn and dirty page coutn for every chkpt taken")
     ("sm_chkpt_only_root_pages", po::value<bool>(),
         "Checkpoints only record dirty root pages and SPR takes care of rest")
     ("sm_log_fetch_buf_partitions", po::value<uint>()->default_value(0),
@@ -280,6 +282,12 @@ void Command::setupSMOptions(po::options_description& options)
         "Maintain clock bits on buffer frames and only evict if clock bit is zero")
     ("sm_async_eviction", po::value<bool>(),
         "Perform eviction in a dedicated thread, while fixing threads wait")
+    ("sm_eviction_interval", po::value<int>(),
+            "Interval for async eviction thread (in msec)")
+    ("sm_wakeup_cleaner_attempts", po::value<int>(),
+            "How many failed eviction attempts until cleaner is woken up (0 = never)")
+    ("sm_clean_only_attempts", po::value<int>(),
+            "How many failed eviction attempts until dity frames are picked as victims (0 = never)")
     ("sm_log_page_evictions", po::value<bool>(),
         "Generate evict_page log records for every page evicted from the buffer pool")
     ("sm_log_page_fetches", po::value<bool>(),

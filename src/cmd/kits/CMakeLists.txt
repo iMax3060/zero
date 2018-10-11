@@ -13,7 +13,7 @@ SET(kits_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/reqs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/daemons.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/skewer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/thread.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kits_thread.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trx_worker.cpp
 
     # UTILITIES
@@ -24,6 +24,10 @@ SET(kits_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/confparser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shore_worker.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sort.cpp
+
+    # YCSB
+    ${CMAKE_CURRENT_SOURCE_DIR}/ycsb/ycsb.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ycsb/templates.cpp
 
     # TPC-B
     ${CMAKE_CURRENT_SOURCE_DIR}/tpcb/tpcb_client.cpp
@@ -51,8 +55,6 @@ SET(kits_SRCS
 # Copy shore.conf file to /src/ in the build directory:
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/shore.conf ${CMAKE_CURRENT_BINARY_DIR}/../shore.conf COPYONLY)
 
-ADD_SUBDIRECTORY(experiments)
-
 # Add the library of this directory kits:
 ADD_LIBRARY(kits ${kits_SRCS})
 
@@ -61,4 +63,4 @@ IF(LINK_TIME_OPTIMIZATION)
 ENDIF(LINK_TIME_OPTIMIZATION)
 
 # Set the shared librariy used by the library kits:
-TARGET_LINK_LIBRARIES(kits experiments)
+TARGET_LINK_LIBRARIES(kits)

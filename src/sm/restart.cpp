@@ -79,12 +79,15 @@ restart_thread_t::restart_thread_t(const sm_options& options)
     instantRestart = options.get_bool_option("sm_restart_instant", true);
     log_based = options.get_bool_option("sm_restart_log_based_redo", true);
     no_db_mode = options.get_bool_option("sm_no_db", false);
+    write_elision = options.get_bool_option("sm_write_elision", false);
     take_chkpt = options.get_bool_option("sm_chkpt_after_log_analysis", false);
     // CS TODO: instant restart should also allow log-based redo
     if (instantRestart) { log_based = false; }
 
     // Thread waits for wakeup anyway with default interval -1, so we can fork
     fork();
+
+    clean_lsn = lsn_t::null;
 };
 
 void restart_thread_t::log_analysis()
@@ -158,6 +161,7 @@ restart_thread_t::redo_log_pass()
 
     lsn_t dur_lsn = smlevel_0::log->durable_lsn();
     lsn_t redo_lsn = chkpt.get_min_rec_lsn();
+    if (redo_lsn.is_null()) { return; }
 
     // Open a forward scan of the recovery log, starting from the redo_lsn which
     // is the earliest lsn determined in the Log Analysis phase
@@ -434,7 +438,8 @@ void restart_thread_t::do_work()
     // smlevel_0::bf->wakeup_cleaner();
 
     // Clear dirty page and active transaction tables
-    clear_chkpt();
+    // CS TODO: should not do this with write elision/nodb/etc!
+    // clear_chkpt();
 
     // restart only does one round, so we quit voluntarily here
     quit();
@@ -492,9 +497,7 @@ void grow_buffer(char*& buffer, size_t& buffer_capacity, size_t pos, logrec_t** 
 
 SprIterator::SprIterator()
     : buffer_capacity{1 << 18 /* 256KB */}
-#ifdef USE_MMAP
     , archive_scan{smlevel_0::logArchiver ? smlevel_0::logArchiver->getIndex() : nullptr}
-#endif
 {
     // Allocate initial buffer -- expand later if needed
     buffer = new char[buffer_capacity];
@@ -585,12 +588,7 @@ void SprIterator::open(PageID pid, lsn_t firstLSN, lsn_t lastLSN, bool prioritiz
         // What we have to do now is fetch the log records between current_lsn and
         // nxt (both exclusive intervals) from the log archive and add them into
         // the buffer as well.
-#ifdef USE_MMAP
         archive_scan.open(pid, pid+1, firstLSN);
-#else
-        archive_scan.reset(new ArchiveScanner{ss_m::logArchiver->getIndex()});
-        merger = archive_scan->open(pid, pid+1, firstLSN);
-#endif
     }
 
     lr_iter = lr_offsets.crbegin();
@@ -681,6 +679,16 @@ void restart_thread_t::notify_archived_lsn(lsn_t lsn)
     }
 }
 
+void restart_thread_t::notify_cleaned_lsn(lsn_t lsn)
+{
+    spinlock_write_critical_section cs(&chkpt_mutex);
+    // Same as above, but for write elision
+    if (write_elision) {
+        chkpt.set_redo_low_water_mark(lsn);
+        clean_lsn = lsn;
+    }
+}
+
 PageID restart_thread_t::get_dirty_page_count() const
 {
     spinlock_read_critical_section cs(&chkpt_mutex);
@@ -691,7 +699,9 @@ void restart_thread_t::checkpoint_dirty_pages(chkpt_t& ex_chkpt) const
 {
     spinlock_read_critical_section cs(&chkpt_mutex);
     for (auto e : chkpt.buf_tab) {
-        ex_chkpt.mark_page_dirty(e.first, e.second.page_lsn, e.second.rec_lsn);
+        if (e.second.page_lsn > clean_lsn) {
+            ex_chkpt.mark_page_dirty(e.first, e.second.page_lsn, e.second.rec_lsn);
+        }
     }
 }
 

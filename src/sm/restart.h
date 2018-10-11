@@ -67,9 +67,10 @@ public:
     lsn_t get_dirty_page_emlsn(PageID pid) const;
     void checkpoint_dirty_pages(chkpt_t& chkpt) const;
 
-    // Methods used in nodb mode
+    // Methods used in nodb mode and with write elision
     void add_dirty_page(PageID pid, lsn_t lsn);
     void notify_archived_lsn(lsn_t lsn);
+    void notify_cleaned_lsn(lsn_t lsn);
 
     bool isInstant() { return instantRestart; }
 
@@ -77,6 +78,7 @@ private:
     bool log_based;
     bool instantRestart;
     bool no_db_mode;
+    bool write_elision;
     bool take_chkpt;
 
     // System state object, updated by log analysis
@@ -87,6 +89,9 @@ private:
     void clear_chkpt();
 
     mutable srwlock_t chkpt_mutex;
+
+    // TEMP: decoupled cleaner
+    lsn_t clean_lsn;
 
 public:
 
@@ -132,12 +137,7 @@ private:
     size_t buffer_capacity;
     std::vector<uint32_t> lr_offsets;
     std::vector<uint32_t>::const_reverse_iterator lr_iter;
-#ifdef USE_MMAP
     ArchiveScan archive_scan;
-#else
-    std::unique_ptr<ArchiveScanner> archive_scan;
-    std::shared_ptr<ArchiveScanner::RunMerger> merger;
-#endif
 
     lsn_t last_lsn;
     unsigned replayed_count;

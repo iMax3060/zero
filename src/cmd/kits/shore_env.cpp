@@ -311,14 +311,16 @@ bool ShoreEnv::is_hacks_enabled() const
  *  @brief: Set the insert/delete/probe frequencies
  *
  ********************************************************************/
-void ShoreEnv::set_freqs(int insert_freq, int delete_freq, int probe_freq)
+void ShoreEnv::set_freqs(int insert_freq, int delete_freq, int probe_freq, int update_freq)
 {
     assert ((insert_freq>=0) && (insert_freq<=100));
     assert ((delete_freq>=0) && (delete_freq<=100));
     assert ((probe_freq>=0) && (probe_freq<=100));
+    assert ((update_freq>=0) && (update_freq<=100));
     _insert_freq = insert_freq;
     _delete_freq = delete_freq;
     _probe_freq = probe_freq;
+    _update_freq = update_freq;
 }
 
 void ShoreEnv::set_chkpt_freq(int chkpt_freq)
@@ -537,7 +539,7 @@ int ShoreEnv::start()
     WorkerPtr aworker;
     for (uint i=0; i<_worker_cnt; i++) {
 
-        aworker = new Worker(this,std::string("work-%d", i), -1);
+        aworker = new Worker(this,std::string("work-%d", i), _bUseSLI);
         _workers.push_back(aworker);
 
         aworker->init(lc);
@@ -755,20 +757,6 @@ bool ShoreEnv::has_log_analysis_finished()
     if (smlevel_0::recovery)
         hasFinished = smlevel_0::recovery->hasLogAnalysisFinished();
     return hasFinished;
-}
-
-size_t ShoreEnv::get_total_pages_to_restore()
-{
-  vol_t* vol = ss_m::vol;
-  w_assert0(vol);
-  return vol->get_num_to_restore_pages();
-}
-
-size_t ShoreEnv::get_num_restored_pages()
-{
-  vol_t* vol = ss_m::vol;
-  w_assert0(vol);
-  return vol->get_num_restored_pages();
 }
 
 void ShoreEnv::wait_for_warmup()

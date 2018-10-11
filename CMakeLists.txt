@@ -4,14 +4,12 @@
 # This root file specifies project-wide settings and compiler settings,
 # which were placed in root Makefile.am and Makefile.generic in original ShoreMT.
 
-# The Project "Zero" contains the languages C (?) and C++:
-PROJECT(Zero C CXX)
+IF(POLICY CMP0048)
+    CMAKE_POLICY(SET CMP0048 NEW)
+ENDIF(POLICY CMP0048)
 
-# Version number of "Zero":
-SET(ZERO_VERSION_MAJOR 0)
-SET(ZERO_VERSION_MINOR 1)
-SET(ZERO_VERSION_PATCH 0)
-SET(ZERO_VERSION "${ZERO_VERSION_MAJOR}.${ZERO_VERSION_MINOR}.${ZERO_VERSION_PATCH}")
+# The Project "Zero" contains the languages C (?) and C++:
+PROJECT(Zero VERSION 0.1.0 LANGUAGES C CXX)
 
 # The lowest version of CMake supprted by this project is 3.9:
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)

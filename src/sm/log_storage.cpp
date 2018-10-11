@@ -2,11 +2,7 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-// CS TODO: this has to come before sm_base because w_base.h defines
-// a macro called "align", which is probably the name of a function
-// or something inside boost regex
-#include <boost/regex.hpp>
-
+#include <regex>
 #include <cstdio>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -109,13 +105,13 @@ log_storage::log_storage(const sm_options& options)
     partition_number_t  last_partition = 1;
 
     fs::directory_iterator it(_logpath), eod;
-    boost::regex log_rx(log_regex, boost::regex::basic);
-    boost::regex chkpt_rx(chkpt_regex, boost::regex::basic);
+    std::regex log_rx(log_regex, std::regex::basic);
+    std::regex chkpt_rx(chkpt_regex, std::regex::basic);
     for (; it != eod; it++) {
         fs::path fpath = it->path();
         string fname = fpath.filename().string();
 
-        if (boost::regex_match(fname, log_rx)) {
+        if (std::regex_match(fname, log_rx)) {
             if (reformat) {
                 fs::remove(fpath);
                 continue;
@@ -128,7 +124,7 @@ log_storage::log_storage(const sm_options& options)
                 last_partition = pnum;
             }
         }
-        else if (boost::regex_match(fname, chkpt_rx)) {
+        else if (std::regex_match(fname, chkpt_rx)) {
             if (reformat) {
                 fs::remove(fpath);
                 continue;
@@ -547,5 +543,20 @@ void log_storage::try_delete(partition_number_t pnum)
         throw runtime_error("Log wedged! Cannot recycle partitions with \
                 the available checkpoint information. Try increasing \
                 max_partitions or partition_size.");
+    }
+}
+
+size_t log_storage::get_byte_distance(lsn_t a, lsn_t b) const
+{
+    if (a.is_null()) { a = lsn_t(1,0); }
+    if (b.is_null()) { b = lsn_t(1,0); }
+    if (a > b) { std::swap(a,b); }
+
+    if (a.hi() == b.hi()) {
+        return b.lo() - a.lo();
+    }
+    else {
+        size_t rest = b.lo() + (_partition_size - a.lo());
+        return _partition_size * (b.hi() - a.hi() - 1) + rest;
     }
 }
