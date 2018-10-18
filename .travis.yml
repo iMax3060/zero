@@ -1,0 +1,277 @@
+language: cpp
+
+branches:
+  only:
+    - master
+
+sudo: true
+
+git:
+  submodules: true
+
+matrix:
+  include:
+    - name: "GCC 6"
+      env: MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      compiler: gcc
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - g++-6
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - ubuntu-toolchain-r-test
+    - name: "GCC 7"
+      env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      compiler: gcc
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - g++-7
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - ubuntu-toolchain-r-test
+    - name: "GCC 8"
+      env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      compiler: gcc
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - g++-8
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - ubuntu-toolchain-r-test
+    - name: "Clang 3.5"
+      env: MATRIX_EVAL="CC=clang-3.5 && CXX=clang++-3.5"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-3.5
+            - llvm-3.5
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-precise-3.5
+            - ubuntu-toolchain-r-test
+    - name: "Clang 3.6"
+      env: MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-3.6
+            - llvm-3.6
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-precise-3.6
+            - ubuntu-toolchain-r-test
+    - name: "Clang 3.7"
+      env: MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-3.7
+            - llvm-3.7
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-precise-3.7
+            - ubuntu-toolchain-r-test
+    - name: "Clang 3.8"
+        env: MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        compiler: clang
+        os: linux
+        addons:
+          apt:
+            packages:
+              - cmake
+              - clang-3.8
+              - llvm-3.8
+              - libc++-dev
+              - libboost-dev
+              - libboost-program-options-dev
+              - libboost-system-dev
+              - libboost-thread-dev
+              - libboost-atomic-dev
+              - libboost-filesystem-dev
+              - libboost-regex-dev
+            sources:
+              - llvm-toolchain-precise-3.8
+              - ubuntu-toolchain-r-test
+    - name: "Clang 3.9"
+      env: MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-3.9
+            - llvm-3.9
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-precise-3.9
+            - ubuntu-toolchain-r-test
+    - name: "Clang 4"
+      env: MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-4.0
+            - llvm-4.0
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-trusty-4.0
+            - ubuntu-toolchain-r-test
+    - name: "Clang 5"
+      env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-5.0
+            - llvm-5.0
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
+    - name: "Clang 6"
+      env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-6.0
+            - llvm-6.0
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+    - name: "Clang 7"
+      env: MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-7
+            - llvm-7
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-trusty-7
+            - ubuntu-toolchain-r-test
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+install:
+  - git clone https://github.com/khizmax/libcds.git
+  - mkdir libcds/build-release
+  - cd libcds/build-release
+  - cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/usr/local ..
+  - make
+  - sudo make install
+  - cd ../..
+  - rm -rf libcds
+
+before_script:
+  - mkdir build
+  - cd build
+
+script:
+  - cmake ..
+  - make zapps

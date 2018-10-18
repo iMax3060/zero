@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/iMax3060/zero.svg?branch=master)](https://travis-ci.org/iMax3060/zero)
 [![Documentation](https://codedocs.xyz/iMax3060/zero.svg)](https://codedocs.xyz/iMax3060/zero/)
 
 # About
