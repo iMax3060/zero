@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/iMax3060/zero.svg?branch=master)](https://travis-ci.org/iMax3060/zero)
 [![Documentation](https://codedocs.xyz/iMax3060/zero.svg)](https://codedocs.xyz/iMax3060/zero/)
+![GitHub commit activity the past week, 4 weeks, year](https://img.shields.io/github/commit-activity/y/eslint/eslint.svg)
+![GitHub repo size in bytes](https://img.shields.io/github/repo-size/badges/shields.svg)
 
 # About
 
