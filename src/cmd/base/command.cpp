@@ -122,19 +122,11 @@ void Command::setupSMOptions(po::options_description& options)
     boost::program_options::options_description smoptions("Storage Manager Options");
     smoptions.add_options()
     ("db-worker-queueloops", po::value<int>()->default_value(10),
-                "?")
+        "Specify the number of spins a transaction worker waits for input")
     ("db-cl-batchsz", po::value<int>()->default_value(10),
-                "Specify the batchsize of a client executing transactions")
-    ("db-cl-thinktime", po::value<int>()->default_value(0),
-            "Specify a 'thinktime' for a client")
-    ("records-to-access", po::value<uint>()->default_value(0),
-        "Used in the benchmarks for the secondary indexes")
+        "Specify the batchsize of a client executing transactions")
     ("activation_delay", po::value<uint>()->default_value(0),
-            "")
-    ("db-workers", po::value<uint>()->default_value(1),
-        "Specify the number of workers executing transactions")
-    ("dir-trace", po::value<string>()->default_value("RAT"),
-        "")
+        "Specify time (sec) until the log archiver is activated")
     /**SM Options**/
     ("sm_logdir", po::value<string>()->default_value("log"),
         "Path to log directory")

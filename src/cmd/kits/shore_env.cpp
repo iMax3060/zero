@@ -120,8 +120,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
     pthread_mutex_init(&_scaling_mutex, NULL);
     pthread_mutex_init(&_queried_mutex, NULL);
 
-    set_rec_to_access(optionValues["records-to-access"].as<uint>());
-
     _last_sm_stats.fill(0);
 }
 

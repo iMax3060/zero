@@ -110,12 +110,6 @@ w_rc_t base_client_t::run_xcts(int xct_type, int num_xct)
     optionValues = _env->get_optionValues();
     // retrieve the default batch size and think time
     batchsz = optionValues["db-cl-batchsz"].as<int>();
-    _think_time = optionValues["db-cl-thinktime"].as<int>();
-    if ((_think_time>0) && (batchsz>1)) {
-        TRACE( TRACE_ALWAYS, "error: Batchsz=%d && ThinkTime=%d\n",
-               batchsz, _think_time);
-        assert(0);
-    }
 
 
     // If in DORA (or at least not in Baseline) allocate an empty sdesc cache

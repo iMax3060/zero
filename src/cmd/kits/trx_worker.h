@@ -46,10 +46,6 @@
 //#define WORKER_VERY_VERBOSE_STATS
 
 
-// Define this flag to dump traces of record accesses
-#undef ACCESS_RECORD_TRACE
-//#define ACCESS_RECORD_TRACE
-
 const int WAITING_WINDOW = 5; // keep track the last 5 seconds
 
 // A worker needs to have processed at least 10 packets to print its own stats
@@ -103,12 +99,12 @@ struct worker_stats_t
 #endif
 
     worker_stats_t()
-        : _processed(0), _problems(0),
-          _served_input(0), _served_waiting(0),
-          _condex_sleep(0), _failed_sleep(0),
-          _early_aborts(0), _mid_aborts(0)
+            : _processed(0), _problems(0),
+              _served_input(0), _served_waiting(0),
+              _condex_sleep(0), _failed_sleep(0),
+              _early_aborts(0), _mid_aborts(0)
 #ifdef WORKER_VERBOSE_STATS
-        , _serving_total(0),
+    , _serving_total(0),
           _rvp_exec(0), _rvp_exec_time(0), _rvp_notify_time(0),
           _waiting_total(0)
 #ifdef WORKER_VERY_VERBOSE_STATS
@@ -187,10 +183,10 @@ protected:
 public:
 
     base_worker_t(ShoreEnv* env, std::string tname, const int use_sli)
-        : thread_t(tname),
-          _control(WC_PAUSED), _data_owner(DOS_UNDEF), _ws(WS_UNDEF),
-          _env(env),
-          _next(NULL), _is_bound(false),  _use_sli(use_sli)
+            : thread_t(tname),
+              _control(WC_PAUSED), _data_owner(DOS_UNDEF), _ws(WS_UNDEF),
+              _env(env),
+              _next(NULL), _is_bound(false),  _use_sli(use_sli)
     {
     }
 
@@ -228,7 +224,7 @@ public:
 
             // Update WS
             bool cas_ok =
-                lintel::unsafe::atomic_compare_exchange_strong(&_ws, &old_ws, new_ws);
+                    lintel::unsafe::atomic_compare_exchange_strong(&_ws, &old_ws, new_ws);
             if (cas_ok) {
                 // If cas successful, then wake up worker if sleeping
                 if ((old_ws==WS_SLEEP)&&(new_ws!=WS_SLEEP)) { condex_wakeup(); }
@@ -264,7 +260,7 @@ public:
         while (true) {
             unsigned old_ws = *&_ws;
             bool cas_ok =
-                lintel::unsafe::atomic_compare_exchange_strong(&_ws, &old_ws, WS_SLEEP);
+                    lintel::unsafe::atomic_compare_exchange_strong(&_ws, &old_ws, WS_SLEEP);
             if (cas_ok) {
                 // If cas successful, then sleep
                 _notify.wait();
@@ -371,14 +367,6 @@ public:
     void reset_stats() { _stats.reset(); }
 
 
-#ifdef ACCESS_RECORD_TRACE
-    ofstream _trace_file;
-    vector<string> _events;
-    void create_trace_dir(string dir);
-    void open_trace_file();
-    void close_trace_file();
-#endif
-
 private:
 
     // copying not allowed
@@ -416,8 +404,8 @@ struct srmwqueue
     int _thres; // threshold value before waking up
 
     srmwqueue(Pool* actionPtrPool)
-        : _owner(NULL), _empty(true), _my_ws(WS_UNDEF),
-          _loops(0), _thres(0)
+            : _owner(NULL), _empty(true), _my_ws(WS_UNDEF),
+              _loops(0), _thres(0)
     {
         assert (actionPtrPool);
         _for_writers = new ActionVec(actionPtrPool);
@@ -462,15 +450,15 @@ struct srmwqueue
         unsigned wc = WC_ACTIVE;
 
         // 1. start spinning
-	while (*&_empty) {
+        while (*&_empty) {
 
             wc = _owner->get_control();
 
             // 2. if thread was signalled to stop
-	    //if ((wc != WC_ACTIVE) && (wc != WC_RECOVERY)) {
-	    if (wc != WC_ACTIVE) {
+            //if ((wc != WC_ACTIVE) && (wc != WC_RECOVERY)) {
+            if (wc != WC_ACTIVE) {
                 _owner->set_ws(WS_FINISHED);
-		return (false);
+                return (false);
             }
 
             // 3. if thread was signalled to go to other queue
@@ -493,24 +481,24 @@ struct srmwqueue
                 // if signalled because it should go to other queue, it will
                 // do a loop and return false.
             }
-	}
+        }
 
-	{
+        {
             spinlock_write_critical_section cs(&_lock);
-	    _for_readers->erase(_for_readers->begin(),_for_readers->end());
-	    _for_writers->swap(*_for_readers);
-	    _empty = true;
-	}
+            _for_readers->erase(_for_readers->begin(),_for_readers->end());
+            _for_writers->swap(*_for_readers);
+            _empty = true;
+        }
 
-	_read_pos = _for_readers->begin();
-	return (true);
+        _read_pos = _for_readers->begin();
+        return (true);
     }
 
     inline Action* pop() {
         // pops an action from the input vector, or waits for one to show up
-	if ((_read_pos == _for_readers->end()) && (!wait_for_input()))
-	    return (NULL);
-	return (*(_read_pos++));
+        if ((_read_pos == _for_readers->end()) && (!wait_for_input()))
+            return (NULL);
+        return (*(_read_pos++));
     }
 
     inline void push(Action* a, const bool bWake) {
