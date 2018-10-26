@@ -129,26 +129,26 @@ matrix:
             - llvm-toolchain-precise-3.7
             - ubuntu-toolchain-r-test
     - name: "Clang 3.8"
-        env: MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-        compiler: clang
-        os: linux
-        addons:
-          apt:
-            packages:
-              - cmake
-              - clang-3.8
-              - llvm-3.8
-              - libc++-dev
-              - libboost-dev
-              - libboost-program-options-dev
-              - libboost-system-dev
-              - libboost-thread-dev
-              - libboost-atomic-dev
-              - libboost-filesystem-dev
-              - libboost-regex-dev
-            sources:
-              - llvm-toolchain-precise-3.8
-              - ubuntu-toolchain-r-test
+      env: MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+      compiler: clang
+      os: linux
+      addons:
+        apt:
+          packages:
+            - cmake
+            - clang-3.8
+            - llvm-3.8
+            - libc++-dev
+            - libboost-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libboost-thread-dev
+            - libboost-atomic-dev
+            - libboost-filesystem-dev
+            - libboost-regex-dev
+          sources:
+            - llvm-toolchain-precise-3.8
+            - ubuntu-toolchain-r-test
     - name: "Clang 3.9"
       env: MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       compiler: clang
