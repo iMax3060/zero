@@ -305,7 +305,6 @@ public:
     static bool         shutting_down;
     static bool         logging_enabled;
     static bool         lock_caching_default;
-    static bool         do_prefetch;
     static bool         statistics_enabled;
 
     // This is a zeroed page for use wherever initialized memory

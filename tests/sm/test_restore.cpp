@@ -226,10 +226,6 @@ rc_t takeBackupMultiThreadedTest(ss_m* ssm, test_volume_t* test_volume)
         test_env->empty_logdata_dir(); \
         options.set_bool_option("sm_archiving", true); \
         options.set_string_option("sm_archdir", test_env->archive_dir); \
-        options.set_int_option("sm_restore_segsize", SEGMENT_SIZE); \
-        options.set_bool_option("sm_restore_sched_singlepass", option_singlepass); \
-        options.set_bool_option("sm_restore_reuse_buffer", option_reuse); \
-        options.set_int_option("sm_restore_threads", option_threads); \
         EXPECT_EQ(test_env->runBtreeTest(function, options), 0); \
     }
 

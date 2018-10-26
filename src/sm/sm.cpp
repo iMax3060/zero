@@ -87,7 +87,6 @@ bool         smlevel_0::shutting_down = false;
             //controlled by AutoTurnOffLogging:
 bool        smlevel_0::lock_caching_default = true;
 bool        smlevel_0::logging_enabled = true;
-bool        smlevel_0::do_prefetch = false;
 bool        smlevel_0::statistics_enabled = true;
 
 /*
@@ -293,8 +292,6 @@ ss_m::_construct_once()
     SSM = this;
 
     smthread_t::mark_pin_count();
-
-    do_prefetch = _options.get_bool_option("sm_prefetch", false);
 
     ERROUT(<< "[" << timer.time_ms() << "] Starting recovery thread");
 

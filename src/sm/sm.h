@@ -84,12 +84,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *
  * These are the run-time options for the storage manager.
  *
- * -sm_backup_dir :
- *      - type: string
- *      - description: Path of the folder containing backup files.
- *      - default: "."
- *      - required?: no
- *
  * -sm_bufpoolsize :
  *      - type: number
  *      - description: This is the size of
@@ -102,13 +96,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *      - type: string (full absolute path name)
  *      - description: Needed only if you configured --with-hugetlbfs.
  *      - default: see \ref CONFIGOPT
- *      - required?: no
- *
- * -sm_reformat_log
- *      - type: Boolean
- *      - description: If "yes", your log will be clobbered and the storage
- *      manager will start up with an entirely new log.
- *      - default: no
  *      - required?: no
  *
  * -sm_logdir
@@ -138,22 +125,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *      - default: 10000
  *      - default with the new log buffer: 128*1024 (128MB)
  *      - required?: yes
- *
- * -sm_errlog
- *      - type: string (relative or absolute path name OR - )
- *      - description: Destination for error messages.  If "-" is given,
- *      the destination is stderr.
- *      - default: \b -
- *      - required?: no
- *
- * -sm_errlog_level
- *      - type: string  (one of none|emerg|fatal|internal|error|warning|info|debug)
- *      - description: filter.  Message of this priority or higher are issued to
- *      the error log; messages with lower priority are not issued.
- *      The priorities are listed from high to low. "none" means no logging
- *      will happen.
- *      - default: error
- *      - required?: no
  *
  * -sm_locktablesize :
  *      - type: number greater than or equal to 64
@@ -186,27 +157,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *      - description: greater than or equal to 1; this is the number of
  *      background-flushing threads.
  *      - default: 1
- *      - required?: no
- *
- * -sm_prefetch
- *      - type: Boolean
- *      - description: Enables prefetching for scans.
- *      - default: no
- *      - required?: no
- *
- * -sm_logging
- *      - type: Boolean
- *      - description: Allows you to turn off logging for a run of
- *      the storage manager. This is only for experimentation, to
- *      measure logging overhead in a limited way.
- *      Aborts, rollbacks and restart/recovery
- *      do not work without logging.   Independent concurrent
- *      transactions using btrees might not work without logging (this is
- *      not well-tested).
- *      Each time you start the server, you had better start with a
- *      clean device or a device that resulted from a clean shutdown
- *      of the prior run.
- *      - default: yes
  *      - required?: no
  *
  * -sm_lock_caching
@@ -243,12 +193,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *      - description: Activates log archiving, but just instatiates a
  *      LogArchiver object without sending it an activation signal. See the SM
  *      method activate_archiver for that.
- *      - default: no
- *      - required?: no
- *
- *  -sm_async_merging;
- *      - type: Boolean
- *      - description: Activates asynchronous merging of log archive runs
  *      - default: no
  *      - required?: no
  *

@@ -21,7 +21,7 @@ class RunRecycler : public worker_thread_t
 {
 public:
     RunRecycler(unsigned replFactor, ArchiveIndex* archIndex)
-        : archIndex(archIndex), replFactor(replFactor)
+            : archIndex(archIndex), replFactor(replFactor)
     {}
 
     virtual void do_work()
@@ -37,7 +37,7 @@ public:
 const string ArchiveIndex::RUN_PREFIX = "archive_";
 const string ArchiveIndex::CURR_RUN_PREFIX = "current_run_";
 const string ArchiveIndex::run_regex =
-    "^archive_([1-9][0-9]*)_([1-9][0-9]*\\.[0-9]+)-([1-9][0-9]*\\.[0-9]+)$";
+        "^archive_([1-9][0-9]*)_([1-9][0-9]*\\.[0-9]+)-([1-9][0-9]*\\.[0-9]+)$";
 const string ArchiveIndex::current_regex = "^current_run_[1-9][0-9]*$";
 
 // CS TODO: Aligning with the Linux standard FS block size
@@ -87,7 +87,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
     archdir = options.get_string_option("sm_archdir", "archive");
     // CS TODO: archiver currently only works with 1MB blocks
     blockSize = DFT_BLOCK_SIZE;
-        // options.get_int_option("sm_archiver_block_size", DFT_BLOCK_SIZE);
+    // options.get_int_option("sm_archiver_block_size", DFT_BLOCK_SIZE);
     bucketSize = options.get_int_option("sm_archiver_bucket_size", 1);
     w_assert0(bucketSize > 0);
 
@@ -97,7 +97,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
 
     if (archdir.empty()) {
         W_FATAL_MSG(fcINTERNAL,
-                << "Option for archive directory must be specified");
+                    << "Option for archive directory must be specified");
     }
 
     if (!fs::exists(archdir)) {
@@ -252,10 +252,10 @@ rc_t ArchiveIndex::openNewRun(unsigned level)
 }
 
 fs::path ArchiveIndex::make_run_path(lsn_t begin, lsn_t end, unsigned level)
-    const
+const
 {
     return archpath / fs::path(RUN_PREFIX + std::to_string(level) + "_" + begin.str()
-            + "-" + end.str());
+                               + "-" + end.str());
 }
 
 fs::path ArchiveIndex::make_current_run_path(unsigned level) const
@@ -350,7 +350,7 @@ rc_t ArchiveIndex::append(char* data, size_t length, unsigned level)
 
     INC_TSTAT(la_block_writes);
     auto ret = ::pwrite(appendFd[level], data, length + SKIP_LOGREC.length(),
-                appendPos[level]);
+                        appendPos[level]);
     CHECK_ERRNO(ret);
     appendPos[level] += length;
     return RCOK;
@@ -390,7 +390,7 @@ RunFile* ArchiveIndex::openForScan(const RunId& runid)
  * otherwise direct I/O with alignment will corrupt memory.
  */
 rc_t ArchiveIndex::readBlock(int fd, char* buf,
-        size_t& offset, size_t readSize)
+                             size_t& offset, size_t readSize)
 {
     stopwatch_t timer;
 
@@ -507,7 +507,7 @@ void ArchiveIndex::deleteRuns(unsigned replicationFactor)
                     if (low.firstLSN >= high.firstLSN && low.lastLSN <= high.lastLSN)
                     {
                         auto path = make_run_path(low.firstLSN,
-                                low.lastLSN, levelToClean);
+                                                  low.lastLSN, levelToClean);
                         fs::remove(path);
                     }
                 }
@@ -523,7 +523,7 @@ size_t ArchiveIndex::getSkipLogrecSize() const
 }
 
 void ArchiveIndex::newBlock(const vector<pair<PageID, size_t> >&
-        buckets, unsigned level)
+buckets, unsigned level)
 {
     spinlock_write_critical_section cs(&_mutex);
 
@@ -541,7 +541,7 @@ void ArchiveIndex::newBlock(const vector<pair<PageID, size_t> >&
 }
 
 rc_t ArchiveIndex::finishRun(lsn_t first, lsn_t last, PageID maxPID, int fd,
-        off_t offset, unsigned level)
+                             off_t offset, unsigned level)
 {
     int lf;
     {
@@ -572,12 +572,12 @@ rc_t ArchiveIndex::finishRun(lsn_t first, lsn_t last, PageID maxPID, int fd,
 }
 
 rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
-        off_t offset)
+                                    off_t offset)
 {
     spinlock_read_critical_section cs(&_mutex);
 
     int entriesPerBlock =
-        (blockSize - sizeof(BlockHeader) - sizeof(PageID)) / sizeof(BlockEntry);
+            (blockSize - sizeof(BlockHeader) - sizeof(PageID)) / sizeof(BlockEntry);
     int remaining = run.entries.size();
     int i = 0;
     size_t currEntry = 0;
@@ -598,7 +598,7 @@ rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
         while (j < entriesPerBlock && remaining > 0)
         {
             memcpy(writeBuffer + bpos, &run.entries[currEntry],
-                        sizeof(BlockEntry));
+                   sizeof(BlockEntry));
             j++;
             currEntry++;
             remaining--;
@@ -749,7 +749,7 @@ void ArchiveIndex::loadRunInfo(RunFile* runFile, const RunId& fstats)
 }
 
 void ArchiveIndex::getBlockCounts(RunFile* runFile, size_t* indexBlocks,
-        size_t* dataBlocks)
+                                  size_t* dataBlocks)
 {
     // skip emtpy runs
     if (runFile->length == 0) {
@@ -822,7 +822,7 @@ size_t ArchiveIndex::findRun(lsn_t lsn, unsigned level)
 }
 
 size_t ArchiveIndex::findEntry(RunInfo* run,
-        PageID pid, int from, int to)
+                               PageID pid, int from, int to)
 {
     // Assumption: mutex is held by caller
 
@@ -874,7 +874,7 @@ size_t ArchiveIndex::findEntry(RunInfo* run,
     // }
 
     if (run->entries[i].pid <= pid &&
-            (i == run->entries.size() - 1 || run->entries[i+1].pid > pid))
+        (i == run->entries.size() - 1 || run->entries[i+1].pid > pid))
     {
         // found it! -- previous cannot contain the same pid in bucket organization
         return i;

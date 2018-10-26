@@ -137,9 +137,9 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_truncate_log", po::value<bool>()->default_value(false)
         ->implicit_value(true),
         "Whether to truncate log partitions at SM shutdown")
-    ("sm_truncate_archive", po::value<bool>()->default_value(false)
-        ->implicit_value(true),
-        "Whether to truncate log archive runs at SM shutdown")
+    // ("sm_truncate_archive", po::value<bool>()->default_value(false)
+    //     ->implicit_value(true),
+    //     "Whether to truncate log archive runs at SM shutdown")
     ("sm_log_partition_size", po::value<int>()->default_value(1024),
         "Size of a log partition in MB")
     ("sm_log_max_partitions", po::value<int>()->default_value(0),
@@ -156,34 +156,18 @@ void Command::setupSMOptions(po::options_description& options)
         "Enables page-image compression for every N log bytes (N=0 turns off)")
     ("sm_bufpoolsize", po::value<int>()->default_value(1024),
         "Size of buffer pool in MB")
-    ("sm_errlog", po::value<string>()->default_value("shoremt.err.log"),
-            "Path to the error log of the storage manager")
     ("sm_chkpt_interval", po::value<int>(),
-            "Interval for checkpoint flushes")
+        "Interval for checkpoint flushes")
     ("sm_chkpt_log_based", po::value<bool>(),
         "Take checkpoints decoupled from buffer and transaction manager, using log scans")
     ("sm_chkpt_use_log_archive", po::value<bool>(),
         "Checkpoints use archived LSN to compute min_rec_lsn")
     ("sm_chkpt_print_propstats", po::value<bool>(),
         "Print min recl lsn and dirty page coutn for every chkpt taken")
-    ("sm_chkpt_only_root_pages", po::value<bool>(),
-        "Checkpoints only record dirty root pages and SPR takes care of rest")
     ("sm_log_fetch_buf_partitions", po::value<uint>()->default_value(0),
         "Number of partitions to buffer in memory for recovery")
-    ("sm_log_page_flushers", po::value<uint>()->default_value(1),
-        "Number of log page flushers")
-    ("sm_preventive_chkpt", po::value<uint>()->default_value(1),
-        "Disable/enable preventive checkpoints (0 to disable, 1 to enable)")
-    ("sm_logbuf_seg_count", po::value<int>(),
-        "Log Buffer Segment Count")
-    ("sm_logbuf_flush_trigger", po::value<int>(),
-        "?")
-    ("sm_logbuf_block_size", po::value<int>(),
-        "Log Buffer Block isze")
-    ("sm_logbuf_part_size", po::value<int>(),
-        "Log Buffer part size")
     ("sm_carray_slots", po::value<int>(),
-        "")
+        "Number of slots in the txn log's consolidation array")
     ("sm_vol_cluster_stores", po::value<bool>(),
         "Cluster pages of the same store into extents")
     ("sm_vol_log_reads", po::value<bool>(),
@@ -213,9 +197,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Enable instant restart")
     ("sm_restart_log_based_redo", po::value<bool>(),
         "Perform non-instant restart with log-based redo instead of page-based")
-    ("sm_restart_prioritize_archive", po::value<bool>(),
-        "When performing single-page recovery, fetch as much as possible from \
-        log archive and minimize random reads in the recovery log")
     ("sm_rawlock_gc_interval_ms", po::value<int>(),
         "Garbage Collection Interval in ms")
     ("sm_rawlock_lockpool_segsize", po::value<int>(),
@@ -228,8 +209,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Garbage collection initial generation count")
     ("sm_rawlock_lockpool_initseg", po::value<int>(),
         "Lock pool init segment")
-    ("sm_rawlock_xctpool_segsize", po::value<int>(),
-        "Transaction Pool Segment Size")
     ("sm_rawlock_gc_free_segment_count", po::value<int>(),
         "Garbage Collection Free Segment Count")
     ("sm_rawlock_gc_max_segment_count", po::value<int>(),
@@ -256,10 +235,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Page cleaner only writes clusters of pages with this minimum size")
     ("sm_cleaner_min_write_ignore_freq", po::value<int>(),
         "Ignore min_write_size every N rounds of cleaning")
-    ("sm_cleaner_async_candidate_collection", po::value<bool>(),
-        "Collect candidate frames to be cleaned in an asynchronous thread")
-    ("sm_evict_policy", po::value<string>(),
-        "Policy to use in eviction (a.k.a. page replacement)")
     ("sm_evict_dirty_pages", po::value<bool>(),
         "Do not skip dirty pages when performing eviction and write them out if necessary")
     ("sm_evict_random", po::value<bool>(),
@@ -269,20 +244,13 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_async_eviction", po::value<bool>(),
         "Perform eviction in a dedicated thread, while fixing threads wait")
     ("sm_eviction_interval", po::value<int>(),
-            "Interval for async eviction thread (in msec)")
-    ("sm_wakeup_cleaner_attempts", po::value<int>(),
-            "How many failed eviction attempts until cleaner is woken up (0 = never)")
-    ("sm_clean_only_attempts", po::value<int>(),
-            "How many failed eviction attempts until dity frames are picked as victims (0 = never)")
+        "Interval for async eviction thread (in msec)")
     ("sm_log_page_evictions", po::value<bool>(),
         "Generate evict_page log records for every page evicted from the buffer pool")
     ("sm_log_page_fetches", po::value<bool>(),
         "Generate fetch_page log records for every page fetched (and recovered) into the buffer pool")
     ("sm_archiver_workspace_size", po::value<int>(),
         "Workspace size archiver")
-    // CS TODO: archiver currently only works with 1MB blocks
-    // ("sm_archiver_block_size", po::value<int>()->default_value(1024*1024),
-    //     "Archiver Block size")
     ("sm_archiver_bucket_size", po::value<int>(),
         "Archiver bucket size")
     ("sm_archiver_merging", po::value<bool>(),
@@ -292,20 +260,10 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_archiver_replication_factor", po::value<int>(),
         "Replication factor maintained by the log archive \
          run recycler (0 = never delete a run)")
-    ("sm_archiving_blocksize", po::value<int>(),
-        "Archiving block size")
-    ("sm_reformat_log", po::value<bool>(),
-        "Enable/Disable reformat log")
-    ("sm_logging", po::value<bool>()->default_value(true),
-        "Enable/Disable logging")
-    ("sm_decoupled_cleaner", po::value<bool>(),
-        "Use log-based propagation to clean pages")
     ("sm_shutdown_clean", po::value<bool>(),
         "Force buffer before shutting down SM")
     ("sm_archiving", po::value<bool>(),
         "Enable/Disable archiving")
-    ("sm_async_merging", po::value<bool>(),
-        "Enable/Disable Asynchronous merging")
     ("sm_statistics", po::value<bool>(),
         "Enable/Disable display of statistics")
     ("sm_ticker_enable", po::value<bool>(),
@@ -314,34 +272,8 @@ void Command::setupSMOptions(po::options_description& options)
         "Ticker interval in millisec")
     ("sm_ticker_print_tput", po::value<bool>(),
         "Print transaction throughput on every tick to a file tput.txt")
-    ("sm_prefetch", po::value<bool>(),
-        "Enable/Disable prefetching")
-    ("sm_backup_prefetcher_segments", po::value<int>(),
-        "Segment size restore")
-    ("sm_restore_segsize", po::value<int>(),
-        "Segment size restore")
-    ("sm_restore_prefetcher_window", po::value<int>(),
-        "Segment size restore")
     ("sm_restore_instant", po::value<bool>(),
         "Enable/Disable instant restore")
-    ("sm_restore_reuse_buffer", po::value<bool>(),
-        "Enable/Disable reusage of buffer")
-    ("sm_restore_multiple_segments", po::value<int>(),
-        "Number of segments to attempt restore at once")
-    ("sm_restore_min_read_size", po::value<int>(),
-        "Attempt to read at least this many bytes when scanning log archive")
-    ("sm_restore_max_read_size", po::value<int>(),
-        "Attempt to read at most this many bytes when scanning log archive")
-    ("sm_restore_preemptive", po::value<bool>(),
-        "Use preemptive scheduling during restore")
-    ("sm_restore_sched_singlepass", po::value<bool>(),
-        "Use single-pass scheduling in restore")
-    ("sm_restore_threads", po::value<int>(),
-        "Number of restore threads to use")
-    ("sm_restore_sched_ondemand", po::value<bool>(),
-        "Support on-demand restore")
-    ("sm_restore_sched_random", po::value<bool>(),
-        "Use random page order in restore scheduler")
     ("sm_bufferpool_swizzle", po::value<bool>(),
         "Enable/Disable bufferpool swizzle")
     ("sm_write_elision", po::value<bool>(),
@@ -352,16 +284,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Enable/Disable reading whole blocks in the archiver")
     ("sm_archiver_slow_log_grace_period", po::value<int>(),
         "Enable/Disable slow log grace period")
-    ("sm_errlog_level", po::value<string>(),
-        "Specify a errorlog level. Options:")
-        //TODO Stefan Find levels and insert them
-    ("sm_log_impl", po::value<string>(),
-        "Choose log implementation. Options")
-        //TODO Stefan Find Implementations
-    ("sm_backup_dir", po::value<string>(),
-        "Path to a backup directory")
-    ("sm_evict_policy", po::value<string>()->default_value("latched"),
-        "Specify a eviction policy. Options: latched, gclock")
     ("sm_bufferpool_gclock_k", po::value<int>()->default_value(10),
         "Specify the k-parameter for eviction policy glock")
     ("sm_archdir", po::value<string>()->default_value("archive"),

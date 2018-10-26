@@ -174,9 +174,6 @@ testdriver_thread_t::do_construct()
     if (_options.get_string_option("sm_archdir", not_set) == not_set) {
         _options.set_string_option("sm_archdir", global_archive_dir);
     }
-    if (_options.get_string_option("sm_backup_dir", not_set) == not_set) {
-        _options.set_string_option("sm_backup_dir", global_backup_dir);
-    }
     if (_options.get_int_option("sm_bufpoolsize", not_set_int) == not_set_int) {
         _options.set_int_option("sm_bufpoolsize",
                  SM_PAGESIZE / 1024 * default_bufferpool_size_in_pages);
