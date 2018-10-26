@@ -50,10 +50,10 @@
 
 namespace tpcb {
 
-DECLARE_TABLE_SCHEMA_PD(branch_t);
-DECLARE_TABLE_SCHEMA_PD(teller_t);
-DECLARE_TABLE_SCHEMA_PD(account_t);
-DECLARE_TABLE_SCHEMA_PD(history_t);
+DECLARE_TABLE_SCHEMA(branch_t);
+DECLARE_TABLE_SCHEMA(teller_t);
+DECLARE_TABLE_SCHEMA(account_t);
+DECLARE_TABLE_SCHEMA(history_t);
 
 };
 

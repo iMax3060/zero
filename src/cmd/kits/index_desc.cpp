@@ -44,7 +44,6 @@ index_desc_t::index_desc_t(table_desc_t* table,
                            const int fieldcnt,
                            const unsigned* fields,
                            bool unique, bool primary,
-                           const uint32_t& pd,
                            bool rmapholder)
     : _table(table), _name(name), _field_count(fieldcnt),
       _unique(unique), _primary(primary),
@@ -56,12 +55,6 @@ index_desc_t::index_desc_t(table_desc_t* table,
     for (unsigned i=0; i< _field_count; i++) _key[i] = fields[i];
 
     memset(_keydesc, 0, MAX_KEYDESC_LEN);
-
-    // Check if NoLock
-    _nolock = (pd & PD_NOLOCK);
-
-    // Check if Latch-less
-    _latchless = (pd & PD_NOLATCH);
 }
 
 

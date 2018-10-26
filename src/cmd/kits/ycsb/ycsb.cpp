@@ -64,8 +64,8 @@ update_input_t create_update_input(int sf, int specificPrefix, int tspread)
     return input;
 }
 
-ycsbtable_t::ycsbtable_t(const uint32_t& pd)
-    : table_desc_t("YCSBTABLE", 11, pd)
+ycsbtable_t::ycsbtable_t()
+    : table_desc_t("YCSBTABLE", 11)
 {
      _desc[0].setup(SQL_LONG, "KEY");
      _desc[1].setup(SQL_FIXCHAR, "FIELD1", FieldSize);
@@ -80,7 +80,7 @@ ycsbtable_t::ycsbtable_t(const uint32_t& pd)
      _desc[10].setup(SQL_FIXCHAR, "FIELD10", FieldSize);
 
      uint keys[1] = {0};
-     create_primary_idx_desc(keys, 1, pd);
+     create_primary_idx_desc(keys, 1);
 }
 
 rc_t ycsbtable_man_impl::index_probe(Database* db, table_row_t* ptuple, const uint64_t id)
@@ -108,7 +108,7 @@ ShoreYCSBEnv::~ShoreYCSBEnv()
 
 rc_t ShoreYCSBEnv::load_schema()
 {
-    ycsbtable_man   = new ycsbtable_man_impl(new ycsbtable_t(get_pd()));
+    ycsbtable_man   = new ycsbtable_man_impl(new ycsbtable_t());
     return (RCOK);
 }
 

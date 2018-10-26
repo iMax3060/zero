@@ -94,7 +94,6 @@ public:
                  string name, const int fieldcnt,
                  const unsigned* fields,
                  bool unique=true, bool primary=false,
-                 const uint32_t& pd=PD_NORMAL,
                  bool rmapholder=false);
 
     ~index_desc_t();
@@ -117,8 +116,6 @@ public:
 
     inline bool is_unique() const { return (_unique); }
     inline bool is_primary() const { return (_primary); }
-    inline bool is_relaxed() const { return (_nolock); }
-    inline bool is_latchless() const { return (_latchless); }
     inline bool is_rmapholder() const { return (_rmapholder); }
 
     inline int  get_keysize() { return (*&_maxkeysize); }

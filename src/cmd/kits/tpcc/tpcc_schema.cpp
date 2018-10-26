@@ -76,8 +76,8 @@ namespace tpcc {
  */
 
 
-warehouse_t::warehouse_t(const uint32_t& pd) :
-    table_desc_t("WAREHOUSE", TPCC_WAREHOUSE_FCOUNT, pd)
+warehouse_t::warehouse_t() :
+    table_desc_t("WAREHOUSE", TPCC_WAREHOUSE_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "W_ID");
@@ -92,13 +92,13 @@ warehouse_t::warehouse_t(const uint32_t& pd) :
 
     // create unique index w_idx on (w_id)
     uint  keys[1] = { 0 }; // IDX { W_ID }
-    create_primary_idx_desc(keys, 1, pd);
+    create_primary_idx_desc(keys, 1);
 }
 
 
 
-district_t::district_t(const uint32_t& pd) :
-    table_desc_t("DISTRICT", TPCC_DISTRICT_FCOUNT, pd)
+district_t::district_t() :
+    table_desc_t("DISTRICT", TPCC_DISTRICT_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "D_ID");
@@ -119,13 +119,13 @@ district_t::district_t(const uint32_t& pd) :
     // create unique index d_index on (w_id, d_id)
     uint keys[2] = { 1, 0 }; // IDX { D_W_ID, D_ID }
 
-    create_primary_idx_desc(keys, 2, pd);
+    create_primary_idx_desc(keys, 2);
 }
 
 
 
-customer_t::customer_t(const uint32_t& pd) :
-    table_desc_t("CUSTOMER", TPCC_CUSTOMER_FCOUNT, pd)
+customer_t::customer_t() :
+    table_desc_t("CUSTOMER", TPCC_CUSTOMER_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,    "C_ID");
@@ -156,18 +156,18 @@ customer_t::customer_t(const uint32_t& pd) :
 
     // create unique index c_index on (w_id, d_id, c_id)
     uint keys1[3] = {2, 1, 0 }; // IDX { C_W_ID, C_D_ID, C_ID }
-    create_primary_idx_desc(keys1, 3, pd);
+    create_primary_idx_desc(keys1, 3);
 
 
     // create index c_name_index on (w_id, d_id, last, first, id)
     uint keys2[5] = {2, 1, 5, 3, 0}; // IDX { C_W_ID, C_D_ID, C_LAST, C_FIRST, C_ID }
-    create_index_desc("C_NAME_IDX", keys2, 5, false, false, pd);
+    create_index_desc("C_NAME_IDX", keys2, 5, false, false);
 }
 
 
 
-history_t::history_t(const uint32_t& pd) :
-    table_desc_t("HISTORY", TPCC_HISTORY_FCOUNT, pd)
+history_t::history_t() :
+    table_desc_t("HISTORY", TPCC_HISTORY_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "H_C_ID");
@@ -183,13 +183,13 @@ history_t::history_t(const uint32_t& pd) :
     // but put datetime first to avoid completely random inserts instead of appends
     // TODO: ideally we would use an auto-incr field, or duplicate key support
     unsigned keys[8] = { 5, 0, 1, 2, 3, 4, 6 };
-    create_primary_idx_desc(keys, 7, pd);
+    create_primary_idx_desc(keys, 7);
 }
 
 
 
-new_order_t::new_order_t(const uint32_t& pd) :
-    table_desc_t("NEW_ORDER", TPCC_NEW_ORDER_FCOUNT, pd)
+new_order_t::new_order_t() :
+    table_desc_t("NEW_ORDER", TPCC_NEW_ORDER_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT, "NO_O_ID");
@@ -198,13 +198,13 @@ new_order_t::new_order_t(const uint32_t& pd) :
 
     // create unique index no_index on (w_id, d_id, o_id)
     uint keys[3] = {2, 1, 0}; // IDX { NO_W_ID, NO_D_ID, NO_O_ID }
-    create_primary_idx_desc(keys, 3, pd);
+    create_primary_idx_desc(keys, 3);
 }
 
 
 
-order_t::order_t(const uint32_t& pd) :
-    table_desc_t("ORDER", TPCC_ORDER_FCOUNT, pd)
+order_t::order_t() :
+    table_desc_t("ORDER", TPCC_ORDER_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "O_ID");
@@ -219,17 +219,17 @@ order_t::order_t(const uint32_t& pd) :
 
     // create unique index o_index on (w_id, d_id, o_id)
     uint keys1[3] = {3, 2, 0}; // IDX { O_W_ID, O_D_ID, O_ID }
-    create_primary_idx_desc(keys1, 3, pd);
+    create_primary_idx_desc(keys1, 3);
 
     // create unique index o_cust_index on (w_id, d_id, c_id, o_id)
     uint keys2[4] = {3, 2, 1, 0}; // IDX { O_W_ID, O_D_ID, O_C_ID, O_ID }
-    create_index_desc("O_CUST_IDX", keys2, 4, true, false, pd);
+    create_index_desc("O_CUST_IDX", keys2, 4, true, false);
 }
 
 
 
-order_line_t::order_line_t(const uint32_t& pd) :
-    table_desc_t("ORDERLINE", TPCC_ORDER_LINE_FCOUNT, pd)
+order_line_t::order_line_t() :
+    table_desc_t("ORDERLINE", TPCC_ORDER_LINE_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,    "OL_O_ID");
@@ -245,13 +245,13 @@ order_line_t::order_line_t(const uint32_t& pd) :
 
     // create unique index ol_index on (w_id, d_id, o_id, ol_number)
     uint keys[4] = {2, 1, 0, 3}; // IDX { OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER }
-    create_primary_idx_desc(keys, 4, pd);
+    create_primary_idx_desc(keys, 4);
 }
 
 
 
-item_t::item_t(const uint32_t& pd) :
-    table_desc_t("ITEM", TPCC_ITEM_FCOUNT, pd)
+item_t::item_t() :
+    table_desc_t("ITEM", TPCC_ITEM_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,  "I_ID");
@@ -262,13 +262,13 @@ item_t::item_t(const uint32_t& pd) :
 
     // create unique index on i_index on (i_id)
     uint keys[1] = {0}; // IDX { I_ID }
-    create_primary_idx_desc(keys, 1, pd);
+    create_primary_idx_desc(keys, 1);
 }
 
 
 
-stock_t::stock_t(const uint32_t& pd) :
-    table_desc_t("STOCK", TPCC_STOCK_FCOUNT, pd)
+stock_t::stock_t() :
+    table_desc_t("STOCK", TPCC_STOCK_FCOUNT)
 {
     // Schema
     _desc[0].setup(SQL_INT,    "S_I_ID");
@@ -291,7 +291,7 @@ stock_t::stock_t(const uint32_t& pd) :
 
     // create unique index s_index on (w_id, i_id)
     uint keys[2] = { 1, 0 }; // IDX { S_W_ID, S_I_ID }
-    create_primary_idx_desc(keys, 2, pd);
+    create_primary_idx_desc(keys, 2);
 }
 
 

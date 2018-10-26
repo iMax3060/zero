@@ -158,9 +158,6 @@ public:
     class table_builder_t;
     class table_creator_t;
 
-private:
-    w_rc_t _post_init_impl();
-
 public:
 
     ShoreTPCCEnv(boost::program_options::variables_map map);

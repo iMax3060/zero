@@ -67,7 +67,7 @@ class asc_sort_buffer_t : public table_desc_t
 public:
 
     asc_sort_buffer_t(const size_t field_count)
-        : table_desc_t("ASC_SORT_BUF", field_count, PD_NORMAL)
+        : table_desc_t("ASC_SORT_BUF", field_count)
     {
     }
 

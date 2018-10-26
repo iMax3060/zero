@@ -42,20 +42,14 @@ using std::list;
 
 /******** Exported constants ********/
 
-const unsigned int MAX_FNAME_LEN     = 40;
-const unsigned int MAX_TABLENAME_LEN = 40;
 const unsigned int MAX_FIELDNAME_LEN = 40;
 
 const unsigned int MAX_KEYDESC_LEN   = 40;
-const unsigned int MAX_FILENAME_LEN  = 100;
-
-const unsigned int MAX_BODY_SIZE     = 1024;
 
 #define  DELIM_CHAR            '|'
 #define  ROWEND_CHAR            '\r'
 
 const unsigned int COMMIT_ACTION_COUNT           = 2000;
-const unsigned int COMMIT_ACTION_COUNT_WITH_ITER = 500000;
 
 #define  MIN_SMALLINT     0
 #define  MAX_SMALLINT     1<<15
@@ -63,47 +57,5 @@ const unsigned int COMMIT_ACTION_COUNT_WITH_ITER = 500000;
 #define  MAX_INT          1<<31
 #define  MIN_FLOAT        0
 #define  MAX_FLOAT        1<<10
-
-
-
-/* ---------------------------------------------------------------
- *
- *  @enum:  file_type_t
- *
- *  @brief: A file can be either a table, an index,
- *          a (secondary) index, etc...
- *
- * --------------------------------------------------------------- */
-
-enum file_type_t  { FT_TABLE        = 0x1,
-                    FT_PRIMARY_IDX  = 0x2,
-                    FT_IDX          = 0x4,
-                    FT_NONE         = 0x8
-};
-
-
-
-/* ---------------------------------------------------------------
- *
- * @enum:  physical_design_t
- *
- * @brief: There are different options for the physical design. The
- *         currently supported options:
- *         PD_NORMAL      - vanilla structures
- *         PD_PADDED      - use padding to reduce contention
- *         PD_MRBT_NORMAL - use MRBTrees with normal heap files
- *         PD_MRBT_PART   - use MRBTrees with partitioned heap files
- *         PD_MRBT_LEAF   - use MRBTrees with each heap page corresponding
- *                          to one leaf MRBTree index page
- *         PD_NOLOCK      - have indexes without CC
- *         PD_NOLATCH     - have indexes without even latching
- *
- * --------------------------------------------------------------- */
-
-enum physical_design_t { PD_NORMAL      = 0x1,
-                         PD_PADDED      = 0x2,
-                         PD_NOLOCK      = 0x4,
-                         PD_NOLATCH     = 0x8
-};
 
 #endif // __FILE_DESC_H

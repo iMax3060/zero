@@ -413,10 +413,6 @@ protected:
     // system name
     string          _sysname;
 
-    // physical design characteristics
-    uint32_t _pd;
-    bool _enable_hacks;
-
 
     // Helper functions
     void readconfig();
@@ -547,12 +543,6 @@ public:
     // kits logging
     // void log_insert(kits_logger_t::logrec_kind_t);
 
-    // Set physical design characteristics
-    uint32_t get_pd() const;
-    uint32_t set_pd(const physical_design_t& apd);
-    uint32_t add_pd(const physical_design_t& apd);
-    bool check_hacks_enabled();
-    bool is_hacks_enabled() const;
     virtual w_rc_t update_partitioning() { return (RCOK); }
 
     // -- insert/delete/probe frequencies for microbenchmarks -- //

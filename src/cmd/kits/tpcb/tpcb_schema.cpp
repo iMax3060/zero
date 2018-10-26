@@ -59,67 +59,42 @@ namespace tpcb {
  */
 
 
-branch_t::branch_t(const uint32_t& pd)
-#ifdef CFG_HACK
-    : table_desc_t("BRANCH", 3, pd)
-#else
-      : table_desc_t("BRANCH", 2, pd)
-#endif
+branch_t::branch_t()
+      : table_desc_t("BRANCH", 2)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "B_ID");
     _desc[1].setup(SQL_FLOAT, "B_BALANCE");
 
-#ifdef CFG_HACK
-#warning Adding _PADDING fields in some of the TM1 and TPCB tables
-    _desc[2].setup(SQL_FIXCHAR,  "B_PADDING", 100-sizeof(int)-sizeof(double));
-#endif
-
     // create unique index b_idx on (b_id)
     uint  keys1[1] = { 0 }; // IDX { B_ID }
-    create_primary_idx_desc(keys1, 1, pd);
+    create_primary_idx_desc(keys1, 1);
 }
 
 
 
-teller_t::teller_t(const uint32_t& pd)
-#ifdef CFG_HACK
-    : table_desc_t("TELLER", 4, pd)
-#else
-      : table_desc_t("TELLER", 3, pd)
-#endif
+teller_t::teller_t()
+      : table_desc_t("TELLER", 3)
 {
     // Schema
     _desc[0].setup(SQL_INT,   "T_ID");
     _desc[1].setup(SQL_INT,   "T_B_ID");
     _desc[2].setup(SQL_FLOAT, "T_BALANCE");
 
-#ifdef CFG_HACK
-    _desc[3].setup(SQL_FIXCHAR,  "T_PADDING", 100-2*sizeof(int) - sizeof(double));
-#endif
-
     // create unique index t_idx on (t_id)
     uint keys1[1] = { 0 }; // IDX { T_ID }
-    create_primary_idx_desc(keys1, 1, pd);
+    create_primary_idx_desc(keys1, 1);
 }
 
 
 
-account_t::account_t(const uint32_t& pd)
-#ifdef CFG_HACK
-    : table_desc_t("ACCOUNT", 4, pd)
-#else
-      : table_desc_t("ACCOUNT", 3, pd)
-#endif
+account_t::account_t()
+      : table_desc_t("ACCOUNT", 3)
 {
     // Schema
     _desc[0].setup(SQL_INT,    "A_ID");
     _desc[1].setup(SQL_INT,    "A_B_ID");
     _desc[2].setup(SQL_FLOAT,  "A_BALANCE");
-
-#ifdef CFG_HACK
-    _desc[3].setup(SQL_FIXCHAR,   "A_PADDING", 100-2*sizeof(int)-sizeof(double));
-#endif
 
 #ifdef PLP_MBENCH
 #warning PLP MBench !!!!
@@ -131,16 +106,13 @@ account_t::account_t(const uint32_t& pd)
 #endif
 
     // create unique index a_idx on (a_id)
-    create_primary_idx_desc(keys1, nkeys, pd);
+    create_primary_idx_desc(keys1, nkeys);
 }
 
 
-history_t::history_t(const uint32_t& pd)
-#ifdef CFG_HACK
-    : table_desc_t("HISTORY", 6, pd)
-#else
-      : table_desc_t("HISTORY", 5, pd)
-#endif
+history_t::history_t()
+      : table_desc_t("HISTORY", 5)
+#
 {
     // Schema
     _desc[0].setup(SQL_INT,   "H_B_ID");
@@ -149,13 +121,9 @@ history_t::history_t(const uint32_t& pd)
     _desc[3].setup(SQL_FLOAT, "H_DELTA");   /* old: INT */
     _desc[4].setup(SQL_FLOAT, "H_TIME");    /* old: TIME */
 
-#ifdef CFG_HACK
-    _desc[5].setup(SQL_FIXCHAR,  "H_PADDING", 50-3*sizeof(int)-2*sizeof(double));
-#endif
-
     // index is required in Zero -- use all fields
     unsigned keys[5] = { 0, 1, 2, 3, 4 };
-    create_primary_idx_desc(keys, 5, pd);
+    create_primary_idx_desc(keys, 5);
 }
 
 }; // namespace

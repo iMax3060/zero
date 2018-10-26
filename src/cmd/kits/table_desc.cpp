@@ -34,8 +34,8 @@
 
 #include "w_key.h"
 
-table_desc_t::table_desc_t(const char* name, int fieldcnt, uint32_t pd)
-    : _name(name), _field_count(fieldcnt), _pd(pd), _db(NULL), _primary_idx(NULL),
+table_desc_t::table_desc_t(const char* name, int fieldcnt)
+    : _name(name), _field_count(fieldcnt), _db(NULL), _primary_idx(NULL),
     _maxsize(0)
 {
     assert (fieldcnt>0);
@@ -123,8 +123,6 @@ w_rc_t table_desc_t::create_physical_index(ss_m* db, index_desc_t* index)
     // Print info
     TRACE( TRACE_STATISTICS, "%s %d (%s) (%s) (%s)\n",
            index->name().c_str(), stid,
-           (index->is_latchless() ? "no latch" : "latch"),
-           (index->is_relaxed() ? "relaxed" : "no relaxed"),
            (index->is_unique() ? "unique" : "no unique"));
 
     return (RCOK);
@@ -148,11 +146,10 @@ bool table_desc_t::create_index_desc(const char* name,
                                      const unsigned* fields,
                                      const unsigned num,
                                      const bool unique,
-                                     const bool primary,
-                                     const uint32_t& pd)
+                                     const bool primary)
 {
     index_desc_t* p_index = new index_desc_t(this, name, num, fields,
-                                             unique, primary, pd);
+                                             unique, primary);
 
     // check the validity of the index
     for (unsigned i=0; i<num; i++)  {
@@ -179,12 +176,11 @@ bool table_desc_t::create_index_desc(const char* name,
 
 
 bool table_desc_t::create_primary_idx_desc(const unsigned* fields,
-                                           const unsigned num,
-                                           const uint32_t& pd)
+                                           const unsigned num)
 {
 
     index_desc_t* p_index = new index_desc_t(this,
-            _name, num, fields, true, true, pd);
+            _name, num, fields, true, true);
 
     // check the validity of the index
     for (unsigned i=0; i<num; i++) {

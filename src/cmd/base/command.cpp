@@ -121,12 +121,6 @@ void Command::setupSMOptions(po::options_description& options)
 {
     boost::program_options::options_description smoptions("Storage Manager Options");
     smoptions.add_options()
-    ("db-config-design", po::value<string>()->default_value("normal"),
-       "")
-    ("physical-hacks-enable", po::value<int>()->default_value(0),
-        "Enables physical hacks, such as padding of records")
-    ("db-loaders", po::value<int>()->default_value(10),
-        "Specifies the number of threads that are used to load the db")
     ("db-worker-queueloops", po::value<int>()->default_value(10),
                 "?")
     ("db-cl-batchsz", po::value<int>()->default_value(10),

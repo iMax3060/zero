@@ -51,15 +51,15 @@ namespace tpcc {
 /* -------------------------------------------------- */
 
 
-DECLARE_TABLE_SCHEMA_PD(warehouse_t);
-DECLARE_TABLE_SCHEMA_PD(district_t);
-DECLARE_TABLE_SCHEMA_PD(stock_t);
-DECLARE_TABLE_SCHEMA_PD(order_line_t);
-DECLARE_TABLE_SCHEMA_PD(customer_t);
-DECLARE_TABLE_SCHEMA_PD(history_t);
-DECLARE_TABLE_SCHEMA_PD(order_t);
-DECLARE_TABLE_SCHEMA_PD(new_order_t);
-DECLARE_TABLE_SCHEMA_PD(item_t);
+DECLARE_TABLE_SCHEMA(warehouse_t);
+DECLARE_TABLE_SCHEMA(district_t);
+DECLARE_TABLE_SCHEMA(stock_t);
+DECLARE_TABLE_SCHEMA(order_line_t);
+DECLARE_TABLE_SCHEMA(customer_t);
+DECLARE_TABLE_SCHEMA(history_t);
+DECLARE_TABLE_SCHEMA(order_t);
+DECLARE_TABLE_SCHEMA(new_order_t);
+DECLARE_TABLE_SCHEMA(item_t);
 
 
 };

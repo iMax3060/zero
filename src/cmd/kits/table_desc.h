@@ -107,14 +107,9 @@
 // Shore -> Zero compatibility
 typedef okvl_mode::element_lock_mode lock_mode_t;
 
-#define DECLARE_TABLE_SCHEMA(tablename)         \
-    class tablename : public table_desc_t {     \
-    public: tablename(string sysname); }
-
-
-#define DECLARE_TABLE_SCHEMA_PD(tablename)              \
+#define DECLARE_TABLE_SCHEMA(tablename)              \
     class tablename : public table_desc_t {             \
-    public: tablename(const uint32_t& pd); }
+    public: tablename(); }
 
 /* ---------------------------------------------------------------
  *
@@ -132,7 +127,6 @@ protected:
     pthread_mutex_t   _fschema_mutex;        // file schema mutex
     string              _name;  // file name
     unsigned            _field_count;          // # of fields
-    uint32_t           _pd;                   // info about the physical design
 
     /* ------------------- */
     /* --- table schema -- */
@@ -156,7 +150,7 @@ public:
     /* --- Constructor --- */
     /* ------------------- */
 
-    table_desc_t(const char* name, int fieldcnt, uint32_t pd);
+    table_desc_t(const char* name, int fieldcnt);
     virtual ~table_desc_t();
 
 
@@ -186,12 +180,10 @@ public:
                              const unsigned* fields,
                              const unsigned num,
                              const bool unique=true,
-                             const bool primary=false,
-                             const uint32_t& pd=PD_NORMAL);
+                             const bool primary=false);
 
     bool   create_primary_idx_desc(const unsigned* fields,
-                                   const unsigned num,
-                                   const uint32_t& pd=PD_NORMAL);
+                                   const unsigned num);
 
 
 
@@ -248,7 +240,6 @@ public:
 
     const char*   name() const { return _name.c_str(); }
     unsigned        field_count() const { return _field_count; }
-    uint32_t       get_pd() const { return _pd; }
 
     /* ---------- */
     /* --- db --- */

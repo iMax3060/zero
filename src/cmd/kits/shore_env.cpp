@@ -101,7 +101,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
       _vol_mutex(thread_mutex_create()),
       _worker_cnt(0),
       _measure(MST_UNDEF),
-      _pd(PD_NORMAL),
       _insert_freq(0),_delete_freq(0),_probe_freq(100),
       _chkpt_freq(0),
       _enable_archiver(false), _enable_merger(false),
@@ -121,14 +120,6 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
     pthread_mutex_init(&_scaling_mutex, NULL);
     pthread_mutex_init(&_queried_mutex, NULL);
 
-
-    string physical = optionValues["db-config-design"].as<string>();
-    if(physical.compare("normal")==0) {
-        set_pd(PD_NORMAL);
-    }
-    if(optionValues["physical-hacks-enable"].as<int>()) {
-        add_pd(PD_PADDED);
-    }
     set_rec_to_access(optionValues["records-to-access"].as<uint>());
 
     _last_sm_stats.fill(0);
@@ -264,45 +255,6 @@ void ShoreEnv::print_sf() const
 //                 w_error_t::error_string(rc.err_num()));
 //     }
 // }
-
-
-/********************************************************************
- *
- *  @fn:    Related to physical design
-
- ********************************************************************/
-
-uint32_t ShoreEnv::get_pd() const
-{
-    return (_pd);
-}
-
-uint32_t ShoreEnv::set_pd(const physical_design_t& apd)
-{
-    _pd = apd;
-    TRACE( TRACE_ALWAYS, "DB set to (%x)\n", _pd);
-    return (_pd);
-}
-
-uint32_t ShoreEnv::add_pd(const physical_design_t& apd)
-{
-    _pd |= apd;
-    TRACE( TRACE_ALWAYS, "DB set to (%x)\n", _pd);
-    return (_pd);
-}
-
-bool ShoreEnv::check_hacks_enabled()
-{
-    // enable hachs by default
-    int he = optionValues["physical-hacks-enable"].as<int>();
-    _enable_hacks = (he == 1 ? true : false);
-    return (_enable_hacks);
-}
-
-bool ShoreEnv::is_hacks_enabled() const
-{
-    return (_enable_hacks);
-}
 
 
 /********************************************************************
@@ -854,14 +806,7 @@ int ShoreEnv::start_sm()
         // "speculate" that the database is loaded
         _loaded = true;
     }
-
-    // Using the physical ID interface
-
-    // Get the configuration info so we have the max size of a small record
-    // for use in _post_init_impl()
-    if (ss_m::config_info(sm_config_info).is_error()) return (1);
-    ssm_max_small_rec = sm_config_info.max_small_rec;
-
+    
 
     // If we reached this point the sm has started correctly
     return (0);

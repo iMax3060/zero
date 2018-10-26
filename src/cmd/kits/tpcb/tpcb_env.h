@@ -150,13 +150,6 @@ public:
     class table_creator_t;
     class fid_loader_t;
 
-private:
-
-    w_rc_t _post_init_impl();
-
-    w_rc_t _pad_BRANCHES();
-    w_rc_t _pad_TELLERS();
-
 public:
 
     ShoreTPCBEnv(boost::program_options::variables_map vm);

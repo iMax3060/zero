@@ -96,7 +96,6 @@ void ShoreTPCCEnv::table_creator_t::work()
     W_COERCE(_env->xct_populate_baseline(0, in));
 
     // W_COERCE(_env->db()->begin_xct());
-    // W_COERCE(_env->_post_init_impl());
     // W_COERCE(_env->db()->commit_xct());
 
 #if 0
@@ -207,15 +206,15 @@ ShoreTPCCEnv::~ShoreTPCCEnv()
 w_rc_t ShoreTPCCEnv::load_schema()
 {
     // create the schema
-    _pwarehouse_desc  = new warehouse_t(get_pd());
-    _pdistrict_desc   = new district_t(get_pd());
-    _pcustomer_desc   = new customer_t(get_pd());
-    _phistory_desc    = new history_t(get_pd());
-    _pnew_order_desc  = new new_order_t(get_pd());
-    _porder_desc      = new order_t(get_pd());
-    _porder_line_desc = new order_line_t(get_pd());
-    _pitem_desc       = new item_t(get_pd());
-    _pstock_desc      = new stock_t(get_pd());
+    _pwarehouse_desc  = new warehouse_t();
+    _pdistrict_desc   = new district_t();
+    _pcustomer_desc   = new customer_t();
+    _phistory_desc    = new history_t();
+    _pnew_order_desc  = new new_order_t();
+    _porder_desc      = new order_t();
+    _porder_line_desc = new order_line_t();
+    _pitem_desc       = new item_t();
+    _pstock_desc      = new stock_t();
 
 
     // initiate the table managers
@@ -563,172 +562,8 @@ int ShoreTPCCEnv::post_init()
 {
     conf();
 
-    // If the database is set to be padded
-    if (get_pd() == PD_PADDED) {
-        // CS: not supported
-        // We should probably pad it by default at creation (TODO)
-        w_assert0(false);
-        TRACE( TRACE_ALWAYS, "Checking for WH record padding...\n");
-
-        // W_COERCE(db()->begin_xct());
-        // w_rc_t rc = _post_init_impl();
-        // if(rc.is_error()) {
-        //     cerr << "-> WH padding failed with: " << rc << endl;
-        //     rc = db()->abort_xct();
-        //     return (rc.err_num());
-        // }
-        // else {
-        //     TRACE( TRACE_ALWAYS, "-> Done\n");
-        //     rc = db()->commit_xct();
-        //     return (0);
-        // }
-    }
-
     return (0);
 }
-
-
-/*********************************************************************
- *
- *  @fn:    _post_init_impl
- *
- *  @brief: Makes sure the WH table is padded to one record per page
- *
- *********************************************************************/
-
-#if 0
-w_rc_t ShoreTPCCEnv::_post_init_impl()
-{
-#ifndef CFG_HACK
-    return (RCOK);
-#endif
-
-    TRACE (TRACE_ALWAYS, "Padding WAREHOUSES");
-    ss_m* db = this->db();
-
-    // lock the WH table
-    warehouse_t* wh = warehouse_desc();
-    index_desc_t* idx = wh->indexes();
-    int icount = wh->index_count();
-    stid_t wh_fid = wh->fid();
-
-    // lock the table and index(es) for exclusive access
-    W_DO(db->lock(wh_fid, EX));
-    for(int i=0; i < icount; i++) {
-	for(int j=0; j < idx[i].get_partition_count(); j++)
-	    W_DO(db->lock(idx[i].fid(j), EX));
-    }
-
-    guard<ats_char_t> pts = new ats_char_t(wh->maxsize());
-
-    /* copy and pad all tuples smaller than 4k
-
-       WARNING: this code assumes that existing tuples are packed
-       densly so that all padded tuples are added after the last
-       unpadded one
-    */
-    bool eof;
-    static int const PADDED_SIZE = 4096; // we know you can't fit two 4k records on a single page
-    array_guard_t<char> padding = new char[PADDED_SIZE];
-    std::vector<rid_t> hit_list;
-    {
-	guard<warehouse_man_impl::table_iter> iter;
-	{
-	    warehouse_man_impl::table_iter* tmp;
-	    W_DO(warehouse_man()->get_iter_for_file_scan(db, tmp));
-	    iter = tmp;
-	}
-
-	int count = 0;
-	table_row_t row(wh);
-	rep_row_t arep(pts);
-	int psize = wh->maxsize()+1;
-
-	W_DO(iter->next(db, eof, row));
-	while (1) {
-	    pin_i* handle = iter->cursor();
-	    if (!handle) {
-		TRACE(TRACE_ALWAYS, " -> Reached EOF. Search complete (%d)\n", count);
-		break;
-	    }
-
-	    // figure out how big the old record is
-	    int hsize = handle->hdr_size();
-	    int bsize = handle->body_size();
-	    if (bsize == psize) {
-		TRACE(TRACE_ALWAYS, " -> Found padded WH record. Stopping search (%d)\n", count);
-		break;
-	    }
-	    else if (bsize > psize) {
-		// too big... shrink it down to save on logging
-		handle->truncate_rec(bsize - psize);
-                fprintf(stderr, "+");
-	    }
-	    else {
-		// copy and pad the record (and mark the old one for deletion)
-		rid_t new_rid;
-		vec_t hvec(handle->hdr(), hsize);
-		vec_t dvec(handle->body(), bsize);
-		vec_t pvec(padding, PADDED_SIZE-bsize);
-		W_DO(db->create_rec(wh_fid, hvec, PADDED_SIZE, dvec, new_rid));
-		W_DO(db->append_rec(new_rid, pvec));
-                // for small databases, first padded record fits on this page
-                if (not handle->up_to_date())
-                    handle->repin();
-
-                // mark the old record for deletion
-		hit_list.push_back(handle->rid());
-
-		// update the index(es)
-		vec_t rvec(&row._rid, sizeof(rid_t));
-		vec_t nrvec(&new_rid, sizeof(new_rid));
-		for(int i=0; i < icount; i++) {
-		    int key_sz = warehouse_man()->format_key(idx+i, &row, arep);
-		    vec_t kvec(arep._dest, key_sz);
-
-		    /* destroy the old mapping and replace it with the new
-		       one.  If it turns out this is super-slow, we can
-		       look into probing the index with a cursor and
-		       updating it directly.
-		    */
-		    int pnum = _pwarehouse_man->get_pnum(&idx[i], &row);
-		    stid_t fid = idx[i].fid(pnum);
-
-		    if(idx[i].is_mr()) {
-			W_DO(db->destroy_mr_assoc(fid, kvec, rvec));
-			// now put the entry back with the new rid
-			el_filler ef;
-			ef._el.put(nrvec);
-			W_DO(db->create_mr_assoc(fid, kvec, ef));
-		    } else {
-			W_DO(db->destroy_assoc(fid, kvec, rvec));
-			// now put the entry back with the new rid
-			W_DO(db->create_assoc(fid, kvec, nrvec));
-		    }
-
-		}
-                fprintf(stderr, ".");
-	    }
-
-	    // next!
-	    count++;
-	    W_DO(iter->next(db, eof, row));
-	}
-        fprintf(stderr, "\n");
-
-	// put the iter out of scope
-    }
-
-    // delete the old records
-    int hlsize = hit_list.size();
-    TRACE(TRACE_ALWAYS, "-> Deleting (%d) old unpadded records\n", hlsize);
-    for(int i=0; i < hlsize; i++) {
-	W_DO(db->destroy_rec(hit_list[i]));
-    }
-
-    return (RCOK);
-}
-#endif
 
 
 /*********************************************************************
@@ -745,17 +580,6 @@ w_rc_t ShoreTPCCEnv::db_print(int /*lines*/)
     assert (_pssm);
     assert (_initialized);
     assert (_loaded);
-
-    // print tables -- CS TODO
-    // W_DO(_pwarehouse_man->print_table(_pssm, lines));
-    // W_DO(_pdistrict_man->print_table(_pssm, lines));
-    // W_DO(_pstock_man->print_table(_pssm, lines));
-    // W_DO(_porder_line_man->print_table(_pssm, lines));
-    // W_DO(_pcustomer_man->print_table(_pssm, lines));
-    // W_DO(_phistory_man->print_table(_pssm, lines));
-    // W_DO(_porder_man->print_table(_pssm, lines));
-    // W_DO(_pnew_order_man->print_table(_pssm, lines));
-    // W_DO(_pitem_man->print_table(_pssm, lines));
 
     return (RCOK);
 }
@@ -779,7 +603,6 @@ w_rc_t ShoreTPCCEnv::db_fetch()
     // fetch tables
     W_DO(_pnew_order_man->fetch_table(_pssm));
     W_DO(_porder_line_man->fetch_table(_pssm));
-    // W_DO(_phistory_man->fetch_table(_pssm));
     W_DO(_porder_man->fetch_table(_pssm));
     W_DO(_pitem_man->fetch_table(_pssm));
     W_DO(_pcustomer_man->fetch_table(_pssm));

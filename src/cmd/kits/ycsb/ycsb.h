@@ -16,7 +16,7 @@ namespace ycsb {
 static constexpr int FieldSize = 100;
 static constexpr int FieldCount = 10;
 
-DECLARE_TABLE_SCHEMA_PD(ycsbtable_t);
+DECLARE_TABLE_SCHEMA(ycsbtable_t);
 
 const int XCT_YCSB_MBENCH_INSERT_ONLY = 41;
 const int XCT_YCSB_MBENCH_DELETE_ONLY = 42;
