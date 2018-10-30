@@ -53,7 +53,6 @@ namespace po = boost::program_options;
 const int SHORE_NUM_OF_RETRIES       = 3;
 
 #define SHORE_TABLE_DATA_DIR  "databases"
-#define SHORE_CONF_FILE       "shore.conf"
 
 
 /******************************************************************
@@ -356,7 +355,6 @@ protected:
 
     ss_m*           _pssm;               // database handle
 
-    // CS: parameters removed from envVar/shore.conf/SHORE_*_OPTIONS
     bool _clobber;
 
     // Status variables

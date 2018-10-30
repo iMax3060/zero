@@ -47,8 +47,6 @@
 
 using namespace boost;
 
-// #warning IP: TODO pass arbitrary -sm_* options from shore.conf to shore
-
 // Exported variables //
 
 ShoreEnv* _g_shore_env = NULL;

@@ -52,9 +52,6 @@ SET(kits_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/kits_cmd.cpp
    )
 
-# Copy shore.conf file to /src/ in the build directory:
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/shore.conf ${CMAKE_CURRENT_BINARY_DIR}/../shore.conf COPYONLY)
-
 # Add the library of this directory kits:
 ADD_LIBRARY(kits ${kits_SRCS})
 
