@@ -121,7 +121,7 @@ w_rc_t table_desc_t::create_physical_index(ss_m* db, index_desc_t* index)
                 vec_t(&stid, sizeof(StoreID))));
 
     // Print info
-    TRACE( TRACE_STATISTICS, "%s %d (%s) (%s) (%s)\n",
+    TRACE( TRACE_STATISTICS, "%s %d (%s)\n",
            index->name().c_str(), stid,
            (index->is_unique() ? "unique" : "no unique"));
 
