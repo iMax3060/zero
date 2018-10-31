@@ -215,11 +215,11 @@ rc_t partition_t::flush(
 
         struct iovec iov[] = {
             // iovec_t expects void* not const void *
-            { (char*)buf+start1,                end1-start1 },
+            { (char*)buf+start1, static_cast<size_t>(end1-start1) },
             // iovec_t expects void* not const void *
-            { (char*)buf+start2,                end2-start2},
+            { (char*)buf+start2, static_cast<size_t>(end2-start2) },
             { s,                        s->length()},
-            { block_of_zeros(),         grand_total-total},
+            { block_of_zeros(), static_cast<size_t>(grand_total-total) },
         };
 
         auto ret = ::writev(_fhdl_app, iov, 4);

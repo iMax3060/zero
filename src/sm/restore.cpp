@@ -28,7 +28,7 @@ void SegmentRestorer::bf_restore(unsigned segment_begin, unsigned segment_end,
 
     for (unsigned s = segment_begin; s < segment_end; s++) {
         first_pid = s * segment_size;
-        GenericPageIterator pbegin {first_pid, segment_size, virgin_pages};
+        GenericPageIterator pbegin {first_pid, static_cast<PageID>(segment_size), virgin_pages};
         GenericPageIterator pend;
 
         // CS TODO there seems to be a weird memory leak in ArchiveScan
