@@ -194,8 +194,6 @@ void vol_t::shutdown()
 
     DBG(<<" vol_t::dismount flush=" << flush);
 
-    // INC_TSTAT(vol_cache_clears);
-
     w_assert1(_fd >= 0);
 
     auto ret = close(_fd);

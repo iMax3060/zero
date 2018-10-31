@@ -272,7 +272,6 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
             if (!endLSN.is_null() && startLSN >= endLSN) { return; }
 
             if (startPID > run.maxPID) {
-                // INC_TSTAT(la_avoided_probes);
                 continue;
             }
 
@@ -285,7 +284,6 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
                 {
                     // With bucket size one, we know precisely which PIDs are contained
                     // in this run, so what we have is a filter with 100% precision
-                    // INC_TSTAT(la_avoided_probes);
                     continue;
                 }
 
