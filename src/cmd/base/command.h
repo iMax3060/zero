@@ -8,6 +8,7 @@
 #include "handler.h"
 #include "scanner.h"
 #include <boost/program_options.hpp>
+#include <boost/program_options/errors.hpp>
 
 namespace po = boost::program_options;
 
@@ -43,6 +44,14 @@ private:
     static ConstructorMap constructorMap;
 
     static void showCommands();
+
+    template<typename T> static auto check_range(const T& min, const T& max, const std::string& opt_name) {
+        return [min, max, opt_name](const T& value) {
+            if (value < min || value > max) {
+                throw po::validation_error(po::validation_error::invalid_option_value, opt_name, std::to_string(value));
+            }
+        };
+    }
 };
 
 class LogScannerCommand : public Command {

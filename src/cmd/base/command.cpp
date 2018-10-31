@@ -123,7 +123,7 @@ void Command::setupSMOptions(po::options_description& options)
     smoptions.add_options()
     ("db-worker-queueloops", po::value<int>()->default_value(10),
         "Specify the number of spins a transaction worker waits for input")
-    ("db-cl-batchsz", po::value<int>()->default_value(10),
+    ("db-cl-batchsz", po::value<int>()->default_value(10)->notifier(check_range<uint8_t>(1, std::numeric_limits<uint8_t>::max(), "db-cl-batchsz")),
         "Specify the batchsize of a client executing transactions")
     ("activation_delay", po::value<uint>()->default_value(0),
         "Specify time (sec) until the log archiver is activated")
