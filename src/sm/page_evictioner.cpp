@@ -16,8 +16,6 @@ page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_optio
 {
     _swizzling_enabled = options.get_bool_option("sm_bufferpool_swizzle", false);
     _maintain_emlsn = options.get_bool_option("sm_bf_maintain_emlsn", false);
-    _random_pick = options.get_bool_option("sm_evict_random", false);
-    _use_clock = options.get_bool_option("sm_evict_use_clock", true);
     _log_evictions = options.get_bool_option("sm_log_page_evictions", false);
     _wakeup_cleaner_attempts = options.get_int_option("sm_evict_wakeup_cleaner_attempts", 0);
     _clean_only_attempts = options.get_int_option("sm_evict_clean_only_attempts", 0);
@@ -28,10 +26,6 @@ page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_optio
         // this option overrides clean_only_attempts
         _clean_only_attempts = 1;
     }
-
-    if (_use_clock) { _clock_ref_bits.resize(_bufferpool->get_block_cnt(), false); }
-
-    _current_frame = 0;
 
     constexpr unsigned max_rounds = 1000;
     _max_attempts = max_rounds * _bufferpool->get_block_cnt();
@@ -149,52 +143,13 @@ void page_evictioner_base::flush_dirty_page(const bf_tree_cb_t& cb) {
     Logger::log_sys<page_write_log>(cb._pid, clean_lsn, 1);
 }
 
-void page_evictioner_base::hit_ref(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
-}
-
-void page_evictioner_base::unfix_ref(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
-}
-
-void page_evictioner_base::miss_ref(bf_idx b_idx, PageID pid) {
-    if (_use_clock && !_clock_ref_bits[b_idx]) { _clock_ref_bits[b_idx] = true; }
-}
-
-void page_evictioner_base::used_ref(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
-}
-
-void page_evictioner_base::dirty_ref(bf_idx idx) {}
-
-void page_evictioner_base::block_ref(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
-}
-
-void page_evictioner_base::swizzle_ref(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = true; }
-}
-
-void page_evictioner_base::unbuffered(bf_idx idx) {
-    if (_use_clock && !_clock_ref_bits[idx]) { _clock_ref_bits[idx] = false; }
-}
-
 bf_idx page_evictioner_base::pick_victim() {
-    auto next_idx = [this] {
-        if (_current_frame > _bufferpool->_block_cnt) {
-            // race condition here, but it's not a big deal
-            _current_frame = 1;
-        }
-        return _random_pick ? get_random_idx() : _current_frame++;
-    };
-
     unsigned attempts = 0;
     while (true) {
 
         if (should_exit()) return 0; // in bf_tree.h, 0 is never used, means null
 
-        bf_idx idx = next_idx();
-        if (idx >= _bufferpool->_block_cnt || idx == 0) { idx = 1; }
+        bf_idx idx = get_random_idx();
 
         attempts++;
         if (attempts >= _max_attempts) {
@@ -222,7 +177,6 @@ bf_idx page_evictioner_base::pick_victim() {
         if (cb.latch().held_by_me()) {
             // I (this thread) currently have the latch on this frame, so
             // obviously I should not evict it
-            used_ref(idx);
             continue;
         }
 
@@ -230,18 +184,10 @@ bf_idx page_evictioner_base::pick_victim() {
         rc_t latch_rc;
         latch_rc = cb.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
         if (latch_rc.is_error()) {
-            used_ref(idx);
             DBG3(<< "Eviction failed on latch for " << idx);
             continue;
         }
         w_assert1(cb.latch().is_mine());
-
-        // Only evict if clock referenced bit is not set
-        if (_use_clock && _clock_ref_bits[idx]) {
-            _clock_ref_bits[idx] = false;
-            cb.latch().latch_release();
-            continue;
-        }
 
         // Only evict actually evictable pages (not required to stay in the buffer pool)
         if (!_bufferpool->isEvictable(idx, _flush_dirty)) {
