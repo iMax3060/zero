@@ -17,6 +17,18 @@ class bf_tree_m;
 class generic_page;
 struct bf_tree_cb_t;
 
+#define USE_CLOCK 0
+#if USE_CLOCK > 0
+#define UPDATE_ON_HIT 1
+#define UPDATE_ON_UNFIX 1
+#define UPDATE_ON_MISS 1
+#define UPDATE_ON_USED 1
+#define UPDATE_ON_DIRTY 1
+#define UPDATE_ON_BLOCK 1
+#define UPDATE_ON_SWIZZLED 1
+#define UPDATE_ON_UNBUFFERED 1
+#endif
+
 /*!\class   page_evictioner_base
  * \brief   Basic Page Evictioner incl. RANDOM, LOOP, 0CLOCK and CLOCK strategies
  * \details Basic class for page eviction. Implements some common functionality

@@ -32,6 +32,8 @@
 #include "xct.h"
 #include "xct_logger.h"
 
+#include "page_evictioner.h"
+
 // Template definitions
 #include "bf_hashtable.cpp"
 
@@ -456,7 +458,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
         w_assert1(cb._pid == _buffer[idx].pid);
 
         cb.inc_ref_count();
+#if UPDATE_ON_HIT > 0
         _evictioner->hit_ref(idx);
+#endif
         if (mode == LATCH_EX) { cb.inc_ref_count_ex(); }
 
         page = &(_buffer[idx]);
@@ -533,7 +537,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     timeout_t::WAIT_IMMEDIATE);
             if (check_rc.is_error())
             {
+#if UPDATE_ON_UNBUFFERED > 0
                 if (_evictioner) _evictioner->unbuffered(idx);
+#endif
                 _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
@@ -545,7 +551,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
                     bf_idx_pair(idx, parent_idx));
             if (!registered) {
                 cb.latch().latch_release();
+#if UPDATE_ON_UNBUFFERED > 0
                 if (_evictioner) _evictioner->unbuffered(idx);
+#endif
                 _freeList->addFreeBufferpoolFrame(idx);
                 continue;
             }
@@ -595,7 +603,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             w_assert1(_is_active_idx(idx));
 
+#if UPDATE_ON_MISS > 0
             if (_evictioner) _evictioner->miss_ref(idx, pid);
+#endif
 
             // STEP 6) Fix successful -- pin page and downgrade latch
             w_assert1(cb.latch().is_mine());
@@ -637,7 +647,9 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
             w_assert1(_is_active_idx(idx));
             cb.inc_ref_count();
+#if UPDATE_ON_HIT > 0
             if(_evictioner) _evictioner->hit_ref(idx);
+#endif
             if (mode == LATCH_EX) {
                 cb.inc_ref_count_ex();
             }
@@ -729,7 +741,9 @@ rc_t bf_tree_m::_read_page(PageID pid, bf_tree_cb_t& cb, bool from_backup)
     if (rc.is_error()) {
         _hashtable->remove(pid);
         cb.latch().latch_release();
+#if UPDATE_ON_UNBUFFERED > 0
         if (_evictioner) _evictioner->unbuffered(get_idx(&cb));
+#endif
         _freeList->addFreeBufferpoolFrame(get_idx(&cb));
     }
     return rc;
@@ -774,7 +788,9 @@ void bf_tree_m::prefetch_pages(PageID first, unsigned count)
             w_rc_t check_rc = cb.latch().latch_acquire(LATCH_EX,
                     timeout_t::WAIT_IMMEDIATE);
             if (check_rc.is_error()) {
+#if UPDATE_ON_UNBUFFERED > 0
                 if (_evictioner) _evictioner->unbuffered(idx);
+#endif
                 _freeList->addFreeBufferpoolFrame(idx);
             }
             else { break; }
@@ -805,7 +821,9 @@ void bf_tree_m::prefetch_pages(PageID first, unsigned count)
             if (media_failure) { cb.pin_for_restore(); }
         }
         else {
+#if UPDATE_ON_UNBUFFERED > 0
             if (_evictioner) _evictioner->unbuffered(idx);
+#endif
             _freeList->addFreeBufferpoolFrame(idx);
         }
 
@@ -872,7 +890,9 @@ void bf_tree_m::unpin_for_refix(bf_idx idx) {
     // the btcursor code in detail before taking further action on this.
     // w_assert1(get_cb(idx).latch().held_by_me());
     get_cb(idx).unpin();
+#if UPDATE_ON_UNFIX > 0
     if(_evictioner) _evictioner->unfix_ref(idx);
+#endif
     DBG(<< "Unpin for refix set pin cnt to " << get_cb(idx)._pin_cnt);
     w_assert1(get_cb(idx)._pin_cnt >= 0);
 }
@@ -1128,7 +1148,9 @@ void bf_tree_m::_delete_block(bf_idx idx) {
     w_assert1(removed);
 
     // after all, give back this block to the freelist. other threads can see this block from now on
+#if UPDATE_ON_UNBUFFERED > 0
     if (_evictioner) _evictioner->unbuffered(idx);
+#endif
     _freeList->addFreeBufferpoolFrame(idx);
 }
 
@@ -1193,7 +1215,9 @@ w_rc_t bf_tree_m::refix_direct (generic_page*& page, bf_idx
     // cb.pin();
     DBG(<< "Refix direct of " << idx << " set pin cnt to " << cb._pin_cnt);
     cb.inc_ref_count();
+#if UPDATE_ON_HIT > 0
     _evictioner->hit_ref(idx);
+#endif
     if (mode == LATCH_EX) { cb.inc_ref_count_ex(); }
     page = &(_buffer[idx]);
     return RCOK;
@@ -1274,14 +1298,18 @@ void bf_tree_m::unfix(const generic_page* p, bool evict)
         bool removed = _hashtable->remove(p->pid);
         w_assert1(removed);
 
+#if UPDATE_ON_UNBUFFERED > 0
         if (_evictioner) _evictioner->unbuffered(idx);
+#endif
         _freeList->addFreeBufferpoolFrame(idx);
     }
     else {
         w_assert1(cb._pin_cnt >= 0);
     }
     DBG(<< "Unfixed " << idx << " pin count " << cb._pin_cnt);
+#if UPDATE_ON_UNBUFFERED > 0
     if(_evictioner) _evictioner->unfix_ref(idx);
+#endif
     cb.latch().latch_release();
 }
 
@@ -1311,7 +1339,9 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
         // (note, single-node B-tree is both root and leaf)
         || (p.tag() == t_btree_p && p.pid() == p.root())
     ) {
+#if UPDATE_ON_BLOCK > 0
         _evictioner->block_ref(indexToCheck);
+#endif
         DBG5(<< "Eviction failed on node type for " << idx);
         return false;
     }
@@ -1322,7 +1352,9 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
         // (requires unswizzling, which is not supported)
         || (_enable_swizzling && p.tag() == t_btree_p && p.get_foster() != 0)
     ) {
+#if UPDATE_ON_SWIZZLED > 0
         _evictioner->swizzle_ref(indexToCheck);
+#endif
         DBG5(<< "Eviction failed on swizzled for " << idx);
         return false;
     }
@@ -1330,7 +1362,9 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
     if (// ... dirty pages, unless we're told to ignore them
            (!ignore_dirty && cb.is_dirty())
     ) {
+#if UPDATE_ON_DIRTY > 0
         _evictioner->dirty_ref(indexToCheck);
+#endif
         DBG5(<< "Eviction failed on dirty for " << idx);
         return false;
     }
@@ -1345,7 +1379,9 @@ bool bf_tree_m::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty
     if (// ... pinned frames, i.e., someone required it not be evicted
            cb._pin_cnt != 0
     ) {
+#if UPDATE_ON_USED > 0
         _evictioner->used_ref(indexToCheck);
+#endif
         DBG5(<< "Eviction failed on pinned for " << idx);
         return false;
     }

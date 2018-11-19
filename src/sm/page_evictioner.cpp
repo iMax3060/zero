@@ -181,11 +181,14 @@ void page_evictioner_base::unbuffered(bf_idx idx) {
 
 bf_idx page_evictioner_base::pick_victim() {
     auto next_idx = [this] {
+#if USE_CLOCK > 0
         if (_current_frame > _bufferpool->_block_cnt) {
             // race condition here, but it's not a big deal
             _current_frame = 1;
         }
-        return _random_pick ? get_random_idx() : _current_frame++;
+        return _current_frame++;
+#endif
+        return get_random_idx();
     };
 
     unsigned attempts = 0;
@@ -222,7 +225,9 @@ bf_idx page_evictioner_base::pick_victim() {
         if (cb.latch().held_by_me()) {
             // I (this thread) currently have the latch on this frame, so
             // obviously I should not evict it
+#if UPDATE_ON_USED > 0
             used_ref(idx);
+#endif
             continue;
         }
 
@@ -230,18 +235,22 @@ bf_idx page_evictioner_base::pick_victim() {
         rc_t latch_rc;
         latch_rc = cb.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
         if (latch_rc.is_error()) {
+#if UPDATE_ON_USED > 0
             used_ref(idx);
+#endif
             DBG3(<< "Eviction failed on latch for " << idx);
             continue;
         }
         w_assert1(cb.latch().is_mine());
 
+#if USE_CLOCK > 0
         // Only evict if clock referenced bit is not set
         if (_use_clock && _clock_ref_bits[idx]) {
             _clock_ref_bits[idx] = false;
             cb.latch().latch_release();
             continue;
         }
+#endif
 
         // Only evict actually evictable pages (not required to stay in the buffer pool)
         if (!_bufferpool->isEvictable(idx, _flush_dirty)) {
