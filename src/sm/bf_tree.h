@@ -69,7 +69,6 @@ class bf_tree_m {
     friend class test_bf_fixed; // for testcases
     friend class bf_tree_cleaner; // for page cleaning
     friend class page_evictioner_base;  // for page evictioning
-    friend class page_evictioner_gclock;
     friend class WarmupThread;
     friend class page_cleaner_decoupled;
     friend class GenericPageIterator;

@@ -284,8 +284,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Enable/Disable reading whole blocks in the archiver")
     ("sm_archiver_slow_log_grace_period", po::value<int>(),
         "Enable/Disable slow log grace period")
-    ("sm_bufferpool_gclock_k", po::value<int>()->default_value(10),
-        "Specify the k-parameter for eviction policy glock")
     ("sm_archdir", po::value<string>()->default_value("archive"),
         "Path to archive directory");
     options.add(smoptions);
