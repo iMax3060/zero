@@ -54,7 +54,7 @@ vol_t::vol_t(const sm_options& options)
              : _fd(-1),
                _fake_read_latency(options.get_int_option("sm_vol_simulate_read_latency", 0)),
                _fake_write_latency(options.get_int_option("sm_vol_simulate_write_latency", 0)),
-               _alloc_cache(NULL), _stnode_cache(NULL),
+               _alloc_cache(nullptr), _stnode_cache(nullptr),
                _backup_fd(-1),
                _current_backup_lsn(lsn_t::null), _backup_write_fd(-1),
                _log_page_reads(options.get_bool_option("sm_vol_log_reads", false)),
@@ -90,11 +90,11 @@ vol_t::~vol_t()
 {
     if (_alloc_cache) {
         delete _alloc_cache;
-        _alloc_cache = NULL;
+        _alloc_cache = nullptr;
     }
     if (_stnode_cache) {
         delete _stnode_cache;
-        _stnode_cache = NULL;
+        _stnode_cache = nullptr;
     }
 
     w_assert1(_fd == -1);

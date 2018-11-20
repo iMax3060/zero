@@ -51,7 +51,7 @@ public:
         return ((double)(time_us()*1e-6));
     }
     long long now() {
-        gettimeofday(&tv, NULL);
+        gettimeofday(&tv, nullptr);
         return tv.tv_usec + tv.tv_sec*1000000ll;
     }
     void reset() {

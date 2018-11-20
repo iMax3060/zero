@@ -125,7 +125,7 @@ latch_t::~latch_t()
  *
  * \sa latch_holder_t
  */
-__thread latch_holder_t* latch_holder_t::thread_local_holders(NULL);
+__thread latch_holder_t* latch_holder_t::thread_local_holders(nullptr);
 
 /**\var static __thread latch_holder_t* latch_holder_t::thread_local_freelist;
  * \brief Pool of unused latch_holder_t instances.
@@ -139,7 +139,7 @@ __thread latch_holder_t* latch_holder_t::thread_local_holders(NULL);
  *
  * \sa latch_holder_t
  */
-__thread latch_holder_t* latch_holder_t::thread_local_freelist(NULL);
+__thread latch_holder_t* latch_holder_t::thread_local_freelist(nullptr);
 
 /**\brief The list-handling class for latch_holder_t instances.
  *
@@ -181,13 +181,13 @@ public:
     iterator begin() { return iterator(_first); }
 
     /// Dereferencing this iterator brings us past the last item in any list.
-    iterator end() { return iterator(NULL); }
+    iterator end() { return iterator(nullptr); }
 
     /// Insert h at the front of this list.
     void push_front(latch_holder_t* h) {
         h->_next = _first;
         if(_first) _first->_prev = h;
-        h->_prev = NULL;
+        h->_prev = nullptr;
         _first = h;
     }
 
@@ -315,7 +315,7 @@ public:
     latch_holder_t* operator->() { return this->value(); }
 
     latch_holder_t* value() { return (_it == _end)?
-        (latch_holder_t *)(NULL) : &(*_it); }
+        (latch_holder_t *)(nullptr) : &(*_it); }
 }; // holder_search
 
 w_rc_t
@@ -333,7 +333,7 @@ latch_t::upgrade_if_not_block(bool& would_block)
     holder_search me(this);
 
     // should already hold the latch
-    w_assert3(me.value() != NULL);
+    w_assert3(me.value() != nullptr);
 
     // already hold EX? DON'T INCREMENT THE COUNT!
     if(me->_mode == LATCH_EX) {
@@ -363,7 +363,7 @@ int latch_t::latch_release()
 {
     holder_search me(this);
     // we should already hold the latch!
-    w_assert2(me.value() != NULL);
+    w_assert2(me.value() != nullptr);
     return _release(me.value());
 }
 
@@ -522,7 +522,7 @@ latch_t::_release(latch_holder_t* me)
 void latch_t::downgrade() {
     holder_search me(this);
     // we should already hold the latch!
-    w_assert3(me.value() != NULL);
+    w_assert3(me.value() != nullptr);
     _downgrade(me.value());
 }
 
@@ -561,7 +561,7 @@ void latch_t::on_thread_destroy()
     //     freelist = node->_next;
     //     delete node;
     // }
-    // latch_holder_t::thread_local_freelist = NULL;
+    // latch_holder_t::thread_local_freelist = nullptr;
 }
 
 // return the number of times the latch is held by this thread
@@ -602,7 +602,7 @@ ostream& operator<<(ostream& out, const latch_t& l)
 // For use in debugger:
 void print_latch(const latch_t *l)
 {
-    if(l != NULL) l->print(cerr);
+    if(l != nullptr) l->print(cerr);
 }
 
 // For use in debugger:

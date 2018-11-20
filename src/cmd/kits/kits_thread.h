@@ -47,13 +47,13 @@
 //using std::rand_r;
 #endif
 
-pthread_mutex_t thread_mutex_create(const pthread_mutexattr_t* attr=NULL);
+pthread_mutex_t thread_mutex_create(const pthread_mutexattr_t* attr=nullptr);
 void thread_mutex_lock(pthread_mutex_t &mutex);
 void thread_mutex_unlock(pthread_mutex_t &mutex);
 void thread_mutex_destroy(pthread_mutex_t &mutex);
 
 
-pthread_cond_t thread_cond_create(const pthread_condattr_t* attr=NULL);
+pthread_cond_t thread_cond_create(const pthread_condattr_t* attr=nullptr);
 void thread_cond_destroy(pthread_cond_t &cond);
 void thread_cond_signal(pthread_cond_t &cond);
 void thread_cond_broadcast(pthread_cond_t &cond);
@@ -237,7 +237,7 @@ thread_t* member_func_thread(Class* instance,
 
 void      thread_init(void);
 thread_t* thread_get_self(void);
-pthread_t thread_create(thread_t* t, thread_pool* p=NULL);
+pthread_t thread_create(thread_t* t, thread_pool* p=nullptr);
 
 #if 0 // superceded by thread_local.h
 template<typename T>
@@ -255,7 +255,7 @@ struct thread_local {
 	pthread_key_create(&_key, d);
     }
     thread_local() {
-	pthread_key_create(&_key, NULL);
+	pthread_key_create(&_key, nullptr);
     }
     ~thread_local() {
 	pthread_key_delete(_key);

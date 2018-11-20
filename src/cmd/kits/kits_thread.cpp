@@ -94,7 +94,7 @@ static thread_pool default_thread_pool(1<<30);
  ***********************************************************************/
 
 thread_t::thread_t(const std::string &name)
-    : _thread_name(name), _ppool(NULL), _delete_me(true)
+    : _thread_name(name), _ppool(nullptr), _delete_me(true)
 {
     // do nothing...
 }
@@ -149,7 +149,7 @@ void thread_t::setupthr()
 
 void thread_init(void)
 {
-    thread_args args(new root_thread_t(std::string("root-thread")), NULL);
+    thread_args args(new root_thread_t(std::string("root-thread")), nullptr);
     setup_thread(&args);
 }
 
@@ -200,7 +200,7 @@ pthread_mutex_t thread_mutex_create(const pthread_mutexattr_t* attr)
     pthread_mutexattr_t        mutex_attr;
     const pthread_mutexattr_t* ptr_mutex_attr;
 
-    if (attr == NULL)
+    if (attr == nullptr)
     {
 #if 0
        	if(pthread_mutexattr_init(&mutex_attr))
@@ -336,7 +336,7 @@ bool thread_cond_wait(pthread_cond_t &cond, pthread_mutex_t &mutex,
     if(timeout_ms > 0) {
     struct timespec timeout;
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if(timeout_ms > 1000) {
 	timeout.tv_sec = timeout_ms / 1000;
 	timeout.tv_nsec = (timeout_ms - timeout.tv_sec*1000)*1000;
@@ -383,7 +383,7 @@ void* start_thread(void* thread_object)
 
     if(thread->delete_me())
 	delete thread;
-    return (NULL);
+    return (nullptr);
 }
 
 

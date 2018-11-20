@@ -18,7 +18,7 @@ void test(mem_mgmt_t* mem)
     for (int i = 0; i < MAX; i++) {
         // flip a coin
         if (rand() % 2) {
-           slot_t s(NULL,0);
+           slot_t s(nullptr,0);
            mem->allocate(24 + (rand() % 16000), s);
            if (s.address) {
                slots.push_front(s);

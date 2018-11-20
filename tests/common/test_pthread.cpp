@@ -30,10 +30,10 @@ private:
 
 
 
-__thread stringstream *_safe_io(NULL);
+__thread stringstream *_safe_io(nullptr);
 void safe_io_init() 
 { 
-        if (_safe_io==NULL) _safe_io = new stringstream; 
+        if (_safe_io==nullptr) _safe_io = new stringstream;
 }
 
 #define SAFE_IO(XXXX) { safe_io_init(); \
@@ -53,7 +53,7 @@ void simple_thread_t::run()
 
 #undef TEST_FIND_PTHREAD_RUNTIMEMAX
 #ifdef TEST_FIND_PTHREAD_RUNTIMEMAX
-void* dummy(void *) {return NULL;}
+void* dummy(void *) {return nullptr;}
 #endif
 
 TEST (PthreadTest, All) {
@@ -177,7 +177,7 @@ TEST (PthreadTest, All) {
                 threads++;
                 // pthread_attr_t attr;
                 pthread_t thr;
-                int e= pthread_create(&thr, NULL, dummy, NULL);
+                int e= pthread_create(&thr, nullptr, dummy, nullptr);
                 if(e!=0) {
                         if(e==EAGAIN) {
                                 cout << "runtime: maximum pthreads " << threads << endl;
@@ -195,14 +195,14 @@ TEST (PthreadTest, All) {
 
         threads=2;
         // They all wait on this barrier.
-    pthread_barrier_init(&b, NULL, threads+1);
+    pthread_barrier_init(&b, nullptr, threads+1);
     sthread_t **t = new sthread_t *[threads];
 
     for (int i = 0; i < threads; i++)
         t[i] = new simple_thread_t();
 
     for (int i = 0; i < threads; i++)
-        EXPECT_TRUE(t[i] != NULL);
+        EXPECT_TRUE(t[i] != nullptr);
 
     for (int i = 0; i < threads; i++)
         EXPECT_FALSE(t[i]->fork().is_error());

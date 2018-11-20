@@ -52,8 +52,8 @@ trx_worker_t::trx_worker_t(ShoreEnv* env, std::string tname,
 
 trx_worker_t::~trx_worker_t()
 {
-    _pqueue = NULL;
-    _actionpool = NULL;
+    _pqueue = nullptr;
+    _actionpool = nullptr;
 }
 
 
@@ -76,13 +76,13 @@ void trx_worker_t::init(const int lc)
 int trx_worker_t::_work_ACTIVE_impl()
 {
     w_rc_t e;
-    Request* ar = NULL;
+    Request* ar = nullptr;
 
     // Check if signalled to stop
     while (get_control() == WC_ACTIVE) {
 
         // Reset the flags for the new loop
-        ar = NULL;
+        ar = nullptr;
         set_ws(WS_LOOP);
 
         // Dequeue a request from the (main) input queue

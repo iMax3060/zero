@@ -28,7 +28,7 @@ struct bf_hashbucket_chunk_linked {
         : size (size_),
             values (new T[size]),
             keys (new PageID[size]),
-            next_chunk (NULL) {
+            next_chunk (nullptr) {
         ::memset (values, 0, sizeof(T) * size);
         ::memset (keys, 0, sizeof(PageID) * size);
     }
@@ -38,10 +38,10 @@ struct bf_hashbucket_chunk_linked {
     bf_hashbucket_chunk_linked* next_chunk;
 
     void delete_chain() {
-        if (next_chunk != NULL) {
+        if (next_chunk != nullptr) {
             next_chunk->delete_chain();
             delete next_chunk;
-            next_chunk = NULL;
+            next_chunk = nullptr;
         }
     }
 };
@@ -60,10 +60,10 @@ struct bf_hashbucket_chunk {
     bf_hashbucket_chunk_linked<T>* next_chunk;
 
     void delete_chain() {
-        if (next_chunk != NULL) {
+        if (next_chunk != nullptr) {
             next_chunk->delete_chain();
             delete next_chunk;
-            next_chunk = NULL;
+            next_chunk = nullptr;
         }
     }
 };
@@ -104,7 +104,7 @@ bool bf_hashbucket<T>::find(PageID key, T& value) {
             = _chunk.next_chunk; cur_count < _used_count;
             cur_chunk = cur_chunk->next_chunk)
     {
-        w_assert1(cur_chunk != NULL);
+        w_assert1(cur_chunk != nullptr);
         for (uint32_t i = 0; i < cur_chunk->size && cur_count < _used_count;
                 ++i, ++cur_count) {
             if (cur_chunk->keys[i] == key) {
@@ -130,7 +130,7 @@ bool bf_hashbucket<T>::update (PageID key, T value) {
 
     uint32_t cur_count = HASHBUCKET_INITIAL_CHUNK_SIZE;
     for (bf_hashbucket_chunk_linked<T>* cur_chunk = _chunk.next_chunk; cur_count < _used_count; cur_chunk = cur_chunk->next_chunk) {
-        w_assert1(cur_chunk != NULL);
+        w_assert1(cur_chunk != nullptr);
         for (uint32_t i = 0; i < cur_chunk->size && cur_count < _used_count; ++i, ++cur_count) {
             if (cur_chunk->keys[i] == key) {
                 cur_chunk->values[i] = value;
@@ -158,7 +158,7 @@ bool bf_hashbucket<T>::append_if_not_exists (PageID key, T value) {
         ++_used_count;
         return true;
     }
-    if (_chunk.next_chunk == NULL) {
+    if (_chunk.next_chunk == nullptr) {
         _chunk.next_chunk = new bf_hashbucket_chunk_linked<T>
             (HASHBUCKET_INITIAL_CHUNK_SIZE * HASHBUCKET_INITIAL_EXPANSION);
     }
@@ -179,7 +179,7 @@ bool bf_hashbucket<T>::append_if_not_exists (PageID key, T value) {
         }
         cur_count += cur_chunk->size;
         w_assert1(cur_count <= _used_count);
-        if (cur_chunk->next_chunk == NULL) {
+        if (cur_chunk->next_chunk == nullptr) {
             cur_chunk->next_chunk = new bf_hashbucket_chunk_linked<T>
                 (cur_chunk->size * HASHBUCKET_SUBSEQUENT_EXPANSION);
         }
@@ -212,7 +212,7 @@ bool bf_hashbucket<T>::remove (PageID key) {
     //then, probe chained chunks if exists
     uint32_t cur_count = HASHBUCKET_INITIAL_CHUNK_SIZE;
     for (bf_hashbucket_chunk_linked<T>* cur_chunk = _chunk.next_chunk; cur_count < _used_count; cur_chunk = cur_chunk->next_chunk) {
-        w_assert1(cur_chunk != NULL);
+        w_assert1(cur_chunk != nullptr);
         for (uint32_t i = 0; i < cur_chunk->size && cur_count < _used_count; ++i, ++cur_count) {
             if (found) {
                 if (i > 0) {
@@ -246,7 +246,7 @@ bf_hashtable<T>::bf_hashtable(uint32_t size) : _size(size) {
 
 template<class T>
 bf_hashtable<T>::~bf_hashtable() {
-    if (_table != NULL) {
+    if (_table != nullptr) {
         for (uint32_t i = 0; i < _size; ++i) {
             _table[i]._chunk.delete_chain();
         }

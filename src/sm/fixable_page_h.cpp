@@ -35,7 +35,7 @@ void fixable_page_h::unfix(bool evict)
         if (_bufferpool_managed) {
             smlevel_0::bf->unfix(_pp, evict);
         }
-        _pp   = NULL;
+        _pp   = nullptr;
         _mode = LATCH_NL;
     }
 }
@@ -67,7 +67,7 @@ w_rc_t fixable_page_h::fix_direct(PageID shpid, latch_mode_t mode,
 
     unfix();
 
-    W_DO(smlevel_0::bf->fix_nonroot(_pp, NULL, shpid, mode, conditional, virgin_page,
+    W_DO(smlevel_0::bf->fix_nonroot(_pp, nullptr, shpid, mode, conditional, virgin_page,
                 only_if_hit, do_recovery));
 
     w_assert1(bf_tree_m::is_swizzled_pointer(shpid)
@@ -114,7 +114,7 @@ w_rc_t fixable_page_h::fix_root (StoreID store, latch_mode_t mode,
 
 void fixable_page_h::fix_nonbufferpool_page(generic_page* s)
 {
-    w_assert1(s != NULL);
+    w_assert1(s != nullptr);
     // This method is used to recover pages with single-page recovery, which
     // means we might be fixing a garbage page that will be formatted.
     // check_page_tags(s);
@@ -217,7 +217,7 @@ bool fixable_page_h::change_possible_after_fix() const {
 
 
 bool fixable_page_h::upgrade_latch_conditional(latch_mode_t mode) {
-    w_assert1(_pp != NULL);
+    w_assert1(_pp != nullptr);
     w_assert1(mode >= LATCH_SH);
 
     if (_mode >= mode) {

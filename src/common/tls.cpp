@@ -69,7 +69,7 @@ using namespace tls_tricks;
 
 typedef std::vector<std::pair<void(*)(), void(*)()> > tls_function_list;
 
-static tls_function_list* registered_tls(NULL);
+static tls_function_list* registered_tls(nullptr);
 static bool tls_manager_initialized = false;
   
 void tls_manager::global_init() {
@@ -81,7 +81,7 @@ void tls_manager::global_init() {
 void tls_manager::global_fini() {
     if(tls_manager_initialized) {
        delete registered_tls;
-       registered_tls = NULL;
+       registered_tls = nullptr;
        tls_manager_initialized = false;
   }
 }

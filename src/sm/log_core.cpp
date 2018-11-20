@@ -285,7 +285,7 @@ log_core::fetch(lsn_t& ll, void* buf, lsn_t* nxt, const bool forward)
     logrec_t* rp;
     lsn_t prev_lsn = lsn_t::null;
     DBGOUT3(<< "fetch @ lsn: " << ll);
-    W_COERCE(p->read(rp, ll, forward ? NULL : &prev_lsn));
+    W_COERCE(p->read(rp, ll, forward ? nullptr : &prev_lsn));
     w_assert1(rp->valid_header(ll));
 
     // handle skip log record
@@ -388,7 +388,7 @@ void log_core::shutdown()
     _flush_daemon->join();
     _flush_daemon_running = false;
     delete _flush_daemon;
-    _flush_daemon=NULL;
+    _flush_daemon=nullptr;
 }
 
 /*********************************************************************
@@ -410,9 +410,9 @@ log_core::log_core(const sm_options& options)
 {
     _segsize = SEGMENT_SIZE;
 
-    DO_PTHREAD(pthread_mutex_init(&_wait_flush_lock, NULL));
-    DO_PTHREAD(pthread_cond_init(&_wait_cond, NULL));
-    DO_PTHREAD(pthread_cond_init(&_flush_cond, NULL));
+    DO_PTHREAD(pthread_mutex_init(&_wait_flush_lock, nullptr));
+    DO_PTHREAD(pthread_cond_init(&_wait_cond, nullptr));
+    DO_PTHREAD(pthread_cond_init(&_flush_cond, nullptr));
 
     uint32_t carray_slots = options.get_int_option("sm_carray_slots",
                         ConsolidationArray::DEFAULT_ACTIVE_SLOT_COUNT);
@@ -455,7 +455,7 @@ log_core::log_core(const sm_options& options)
     // move the primed data where it belongs (watch out, it might overlap)
     memmove(_buf + offset - prime_offset, _buf, prime_offset);
 
-    _ticker = NULL;
+    _ticker = nullptr;
     if (options.get_bool_option("sm_ticker_enable", false)) {
         bool msec = options.get_bool_option("sm_ticker_msec", false);
         bool print_tput = options.get_bool_option("sm_ticker_print_tput", true);
@@ -528,7 +528,7 @@ log_core::~log_core()
     delete _oldest_lsn_tracker;
 
     delete [] _buf;
-    _buf = NULL;
+    _buf = nullptr;
 
     delete _carray;
 
@@ -796,7 +796,7 @@ bool log_core::_update_epochs(CArraySlot* info) {
     }
 
     // now update the epoch(s)
-    while (info != NULL) {
+    while (info != nullptr) {
         w_assert1(*&_cur_epoch.vthis()->end + *&_cur_epoch.vthis()->base == info->old_end);
         if(info->new_base > 0) {
             // new partition! update epochs to reflect this
@@ -913,7 +913,7 @@ rc_t log_core::insert(logrec_t &rec, lsn_t* rlsn)
     w_assert1(rec.length() <= sizeof(logrec_t));
     int32_t size = rec.length();
 
-    CArraySlot* info = NULL;
+    CArraySlot* info = nullptr;
     long pos = 0;
     W_DO(_join_carray(info, pos, size));
     w_assert1(info);
@@ -978,7 +978,7 @@ void log_core::_copy_raw(CArraySlot* info, long& pos, const char* data,
  */
 /*rc_t log_core::insert_bulk(char* data, size_t size, lsn_t*& rlsn)
 {
-    CArraySlot* info = NULL;
+    CArraySlot* info = nullptr;
     long pos = 0;
     W_DO(_join_carray(info, pos, size));
     w_assert1(info);
@@ -1310,7 +1310,7 @@ rc_t log_core::compensate(const lsn_t& orig_lsn, const lsn_t& undo_lsn)
 
 rc_t log_core::load_fetch_buffers()
 {
-    _fetch_buffers.resize(_fetch_buf_last - _fetch_buf_first + 1, NULL);
+    _fetch_buffers.resize(_fetch_buf_last - _fetch_buf_first + 1, nullptr);
 
     for (size_t p = _fetch_buf_last; p >= _fetch_buf_first; p--) {
         int fd;

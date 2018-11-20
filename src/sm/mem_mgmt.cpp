@@ -44,7 +44,7 @@ void fixed_lists_mem_t::add_to_list(size_t block_size, char* address)
     }
 
     p->next = _lists[index];
-    p->prev = NULL;
+    p->prev = nullptr;
     p->set_free();
     _lists[index] = p;
 
@@ -92,12 +92,12 @@ char* fixed_lists_mem_t::remove_from_list(size_t block_size)
     DBG(<< "Removing block of " << block_size);
     if (!_lists[index]) {
         DBG(<< "Cannot remove! Empty list for block size " << index * _incr);
-        return NULL;
+        return nullptr;
     }
 
     list_header_t* p = _lists[index];
     if (p->next) {
-        p->next->prev = NULL;
+        p->next->prev = nullptr;
     }
     _lists[index] = p->next;
     p->set_occupied();
@@ -110,7 +110,7 @@ char* fixed_lists_mem_t::remove_from_list(size_t block_size)
 bool inline fixed_lists_mem_t::is_list_empty(size_t block_size)
 {
     size_t index = block_size / _incr - 1;
-    return _lists[index] == NULL;
+    return _lists[index] == nullptr;
 }
 
 /**
@@ -167,7 +167,7 @@ rc_t fixed_lists_mem_t::allocate(size_t length, slot_t& slot)
     DBG(<< "Looking for block of " << fit
             << " for " << length << " bytes");
 
-    char* addr = NULL;
+    char* addr = nullptr;
     while (fit <= _last_non_empty) {
         if (!is_list_empty(fit)) {
             DBG(<< "FOUND in list of " << fit);
@@ -181,7 +181,7 @@ rc_t fixed_lists_mem_t::allocate(size_t length, slot_t& slot)
     if (fit > _last_non_empty) {
         // full -- caller must consume to try freeing space
         DBG(<< "NOT FOUND -- No space for " << length << " bytes");
-        slot.address = NULL;
+        slot.address = nullptr;
         slot.length = 0;
         return RCOK;
     }
@@ -269,7 +269,7 @@ rc_t fixed_lists_mem_t::free(slot_t slot)
 rc_t fixed_lists_mem_t::defrag()
 {
     for (size_t i = 0; i <= _max/_incr; i++) {
-        _lists[i] = NULL;
+        _lists[i] = nullptr;
     }
     size_t maxblock_count = _bufsize/_max;
     for (size_t i = 0; i < maxblock_count; i++) {
@@ -314,7 +314,7 @@ void fixed_lists_mem_t::verify_lists()
     for (int i = 0; i < _max / _incr; i++) {
         list_header_t* head = _lists[i];
         list_header_t* p = _lists[i];
-        list_header_t* prev = NULL;
+        list_header_t* prev = nullptr;
         while (p) {
             assert(p->block_size() == (i + 1) * _incr);
             assert(p->is_free());

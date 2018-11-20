@@ -47,7 +47,7 @@ void base_request_t::notify_client()
     if (pcondex) {
         // TRACE( TRACE_TRX_FLOW, "Xct (%d) notifying client (%x)\n",
         //       _tid.get_lo(), pcondex);
-        _result.set_notify(NULL);
+        _result.set_notify(nullptr);
 	pcondex->signal();
     }
     else {

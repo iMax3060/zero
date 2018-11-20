@@ -307,7 +307,7 @@ struct stock_level_input_t
     // Construction/Destructions
     stock_level_input_t()
         : _wh_id(0), _d_id(0), _threshold(0),
-          _o_ol_cnt(0), _pvwi(NULL)
+          _o_ol_cnt(0), _pvwi(nullptr)
     {
     };
 

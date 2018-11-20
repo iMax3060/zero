@@ -76,9 +76,9 @@ latch_thread_t::latch_thread_t(int _id)
   _self(_id),
   isWaiting(false),canProceed(false),hasExited(false)
 {
-    DO_PTHREAD(pthread_cond_init(&quiesced, NULL));
-    DO_PTHREAD(pthread_cond_init(&proceed, NULL));
-    DO_PTHREAD(pthread_mutex_init(&lock, NULL));
+    DO_PTHREAD(pthread_cond_init(&quiesced, nullptr));
+    DO_PTHREAD(pthread_cond_init(&proceed, nullptr));
+    DO_PTHREAD(pthread_mutex_init(&lock, nullptr));
 }
 
 const char *latch_thread_t::kind_strings[] = {
@@ -662,7 +662,7 @@ latch_thread_t** init (int testnum_) {
     testnum = testnum_;
     for (int i = 0; i < NUM_THREADS; i++)  {
         latch_thread[i] = new latch_thread_t(i);
-        EXPECT_TRUE(latch_thread[i] != NULL);
+        EXPECT_TRUE(latch_thread[i] != nullptr);
         EXPECT_FALSE(latch_thread[i]->fork().is_error());
     }
     return latch_thread;
@@ -671,11 +671,11 @@ void terminate (latch_thread_t **latch_thread) {
     for (int i = 0; i < NUM_THREADS; i++)  {
         EXPECT_FALSE( latch_thread[i]->join().is_error());
         delete latch_thread[i];
-        latch_thread[i] = NULL;
+        latch_thread[i] = nullptr;
     }
 
     delete [] latch_thread;
-    latch_thread = NULL;
+    latch_thread = nullptr;
 }
 
 TEST(LatchTest, Latch1) {

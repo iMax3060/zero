@@ -175,7 +175,7 @@ TEST(MarkablePointerTest, Null) {
     EXPECT_TRUE(ptr.is_null());
     EXPECT_EQ(0, ptr.get_aba_stamp());
 
-    EXPECT_TRUE(ptr.atomic_cas(NULL, NULL, false, true, 0, 1));
+    EXPECT_TRUE(ptr.atomic_cas(nullptr, nullptr, false, true, 0, 1));
     EXPECT_TRUE(ptr.is_marked());
     EXPECT_TRUE(ptr.is_null());
     EXPECT_EQ(1, ptr.get_aba_stamp());

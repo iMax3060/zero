@@ -202,7 +202,7 @@ public:
                 return _indexes[i];
             }
         }
-        return NULL;
+        return nullptr;
     }
 
     std::vector<index_desc_t*>& get_indexes()

@@ -101,7 +101,7 @@ void restart_thread_t::log_analysis()
     for(xct_tab_t::const_iterator it = chkpt.xct_tab.begin();
                             it != chkpt.xct_tab.end(); ++it)
     {
-        xct_t* xd = new xct_t(NULL,               // stats
+        xct_t* xd = new xct_t(nullptr,               // stats
                         timeout_t::WAIT_FOREVER, // default timeout value
                         false,                    // sys_xct
                         false,                    // single_log_sys_xct
@@ -537,7 +537,7 @@ void SprIterator::open(PageID pid, lsn_t firstLSN, lsn_t lastLSN, bool prioritiz
         // STEP 1: Fecth log record and copy it into buffer
         lsn_t lsn = nxt;
         logrec_t* lr = (logrec_t*) (buffer + pos);
-        rc_t rc = smlevel_0::log->fetch(lsn, buffer + pos, NULL, true);
+        rc_t rc = smlevel_0::log->fetch(lsn, buffer + pos, nullptr, true);
 
         if ((rc.is_error()) && (eEOF == rc.err_num())) {
             // EOF -- scan finished

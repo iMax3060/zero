@@ -58,7 +58,7 @@ private:
 
     lock_queue_entry_t (xct_t& xct, smthread_t& thr, xct_lock_info_t& li,
                         const okvl_mode& granted_mode, const okvl_mode& requested_mode)
-        : _xct(xct), _thr(thr), _li(li), _xct_entry(NULL), _prev(NULL), _next(NULL),
+        : _xct(xct), _thr(thr), _li(li), _xct_entry(nullptr), _prev(nullptr), _next(nullptr),
             _observed_release_version(0),
             _granted_mode(granted_mode), _requested_mode(requested_mode) {
     }
@@ -106,8 +106,8 @@ ostream&  operator<<(ostream& o, const lock_queue_entry_t& r);
  */
 class lock_queue_t {
 public:
-    lock_queue_t(uint32_t hash) : _hash(hash), _hit_counts(0), _release_version(1), _next (NULL),
-        _x_lock_tag(lsn_t::null), _head (NULL), _tail (NULL) {
+    lock_queue_t(uint32_t hash) : _hash(hash), _hit_counts(0), _release_version(1), _next (nullptr),
+        _x_lock_tag(lsn_t::null), _head (nullptr), _tail (nullptr) {
     }
     ~lock_queue_t() {}
 
@@ -163,7 +163,7 @@ private:
             can_be_granted = true;
             deadlock_detected = false;
             deadlock_myself_should_die = false;
-            deadlock_other_victim = NULL;
+            deadlock_other_victim = nullptr;
             refreshed_wait_map.copy(fingerprint);
         }
         bool can_be_granted;
@@ -285,11 +285,11 @@ class bucket_t {
     /** friending for unsafe dump as an exception to the latch protocol here. */
     friend void lock_core_m::dump(std::ostream &o);
 public:
-    bucket_t() : _queue(NULL) {}
+    bucket_t() : _queue(nullptr) {}
     ~bucket_t() {
         // assume done only at shutdown so no locks needed:
         lock_queue_t* p = _queue;
-        while (p != NULL) {
+        while (p != nullptr) {
             lock_queue_t* q = p->next();
             lock_queue_t::deallocate_lock_queue(p);
             p = q;
@@ -334,11 +334,11 @@ inline lock_queue_t* bucket_t::find_lock_queue(uint32_t hash) {
     // this comparison is not protected, but fine.
     // because false-positive = checked again by find_lock_queue_nocreate
     // false-negative = checked again by find_lock_queue_create
-    lock_queue_t* p = NULL;
-    if (_queue != NULL) {
+    lock_queue_t* p = nullptr;
+    if (_queue != nullptr) {
         p = find_lock_queue_nocreate(hash);
     }
-    if (p == NULL) {
+    if (p == nullptr) {
         // then we have to try the expensive way
         p = find_lock_queue_create(hash);
     }
@@ -351,7 +351,7 @@ inline lock_queue_t* bucket_t::find_lock_queue(uint32_t hash) {
 /*
 inline lock_queue_t* bucket_t::_find_lock_queue(uint32_t hash) {
     tataslock_critical_section cs (&_queue_latch);
-    for (lock_queue_t* p = _queue; p != NULL; p = p->next()) {
+    for (lock_queue_t* p = _queue; p != nullptr; p = p->next()) {
         if (p->hash() == hash) {
             return p;
         }
@@ -365,19 +365,19 @@ inline lock_queue_t* bucket_t::_find_lock_queue(uint32_t hash) {
 
 inline lock_queue_t* bucket_t::find_lock_queue_nocreate(uint32_t hash) {
     spinlock_read_critical_section cs(&_queue_latch);
-    for (lock_queue_t* p = _queue; p != NULL; p = p->next()) {
+    for (lock_queue_t* p = _queue; p != nullptr; p = p->next()) {
         if (p->hash() == hash) {
             return p; // most cases should be here...
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 inline lock_queue_t* bucket_t::find_lock_queue_create(uint32_t hash) {
     spinlock_write_critical_section cs(&_queue_latch);
     // note that we need to scan the linked list again to make sure
     // it wasn't inserted before this call.
-    for (lock_queue_t* p = _queue; p != NULL; p = p->next()) {
+    for (lock_queue_t* p = _queue; p != nullptr; p = p->next()) {
         if (p->hash() == hash) {
             return p;
         }

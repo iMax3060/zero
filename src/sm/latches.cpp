@@ -6,9 +6,9 @@ occ_rwlock::occ_rwlock()
     : _active_count(0)
 {
     _write_lock._lock = _read_lock._lock = this;
-    DO_PTHREAD(pthread_mutex_init(&_read_write_mutex, NULL));
-    DO_PTHREAD(pthread_cond_init(&_read_cond, NULL));
-    DO_PTHREAD(pthread_cond_init(&_write_cond, NULL));
+    DO_PTHREAD(pthread_mutex_init(&_read_write_mutex, nullptr));
+    DO_PTHREAD(pthread_cond_init(&_read_cond, nullptr));
+    DO_PTHREAD(pthread_cond_init(&_write_cond, nullptr));
 }
 
 occ_rwlock::~occ_rwlock()
@@ -16,7 +16,7 @@ occ_rwlock::~occ_rwlock()
     DO_PTHREAD(pthread_mutex_destroy(&_read_write_mutex));
     DO_PTHREAD(pthread_cond_destroy(&_read_cond));
     DO_PTHREAD(pthread_cond_destroy(&_write_cond));
-    _write_lock._lock = _read_lock._lock = NULL;
+    _write_lock._lock = _read_lock._lock = nullptr;
 }
 
 void occ_rwlock::release_read()

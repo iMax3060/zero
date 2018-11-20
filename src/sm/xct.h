@@ -157,7 +157,7 @@ class stid_list_elem_t  {
         {};
     ~stid_list_elem_t()
     {
-        if (_link.member_of() != NULL)
+        if (_link.member_of() != nullptr)
             _link.detach();
     }
     static uint32_t    link_offset()
@@ -254,7 +254,7 @@ public:
 
 public:
     NORET                       xct_t(
-            sm_stats_t*    stats = NULL,
+            sm_stats_t*    stats = nullptr,
             int       timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD,
             bool                sys_xct = false,
             bool                single_log_sys_xct = false,
@@ -298,7 +298,7 @@ public:
                                     return         s;
                                 }
     const sm_stats_t&      const_stats_ref() { return *__stats; }
-    rc_t                        commit(bool lazy = false, lsn_t* plastlsn=NULL);
+    rc_t                        commit(bool lazy = false, lsn_t* plastlsn=nullptr);
     rc_t                        commit_as_group_member();
     rc_t                        rollback(const lsn_t &save_pt);
     rc_t                        save_point(lsn_t& lsn);
@@ -503,7 +503,7 @@ private:
 protected:
     rc_t                _abort();
     rc_t                _commit(uint32_t flags,
-                                                 lsn_t* plastlsn=NULL);
+                                                 lsn_t* plastlsn=nullptr);
     // CS: decoupled from _commit to allow reuse in plog_xct_t
     rc_t _commit_read_only(uint32_t flags, lsn_t& inherited_read_watermark);
     rc_t _pre_commit(uint32_t flags);
@@ -670,7 +670,7 @@ public:
     bool                        error_encountered() const {  return false; }
 #endif
     tid_t                       tid() const {
-                                    w_assert1(_core == NULL || _tid == _core->_tid);
+                                    w_assert1(_core == nullptr || _tid == _core->_tid);
                                     return _tid; }
     uint32_t                    get_xct_chain_len() const { return _xct_chain_len;}
     uint32_t&                   ssx_chain_len() { return _ssx_chain_len;}
@@ -689,14 +689,14 @@ public:
     // Mainly for checkpoint logging purpose
     latch_t* latchp() const
     {
-        // If _core is gone (txn is being destroyed), return NULL
+        // If _core is gone (txn is being destroyed), return nullptr
         // CS TODO: this is incorrect. Threads waiting on the latch after
         // core is destructed will encounter a segmentation fault. The real
         // problem here is that an object should not be destroyed while some
         // thread may still try to access it. We need a different design or
         // some higher form of concurrency control.
-        // if ( NULL == _core)
-        //     return (latch_t *)NULL;
+        // if ( nullptr == _core)
+        //     return (latch_t *)nullptr;
 
         return const_cast<latch_t*>(&(_latch));
     }
@@ -904,7 +904,7 @@ inline
 xct_t::state_t
 xct_t::state() const
 {
-    if (NULL == _core)
+    if (nullptr == _core)
         return xct_ended;
     return _core->_state;
 }
@@ -1009,7 +1009,7 @@ inline bool
 g_xct_does_need_lock()
 {
     xct_t* x = xct();
-    if (x == NULL)  return false;
+    if (x == nullptr)  return false;
     if (x->is_sys_xct()) return false; // system transaction never needs locks
     return x->get_query_concurrency() == smlevel_0::t_cc_keyrange;
 }

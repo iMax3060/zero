@@ -138,7 +138,7 @@ public:
             lintel::atomic_thread_fence(lintel::memory_order_acquire);// needed for the assertions?
             w_pthread_lock_t *h =  _holder;
             w_pthread_lock_t *m =  me->_held;
-            w_assert1( (h==NULL && m==NULL)
+            w_assert1( (h==nullptr && m==nullptr)
                 || (h  != m) );
         }
 #endif

@@ -80,7 +80,7 @@ TEST(LockFreeQueueTest, SingleThreadMixed) {
 
     check_size(0, the_queue);
     EXPECT_TRUE(the_queue.unsafe_consistent());
-    EXPECT_EQ(NULL, the_queue.dequeue());
+    EXPECT_EQ(nullptr, the_queue.dequeue());
     EXPECT_TRUE(the_queue.unsafe_consistent());
 
     enqueue(the_queue, enqueued, 4);
@@ -108,7 +108,7 @@ TEST(LockFreeQueueTest, SingleThreadMixed) {
     EXPECT_FALSE(contains(7, the_queue));
     dequeue(the_queue, enqueued); // pop 2
 
-    EXPECT_EQ(NULL, the_queue.dequeue());
+    EXPECT_EQ(nullptr, the_queue.dequeue());
 
     the_queue.unsafe_clear();
     check_size(0, the_queue);
@@ -125,7 +125,7 @@ TEST(LockFreeQueueTest, SingleThreadRandom) {
         uint32_t key = tlr.nextInt32() % 500;
         if (del) {
             if (answer.size() == 0) {
-                EXPECT_EQ(NULL, the_queue.dequeue());
+                EXPECT_EQ(nullptr, the_queue.dequeue());
             } else {
                 DummyEntry* erased = the_queue.dequeue();
                 DummyEntry* correct = answer.front(); answer.pop_front();
@@ -209,8 +209,8 @@ void *test_work(void *t) {
 
     std::cout << "Worker-" << context.id << " inserted " << context.inserted_count
         << " entries. deleted=" << context.deleted_count << std::endl;
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 
@@ -262,7 +262,7 @@ void multi_thread_test(bool insert_only) {
     uint32_t dequeued = 0;
     while (true) {
         DummyEntry* deq = shared.the_queue.dequeue();
-        if (deq == NULL) {
+        if (deq == nullptr) {
             break;
         }
         delete deq;

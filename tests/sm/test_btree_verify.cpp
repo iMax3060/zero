@@ -264,8 +264,8 @@ w_rc_t volume_empty(ss_m* ssm, test_volume_t *test_volume) {
     verify_volume_result result;
     W_DO(ssm->verify_volume(19, result));
     verification_context *context = result.get_context(root_pid);
-    EXPECT_TRUE (context != NULL);
-    if (context != NULL) {
+    EXPECT_TRUE (context != nullptr);
+    if (context != nullptr) {
         EXPECT_TRUE (context->_pages_checked == 1); // only root page
         EXPECT_TRUE (context->_pages_inconsistent == 0);
         EXPECT_TRUE (context->is_bitmap_clean());
@@ -311,8 +311,8 @@ w_rc_t volume_insert(ss_m* ssm, test_volume_t *test_volume) {
     verify_volume_result result;
     W_DO(ssm->verify_volume(19, result));
     verification_context *context = result.get_context(root_pid);
-    EXPECT_TRUE (context != NULL);
-    if (context != NULL) {
+    EXPECT_TRUE (context != nullptr);
+    if (context != nullptr) {
         cout << "checked " << context->_pages_checked << " pages" << endl;
         EXPECT_TRUE (context->_pages_inconsistent == 0);
         EXPECT_TRUE (context->is_bitmap_clean());
@@ -380,8 +380,8 @@ w_rc_t volume_many(ss_m* ssm, test_volume_t *test_volume) {
         W_DO(ssm->verify_volume(19, result));
         for (int store = 0; store < 2; ++store) {
             verification_context *context = result.get_context(root_pids[store]);
-            EXPECT_TRUE (context != NULL);
-            if (context != NULL) {
+            EXPECT_TRUE (context != nullptr);
+            if (context != nullptr) {
                 cout << "store(" << store << "). checked " << context->_pages_checked << " pages" << endl;
                 EXPECT_TRUE (context->_pages_inconsistent == 0);
                 EXPECT_TRUE (context->is_bitmap_clean());
@@ -426,8 +426,8 @@ w_rc_t volume_many(ss_m* ssm, test_volume_t *test_volume) {
         W_DO(ssm->verify_volume(19, result));
         for (int store = 0; store < 2; ++store) {
             verification_context *context = result.get_context(root_pids[store]);
-            EXPECT_TRUE (context != NULL);
-            if (context != NULL) {
+            EXPECT_TRUE (context != nullptr);
+            if (context != nullptr) {
                 cout << "store(" << store << "). checked " << context->_pages_checked << " pages" << endl;
                 EXPECT_TRUE (context->_pages_inconsistent == 0);
                 EXPECT_TRUE (context->is_bitmap_clean());

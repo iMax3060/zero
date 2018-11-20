@@ -62,7 +62,7 @@ index_desc_t::~index_desc_t()
 {
     if (_key) {
         delete [] _key;
-        _key = NULL;
+        _key = nullptr;
     }
 }
 

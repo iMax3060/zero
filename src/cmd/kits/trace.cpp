@@ -281,7 +281,7 @@ static void trace_stream(FILE* out_stream,
 
     /* Try to print a meaningful (string) thread ID. If no ID is
        registered, just use pthread_t returned by pthread_self(). */
-    if ( this_thread != NULL )
+    if ( this_thread != nullptr )
         fprintf(out_stream, "%s", this_thread->thread_name().data());
     else
         trace_print_pthread(out_stream, pthread_self());

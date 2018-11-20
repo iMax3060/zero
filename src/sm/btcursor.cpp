@@ -137,7 +137,7 @@ rc_t bt_cursor_t::_locate_first() {
         // then find the tuple in the page
         leaf.search(key, found, _slot);
 
-        const okvl_mode *mode = NULL;
+        const okvl_mode *mode = nullptr;
         if (found) {
             // exact match!
             _key = key;
@@ -398,7 +398,7 @@ rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
         // take lock on the next key.
         // NOTE: until we get locks, we aren't sure the key really becomes
         // the next key. So, we use the temporary variable _tmp_next_key_buf.
-        const okvl_mode *mode = NULL;
+        const okvl_mode *mode = nullptr;
         {
             p.get_key(_slot, _tmp_next_key_buf);
             if (_forward) {

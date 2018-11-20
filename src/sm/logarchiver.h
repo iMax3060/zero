@@ -79,7 +79,7 @@ class ArchiverHeap {
             {}
 
             HeapEntry()
-                : slot(NULL, 0), lsn(lsn_t::null), run(0), pid(0)
+                : slot(nullptr, 0), lsn(lsn_t::null), run(0), pid(0)
             {}
 
             friend std::ostream& operator<<(std::ostream& os,

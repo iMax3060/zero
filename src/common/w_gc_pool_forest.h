@@ -301,7 +301,7 @@ struct GcSegment {
         ::memset(this, 0, sizeof(GcSegment));
         objects = new T[size];
         ::memset(objects, 0, sizeof(T) * size); // for easier debugging
-        w_assert1(objects != NULL);
+        w_assert1(objects != nullptr);
         total_objects = size;
     }
     ~GcSegment() {
@@ -450,7 +450,7 @@ struct GcPoolForest {
         if (initial_segment_count > 0) {
             generations[1]->preallocate_segments(initial_segment_count, initial_segment_size);
         }
-        gc_wakeup_functor = NULL;
+        gc_wakeup_functor = nullptr;
     }
     ~GcPoolForest() {
         DBGOUT1(<< name << ": Destroying a GC Pool Forest. head_nowrap=" << head_nowrap
@@ -577,17 +577,17 @@ template <class T>
 inline T* GcPoolForest<T>::resolve_pointer(gc_pointer_raw pointer) {
     gc_generation generation = pointer.components.generation;
     if (generation == 0) {
-        return NULL;
+        return nullptr;
     }
 
     lintel::atomic_thread_fence(lintel::memory_order_consume);
     w_assert1(is_valid_generation(generation));
     GcGeneration<T>* gen = generations[generation];
-    w_assert1(gen != NULL);
+    w_assert1(gen != nullptr);
 
     w_assert1(pointer.components.segment < gen->allocated_segments);
     GcSegment<T>* segment = gen->segments[pointer.components.segment];
-    w_assert1(segment != NULL);
+    w_assert1(segment != nullptr);
 
     gc_offset offset = pointer.components.offset;
     w_assert1(offset < segment->total_objects);
@@ -606,7 +606,7 @@ inline T* GcPoolForest<T>::allocate(gc_pointer_raw &next, gc_thread_id self) {
 
     w_assert1(is_valid_generation(next.components.generation));
     GcGeneration<T>* gen = generations[next.components.generation];
-    w_assert1(gen != NULL);
+    w_assert1(gen != nullptr);
 
     if (next.components.segment >= gen->allocated_segments
         || gen->segments[next.components.segment]->owner != self
@@ -617,7 +617,7 @@ inline T* GcPoolForest<T>::allocate(gc_pointer_raw &next, gc_thread_id self) {
     }
     w_assert1(next.components.segment < gen->allocated_segments);
     GcSegment<T>* segment = gen->segments[next.components.segment];
-    w_assert1(segment != NULL);
+    w_assert1(segment != nullptr);
     w_assert1(segment->owner == self);
     w_assert1(segment->allocated_objects < segment->total_objects);
 
@@ -635,11 +635,11 @@ inline void GcPoolForest<T>::deallocate(gc_pointer_raw pointer) {
     // We don't do anything in deallocate.
     w_assert1(is_valid_generation(pointer.components.generation));
     GcGeneration<T>* gen = generations[pointer.components.generation];
-    w_assert1(gen != NULL);
+    w_assert1(gen != nullptr);
 
     w_assert1(pointer.components.segment < gen->allocated_segments);
     GcSegment<T>* segment = gen->segments[pointer.components.segment];
-    w_assert1(segment != NULL);
+    w_assert1(segment != nullptr);
 
     // we don't check double-free or anything
     w_assert1(pointer.components.offset < segment->allocated_objects);
@@ -655,7 +655,7 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
         if (gen->allocated_segments >= gen->total_segments) {
             // allocator threads are not catching up. This must be rare. let's sleep.
             DBGOUT0(<< name << ": GC Thread is not catching up. have to sleep. me=" << self);
-            if (gc_wakeup_functor != NULL) {
+            if (gc_wakeup_functor != nullptr) {
                 gc_wakeup_functor->wakeup();
             }
             const uint32_t SLEEP_MICROSEC = 10000;
@@ -668,7 +668,7 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
             &gen->allocated_segments, &alloc_segment, alloc_segment + 1)) {
             // Okay, we are surely the only winner of the pre-allocated segment.
             GcSegment<T>* segment = gen->segments[alloc_segment];
-            while (segment == NULL) {
+            while (segment == nullptr) {
                 // possible right after CAS in preallocate_segments. wait.
                 mfence();
                 DBGOUT3(<< name << ": Waiting for segment " << alloc_segment << " in generation "
@@ -790,7 +790,7 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
             if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
                 &head_nowrap, &oldest_nowrap, next_oldest_nowrap)) {
                 // okay, I'm exclusively retiring this generation.
-                generations[wrap(oldest_nowrap)] = NULL;
+                generations[wrap(oldest_nowrap)] = nullptr;
                 epochs[wrap(oldest_nowrap)].set(0);
 
                 DBGOUT1(<< name << ": Successfully retired generation " << oldest_nowrap);
@@ -836,7 +836,7 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
 template <class T>
 inline T* GcPointer<T>::dereference(GcPoolForest<T> &pool) const {
     T* pointer = pool.resolve_pointer(_raw);
-    w_assert1(pointer != NULL);
+    w_assert1(pointer != nullptr);
     return pointer;
 }
 

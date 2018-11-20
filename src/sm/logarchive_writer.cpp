@@ -7,7 +7,7 @@
 const static int IO_BLOCK_COUNT = 8; // total buffer = 8MB
 
 BlockAssembly::BlockAssembly(ArchiveIndex* index, unsigned level, bool compression)
-    : dest(NULL), maxLSNInBlock(lsn_t::null), maxLSNLength(0),
+    : dest(nullptr), maxLSNInBlock(lsn_t::null), maxLSNLength(0),
     lastRun(-1), currentPID(0), bucketSize(0), nextBucket(0), level(level),
     maxPID(std::numeric_limits<PageID>::min())
 {
@@ -192,7 +192,7 @@ void BlockAssembly::finish()
 
     maxLSNInBlock = lsn_t::null;
     writebuf->producerRelease();
-    dest = NULL;
+    dest = nullptr;
 }
 
 void BlockAssembly::shutdown()

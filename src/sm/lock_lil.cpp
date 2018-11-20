@@ -302,7 +302,7 @@ w_rc_t lil_private_vol_table::acquire_store_lock(lil_global_table *global_table,
         lil_lock_modes_t mode) {
     w_assert1(global_table);
     lil_private_store_table* table = _find_store_table(stid);
-    if (table == NULL) {
+    if (table == nullptr) {
         return RC(eLIL_TOOMANYST_XCT);
     }
 
@@ -369,7 +369,7 @@ lil_private_store_table* lil_private_vol_table::_find_store_table(uint32_t store
         ++_stores;
         return ret;
     } else {
-        return NULL; // we have too many
+        return nullptr; // we have too many
     }
 }
 
@@ -379,7 +379,7 @@ w_rc_t lil_private_table::acquire_vol_table(lil_global_table *global_table,
     w_assert1(global_table);
     // CS TODO remove vid from lock manager
     table = find_vol_table(1);
-    if (table == NULL) {
+    if (table == nullptr) {
         return RC(eLIL_TOOMANYVOL_XCT);
     }
 
@@ -437,6 +437,6 @@ lil_private_vol_table* lil_private_table::find_vol_table(uint16_t vid)
         ++_volumes;
         return ret;
     } else {
-        return NULL; // we have too many
+        return nullptr; // we have too many
     }
 }

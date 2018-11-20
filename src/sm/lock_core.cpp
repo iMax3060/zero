@@ -37,7 +37,7 @@ struct RawLockCleanerFunctor : public GcWakeupFunctor {
     RawLockBackgroundThread*    cleaner;
 };
 
-lock_core_m::lock_core_m(const sm_options &options) : _htab(NULL), _htabsz(0) {
+lock_core_m::lock_core_m(const sm_options &options) : _htab(nullptr), _htabsz(0) {
     size_t sz = options.get_int_option("sm_locktablesize", 64000);
 
 
@@ -137,8 +137,8 @@ lock_core_m::~lock_core_m()
     }
 #endif
 
-    _lock_pool->gc_wakeup_functor = NULL;
-    _xct_pool->gc_wakeup_functor = NULL;
+    _lock_pool->gc_wakeup_functor = nullptr;
+    _xct_pool->gc_wakeup_functor = nullptr;
     _raw_lock_cleaner->stop_synchronous();
     delete _raw_lock_cleaner;
     delete _raw_lock_cleaner_functor;
@@ -147,10 +147,10 @@ lock_core_m::~lock_core_m()
     delete _xct_pool;
 
     delete[] _htab;
-    _htab = NULL;
+    _htab = nullptr;
 
     delete _lil_global_table;
-    _lil_global_table = NULL;
+    _lil_global_table = nullptr;
 }
 
 
@@ -215,7 +215,7 @@ w_error_codes lock_core_m::retry_acquire(RawLock** lock, bool acquire, int32_t t
         w_error_codes er = _htab[idx].retry_acquire(lock, true, acquire, timeout);
         if (er == eDEADLOCK && !xct->has_locks() && timeout == timeout_t::WAIT_FOREVER) {
             // same as above, but now the lock was removed. we have to switch to acquire_lock.
-            w_assert1(*lock == NULL);
+            w_assert1(*lock == nullptr);
             return acquire_lock(xct, hash, mode, true, true, acquire, timeout_t::WAIT_FOREVER, lock);
         }
         return er;
@@ -232,13 +232,13 @@ void lock_core_m::release_lock(RawLock* lock, lsn_t commit_lsn) {
 
 void lock_core_m::release_duration(bool read_lock_only, lsn_t commit_lsn) {
     xct_t* xd = smthread_t::xct();
-    if (xd == NULL) {
+    if (xd == nullptr) {
         return;
     }
     RawXct* xct = xd->raw_lock_xct();
     //we always release backwards. otherwise concurrency bug.
     // First, quickly set OBSOLETE to all locks.
-    for (RawLock* lock = xct->private_first; lock != NULL; lock = lock->xct_next) {
+    for (RawLock* lock = xct->private_first; lock != nullptr; lock = lock->xct_next) {
         if (lock->mode.contains_dirty_lock()) {
             if (!read_lock_only) {
                 // also do SX-ELR tag update BEFORE changing the status
@@ -260,7 +260,7 @@ void lock_core_m::release_duration(bool read_lock_only, lsn_t commit_lsn) {
     if (read_lock_only) {
         // releases only read locks. as now we don't do lock upgrades,
         // lock downgrades are not needed any more.
-        for (RawLock* lock = xct->private_first; lock != NULL;) {
+        for (RawLock* lock = xct->private_first; lock != nullptr;) {
             RawLock* next = lock->xct_next;
             if (!lock->mode.contains_dirty_lock()) {
                 uint32_t hash = lock->hash;
@@ -270,7 +270,7 @@ void lock_core_m::release_duration(bool read_lock_only, lsn_t commit_lsn) {
             lock = next;
         }
     } else {
-        while (xct->private_first != NULL)  {
+        while (xct->private_first != nullptr)  {
             RawLock* lock = xct->private_first;
             uint32_t hash = lock->hash;
             uint32_t idx = _table_bucket(hash);

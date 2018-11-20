@@ -86,7 +86,7 @@ template <class T, class LOCK, class K> class w_hash_t;
  */
 class unsafe_list_dummy_lock_t
 {};
-unsafe_list_dummy_lock_t* const unsafe_nolock=NULL; // instantiate with this 
+unsafe_list_dummy_lock_t* const unsafe_nolock=nullptr; // instantiate with this
 
 
 /**\brief Link structure for membership in any class to be put on a w_list*
@@ -318,7 +318,7 @@ public:
     /// create a list sans offset.  Client must use set_offset later,
     ///before using the list.
     // This is used by w_hash_t  and the lock manager's list of lock heads
-    NORET            w_list_t() : lock(NULL) {}
+    NORET            w_list_t() : lock(nullptr) {}
 
 public:
 
@@ -413,7 +413,7 @@ public:
         if (p->next() != &_tail)
             return base_of(p->next());
         else
-            return NULL;
+            return nullptr;
     }
 
     // Get prev (for log buffer)
@@ -423,7 +423,7 @@ public:
         if (p->prev() != &_tail)
             return base_of(p->prev());
         else
-            return NULL;
+            return nullptr;
     }
 
     // Get count
@@ -515,7 +515,7 @@ public:
             // Note: once we ever had anything in the list, next() will
             // be non-null. We will return NULL when _curr hits the tail.
             // _next can be null only if we started with an empty list.
-            w_assert1(_next != NULL);
+            w_assert1(_next != nullptr);
         }
         return _curr;
     }

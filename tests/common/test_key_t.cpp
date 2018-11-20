@@ -41,7 +41,7 @@ TEST_F (w_keystr_t_test, Basic) {
     EXPECT_EQ (str2.get_length_as_nonkeystr(), (uint) 7);
     EXPECT_EQ (str2.serialize_as_nonkeystr(), std::basic_string<unsigned char>((const unsigned char*)"testaaa"));
     EXPECT_EQ (((const char*)get_internal_data(str2))[0], SIGN_REGULAR);
-    EXPECT_TRUE (get_internal_data(str2) != NULL);
+    EXPECT_TRUE (get_internal_data(str2) != nullptr);
     EXPECT_TRUE(check_len(str2));
     std::string in_str (reinterpret_cast<const char*>(get_internal_data(str2) + 1), (size_t) 7);
     EXPECT_TRUE (in_str == "testaaa");

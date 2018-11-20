@@ -43,10 +43,10 @@ TEST (LockRawTest, InvokeGc) {
     RawXct *xct = core.allocate_xct();
     // allocate many so that GC allocation and garbage collection kicks in
     for (int i = 0; i < 50; ++i) {
-        RawLock *lock = NULL;
+        RawLock *lock = nullptr;
         EXPECT_EQ(w_error_ok, core.acquire_lock(xct, 123, ALL_S_GAP_S,
                                                 true, true, true, 100, &lock));
-        EXPECT_TRUE(lock != NULL);
+        EXPECT_TRUE(lock != nullptr);
         core.release_lock(lock);
     }
     core.deallocate_xct(xct);
@@ -96,7 +96,7 @@ void *test_parallel_standalone_worker(void *t) {
             uint32_t hash = rand.nextInt32();
             EXPECT_EQ(w_error_ok, shared.core->acquire_lock(
                 xct, hash, shared.mode, true, true, true, 100, out + j));
-            EXPECT_TRUE(out[j] != NULL);
+            EXPECT_TRUE(out[j] != nullptr);
         }
         for (int j = 0; j < LOCK_COUNT; ++j) {
             shared.core->release_lock(out[j]);
@@ -104,8 +104,8 @@ void *test_parallel_standalone_worker(void *t) {
         shared.core->deallocate_xct(xct);
     }
     std::cout << "done:" << context.id << std::endl;
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 void test_parallel_standalone(okvl_mode mode, bool catchup) {
@@ -171,10 +171,10 @@ public:
                 hack[1] = rand.nextInt32();
                 hack[2] = rand.nextInt32();
                 hack[3] = rand.nextInt32();
-                out[j] = NULL;
+                out[j] = nullptr;
                 _rc = smlevel_0::lm->lock(lockid.hash(), ALL_S_GAP_S, true, true, true, xct(), 100, out + j);
                 EXPECT_FALSE(_rc.is_error());
-                EXPECT_TRUE(out[j] != NULL);
+                EXPECT_TRUE(out[j] != nullptr);
             }
             _rc = test_env->commit_xct();
             EXPECT_FALSE(_rc.is_error());

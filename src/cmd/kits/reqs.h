@@ -133,9 +133,9 @@ private:
 
 public:
 
-    trx_result_tuple_t() { reset(UNDEF, -1, NULL); }
+    trx_result_tuple_t() { reset(UNDEF, -1, nullptr); }
 
-    trx_result_tuple_t(TrxState aTrxState, int anID, condex* apcx = NULL) {
+    trx_result_tuple_t(TrxState aTrxState, int anID, condex* apcx = nullptr) {
         reset(aTrxState, anID, apcx);
     }
 
@@ -204,7 +204,7 @@ struct base_request_t
     trx_result_tuple_t  _result;
 
     base_request_t()
-        : _xct(NULL),_xct_id(-1)
+        : _xct(nullptr),_xct_id(-1)
     { }
 
     base_request_t(xct_t* pxct, const tid_t& atid, const int axctid,
@@ -216,7 +216,7 @@ struct base_request_t
 
     ~base_request_t()
     {
-        _xct = NULL;
+        _xct = nullptr;
     }
 
 

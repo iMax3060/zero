@@ -56,9 +56,9 @@ public:
         finished(false), blockSize(bsize), blockCount(bcount)
     {
         buf = new char[blockCount * blockSize];
-        DO_PTHREAD(pthread_mutex_init(&mutex, NULL));
-        DO_PTHREAD(pthread_cond_init(&notEmpty, NULL));
-        DO_PTHREAD(pthread_cond_init(&notFull, NULL));
+        DO_PTHREAD(pthread_mutex_init(&mutex, nullptr));
+        DO_PTHREAD(pthread_cond_init(&notEmpty, nullptr));
+        DO_PTHREAD(pthread_cond_init(&notFull, nullptr));
     }
 
     ~AsyncRingBuffer()
@@ -119,7 +119,7 @@ inline char* AsyncRingBuffer::producerRequest()
         DBGTHRD(<< "Waiting for condition notFull ...");
         if (!wait(&notFull)) {
             DBGTHRD(<< "Produce request failed!");
-            return NULL;
+            return nullptr;
         }
     }
     DBGTHRD(<< "Producer request: block " << end);
@@ -146,7 +146,7 @@ inline char* AsyncRingBuffer::consumerRequest()
         DBGTHRD(<< "Waiting for condition notEmpty ...");
         if (!wait(&notEmpty)) {
             DBGTHRD(<< "Consume request failed!");
-            return NULL;
+            return nullptr;
         }
     }
     DBGTHRD(<< "Consumer request: block " << begin);

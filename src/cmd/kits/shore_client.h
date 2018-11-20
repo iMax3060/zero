@@ -154,7 +154,7 @@ protected:
 public:
 
     base_client_t()
-        : thread_t("none"), _env(NULL), _measure_type(MT_UNDEF),
+        : thread_t("none"), _env(nullptr), _measure_type(MT_UNDEF),
           _trxid(-1), _notrxs(-1), _is_bound(false), _rv(1)
     { }
 

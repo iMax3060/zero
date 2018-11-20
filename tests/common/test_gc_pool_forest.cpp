@@ -157,14 +157,14 @@ void *test_work(void *t) {
             next.word = 0;
         }
         DummyEntry* p = shared.forest->allocate(next, context.id);
-        EXPECT_TRUE(p != NULL);
+        EXPECT_TRUE(p != nullptr);
         shared.forest->deallocate(p);
     }
 
     std::cout << "Worker-" << context.id << " done. allocated " << allocated << std::endl;
     context.stopped = true;
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 TEST(GcPoolForestTest, MultiThread) {
@@ -182,7 +182,7 @@ TEST(GcPoolForestTest, MultiThread) {
     for (int i = 0; i < THREAD_COUNT; ++i) {
         contexts[i].id = i;
         contexts[i].shared = &shared;
-        int rc = ::pthread_create(threads + i, NULL, test_work, contexts + i);
+        int rc = ::pthread_create(threads + i, nullptr, test_work, contexts + i);
         EXPECT_EQ(0, rc) << "pthread_create failed";
     }
 

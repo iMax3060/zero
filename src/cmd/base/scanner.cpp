@@ -67,7 +67,7 @@ void BlockScanner::findFirstFile()
     struct dirent* entry = readdir(dir);
     const char * PREFIX = "log.";
 
-    while (entry != NULL) {
+    while (entry != nullptr) {
         const char* fname = entry->d_name;
         if (strncmp(PREFIX, fname, strlen(PREFIX)) == 0) {
             int p = atoi(fname + strlen(PREFIX));
@@ -107,7 +107,7 @@ void BlockScanner::run()
     streampos fpos = 0, fend = 0;
     //long count = 0;
     int firstPartition = pnum;
-    logrec_t* lr = NULL;
+    logrec_t* lr = nullptr;
 
     while (true) {
         // open partition number pnum

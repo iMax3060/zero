@@ -135,7 +135,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
             _enable_swizzling);
 
     // use posix_memalign to allow unbuffered disk I/O
-    void *buf = NULL;
+    void *buf = nullptr;
     if (::posix_memalign(&buf, SM_PAGESIZE, SM_PAGESIZE * ((uint64_t)
                     nbufpages)) != 0)
     {
@@ -169,7 +169,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
     //                 nbufpages) + 1LLU));
     _control_blocks = reinterpret_cast<bf_tree_cb_t*>(reinterpret_cast<char
             *>(buf) + sizeof(bf_tree_cb_t));
-    w_assert0(_control_blocks != NULL);
+    w_assert0(_control_blocks != nullptr);
 
     /*
      * CS: comment copied from old code
@@ -236,22 +236,22 @@ void bf_tree_m::shutdown()
 
 bf_tree_m::~bf_tree_m()
 {
-    if (_control_blocks != NULL) {
+    if (_control_blocks != nullptr) {
         char* buf = reinterpret_cast<char*>(_control_blocks) - sizeof(bf_tree_cb_t);
 
         // note we use free(), not delete[], which corresponds to posix_memalign
         ::free (buf);
-        _control_blocks = NULL;
+        _control_blocks = nullptr;
     }
-    if (_hashtable != NULL) {
+    if (_hashtable != nullptr) {
         delete _hashtable;
-        _hashtable = NULL;
+        _hashtable = nullptr;
     }
-    if (_buffer != NULL) {
+    if (_buffer != nullptr) {
         void *buf = reinterpret_cast<void*>(_buffer);
         // note we use free(), not delete[], which corresponds to posix_memalign
         ::free (buf);
-        _buffer = NULL;
+        _buffer = nullptr;
     }
 }
 
@@ -845,7 +845,7 @@ void bf_tree_m::print_page(PageID pid)
 }
 
 bf_idx bf_tree_m::pin_for_refix(const generic_page* page) {
-    w_assert1(page != NULL);
+    w_assert1(page != nullptr);
     w_assert1(latch_mode(page) != LATCH_NL);
 
     bf_idx idx = page - _buffer;
@@ -1219,7 +1219,7 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
     if (!_is_valid_idx(idx)) {
         // Load root page
         PageID root_pid = smlevel_0::vol->get_store_root(store);
-        W_DO(fix(NULL, page, root_pid, mode, conditional, virgin));
+        W_DO(fix(nullptr, page, root_pid, mode, conditional, virgin));
 
         bf_idx_pair p;
         bool found = _hashtable->lookup(root_pid, p);

@@ -20,8 +20,8 @@ const static int IO_BLOCK_COUNT = 8; // total buffer = 8MB
 ArchiverControl::ArchiverControl(std::atomic<bool>* shutdownFlag)
     : endLSN(lsn_t::null), activated(false), listening(false), shutdownFlag(shutdownFlag)
 {
-    DO_PTHREAD(pthread_mutex_init(&mutex, NULL));
-    DO_PTHREAD(pthread_cond_init(&activateCond, NULL));
+    DO_PTHREAD(pthread_mutex_init(&mutex, nullptr));
+    DO_PTHREAD(pthread_cond_init(&activateCond, nullptr));
 }
 
 ArchiverControl::~ArchiverControl()
@@ -225,7 +225,7 @@ void ReaderThread::do_work()
 }
 
 LogConsumer::LogConsumer(lsn_t startLSN, size_t blockSize, bool ignore)
-    : nextLSN(startLSN), endLSN(lsn_t::null), currentBlock(NULL),
+    : nextLSN(startLSN), endLSN(lsn_t::null), currentBlock(nullptr),
     blockSize(blockSize)
 {
     DBGTHRD(<< "Starting log archiver at LSN " << nextLSN);
@@ -290,7 +290,7 @@ bool LogConsumer::nextBlock()
     if (currentBlock) {
         readbuf->consumerRelease();
         DBGTHRD(<< "Released block for replacement " << (void*) currentBlock);
-        currentBlock = NULL;
+        currentBlock = nullptr;
     }
 
     // get a block from the reader thread
@@ -455,14 +455,14 @@ tryagain:
     // assertions to check consistency of logrec
 #if W_DEBUG_LEVEL >=1
     // TODO add assert macros with DBG message
-    if (nextLSN != NULL && !lr->valid_header(*nextLSN)) {
+    if (nextLSN != nullptr && !lr->valid_header(*nextLSN)) {
         DBGTHRD(<< "Unexpected LSN in scanner at pos " << pos
                 << " : " << lr->lsn_ck()
                 << " expected " << *nextLSN);
     }
 #endif
 
-    w_assert1(lr->valid_header(nextLSN == NULL ? lsn_t::null : *nextLSN));
+    w_assert1(lr->valid_header(nextLSN == nullptr ? lsn_t::null : *nextLSN));
 
     if (nextLSN) {
         *nextLSN += lr->length();

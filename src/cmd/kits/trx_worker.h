@@ -186,7 +186,7 @@ public:
             : thread_t(tname),
               _control(WC_PAUSED), _data_owner(DOS_UNDEF), _ws(WS_UNDEF),
               _env(env),
-              _next(NULL), _is_bound(false),  _use_sli(use_sli)
+              _next(nullptr), _is_bound(false),  _use_sli(use_sli)
     {
     }
 
@@ -404,7 +404,7 @@ struct srmwqueue
     int _thres; // threshold value before waking up
 
     srmwqueue(Pool* actionPtrPool)
-            : _owner(NULL), _empty(true), _my_ws(WS_UNDEF),
+            : _owner(nullptr), _empty(true), _my_ws(WS_UNDEF),
               _loops(0), _thres(0)
     {
         assert (actionPtrPool);
@@ -497,7 +497,7 @@ struct srmwqueue
     inline Action* pop() {
         // pops an action from the input vector, or waits for one to show up
         if ((_read_pos == _for_readers->end()) && (!wait_for_input()))
-            return (NULL);
+            return (nullptr);
         return (*(_read_pos++));
     }
 
@@ -525,7 +525,7 @@ struct srmwqueue
         spinlock_write_critical_section cs(&_lock);
 
         // clear owner
-        if (removeOwner) _owner = NULL;
+        if (removeOwner) _owner = nullptr;
 
         // clear lists
         _for_writers->erase(_for_writers->begin(),_for_writers->end());

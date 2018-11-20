@@ -102,10 +102,10 @@ void verifyVolumesEqual(string pathExp, string pathAct)
     // vol_t instances can be created regardless of whether they are already
     // mounted on the volume manager
     options.set_string_option("sm_dbfile", pathExp);
-    vol_t volExp(options, NULL);
+    vol_t volExp(options, nullptr);
     volExp.build_caches(false /* format */);
     options.set_string_option("sm_dbfile", pathAct);
-    vol_t volAct(options, NULL);
+    vol_t volAct(options, nullptr);
     volAct.build_caches(false /* format */);
 
     size_t num_pages = volExp.num_used_pages();

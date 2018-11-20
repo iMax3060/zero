@@ -219,11 +219,11 @@ public:
 // @See btree_test_env::runRestartTest()
 class restart_test_base {
 public:
-    restart_test_base() { _stid_list = NULL; }
+    restart_test_base() { _stid_list = nullptr; }
     virtual ~restart_test_base() {
-        if(_stid_list != NULL) {
+        if(_stid_list != nullptr) {
             delete [] _stid_list;
-            _stid_list = NULL;
+            _stid_list = nullptr;
         }
     }
     virtual w_rc_t pre_shutdown(ss_m *ssm) = 0;

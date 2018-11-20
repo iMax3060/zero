@@ -47,7 +47,7 @@ protected:
 class BlockScanner : public BaseScanner {
 public:
     BlockScanner(const po::variables_map& options,
-            bitset<logrec_t::t_max_logrec>* filter = NULL);
+            bitset<logrec_t::t_max_logrec>* filter = nullptr);
     virtual ~BlockScanner();
 
     virtual void run();

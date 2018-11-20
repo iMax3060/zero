@@ -185,8 +185,8 @@ struct TestSharedContext {
     TestSharedContext(GcPoolForest<DummyEntry> &pool, bool pause, bool ins)
         : the_list(&pool), pause_before_delete(pause), insert_only(ins) {
         workers_pausing = 0;
-        ::pthread_mutex_init(&workers_mutex, NULL);
-        ::pthread_cond_init (&workers_cond, NULL);
+        ::pthread_mutex_init(&workers_mutex, nullptr);
+        ::pthread_cond_init (&workers_cond, nullptr);
     }
     ~TestSharedContext() {
         ::pthread_mutex_destroy(&workers_mutex);
@@ -262,8 +262,8 @@ void *test_work(void *t) {
     }
 
     std::cout << "done:" << context.id << std::endl;
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 

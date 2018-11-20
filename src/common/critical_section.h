@@ -124,14 +124,14 @@ critical_section(Lock &mutex) \
     ~critical_section() {     \
         if(_mutex)            \
             Release;          \
-            _mutex = NULL;    \
+            _mutex = nullptr;    \
         }                     \
     void pause() { Release; } \
     void resume() { Acquire; }\
-    void exit() { Release; _mutex = NULL; } \
+    void exit() { Release; _mutex = nullptr; } \
     Lock &hand_off() {        \
         Lock* rval = _mutex;  \
-        _mutex = NULL;        \
+        _mutex = nullptr;        \
         return *rval;         \
     }                         \
 private:                      \

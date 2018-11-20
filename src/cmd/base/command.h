@@ -60,7 +60,7 @@ public:
 
     virtual void setupOptions();
 protected:
-    BaseScanner* getScanner(bitset<logrec_t::t_max_logrec>* filter = NULL);
+    BaseScanner* getScanner(bitset<logrec_t::t_max_logrec>* filter = nullptr);
     BaseScanner* getMergeScanner();
     BaseScanner* getLogArchiveScanner();
 

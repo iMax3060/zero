@@ -357,7 +357,7 @@ int base_worker_t::_work_STOPPED_impl()
         TRACE( TRACE_DEBUG, "Next joined...\n");
         delete (_next);
     }
-    _next = NULL; // join() ?
+    _next = nullptr; // join() ?
 
     // any cleanup code should be here
 

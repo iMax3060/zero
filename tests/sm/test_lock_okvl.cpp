@@ -89,7 +89,7 @@ public:
             _commit ();
         }
         void _begin() {
-            ::gettimeofday(&_start,NULL);
+            ::gettimeofday(&_start,nullptr);
             _rc = ss_m::begin_xct();
             EXPECT_FALSE(_rc.is_error()) << _rc;
             xct()->set_query_concurrency(smlevel_0::t_cc_keyrange);
@@ -105,7 +105,7 @@ public:
         }
         void report_time() {
             timeval now, result;
-            ::gettimeofday(&now,NULL);
+            ::gettimeofday(&now,nullptr);
             timersub(&now, &_start, &result);
             cout << (result.tv_sec * 1000000 + result.tv_usec);
         }
@@ -133,11 +133,11 @@ public:
 class multiaccess_thread_t : public access_thread_t {
 public:
     multiaccess_thread_t(StoreID stid, const std::vector<const char*> &keys, const std::vector<bool> &writes)
-        : access_thread_t(stid, NULL, false) {
+        : access_thread_t(stid, nullptr, false) {
         _init (keys, writes);
     }
     multiaccess_thread_t(StoreID stid, const char *key1, bool write1, const char *key2, bool write2)
-        : access_thread_t(stid, NULL, false) {
+        : access_thread_t(stid, nullptr, false) {
         std::vector<const char*> keys;
         keys.push_back(key1);
         keys.push_back(key2);
@@ -147,7 +147,7 @@ public:
         _init (keys, writes);
     }
     multiaccess_thread_t(StoreID stid, const char *key1, bool write1, const char *key2, bool write2, const char *key3, bool write3)
-        : access_thread_t(stid, NULL, false) {
+        : access_thread_t(stid, nullptr, false) {
         std::vector<const char*> keys;
         keys.push_back(key1);
         keys.push_back(key2);
@@ -159,7 +159,7 @@ public:
         _init (keys, writes);
     }
     multiaccess_thread_t(StoreID stid, const char *key1, bool write1, const char *key2, bool write2, const char *key3, bool write3, const char *key4, bool write4)
-        : access_thread_t(stid, NULL, false) {
+        : access_thread_t(stid, nullptr, false) {
         std::vector<const char*> keys;
         keys.push_back(key1);
         keys.push_back(key2);
@@ -173,7 +173,7 @@ public:
         _init (keys, writes);
     }
     multiaccess_thread_t(StoreID stid, const char *key1, bool write1, const char *key2, bool write2, const char *key3, bool write3, const char *key4, bool write4, const char *key5, bool write5)
-        : access_thread_t(stid, NULL, false) {
+        : access_thread_t(stid, nullptr, false) {
         std::vector<const char*> keys;
         keys.push_back(key1);
         keys.push_back(key2);

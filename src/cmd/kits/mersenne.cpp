@@ -81,12 +81,12 @@ MersenneTwisterInternal::MersenneTwisterInternal(uint32_t seed)
 #ifdef SYS_POSIX
     seed = getpid() ^ (getppid() << 16);
     struct timeval t;
-    gettimeofday(&t,NULL);
+    gettimeofday(&t,nullptr);
     seed = seed ^ t.tv_sec ^ (t.tv_usec << 10);
 #endif
 #ifdef SYS_NT
     HCRYPTPROV handle;
-    CHECKED(CryptAcquireContext(&handle, NULL, NULL, PROV_RSA_FULL, 0),
+    CHECKED(CryptAcquireContext(&handle, nullptr, nullptr, PROV_RSA_FULL, 0),
 	    "can't acquire crypt context");
     CHECKED(CryptGenRandom(handle, 4, reinterpret_cast<BYTE *>(&seed)),
 	    "CryptGenRandom failure");

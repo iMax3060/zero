@@ -183,7 +183,7 @@ struct blob_pool::helper {
 	static __thread tls_tricks::tls_blob<BLMap> tls_blmap;
 	if(!blmap_initialized) {
 	    if(!force)
-		return NULL;
+		return nullptr;
 	    
 	    tls_blmap.init();
 	    blmap_initialized = true;

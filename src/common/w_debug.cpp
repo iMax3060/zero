@@ -87,7 +87,7 @@ w_debug::w_debug(const char* /*n*/, const char* /*f*/)
     // make a copy of the flags so we can delete it later
     _flags = new char[strlen(temp_flags)+1];
     strcpy(_flags, temp_flags);
-    assert(_flags != NULL);
+    assert(_flags != nullptr);
 
     if(!strcmp(_flags,"all")) {
     mask |= _all;
@@ -111,7 +111,7 @@ w_debug::w_debug(const char* /*n*/, const char* /*f*/)
 w_debug::~w_debug()
 {
     if(_flags) delete [] _flags;
-    _flags = NULL;
+    _flags = nullptr;
 
 }
 
@@ -170,7 +170,7 @@ w_debug::re_comp_debug(const char* pattern)
         << " Error in re_comp_debug: " << res << endl;
     }
     re_ready = true;
-    return NULL;
+    return nullptr;
 }
 #endif /* USE_REGEX */
 
@@ -183,7 +183,7 @@ w_debug::flag_on(
 {
     int res = 0;
     assert( !( none() && all() ) );
-    if(_flags==NULL) {
+    if(_flags==nullptr) {
     res = 0; //  another constructor called this
             // before this's constructor got called.
     } else if(none())     {

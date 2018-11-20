@@ -492,7 +492,7 @@ struct RawXct : GcPoolEntry {
     void                        dump_lockinfo(std::ostream &out) const;
 
     /** Returns if this transaction has acquired any lock. */
-    bool                        has_locks() const { return private_first != NULL; }
+    bool                        has_locks() const { return private_first != nullptr; }
 
     /**
      * Identifier of the thread running this transaction, eg pthread_self().

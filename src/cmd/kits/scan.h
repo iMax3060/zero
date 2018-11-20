@@ -10,7 +10,7 @@ protected:
     bt_cursor_t* btcursor;
 public:
     base_scan_t(index_desc_t* pindex)
-        : _pindex(pindex), btcursor(NULL)
+        : _pindex(pindex), btcursor(nullptr)
     {
         w_assert1(_pindex);
     }

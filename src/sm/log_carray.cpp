@@ -89,7 +89,7 @@ CArraySlot* ConsolidationArray::join_slot(int32_t size, carray_status_t &old_cou
     carray_slotid_t idx =  (carray_slotid_t) ::pthread_self();
     while (true) {
         // probe phase
-        CArraySlot* info = NULL;
+        CArraySlot* info = nullptr;
         while (true) {
             idx = (idx + 1) % _active_slot_count;
             info = _active_slots[idx];
@@ -157,10 +157,10 @@ CArraySlot* ConsolidationArray::grab_delegated_expose(CArraySlot* info) {
             // So, additional atomic CAS to make sure we really don't have next.
             mcs_lock::qnode* me2_cas_tmp = &(info->me2);
             if (!lintel::unsafe::atomic_compare_exchange_strong<mcs_lock::qnode*>(
-                &_expose_lock._tail, &me2_cas_tmp, (mcs_lock::qnode*) NULL)) {
+                &_expose_lock._tail, &me2_cas_tmp, (mcs_lock::qnode*) nullptr)) {
                 // CAS failed, so someone just connected to us.
                 w_assert1(_expose_lock._tail != info->me2.vthis());
-                w_assert1(info->me2.vthis()->_next != NULL);
+                w_assert1(info->me2.vthis()->_next != nullptr);
                 next = _expose_lock.spin_on_next(&info->me2);
             } else {
                 // CAS succeeded, so we removed ourself from _expose_lock!
@@ -191,7 +191,7 @@ CArraySlot* ConsolidationArray::grab_delegated_expose(CArraySlot* info) {
     // if I get here I hit NULL or non-delegate[ed|able] node, so we are done.
     lintel::atomic_thread_fence(lintel::memory_order_seq_cst);
     info->vthis()->count = SLOT_UNUSED;
-    return NULL;
+    return nullptr;
 }
 
 void ConsolidationArray::replace_active_slot(CArraySlot* info)

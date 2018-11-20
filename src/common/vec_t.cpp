@@ -515,7 +515,7 @@ void cvec_t::_grow(int total_cnt)
         // overflow will occur
 
         int grow_to = MAX(prev_max*2, total_cnt);
-        vec_pair_t* tmp = NULL;
+        vec_pair_t* tmp = nullptr;
 
         if (_is_large()) {
             tmp = (vec_pair_t*) realloc((char*)_base, grow_to * sizeof(*_base));
@@ -550,7 +550,7 @@ ostream& operator<<(ostream& o, const cvec_t& v)
         l = (i < v._cnt) ? v._base[i].len : 0;
 
         // p = (char *)v.ptr(i);
-        p = (i < v._cnt) ? (char *)v._base[i].ptr : (char *)NULL;
+        p = (i < v._cnt) ? (char *)v._base[i].ptr : nullptr;
 
         o << "{" << l << " " << "\"" ;
 
@@ -749,7 +749,7 @@ bool w_keystr_t::construct_from_vec(const cvec_t &vect) {
         return construct_posinfkey();
     }
     _data = new unsigned char[vect.size() + 1];
-    if (_data == NULL) {
+    if (_data == nullptr) {
         return false;
     }
     _data[0] = SIGN_REGULAR;
@@ -765,7 +765,7 @@ bool w_keystr_t::copy_from_vec(const cvec_t &vect) {
     clear();
 
     _data = new unsigned char[vect.size()];
-    if (_data == NULL) {
+    if (_data == nullptr) {
         return false;
     }
     vect.copy_to(_data, vect.size());

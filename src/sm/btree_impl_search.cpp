@@ -72,7 +72,7 @@ btree_impl::_ux_lookup_core(StoreID store, const w_keystr_t& key,
 
     // Copy the element
     // assume caller provided space
-    w_assert1(el != NULL || elen == 0);
+    w_assert1(el != nullptr || elen == 0);
     bool ghost;
     bool will_fit = leaf.copy_element(slot, (char*) el, elen, ghost); // this sets elen
     if (ghost) {
@@ -162,7 +162,7 @@ btree_impl::_ux_traverse_recurse(btree_page_h&                start,
     INC_TSTAT(bt_partial_traverse_cnt);
 
     /// cache the flag to avoid calling the functions each time
-    bool do_inquery_verify = (xct() != NULL && xct()->is_inquery_verify());
+    bool do_inquery_verify = (xct() != nullptr && xct()->is_inquery_verify());
 
     // CS: why do we call unfix here?
     leaf.unfix();

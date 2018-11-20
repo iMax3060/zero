@@ -136,7 +136,7 @@ void init_bf()
     while (vol->num_used_pages() < last_pid) {
         PageID pid;
         W_COERCE(vol->alloc_a_page(pid));
-        W_COERCE(bf->fix_nonroot(page, NULL, pid, LATCH_EX, false, true));
+        W_COERCE(bf->fix_nonroot(page, nullptr, pid, LATCH_EX, false, true));
         page->lsn = lsn_t::null;
         page->pid = pid;
         page->store = 0;

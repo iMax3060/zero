@@ -178,7 +178,7 @@ rc_t btree_impl::_ux_verify_feed_page(
 void btree_impl::inquery_verify_init(StoreID store)
 {
     xct_t *x = xct();
-    if (x == NULL || !x->is_inquery_verify())
+    if (x == nullptr || !x->is_inquery_verify())
         return;
     inquery_verify_context_t &context = x->inquery_verify_context();
     context.next_level = -1; // don't check level of root page
@@ -190,7 +190,7 @@ void btree_impl::inquery_verify_init(StoreID store)
 void btree_impl::inquery_verify_fact(btree_page_h &page)
 {
     xct_t *x = xct();
-    if (x == NULL || !x->is_inquery_verify())
+    if (x == nullptr || !x->is_inquery_verify())
         return;
     inquery_verify_context_t &context = x->inquery_verify_context();
     if (context.pids_inconsistent.find(page.pid()) != context.pids_inconsistent.end()) {
@@ -236,7 +236,7 @@ void btree_impl::inquery_verify_fact(btree_page_h &page)
 void btree_impl::inquery_verify_expect(btree_page_h &page, slot_follow_t next_follow)
 {
     xct_t *x = xct();
-    if (x == NULL || !x->is_inquery_verify())
+    if (x == nullptr || !x->is_inquery_verify())
         return;
     inquery_verify_context_t &context = x->inquery_verify_context();
 
@@ -290,7 +290,7 @@ verification_context::verification_context (int hash_bits)
 verification_context::~verification_context ()
 {
     delete[] _bitmap;
-    _bitmap = NULL;
+    _bitmap = nullptr;
 }
 
 void verification_context::add_fact (PageID pid, int16_t level, bool high,
@@ -303,7 +303,7 @@ void verification_context::add_fact (PageID pid, int16_t level, bool high,
     hash_value = _modify_hash(level, hash_value);
     hash_value = _modify_hash(high, hash_value);
     hash_value = _modify_hash(prefix, prefix_len, hash_value);
-    if (suffix != NULL) {
+    if (suffix != nullptr) {
         hash_value = _modify_hash(suffix, suffix_len, hash_value);
     }
     uint byte_place = (hash_value >> 3) % (1 << (_hash_bits - 3));
@@ -410,7 +410,7 @@ verify_volume_result::get_or_create_context (
     PageID root_pid, int hash_bits)
 {
     verification_context *context = get_context(root_pid);
-    if (context != NULL) {
+    if (context != nullptr) {
         return context;
     } else {
         // this store_id is first seen. let's create
@@ -425,6 +425,6 @@ verification_context* verify_volume_result::get_context (PageID root_pid)
     if (iter != _results.end()) {
         return iter->second;
     } else {
-        return NULL;
+        return nullptr;
     }
 }

@@ -109,13 +109,13 @@ public:
      * @param[in] custom_message Optional custom error message in addition to the default one inferred from error code.
      * If you pass a non-NULL string to this argument, we do deep-copy for each hand-over, so it's EXPENSIVE!
      */
-    w_rc_t(const char* filename, uint32_t linenum, w_error_codes error_code, const char* custom_message = NULL);
+    w_rc_t(const char* filename, uint32_t linenum, w_error_codes error_code, const char* custom_message = nullptr);
 
     /** Copy constructor. */
     w_rc_t(const w_rc_t &other);
 
     /** Copy constructor to augment the stacktrace. */
-    w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenum, const char* more_custom_message = NULL);
+    w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenum, const char* more_custom_message = nullptr);
 
     /** Copy constructor. */
     w_rc_t& operator=(w_rc_t const &other);
@@ -215,7 +215,7 @@ inline std::ostream& operator<<(std::ostream& o, const w_rc_t& obj) {
         o << "No error";
     } else {
         o << w_error_name(obj.err_num()) << "(" << obj.err_num() << "):" << obj.get_message();
-        if (obj.get_custom_message() != NULL) {
+        if (obj.get_custom_message() != nullptr) {
             o << ":" << obj.get_custom_message();
         }
         for (uint16_t stack_index = 0; stack_index < obj.get_stack_depth(); ++stack_index) {
@@ -392,11 +392,11 @@ do {                             \
 #define W_IGNORE(x)    ((void) x.is_error())
 
 inline w_rc_t::w_rc_t()
-    : _custom_message(NULL), _error_code(w_error_ok), _stack_depth(0), _checked(true) {
+    : _custom_message(nullptr), _error_code(w_error_ok), _stack_depth(0), _checked(true) {
 }
 
 inline w_rc_t::w_rc_t(w_error_codes error_code)
-    : _custom_message(NULL), _error_code(error_code), _stack_depth(0), _checked(false) {
+    : _custom_message(nullptr), _error_code(error_code), _stack_depth(0), _checked(false) {
 }
 
 inline w_rc_t::w_rc_t(const char* filename, uint32_t linenum, w_error_codes error_code, const char* custom_message)
@@ -425,7 +425,7 @@ inline w_rc_t& w_rc_t::operator=(w_rc_t const &other) {
     other._checked = true;
 
     // except custom error message
-    if (other._custom_message != NULL) {
+    if (other._custom_message != nullptr) {
         // do NOT use strdup to make sure new/delete everywhere.
         size_t len = ::strlen(other._custom_message);
         char *copied = new char[len + 1]; // +1 for null terminator
@@ -450,7 +450,7 @@ inline w_rc_t::w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenu
         ++_stack_depth;
     }
     // augment custom error message
-    if (more_custom_message != NULL) {
+    if (more_custom_message != nullptr) {
         append_custom_message(more_custom_message);
     }
 #if W_DEBUG_LEVEL>=5
@@ -467,9 +467,9 @@ inline w_rc_t::~w_rc_t() {
     // We output warning if some error code is not checked , but we don't do so in release mode.
     verify();
 #endif //  W_DEBUG_LEVEL>0
-    if (_custom_message != NULL) {
+    if (_custom_message != nullptr) {
         delete[] _custom_message;
-        _custom_message = NULL;
+        _custom_message = nullptr;
     }
 }
 
@@ -480,7 +480,7 @@ inline void w_rc_t::append_custom_message(const char* more_custom_message) {
     }
     // augment custom error message
     size_t more_len = ::strlen(more_custom_message);
-    if (_custom_message != NULL) {
+    if (_custom_message != nullptr) {
         // concat
         size_t cur_len = ::strlen(_custom_message);
         char *copied = new char[cur_len + more_len + 1];
@@ -513,7 +513,7 @@ inline const char* w_rc_t::get_message() const {
 inline const char* w_rc_t::get_custom_message() const {
     // Invariant: if w_error_ok, no more processing
     if (_error_code == w_error_ok) {
-        return NULL;
+        return nullptr;
     }
     return _custom_message;
 }
@@ -538,7 +538,7 @@ inline uint16_t w_rc_t::get_linenum(uint16_t stack_index) const {
 inline const char* w_rc_t::get_filename(uint16_t stack_index) const {
     // Invariant: if w_error_ok, no more processing
     if (_error_code == w_error_ok) {
-        return NULL;
+        return nullptr;
     }
     assert(stack_index < _stack_depth);
     return _filenames[stack_index];

@@ -119,7 +119,7 @@ public:
     latch_holder_t* _next;
 
     latch_holder_t()
-    : _latch(NULL), _mode(LATCH_NL), _count(0)
+    : _latch(nullptr), _mode(LATCH_NL), _count(0)
     {
         _threadid = std::this_thread::get_id();
     }

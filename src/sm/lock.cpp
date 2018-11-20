@@ -57,7 +57,7 @@ okvl_mode lock_m::get_granted_mode(uint32_t hash, xct_t* xd)
     if (!xd) { xd = smthread_t::xct(); }
     w_assert1(xd);
 
-    if (xd == NULL) {
+    if (xd == nullptr) {
         return ALL_N_GAP_N;
     }
     return xd->raw_lock_xct()->private_hash_map.get_granted_mode(hash);
@@ -70,7 +70,7 @@ int lock_m::_convert_timeout(int timeout) {
 }
 
 int lock_m::_convert_timeout(int timeout, xct_t* xd) {
-    w_assert1(NULL != xd);
+    w_assert1(nullptr != xd);
 
     switch (timeout) {
         case timeout_t::WAIT_SPECIFIED_BY_XCT:
@@ -98,10 +98,10 @@ rc_t lock_m::lock(uint32_t hash, const okvl_mode &m,
     if (!xd) { xd = smthread_t::xct(); }
 
     w_assert0(xd);
-    w_assert1(wait || out != NULL);
+    w_assert1(wait || out != nullptr);
 
-    RawLock *tmp = NULL;
-    if (out == NULL) {
+    RawLock *tmp = nullptr;
+    if (out == nullptr) {
         out = &tmp;
     }
 
@@ -130,7 +130,7 @@ rc_t lock_m::lock(uint32_t hash, const okvl_mode &m,
 }
 
 rc_t lock_m::retry_lock(RawLock** lock, bool acquire, int timeout) {
-    w_assert1(lock != NULL && *lock != NULL);
+    w_assert1(lock != nullptr && *lock != nullptr);
     xct_t*                 xd = smthread_t::xct();
     timeout = _convert_timeout(timeout);
     RawXct* xct = xd->raw_lock_xct();
@@ -166,7 +166,7 @@ rc_t lock_m::intent_store_lock(StoreID stid, okvl_mode::element_lock_mode m)
 {
     lil_lock_modes_t mode = to_lil_mode(m);
     xct_t *xd = xct();
-    if (xd == NULL) {
+    if (xd == nullptr) {
         return RCOK;
     }
     lil_global_table *global_table = get_lil_global_table();

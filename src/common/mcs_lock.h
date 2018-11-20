@@ -73,7 +73,7 @@ struct mcs_lock {
 #define MCS_EXT_QNODE_INITIALIZE(x) \
 { (x)._node._next = NULL; (x)._node._waiting = 0; (x)._node._delegated = 0; (x)._held = NULL; }
     qnode* _tail;
-    mcs_lock() : _tail(NULL) { }
+    mcs_lock() : _tail(nullptr) { }
 
     /* This spinning occurs whenever there are critical sections ahead
        of us.
@@ -91,10 +91,10 @@ struct mcs_lock {
         return false;
     }
     bool attempt(qnode* me) {
-        me->_next = NULL;
+        me->_next = nullptr;
         me->_status.individual._waiting = 1;
         // lock held?
-        qnode* null_cas_tmp = NULL;
+        qnode* null_cas_tmp = nullptr;
         if(!lintel::unsafe::atomic_compare_exchange_strong<qnode*>(
             &_tail, &null_cas_tmp, (qnode*) me))
             return false;
@@ -111,7 +111,7 @@ struct mcs_lock {
     }
 
     qnode* __unsafe_begin_acquire(qnode* me) {
-        me->_next = NULL;
+        me->_next = nullptr;
         me->_status.individual._waiting = 1;
         qnode* pred = lintel::unsafe::atomic_exchange<qnode*>(&_tail, me);
         if(pred) {
@@ -150,7 +150,7 @@ struct mcs_lock {
         if(!(next=me->_next)) {
             qnode* me_cas_tmp = me;
             if(me == _tail &&
-                lintel::unsafe::atomic_compare_exchange_strong<qnode*>(&_tail, &me_cas_tmp, (qnode*) NULL)) {
+                lintel::unsafe::atomic_compare_exchange_strong<qnode*>(&_tail, &me_cas_tmp, (qnode*) nullptr)) {
                 return;
             }
             next = spin_on_next(me);

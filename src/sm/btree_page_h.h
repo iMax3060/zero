@@ -396,10 +396,10 @@ public:
                       const w_keystr_t&    fence_high,
                       const w_keystr_t&    chain_fence_high,
                       bool                 log_it = true,
-                      btree_page_h*        steal_src1 = NULL,
+                      btree_page_h*        steal_src1 = nullptr,
                       int                  steal_from1 = 0,
                       int                  steal_to1 = 0,
-                      btree_page_h*        steal_src2 = NULL,
+                      btree_page_h*        steal_src2 = nullptr,
                       int                  steal_from2 = 0,
                       int                  steal_to2 = 0,
                       bool                 steal_src2_pid0 = false,
@@ -996,7 +996,7 @@ public:
     borrowed_btree_page_h(fixable_page_h* source) :
         btree_page_h(), _source(source)
     {
-        w_assert1(_source->_pp != NULL);
+        w_assert1(_source->_pp != nullptr);
         _pp                 = _source->get_generic_page();
         _bufferpool_managed = _source->_bufferpool_managed;
         _mode               = _source->_mode;

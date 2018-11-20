@@ -106,14 +106,14 @@ private:
 
     /* possible change
     void action(T* ptr) {
-       if (ptr != NULL)
+       if (ptr != nullptr)
           delete ptr;
     }
     */
 
 public:
 
-    guard(T* ptr=NULL)
+    guard(T* ptr=nullptr)
         : _ptr(ptr)
     {
     }
@@ -189,7 +189,7 @@ public:
      */
     T* release() {
         T* ptr = _ptr;
-        _ptr = NULL;
+        _ptr = nullptr;
         return ptr;
     }
 
@@ -198,7 +198,7 @@ public:
      * now rather than at destruct time.
      */
     void done() {
-        assign(NULL);
+        assign(nullptr);
     }
 
     ~guard() {
@@ -254,7 +254,7 @@ public:
     // descends from this class so this makes a handy default
     // implementation
     static T null_value() {
-        return NULL;
+        return nullptr;
     }
     static bool different(const T &a, const T &b) {
         return a != b;
@@ -343,7 +343,7 @@ struct pointer_guard_base_t : guard_base_t<T*, Impl> {
  */
 template <class T>
 struct pointer_guard_t : pointer_guard_base_t<T, pointer_guard_t<T> > {
-    pointer_guard_t(T* ptr=NULL)
+    pointer_guard_t(T* ptr=nullptr)
         : pointer_guard_base_t<T, pointer_guard_t<T> >(ptr)
     {
     }
@@ -360,7 +360,7 @@ struct pointer_guard_t : pointer_guard_base_t<T, pointer_guard_t<T> > {
  */
 template <class T>
 struct array_guard_t : pointer_guard_base_t<T, array_guard_t<T> > {
-    array_guard_t(T *ptr=NULL)
+    array_guard_t(T *ptr=nullptr)
         : pointer_guard_base_t<T, array_guard_t<T> >(ptr)
     {
     }
@@ -375,7 +375,7 @@ struct array_guard_t : pointer_guard_base_t<T, array_guard_t<T> > {
  * @brief Ensures that a file gets closed
  */
 struct file_guard_t : pointer_guard_base_t<FILE, file_guard_t> {
-    file_guard_t(FILE *ptr=NULL)
+    file_guard_t(FILE *ptr=nullptr)
         : pointer_guard_base_t<FILE, file_guard_t>(ptr)
     {
     }

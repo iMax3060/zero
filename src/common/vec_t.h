@@ -195,14 +195,14 @@ public:
     // Both leave the vector re-initialized (0 parts)
     void vecdelparts()      {   while(_cnt-->0) {
                                    delete[] _base[_cnt].ptr;
-                                   _base[_cnt].ptr = NULL;
+                                   _base[_cnt].ptr = nullptr;
                                    _base[_cnt].len = 0;
                                 }
                                 init();
                             }
     void delparts()         {   while(_cnt-->0) {
                                    delete _base[_cnt].ptr;
-                                   _base[_cnt].ptr = NULL;
+                                   _base[_cnt].ptr = nullptr;
                                    _base[_cnt].len = 0;
                                 }
                                 init();
@@ -311,7 +311,7 @@ public:
 
     /// Return the pointer from the {pointer, length} pair at the given index.
     CADDR_T       ptr(int index) const { return (index >= 0 && index < _cnt) ?
-                                        _base[index].ptr : (CADDR_T) NULL; }
+                                        _base[index].ptr : (CADDR_T) nullptr; }
     /// Return the length from the {pointer, length} pair at the given index.
     size_t        len(int index) const { return (index >= 0 && index < _cnt) ?
                                         _base[index].len : 0; }

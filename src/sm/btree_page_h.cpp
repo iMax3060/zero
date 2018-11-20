@@ -553,7 +553,7 @@ rc_t btree_page_h::copy_records(const int  rec_count,     // In: number of recor
     DBGOUT3( << "Page rebalance - btree_page_h::copy_records, prepare to move, move count: " << rec_count << ", total record: " << nrecs());
 
     w_assert1(0 < len);
-    w_assert1(NULL != data_buffer);
+    w_assert1(nullptr != data_buffer);
     memset(data_buffer, '\0', len);
 
     int current_slot = 0;
@@ -618,7 +618,7 @@ rc_t btree_page_h::copy_records(const int  rec_count,     // In: number of recor
             // Leaf page data pointer and length, throw away the data pointer
             // since we will re-acquire it later
             const char* data = element(current_slot, data_length, is_ghost);
-            w_assert1(NULL != data);
+            w_assert1(nullptr != data);
             child = 0;
         }
         else
@@ -705,13 +705,13 @@ rc_t btree_page_h::copy_records(const int  rec_count,     // In: number of recor
         {
             smsize_t dummy;
             const char* data = element(current_slot, dummy, is_ghost);
-            w_assert1(NULL != data);
+            w_assert1(nullptr != data);
             w_assert1(data_length == dummy);
             memcpy(data_buffer+current_len, data, data_length);
         }
         else
         {
-            w_assert1(NULL != emlsn_ptr);
+            w_assert1(nullptr != emlsn_ptr);
             memcpy(data_buffer+current_len, emlsn_ptr, data_length);
         }
         current_len += data_length;
@@ -776,7 +776,7 @@ rc_t btree_page_h::insert_records_dest_redo(
         // Pointer to key with sign byte
         const char *key = record_data + offset;
         offset += key_info.len;
-        w_assert1(NULL != key);
+        w_assert1(nullptr != key);
 
         // Child (for non-leaf node only), leaf node is always 0
         child_info.i = 0;
@@ -791,7 +791,7 @@ rc_t btree_page_h::insert_records_dest_redo(
         // Pointer to data
         const char *data = record_data + offset;
         offset += record_info.len;
-        w_assert1(NULL != data);
+        w_assert1(nullptr != data);
 
         w_assert1(offset <= record_data_len);
 
@@ -1496,7 +1496,7 @@ void btree_page_h::suggest_fence_for_split(w_keystr_t &mid,
     slotid_t start_point = (center_point - (nrecs() / 10) > 0) ? center_point - (nrecs() / 10) : 1;
     slotid_t end_point = (center_point + (nrecs() / 10) + 1 <= nrecs()) ? center_point + (nrecs() / 10) + 1 : nrecs();
     size_t sep_length = SM_PAGESIZE;
-    const char *sep_key = NULL;
+    const char *sep_key = nullptr;
     right_begins_from = -1;
     for (slotid_t boundary = start_point; boundary < end_point; ++boundary) {
         if (is_leaf()) {
@@ -1536,7 +1536,7 @@ void btree_page_h::suggest_fence_for_split(w_keystr_t &mid,
             }
         }
     }
-    w_assert0(sep_key != NULL);
+    w_assert0(sep_key != nullptr);
     w_assert1(sep_length != SM_PAGESIZE);
     mid.construct_from_keystr(get_prefix_key(), get_prefix_length(), sep_key, sep_length);
     w_assert0(right_begins_from >= 0 && right_begins_from <= nrecs());

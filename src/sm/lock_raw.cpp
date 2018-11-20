@@ -32,7 +32,7 @@ int RawLockQueue::loser_count = HAS_LOSER_COUNT;
 
 RawLockQueue::Iterator::Iterator(const RawLockQueue* enclosure_arg, RawLock* start_from)
     : enclosure(enclosure_arg), predecessor(start_from) {
-    w_assert1(predecessor != NULL);
+    w_assert1(predecessor != nullptr);
     w_assert1(!predecessor->next.is_marked());
     current = predecessor->next;
 }
@@ -68,7 +68,7 @@ RawLock* RawLockQueue::find_predecessor(RawLock* lock) const {
         }
     } while (must_retry);
     // we reached the tail without finding the lock
-    return NULL;
+    return nullptr;
 }
 
 RawLock* RawLockQueue::tail() const {
@@ -77,15 +77,15 @@ RawLock* RawLockQueue::tail() const {
         Iterator iterator(this, &head);
         for (; !must_retry && !iterator.is_null(); iterator.next(must_retry));
         if (!must_retry) {
-            w_assert1(iterator.predecessor != NULL); // at least head exists.
+            w_assert1(iterator.predecessor != nullptr); // at least head exists.
             return iterator.predecessor;
         }
     } while (true);
 }
 
 bool RawLockQueue::delink(RawLock* predecessor, RawLock* target, RawLock* successor) const {
-    w_assert1(predecessor != NULL);
-    w_assert1(target != NULL);
+    w_assert1(predecessor != nullptr);
+    w_assert1(target != nullptr);
     if (predecessor->next.atomic_cas(target, successor, false, false, 0, 0)) {
         // we just have delinked.
         return true;
@@ -107,8 +107,8 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
 {
     w_assert1(wait || check || acquire);
     w_assert1(check || !wait);
-    w_assert1(out != NULL);
-    *out = NULL;
+    w_assert1(out != nullptr);
+    *out = nullptr;
     if (check && !acquire) {
         // peek_compatiblity() provides weaker correctness condition, but check_only is used
         // only when it's still safe (we have EX latch in the page!). so, fine.
@@ -136,7 +136,7 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
         // Handle on_demand UNDO if we need one
         // note the on_demand UNDO is a blocking operation to the
         // current thread (which has a concurrent user transaction)
-        w_assert1(NULL != compatibility.blocker);
+        w_assert1(nullptr != compatibility.blocker);
         w_assert1(compatibility.blocker != new_lock->owner_xct);
         DBGOUT3(<< "RawLockQueue::acquire(): cannot grant the lock, check for UNDO");
         if (trigger_UNDO(compatibility))
@@ -155,7 +155,7 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
         return eDEADLOCK;
     } else if (!compatibility.can_be_granted && check) {
         // duh, there is a lock that prevents us.
-        w_assert1(compatibility.blocker != NULL);
+        w_assert1(compatibility.blocker != nullptr);
         xct->blocker = compatibility.blocker; // A6'
         new_lock->state = RawLock::WAITING; // A6
         // announce our waiting status to make sure no one is falsely waiting for us.
@@ -178,7 +178,7 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
             release(new_lock, lsn_t::null);
             return eDEADLOCK;
         } else if (compatibility.can_be_granted) {
-            xct->blocker = NULL; // A9'
+            xct->blocker = nullptr; // A9'
             new_lock->state = RawLock::ACTIVE; // A9
             atomic_synchronize_if_mutex(); // A10
         }
@@ -196,16 +196,16 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
 w_error_codes RawLockQueue::retry_acquire(RawLock** lock, bool wait, bool acquire,
         int32_t timeout_in_ms)
 {
-    w_assert1(lock != NULL && (*lock) != NULL);
+    w_assert1(lock != nullptr && (*lock) != nullptr);
     RawXct *xct = (*lock)->owner_xct;
     atomic_synchronize();
     Compatibility compatibility = check_compatiblity(*lock);
     if (compatibility.deadlocked) {
         release(*lock, lsn_t::null);
-        *lock = NULL;
+        *lock = nullptr;
         return eDEADLOCK;
     } else if (compatibility.can_be_granted) {
-        xct->blocker = NULL;
+        xct->blocker = nullptr;
         (*lock)->state = RawLock::ACTIVE;
         atomic_synchronize();
     }
@@ -224,7 +224,7 @@ w_error_codes RawLockQueue::complete_acquire(RawLock** lock, bool wait, bool acq
         w_error_codes err_code = wait_for(*lock, timeout_in_ms);
         if (err_code != w_error_ok) {
             release(*lock, lsn_t::null);
-            *lock = NULL;
+            *lock = nullptr;
             return err_code;
         }
     }
@@ -232,12 +232,12 @@ w_error_codes RawLockQueue::complete_acquire(RawLock** lock, bool wait, bool acq
     // okay, we are granted.
     atomic_synchronize();
     w_assert1((*lock)->state == RawLock::ACTIVE);
-    w_assert1(xct->blocker == NULL);
+    w_assert1(xct->blocker == nullptr);
     xct->update_read_watermark(x_lock_tag);
     if (!acquire) {
         // immediately release the lock
         release(*lock, lsn_t::null);
-        *lock = NULL;
+        *lock = nullptr;
     }
     DBGOUT4(<<"RawLockQueue::acquire() after:" << *this);
     return w_error_ok;
@@ -264,7 +264,7 @@ RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) cons
         // also, remember that no one can newly enter between I and head because
         // new locks are appended at last.
         // Can grant the lock, it is not a deadlock, no blocker
-        return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, NULL /*blocker txn*/);
+        return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, nullptr /*blocker txn*/);
     }
     const okvl_mode &mode = lock->mode;
     uint32_t hash = lock->hash;
@@ -327,7 +327,7 @@ RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) cons
         }
     } while (must_retry);
     // Can grant the lock, it is not a deadlock, no blocker
-    return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, NULL /*blocker txn*/);
+    return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, nullptr /*blocker txn*/);
 }
 
 bool RawLockQueue::peek_compatiblity(RawXct* xct, uint32_t hash, const okvl_mode &mode) const {
@@ -361,7 +361,7 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
     // See Figure 6 of [JUNG13] for why we need to do this.
     Compatibility compatibility = check_compatiblity(new_lock); // A20
     if (compatibility.deadlocked) {
-        xct->blocker = NULL;
+        xct->blocker = nullptr;
         atomic_synchronize();
         return eDEADLOCK;
     } else if (!compatibility.can_be_granted) {
@@ -375,14 +375,14 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
             }
             compatibility = check_compatiblity(new_lock);
             if (compatibility.can_be_granted) {
-                xct->blocker = NULL;
+                xct->blocker = nullptr;
                 new_lock->state = RawLock::ACTIVE;
                 atomic_synchronize();
                 return w_error_ok;
             } else if (compatibility.deadlocked) {
                 DBGOUT1(<<"Deadlock found by myself! lock=" << *new_lock << ", queue="
                     << *this << ", xct=" << *xct);
-                xct->blocker = NULL;
+                xct->blocker = nullptr;
                 atomic_synchronize();
                 return eDEADLOCK;
             } else {
@@ -415,7 +415,7 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
             DBGOUT3(<<"Woke up.");
             if (xct->deadlock_detected_by_others) {
                 DBGOUT1(<<"Deadlock reported by other transaction!");
-                xct->blocker = NULL;
+                xct->blocker = nullptr;
                 return eDEADLOCK;
             }
             atomic_synchronize();
@@ -425,30 +425,30 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
                 if (compatibility.can_be_granted) {
                     // This shouldn't happen, but as a safety net
                     DBGOUT0(<<"Umm? Now can be granted. No one got us aware of this.");
-                    xct->blocker = NULL;
+                    xct->blocker = nullptr;
                     xct->state = RawXct::ACTIVE;
                     atomic_synchronize_if_mutex();
                     return w_error_ok;
                 } else if (compatibility.deadlocked) {
                     ERROUT(<<"Deadlock found by myself!");
-                    xct->blocker = NULL;
+                    xct->blocker = nullptr;
                     atomic_synchronize_if_mutex();
                     return eDEADLOCK;
                 }
             } else {
                 DBGOUT3(<<"Now it's granted!");
                 w_assert1(xct->state == RawXct::ACTIVE);
-                w_assert1(xct->blocker == NULL);
+                w_assert1(xct->blocker == nullptr);
                 return w_error_ok;
             }
         }
         DBGOUT1(<<"Lock timeout!");
-        xct->blocker = NULL;
+        xct->blocker = nullptr;
         return eLOCKTIMEOUT;
 #endif // PURE_SPIN_RAWLOCK
     } else {
         DBGOUT1(<<"Interesting. Re-check after barrier tells that now we are granted");
-        xct->blocker = NULL; // A24'
+        xct->blocker = nullptr; // A24'
         xct->state = RawXct::ACTIVE; // A24
         new_lock->state = RawLock::ACTIVE;
         atomic_synchronize_if_mutex(); // A25
@@ -479,7 +479,7 @@ void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
     w_assert1(!head.next.is_null());
     w_assert1(!head.next.is_marked());
     RawXct *xct = lock->owner_xct;
-    xct->blocker = NULL;
+    xct->blocker = nullptr;
     DBGOUT4(<<"Releasing lock=" << *lock << ", xct=" << *xct);
     if (lock->mode.contains_dirty_lock() && commit_lsn > x_lock_tag) {
         update_xlock_tag(commit_lsn);
@@ -525,7 +525,7 @@ void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
                         // now granted!!
                         DBGOUT3(<<"Now granted while unlocking.");
                         next->state = RawLock::ACTIVE; // R8
-                        next->owner_xct->blocker = NULL; // R9'
+                        next->owner_xct->blocker = nullptr; // R9'
                         next->owner_xct->state = RawXct::ACTIVE; // R9
                     }
                     atomic_synchronize();
@@ -546,7 +546,7 @@ void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
         w_assert1(logically_deleted || !head.next.is_null());
         w_assert1(!head.next.is_marked());
         RawLock* predecessor = find_predecessor(lock);
-        if (predecessor == NULL) {
+        if (predecessor == nullptr) {
             if (logically_deleted) {
                 // this is totally possible
                 DBGOUT2(<<"Interesting. 2nd step of deletion was taken care of other thread");
@@ -606,7 +606,7 @@ bool RawLockQueue::trigger_UNDO(Compatibility& compatibility)
     {
         // Cannot grant the requested lock
         // Handle on_demand UNDO if necessary
-        w_assert1(NULL != compatibility.blocker);
+        w_assert1(nullptr != compatibility.blocker);
 
             // If using lock re-acquisition for restart concurrency control
                 DBGOUT3(<< "RawLockQueue::trigger_UNDO(): on_demand or mixed UNDO with loc, check for loser transaction...");
@@ -813,19 +813,19 @@ void RawXct::init(gc_thread_id thread_id_arg,
     lock_pool_next = lock_pool_next_arg;
     state = RawXct::ACTIVE;
     deadlock_detected_by_others = false;
-    blocker = NULL;
+    blocker = nullptr;
     read_watermark = lsn_t::null;
-    private_first = NULL;
-    private_last = NULL;
+    private_first = nullptr;
+    private_last = nullptr;
 #ifndef PURE_SPIN_RAWLOCK
-    ::pthread_mutex_init(&lock_wait_mutex, NULL);
-    ::pthread_cond_init(&lock_wait_cond, NULL);
+    ::pthread_mutex_init(&lock_wait_mutex, nullptr);
+    ::pthread_cond_init(&lock_wait_cond, nullptr);
 #endif // PURE_SPIN_RAWLOCK
 }
 
 void RawXct::uninit() {
     state = RawXct::UNUSED;
-    blocker = NULL;
+    blocker = nullptr;
 #ifndef PURE_SPIN_RAWLOCK
     ::pthread_mutex_destroy(&lock_wait_mutex);
     ::pthread_cond_destroy(&lock_wait_cond);
@@ -836,8 +836,8 @@ void RawXct::uninit() {
 // this is quite expensive (insert_100K test takes 2 minutes). thus should be level 4.
 bool is_private_list_consistent(RawXct *xct) {
     std::set<RawLock*> dup;
-    RawLock* last_observed = NULL;
-    for (RawLock* lock = xct->private_first; lock != NULL; lock = lock->xct_next) {
+    RawLock* last_observed = nullptr;
+    for (RawLock* lock = xct->private_first; lock != nullptr; lock = lock->xct_next) {
         if (dup.find(lock) != dup.end()) {
             w_assert1(false);
             return false;
@@ -845,13 +845,13 @@ bool is_private_list_consistent(RawXct *xct) {
         dup.insert(lock);
         last_observed = lock;
     }
-    if (xct->private_first == NULL) {
-        if (dup.size() != 0 || xct->private_last != NULL) {
+    if (xct->private_first == nullptr) {
+        if (dup.size() != 0 || xct->private_last != nullptr) {
             w_assert1(false);
             return false;
         }
     } else {
-        if (xct->private_last == NULL) {
+        if (xct->private_last == nullptr) {
             if (dup.size() != 1 || xct->private_first != last_observed) {
                 w_assert1(false);
                 return false;
@@ -877,23 +877,23 @@ RawLock* RawXct::allocate_lock(uint32_t hash, const okvl_mode& mode, RawLock::Lo
 
     w_assert4(is_private_list_consistent(this));
     // put it on transaction-private linked list
-    if (private_first == NULL) {
+    if (private_first == nullptr) {
         // was empty
-        w_assert1(private_last == NULL);
+        w_assert1(private_last == nullptr);
         private_first = lock;
-        lock->xct_previous = NULL;
-        lock->xct_next = NULL;
-    } else if (private_last == NULL) {
+        lock->xct_previous = nullptr;
+        lock->xct_next = nullptr;
+    } else if (private_last == nullptr) {
         // only one lock
-        w_assert1(private_first->xct_next == NULL);
+        w_assert1(private_first->xct_next == nullptr);
         private_last = lock;
         lock->xct_previous = private_first;
         private_first->xct_next = lock;
-        lock->xct_next = NULL;
+        lock->xct_next = nullptr;
     } else {
         // else, we put it in last
-        w_assert1(private_last->xct_previous != NULL);
-        w_assert1(private_last->xct_next == NULL);
+        w_assert1(private_last->xct_previous != nullptr);
+        w_assert1(private_last->xct_next == nullptr);
         lock->xct_previous = private_last;
         private_last->xct_next = lock;
         private_last = lock;
@@ -908,34 +908,34 @@ RawLock* RawXct::allocate_lock(uint32_t hash, const okvl_mode& mode, RawLock::Lo
 void RawXct::deallocate_lock(RawLock* lock) {
     // remove from transaction-private linked list
     w_assert1(this == lock->owner_xct);
-    w_assert1(private_first != NULL);
+    w_assert1(private_first != nullptr);
     w_assert4(is_private_list_consistent(this));
-    if (private_last == NULL) {
+    if (private_last == nullptr) {
         // was the only entry
-        w_assert1(private_first->xct_next == NULL);
-        w_assert1(lock->xct_previous == NULL);
-        w_assert1(lock->xct_next == NULL);
-        private_first = NULL;
+        w_assert1(private_first->xct_next == nullptr);
+        w_assert1(lock->xct_previous == nullptr);
+        w_assert1(lock->xct_next == nullptr);
+        private_first = nullptr;
     } else if (lock == private_first) {
         // was the head
-        w_assert1(lock->xct_previous == NULL);
-        w_assert1(lock->xct_next != NULL);
+        w_assert1(lock->xct_previous == nullptr);
+        w_assert1(lock->xct_next != nullptr);
         private_first = lock->xct_next;
-        private_first->xct_previous = NULL;
+        private_first->xct_previous = nullptr;
     } else if (lock == private_last) {
         // was the tail
-        w_assert1(lock->xct_previous != NULL);
-        w_assert1(lock->xct_next == NULL);
-        lock->xct_previous->xct_next = NULL;
+        w_assert1(lock->xct_previous != nullptr);
+        w_assert1(lock->xct_next == nullptr);
+        lock->xct_previous->xct_next = nullptr;
         private_last = lock->xct_previous;
     } else {
-        w_assert1(lock->xct_previous != NULL);
-        w_assert1(lock->xct_next != NULL);
+        w_assert1(lock->xct_previous != nullptr);
+        w_assert1(lock->xct_next != nullptr);
         lock->xct_previous->xct_next = lock->xct_next;
         lock->xct_next->xct_previous = lock->xct_previous;
     }
     if (private_first == private_last) {
-        private_last = NULL;
+        private_last = nullptr;
     }
     w_assert4(is_private_list_consistent(this));
 
@@ -946,7 +946,7 @@ void RawXct::deallocate_lock(RawLock* lock) {
 }
 
 bool RawXct::is_deadlocked(RawXct* first_blocker) {
-    w_assert1(first_blocker != NULL);
+    w_assert1(first_blocker != nullptr);
     w_assert1(first_blocker != this);
 #ifndef PURE_SPIN_RAWLOCK
     // It's possible that block->block is an infinite loop WITHOUT seeing myself.
@@ -957,8 +957,8 @@ bool RawXct::is_deadlocked(RawXct* first_blocker) {
     int depth = 0;
     RawXct* observed[MAX_DEPTH];
 #endif // PURE_SPIN_RAWLOCK
-    for (RawXct* next = first_blocker; next != NULL; next = next->blocker) {
-        if (next->blocker == NULL) {
+    for (RawXct* next = first_blocker; next != nullptr; next = next->blocker) {
+        if (next->blocker == nullptr) {
             return false;
         }
         if (next->blocker == this) {
@@ -998,7 +998,7 @@ okvl_mode RawXctLockHashMap::get_granted_mode(uint32_t lock_id) const {
     // we don't take any latch here. See the comment of RawXctLockHashMap
     // for why this is safe.
     okvl_mode ret(ALL_N_GAP_N);
-    for (const RawLock *current = _buckets[bid]; current != NULL;
+    for (const RawLock *current = _buckets[bid]; current != nullptr;
          current = current->xct_hashmap_next) {
         if (current->hash == lock_id && current->state == RawLock::ACTIVE) {
             // we don't upgrade locks any more, so we can have multiple lock entries
@@ -1012,18 +1012,18 @@ okvl_mode RawXctLockHashMap::get_granted_mode(uint32_t lock_id) const {
 void RawXctLockHashMap::push_front(RawLock* link) {
     // link becomes a new head of the bucket
     uint32_t bid = _bucket_id(link->hash);
-    link->xct_hashmap_previous = NULL;
+    link->xct_hashmap_previous = nullptr;
     link->xct_hashmap_next = _buckets[bid];
-    if (_buckets[bid] != NULL) {
+    if (_buckets[bid] != nullptr) {
         _buckets[bid]->xct_hashmap_previous = link;
     }
     _buckets[bid] = link;
 }
 void RawXctLockHashMap::remove(RawLock* link) {
-    if (link->xct_hashmap_next != NULL) {
+    if (link->xct_hashmap_next != nullptr) {
         link->xct_hashmap_next->xct_hashmap_previous = link->xct_hashmap_previous;
     }
-    if (link->xct_hashmap_previous != NULL) {
+    if (link->xct_hashmap_previous != nullptr) {
         link->xct_hashmap_previous->xct_hashmap_next = link->xct_hashmap_next;
     } else {
         // "link" was the head.
@@ -1074,8 +1074,8 @@ RawLockBackgroundThread::RawLockBackgroundThread(const sm_options& options,
     _free_segment_count = options.get_int_option("sm_rawlock_gc_free_segment_count", 50);
     _max_segment_count = options.get_int_option("sm_rawlock_gc_max_segment_count", 255);
 
-    DO_PTHREAD(::pthread_mutex_init(&_interval_mutex, NULL));
-    DO_PTHREAD(::pthread_cond_init (&_interval_cond, NULL));
+    DO_PTHREAD(::pthread_mutex_init(&_interval_mutex, nullptr));
+    DO_PTHREAD(::pthread_cond_init (&_interval_cond, nullptr));
     DO_PTHREAD(::pthread_attr_init(&_join_attr));
     DO_PTHREAD(::pthread_attr_setdetachstate(&_join_attr, PTHREAD_CREATE_JOINABLE));
 }
@@ -1092,7 +1092,7 @@ void RawLockBackgroundThread::start() {
         return;
     }
     atomic_synchronize();
-    DO_PTHREAD(::pthread_create(&_thread, NULL, RawLockBackgroundThread::pthread_main, this));
+    DO_PTHREAD(::pthread_create(&_thread, nullptr, RawLockBackgroundThread::pthread_main, this));
 }
 
 void* RawLockBackgroundThread::pthread_main(void* t) {
@@ -1107,8 +1107,8 @@ void* RawLockBackgroundThread::pthread_main(void* t) {
     DBGOUT1(<<"RawLockBackgroundThread thread ended");
     obj->_running = false;
     atomic_synchronize();
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 /**
@@ -1127,7 +1127,7 @@ void handle_pool(bool &more_work,
                  uint32_t init_segment_count,
                  uint32_t segment_size,
                  int &dummy_lsn) {
-    w_assert3(name != NULL);
+    w_assert3(name != nullptr);
     DBGOUT1(<< name << "handle_pool start.");
     // Pre allocate segments
     atomic_synchronize();
@@ -1153,7 +1153,7 @@ void handle_pool(bool &more_work,
             << " new gen segments will be:" << init_segment_count);
         lsn_t low_water_mark; // try recycling
         lsn_t now;
-        if (smlevel_0::log == NULL) {
+        if (smlevel_0::log == nullptr) {
             DBGOUT1(<< name << "There is no log manager. Immitating ");
             low_water_mark.set(dummy_lsn - generation_count + 1);
             now.set(++dummy_lsn);
@@ -1173,7 +1173,7 @@ void handle_pool(bool &more_work,
             << pool->head_nowrap << ", tail_nowrap=" << pool->tail_nowrap
             << ", desired generation_count=" << generation_count);
         lsn_t low_water_mark;
-        if (smlevel_0::log == NULL) {
+        if (smlevel_0::log == nullptr) {
             DBGOUT1(<< name << "There is no log manager. Immitating low-water-mark"
                 << ". dummy_lsn=" << dummy_lsn);
             low_water_mark.set(dummy_lsn - generation_count + 1);
@@ -1216,7 +1216,7 @@ void RawLockBackgroundThread::run_main() {
             DBGOUT1(<<"RawLockBackgroundThread interval=" << _internal_milliseconds);
             struct timeval now;
             struct timespec timeout;
-            ::gettimeofday(&now, NULL);
+            ::gettimeofday(&now, nullptr);
             timeout.tv_sec = now.tv_sec + _internal_milliseconds / 1000;
             timeout.tv_nsec = now.tv_usec * 1000
                 + (_internal_milliseconds % 1000) * 1000000;
@@ -1306,11 +1306,11 @@ std::ostream& operator<<(std::ostream& o, const RawLockQueue& v) {
 
 std::ostream& operator<<(std::ostream& o, const RawXct &v) {
     o << "Transaction: xct-" << v.thread_id;
-    if (v.blocker != NULL) {
+    if (v.blocker != nullptr) {
         o << " blocked by " << v.blocker->thread_id;
     }
     o << std::endl << "Transaction-private Lock list" << std::endl;
-    for (RawLock *lock = v.private_first; lock != NULL; lock = lock->xct_next) {
+    for (RawLock *lock = v.private_first; lock != nullptr; lock = lock->xct_next) {
         o << *lock << std::endl;
     }
     return o;

@@ -122,7 +122,7 @@ public:
 
     asc_sort_man_impl(asc_sort_buffer_t* aSortBufferAsc, rep_row_t* aprow)
         : table_man_t<asc_sort_buffer_t>(aSortBufferAsc, false),
-          _sort_buf(NULL), _tuple_size(0), _tuple_count(0), _buf_size(0),
+          _sort_buf(nullptr), _tuple_size(0), _tuple_count(0), _buf_size(0),
           _is_sorted(false), _preprow(aprow)
     {
     }

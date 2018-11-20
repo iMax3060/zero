@@ -245,7 +245,7 @@ class smthread_t {
             lock_timeout(timeout_t::WAIT_FOREVER), // default for a thread
             _in_sm(false),
             _is_update_thread(false),
-            _depth(outer == NULL ? 1 : outer->_depth + 1),
+            _depth(outer == nullptr ? 1 : outer->_depth + 1),
             _outer(outer)
         {
             QUEUE_EXT_QNODE_INITIALIZE(_me1);

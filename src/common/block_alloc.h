@@ -152,7 +152,7 @@ struct block_alloc {
 
     static
     void destroy_object(T* ptr) {
-        if(ptr == NULL) return;
+        if(ptr == nullptr) return;
 
         ptr->~T();
         Pool::release(ptr);  // static method
@@ -185,7 +185,7 @@ template<class T, size_t MaxBytes>
 inline
 void operator delete(void* ptr, block_alloc<T,MaxBytes> & /*alloc*/) 
 {
-    if(ptr == NULL) return;
+    if(ptr == nullptr) return;
     block_alloc<T,MaxBytes>::Pool::release(ptr);
     w_assert2(0); // let a debug version catch this.
 }

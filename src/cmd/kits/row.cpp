@@ -51,11 +51,11 @@
  ******************************************************************/
 
 rep_row_t::rep_row_t()
-    : _dest(NULL), _bufsz(0), _pts(NULL)
+    : _dest(nullptr), _bufsz(0), _pts(nullptr)
 { }
 
 rep_row_t::rep_row_t(blob_pool* apts)
-    : _dest(NULL), _bufsz(0), _pts(apts)
+    : _dest(nullptr), _bufsz(0), _pts(apts)
 {
     assert (_pts);
 }
@@ -64,7 +64,7 @@ rep_row_t::~rep_row_t()
 {
     if (_dest) {
         _pts->destroy(_dest);
-        _dest = NULL;
+        _dest = nullptr;
     }
 }
 
@@ -94,7 +94,7 @@ void rep_row_t::set(const unsigned nsz)
         if (tmp) {
             //            delete [] tmp;
             _pts->destroy(tmp);
-            tmp = NULL;
+            tmp = nullptr;
         }
         _bufsz = _pts->nbytes();
     }
@@ -132,11 +132,11 @@ void rep_row_t::set_ts(blob_pool* apts, const unsigned nsz)
 
 
 table_row_t::table_row_t()
-    : _ptable(NULL),
+    : _ptable(nullptr),
       _field_cnt(0), _is_setup(false),
-      _pvalues(NULL),
+      _pvalues(nullptr),
       _fixed_offset(0),_var_slot_offset(0),_var_offset(0),_null_count(0),
-      _rep(NULL), _rep_key(NULL)
+      _rep(nullptr), _rep_key(nullptr)
 {
 }
 
@@ -162,7 +162,7 @@ int table_row_t::setup(table_desc_t* ptd)
     assert (ptd);
 
     // if it is already setup for this table just reset it
-    if ((_ptable == ptd) && (_pvalues != NULL) && (_is_setup)) {
+    if ((_ptable == ptd) && (_pvalues != nullptr) && (_is_setup)) {
         reset();
         return (1);
     }
@@ -650,14 +650,14 @@ void table_row_t::print_tuple()
 {
     assert (_is_setup);
 
-    char* sbuf = NULL;
+    char* sbuf = nullptr;
     int sz = 0;
     for (unsigned i=0; i<_field_cnt; i++) {
         sz = _pvalues[i].get_debug_str(sbuf);
         if (sbuf) {
             TRACE( TRACE_TRX_FLOW, "%d. %s (%d)\n", i, sbuf, sz);
             delete [] sbuf;
-            sbuf = NULL;
+            sbuf = nullptr;
         }
     }
 }
@@ -668,14 +668,14 @@ void table_row_t::print_tuple_no_tracing()
 {
     assert (_is_setup);
 
-    char* sbuf = NULL;
+    char* sbuf = nullptr;
     int sz = 0;
     for (unsigned i=0; i<_field_cnt; i++) {
         sz = _pvalues[i].get_debug_str(sbuf);
         if (sbuf) {
             fprintf( stderr, "%d. %s (%d)\n", i, sbuf, sz);
             delete [] sbuf;
-            sbuf = NULL;
+            sbuf = nullptr;
         }
     }
 }

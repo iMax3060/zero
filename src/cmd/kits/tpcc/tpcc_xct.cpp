@@ -887,8 +887,8 @@ w_rc_t ShoreTPCCEnv::xct_new_order(const int xct_id,
 
         // CS: not used
 	// char c_s_brand_generic;
-	// if (strstr(aitem.I_DATA, "ORIGINAL") != NULL &&
-	//     strstr(astock.S_DATA, "ORIGINAL") != NULL)
+	// if (strstr(aitem.I_DATA, "ORIGINAL") != nullptr &&
+	//     strstr(astock.S_DATA, "ORIGINAL") != nullptr)
 	//     c_s_brand_generic = 'B';
 	// else c_s_brand_generic = 'G';
 
@@ -1171,7 +1171,7 @@ w_rc_t ShoreTPCCEnv::xct_payment(const int xct_id,
     } else { // good customer
 	// TRACE( TRACE_TRX_FLOW, "App: %d PAY:cust-upd-tuple\n", xct_id);
 	W_DO(_pcustomer_man->cust_update_tuple(_pssm, prcust, acust,
-					       NULL, NULL));
+					       nullptr, nullptr));
     }
 
 
@@ -1228,7 +1228,7 @@ w_rc_t ShoreTPCCEnv::xct_payment(const int xct_id,
 
     tpcc_history_tuple ahist;
     sprintf(ahist.H_DATA, "%s   %s", awh.W_NAME, adistr.D_NAME);
-    ahist.H_DATE = time(NULL);
+    ahist.H_DATE = time(nullptr);
 
     prhist->set_value(0, ppin._c_id);
     prhist->set_value(1, c_d);
@@ -1304,7 +1304,7 @@ w_rc_t ShoreTPCCEnv::xct_order_status(const int xct_id,
     rep_row_t lowrep(_pcustomer_man->ts());
     rep_row_t highrep(_pcustomer_man->ts());
 
-    tpcc_orderline_tuple* porderlines = NULL;
+    tpcc_orderline_tuple* porderlines = nullptr;
 
     // allocate space for the biggest of the (customer) and (order)
     // table representations
@@ -1511,7 +1511,7 @@ w_rc_t ShoreTPCCEnv::_xct_delivery_helper(const int xct_id,
 
     int w_id       = pdin._wh_id;
     int carrier_id = pdin._carrier_id;
-    time_t ts_start = time(NULL);
+    time_t ts_start = time(nullptr);
 
     // delivery trx touches 4 tables:
     // new_order, order, orderline, and customer
@@ -2073,7 +2073,7 @@ w_rc_t ShoreTPCCEnv::xct_mbench_cust(const int xct_id,
     } else { // good customer
 	// TRACE( TRACE_TRX_FLOW, "App: %d PAY:good-cust-upd-tuple\n", xct_id);
 	W_DO(_pcustomer_man->cust_update_tuple(_pssm, prcust, acust,
-					       NULL, NULL));
+					       nullptr, nullptr));
     }
 
 #ifdef PRINT_TRX_RESULTS

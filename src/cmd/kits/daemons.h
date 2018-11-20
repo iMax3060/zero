@@ -232,7 +232,7 @@ public:
         assert (_pmanager);
         assert (_pindex);
 
-        char* pdest  = NULL;
+        char* pdest  = nullptr;
         int   bufsz  = 0;
         int   key_sz = 0;
         int   mark   = COMMIT_ACTION_COUNT;
@@ -269,7 +269,7 @@ public:
                     //*** CONSUME ***//
 
                     key_sz = _pmanager->format_key(_pindex, _ptuple, *_ptuple->_rep);
-                    assert (pdest); // if NULL invalid key
+                    assert (pdest); // if nullptr invalid key
 
                     W_DO(_pssm->create_assoc(_pindex->stid(),
                                 vec_t(pdest, key_sz),

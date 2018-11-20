@@ -55,7 +55,7 @@ w_rc_t pipeline_many(ss_m* ssm, test_volume_t *test_volume) {
 
     // because of flush pipeline, this should be quick
     timeval start,stop,result;
-    ::gettimeofday(&start,NULL);
+    ::gettimeofday(&start,nullptr);
     W_DO(test_env->begin_xct());
     for (int i = 0; i < 500; ++i) {
         keystr[3] = '0' + (i / 100);
@@ -65,7 +65,7 @@ w_rc_t pipeline_many(ss_m* ssm, test_volume_t *test_volume) {
         W_DO(ss_m::chain_xct(true));
     }
     W_DO(test_env->commit_xct());
-    ::gettimeofday(&stop,NULL);
+    ::gettimeofday(&stop,nullptr);
     timersub(&stop, &start,&result);
     cout << "flush pipeline of 500 chain (lazy) commits: " << (result.tv_sec + result.tv_usec/1000000.0) << " sec" << endl;
 
@@ -75,7 +75,7 @@ w_rc_t pipeline_many(ss_m* ssm, test_volume_t *test_volume) {
     EXPECT_EQ (std::string("key000"), s.minkey);
     EXPECT_EQ (std::string("key499"), s.maxkey);
 
-    ::gettimeofday(&start,NULL);
+    ::gettimeofday(&start,nullptr);
     W_DO(test_env->begin_xct());
     for (int i = 500; i < 510; ++i) {
         keystr[3] = '0' + (i / 100);
@@ -85,7 +85,7 @@ w_rc_t pipeline_many(ss_m* ssm, test_volume_t *test_volume) {
         W_DO(ss_m::chain_xct(false));
     }
     W_DO(test_env->commit_xct());
-    ::gettimeofday(&stop,NULL);
+    ::gettimeofday(&stop,nullptr);
     timersub(&stop, &start,&result);
     cout << "flush pipeline of 10 chain (non-lazy) commits: " << (result.tv_sec + result.tv_usec/1000000.0) << " sec" << endl;
 

@@ -218,25 +218,25 @@ inline void w_keystr_t::_assure (w_keystr_len_t required_len) {
     if (_memlen >= required_len) {
         return;
     }
-    if (_data != NULL) {
+    if (_data != nullptr) {
         delete[] _data;
     }
     _data = new unsigned char[required_len];
-    if (_data != NULL) {
+    if (_data != nullptr) {
         _memlen = required_len;
     } else {
         _memlen = 0;
     }
 }
 
-inline w_keystr_t::w_keystr_t () : _data (NULL), _strlen (0), _memlen(0) {
+inline w_keystr_t::w_keystr_t () : _data (nullptr), _strlen (0), _memlen(0) {
 }
 
-inline w_keystr_t::w_keystr_t (const w_keystr_t &r) : _data (NULL), _strlen (r._strlen), _memlen(0) {
+inline w_keystr_t::w_keystr_t (const w_keystr_t &r) : _data (nullptr), _strlen (r._strlen), _memlen(0) {
     assert (r._strlen == 0 || r.is_neginf() || r.is_regular() || r.is_posinf());
-    if (r._data != NULL) {
+    if (r._data != nullptr) {
         _assure (_strlen);
-        if (_data != NULL) {
+        if (_data != nullptr) {
             ::memcpy (_data, r._data, _strlen);
         }
     }
@@ -244,9 +244,9 @@ inline w_keystr_t::w_keystr_t (const w_keystr_t &r) : _data (NULL), _strlen (r._
 inline w_keystr_t& w_keystr_t::operator=(const w_keystr_t &r) {
     assert (r._strlen == 0 || r.is_neginf() || r.is_regular() || r.is_posinf());
     _strlen = r._strlen;
-    if (r._data != NULL) {
+    if (r._data != nullptr) {
         _assure (_strlen);
-        if (_data != NULL) {
+        if (_data != nullptr) {
             ::memcpy (_data, r._data, _strlen);
         }
     }
@@ -254,10 +254,10 @@ inline w_keystr_t& w_keystr_t::operator=(const w_keystr_t &r) {
 }
 
 inline bool w_keystr_t::construct_regularkey(const void *nonkeystr, w_keystr_len_t length) {
-    assert (nonkeystr != NULL);
+    assert (nonkeystr != nullptr);
     _strlen = length + 1;
     _assure (_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     _data[0] = SIGN_REGULAR;
     ::memcpy (_data + 1, nonkeystr, length);
     return true;
@@ -266,7 +266,7 @@ inline bool w_keystr_t::construct_regularkey(const void *nonkeystr, w_keystr_len
 inline bool w_keystr_t::construct_neginfkey() {
     _strlen = 1;
     _assure (_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     _data[0] = SIGN_NEGINF;
     return true;
 }
@@ -274,7 +274,7 @@ inline bool w_keystr_t::construct_neginfkey() {
 inline bool w_keystr_t::construct_posinfkey() {
     _strlen = 1;
     _assure (_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     _data[0] = SIGN_POSINF;
     return true;
 }
@@ -287,24 +287,24 @@ inline bool _valid_signbyte (const void *keystr) {
 }
 
 inline bool w_keystr_t::construct_from_keystr(const void *keystr, w_keystr_len_t length) {
-    assert (length == 0 || keystr != NULL);
+    assert (length == 0 || keystr != nullptr);
     assert (length == 0 || _valid_signbyte(keystr));
     _strlen = length;
     _assure(_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     ::memcpy (_data, keystr, length);
     return true;
 }
 
 inline bool w_keystr_t::construct_from_keystr(const void *keystr_prefix, w_keystr_len_t prefix_length,
         const void *keystr_suffix, w_keystr_len_t suffix_length) {
-    assert (keystr_prefix != NULL);
+    assert (keystr_prefix != nullptr);
     assert ((prefix_length == 0 && _valid_signbyte(keystr_suffix))
         || _valid_signbyte(keystr_prefix));
-    assert (keystr_suffix != NULL);
+    assert (keystr_suffix != nullptr);
     _strlen = prefix_length + suffix_length;
     _assure(_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     ::memcpy (_data, keystr_prefix, prefix_length);
     ::memcpy (_data + prefix_length, keystr_suffix, suffix_length);
     return true;
@@ -314,10 +314,10 @@ inline bool w_keystr_t::construct_from_keystr_poormkey_16(
     const void *keystr_prefix, w_keystr_len_t prefix_length,
     w_keystr_len_t total_suffix_length, uint16_t poormkey,
     const void *keystr_suffix) {
-    assert (keystr_prefix != NULL);
+    assert (keystr_prefix != nullptr);
     _strlen = prefix_length + total_suffix_length;
     _assure(_strlen);
-    if (_data == NULL) return false;
+    if (_data == nullptr) return false;
     ::memcpy (_data, keystr_prefix, prefix_length);
     if (total_suffix_length > 0) {
         if (total_suffix_length < sizeof(poormkey)) {
@@ -328,7 +328,7 @@ inline bool w_keystr_t::construct_from_keystr_poormkey_16(
         } else {
             serialize16_be(_data + prefix_length, poormkey);
             if (total_suffix_length > sizeof(poormkey)) {
-                assert (keystr_suffix != NULL);
+                assert (keystr_suffix != nullptr);
                 ::memcpy (_data + prefix_length + sizeof(poormkey), keystr_suffix, total_suffix_length - sizeof(poormkey));
             }
         }
@@ -342,7 +342,7 @@ inline w_keystr_t::~w_keystr_t() {
 }
 
 inline bool w_keystr_t::is_constructed () const {
-    return _data != NULL;
+    return _data != nullptr;
 }
 
 
@@ -357,15 +357,15 @@ inline int w_keystr_t::compare (const w_keystr_t &r) const {
     return compare_keystr (r._data, r._strlen);
 }
 inline w_keystr_len_t w_keystr_t::common_leading_bytes (const w_keystr_t &r) const {
-    assert (_data != NULL);
-    assert (r._data != NULL);
+    assert (_data != nullptr);
+    assert (r._data != nullptr);
     assert (_valid_signbyte(_data));
     assert (_valid_signbyte(r._data));
     return common_leading_bytes (_data, _strlen, r._data, r._strlen);
 }
 inline w_keystr_len_t w_keystr_t::common_leading_bytes (const unsigned char*str, w_keystr_len_t len) const {
-    assert (_data != NULL);
-    assert (str != NULL);
+    assert (_data != nullptr);
+    assert (str != nullptr);
     assert (_valid_signbyte(_data));
     assert (_valid_signbyte(str));
     return common_leading_bytes (_data, _strlen, str, len);
@@ -373,8 +373,8 @@ inline w_keystr_len_t w_keystr_t::common_leading_bytes (const unsigned char*str,
 
 inline w_keystr_len_t w_keystr_t::common_leading_bytes (const unsigned char*str1, w_keystr_len_t len1, const unsigned char* str2, w_keystr_len_t len2)
 {
-    assert (str1 != NULL);
-    assert (str2 != NULL);
+    assert (str1 != nullptr);
+    assert (str2 != nullptr);
     w_keystr_len_t cmp_len = (len1 <= len2) ? len1 : len2;
     for (w_keystr_len_t i = 0; i < cmp_len; ++i) {
         if (str1[i] !=  str2[i]) {
@@ -386,15 +386,15 @@ inline w_keystr_len_t w_keystr_t::common_leading_bytes (const unsigned char*str1
 
 inline int w_keystr_t::compare_keystr (const void *keystr, w_keystr_len_t length) const
 {
-    assert (_data != NULL);
-    assert (keystr != NULL);
+    assert (_data != nullptr);
+    assert (keystr != nullptr);
     assert (_valid_signbyte(keystr));
     return compare_bin_str (_data, _strlen, keystr, length);
 }
 inline int w_keystr_t::compare_nonkeystr (const void *nonkeystr, w_keystr_len_t length) const
 {
-    assert (_data != NULL);
-    assert (nonkeystr != NULL);
+    assert (_data != nullptr);
+    assert (nonkeystr != nullptr);
     if (is_neginf()) {
         return -1;
     }
@@ -404,8 +404,8 @@ inline int w_keystr_t::compare_nonkeystr (const void *nonkeystr, w_keystr_len_t 
     return compare_bin_str (_data + 1, _strlen - 1, nonkeystr, length);
 }
 inline void w_keystr_t::clear () {
-    delete[] _data; // this is okay with _data==NULL
-    _data = NULL;
+    delete[] _data; // this is okay with _data==nullptr
+    _data = nullptr;
     _strlen = 0;
     _memlen = 0;
 }
@@ -433,7 +433,7 @@ inline bool w_keystr_t::is_regular () const {
 }
 
 inline void w_keystr_t::serialize_as_nonkeystr (void *buffer) const {
-    assert (buffer != NULL);
+    assert (buffer != nullptr);
     assert (is_constructed());
     assert (!is_neginf() && !is_posinf()); // these can't be serialized as non-key
     ::memcpy (buffer, _data + 1, _strlen - 1);
@@ -451,7 +451,7 @@ inline void w_keystr_t::serialize_as_keystr (void *buffer) const {
     if (_strlen == 0) {
         return;
     }
-    assert (buffer != NULL);
+    assert (buffer != nullptr);
     assert (is_constructed());
     ::memcpy (buffer, _data, _strlen);
 }

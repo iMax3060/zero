@@ -163,8 +163,8 @@ public:
     w_rc_t cust_update_tuple(ss_m* db,
                              customer_tuple* ptuple,
                              const tpcc_customer_tuple& acustomer,
-                             const char* adata1 = NULL,
-                             const char* adata2 = NULL);
+                             const char* adata1 = nullptr,
+                             const char* adata2 = nullptr);
 
     w_rc_t cust_update_discount_balance(ss_m* db,
                                         customer_tuple* ptuple,

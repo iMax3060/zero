@@ -406,7 +406,7 @@ w_rc_t ShoreTPCBEnv::create_tables()
 
     long accts_per_worker = total_accounts/_loaders_to_use;
 
-    // time_t tstart = time(NULL);
+    // time_t tstart = time(nullptr);
 
     // 2. Create and fire up the table creator which will also start the loading
     {
@@ -505,7 +505,7 @@ int ShoreTPCBEnv::dump()
 {
     assert (0); // IP: not implemented yet
 
-//     table_man_t* ptable_man = NULL;
+//     table_man_t* ptable_man = nullptr;
 //     for(table_man_list_iter table_man_iter = _table_man_list.begin();
 //         table_man_iter != _table_man_list.end(); table_man_iter++)
 //         {

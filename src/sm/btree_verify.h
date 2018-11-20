@@ -33,7 +33,7 @@ public:
 
     /** flips a bit corresponding to the specified fact. */
     void add_fact (PageID pid, int16_t level, bool high, size_t key_len, const char* key) {
-        add_fact (pid, level, high, key_len, key, 0, NULL);
+        add_fact (pid, level, high, key_len, key, 0, nullptr);
     }
     /** for the case the string consists of two parts (prefix and suffix). */
     void add_fact (PageID pid, int16_t level, bool high, size_t prefix_len, const char* prefix, size_t suffix_len, const char* suffix);
@@ -43,7 +43,7 @@ public:
     }
     /** same as add_fact(), but has different function name to make the code more readable. */
     void add_expectation (PageID pid, int16_t level, bool high, size_t key_len, const char* key) {
-        add_expectation (pid, level, high, key_len, key, 0, NULL);
+        add_expectation (pid, level, high, key_len, key, 0, nullptr);
     }
     /** for the case the string consists of two parts (prefix and suffix). */
     void add_expectation (PageID pid, int16_t level, bool high, size_t prefix_len, const char* prefix, size_t suffix_len, const char* suffix);

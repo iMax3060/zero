@@ -67,7 +67,7 @@ btree_impl::_ux_lock_key(
 
     lockid_t lid (store, (const unsigned char*) keystr, keylen);
     // first, try conditionally. we utilize the inserted lock entry even if it fails
-    RawLock* entry = NULL;
+    RawLock* entry = nullptr;
 
     // The lock request does the following:
     // If the lock() failed to acquire lock (trying to acquire lock while holding the latch) and
@@ -94,13 +94,13 @@ btree_impl::_ux_lock_key(
             // Because Express does not have a deadlock monitor and policy to determine
             // which transaction to rollback during a deadlock (should abort the cheaper
             // transaction), the user transaction which detects deadlock will be aborted.
-            w_assert1(entry == NULL);
+            w_assert1(entry == nullptr);
             return lock_rc;
         }
 
         // couldn't immediately get it. then we unlatch the page and wait.
         w_assert1(lock_rc.err_num() == eCONDLOCKTIMEOUT);
-        w_assert1(entry != NULL);
+        w_assert1(entry != nullptr);
 
         // we release the latch here. However, we increment the pin count before that
         // to prevent the page from being evicted.
@@ -114,7 +114,7 @@ btree_impl::_ux_lock_key(
         if (refix_rc.is_error() || leaf.get_page_lsn() != prelsn)
         {
             // release acquired lock
-            if (entry != NULL) {
+            if (entry != nullptr) {
                 w_assert1(!check_only);
                 lm->unlock(entry);
             } else {

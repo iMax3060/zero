@@ -239,11 +239,11 @@ rc_t partition_t::prime_buffer(char* buffer, lsn_t lsn, size_t& prime_offset)
 #ifdef USE_MMAP
         size_t offset = XFERSIZE * (lsn.lo() / XFERSIZE);
         lsn_t block_lsn = lsn_t(num(), offset);
-        W_DO(read(lr, block_lsn, NULL));
+        W_DO(read(lr, block_lsn, nullptr));
         memcpy(buffer, lr, XFERSIZE);
         prime_offset = lsn.lo() - offset;
 #else
-        W_DO(read(lr, lsn, NULL));
+        W_DO(read(lr, lsn, nullptr));
         memcpy(buffer, _readbuf, XFERSIZE);
         prime_offset = (char*) lr - _readbuf;
         release_read();
@@ -346,7 +346,7 @@ rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
             DBG5(<<" leftover now=" << leftover);
         }
     }
-    w_assert0(rp != NULL);
+    w_assert0(rp != nullptr);
     w_assert0(rp->valid_header(ll));
     return RCOK;
 }

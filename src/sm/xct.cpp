@@ -246,7 +246,7 @@ xct_t::xct_core::xct_core(tid_t const &t, state_t s, int timeout)
     _warn_on(true),
     _lock_info(agent_lock_info->take()),
     _lil_lock_info(agent_lil_lock_info->take()),
-    _raw_lock_xct(NULL),
+    _raw_lock_xct(nullptr),
     _state(s),
     _read_only(false),
     _xct_ended(0), // for assertions
@@ -412,7 +412,7 @@ xct_t::~xct_t()
 
         if(_core)
             delete _core;
-        _core = NULL;
+        _core = nullptr;
     // if (LATCH_NL != latch().mode())
     // {
     //     // Someone is accessing this txn, wait until it finished
@@ -930,7 +930,7 @@ xct_t::_pre_commit(uint32_t flags)
  *
  *********************************************************************/
 rc_t
-xct_t::_commit(uint32_t flags, lsn_t* plastlsn /* default NULL*/)
+xct_t::_commit(uint32_t flags, lsn_t* plastlsn /* default nullptr*/)
 {
     // when chaining, we inherit the read_watermark from the previous xct
     // in case the next transaction are read-only.
@@ -951,7 +951,7 @@ xct_t::_commit(uint32_t flags, lsn_t* plastlsn /* default NULL*/)
         }
 
         // IP: Before destroying anything copy last_lsn
-        if (plastlsn != NULL) *plastlsn = _last_lsn;
+        if (plastlsn != nullptr) *plastlsn = _last_lsn;
 
         change_state(xct_ended);
 
@@ -1044,7 +1044,7 @@ xct_t::_commit_read_only(uint32_t flags, lsn_t& inherited_read_watermark)
             // we really output a log and flush it
             bool flushed = false;
             timeval start, now, result;
-            ::gettimeofday(&start,NULL);
+            ::gettimeofday(&start,nullptr);
             while (true) {
                 W_DO(log->flush(_read_watermark, false, true, &flushed));
                 if (flushed) {
@@ -1054,7 +1054,7 @@ xct_t::_commit_read_only(uint32_t flags, lsn_t& inherited_read_watermark)
                 // in some OS, usleep() has a very low accuracy.
                 // So, we check the current time rather than assuming
                 // elapsed time = ELR_READONLY_WAIT_MAX_COUNT * ELR_READONLY_WAIT_USEC.
-                ::gettimeofday(&now,NULL);
+                ::gettimeofday(&now,nullptr);
                 timersub(&now, &start, &result);
                 int elapsed = (result.tv_sec * 1000000 + result.tv_usec);
                 if (elapsed > ELR_READONLY_WAIT_MAX_COUNT * ELR_READONLY_WAIT_USEC) {

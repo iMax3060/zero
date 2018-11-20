@@ -43,10 +43,10 @@ struct condex
     long _waits;
 
     condex() : _signals(0), _waits(0) { 
-        if (pthread_cond_init(&_cond,NULL)) {
+        if (pthread_cond_init(&_cond,nullptr)) {
             assert (0); // failed to init cond var
         }
-        if (pthread_mutex_init(&_lock,NULL)) {
+        if (pthread_mutex_init(&_lock,nullptr)) {
             assert (0); // failed to init mutex
         }
     }
@@ -100,7 +100,7 @@ struct condex_pair
 	if(_wanted > _requested) {
 	    return &_wait[_requested++ % 2];
 	}
-	return NULL;
+	return nullptr;
     }
     void wait() {
 	w_assert1(_waited < _requested);

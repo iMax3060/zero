@@ -116,11 +116,11 @@ public:
 
     lil_global_vol_table() {
         ::memset (this, 0, sizeof(*this));
-        ::pthread_mutex_init(&_waiter_mutex, NULL);
-        ::pthread_cond_init(&_waiter_cond, NULL);
+        ::pthread_mutex_init(&_waiter_mutex, nullptr);
+        ::pthread_cond_init(&_waiter_cond, nullptr);
         for (size_t i = 0; i < stnode_page::max; ++i) {
-            ::pthread_mutex_init(&(_store_tables[i]._waiter_mutex), NULL);
-            ::pthread_cond_init(&(_store_tables[i]._waiter_cond), NULL);
+            ::pthread_mutex_init(&(_store_tables[i]._waiter_mutex), nullptr);
+            ::pthread_cond_init(&(_store_tables[i]._waiter_cond), nullptr);
         }
     }
     ~lil_global_vol_table(){

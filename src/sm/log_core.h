@@ -93,8 +93,8 @@ public:
 
     static const std::string IMPL_NAME;
 
-    rc_t            insert(logrec_t &r, lsn_t* l = NULL);
-    rc_t            flush(const lsn_t &lsn, bool block=true, bool signal=true, bool *ret_flushed=NULL);
+    rc_t            insert(logrec_t &r, lsn_t* l = nullptr);
+    rc_t            flush(const lsn_t &lsn, bool block=true, bool signal=true, bool *ret_flushed=nullptr);
     rc_t    flush_all(bool block=true) {
                           return flush(curr_lsn().advance(-1), block); }
     rc_t            compensate(const lsn_t &orig_lsn, const lsn_t& undo_lsn);

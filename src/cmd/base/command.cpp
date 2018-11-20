@@ -104,7 +104,7 @@ Command* Command::parse(int argc, char ** argv)
             }
             if (vm.count("help") > 0) {
                 cmd->helpOption();
-                return NULL;
+                return nullptr;
             }
 
             po::notify(vm);
@@ -114,7 +114,7 @@ Command* Command::parse(int argc, char ** argv)
     }
 
     showCommands();
-    return NULL;
+    return nullptr;
 }
 
 void Command::setupSMOptions(po::options_description& options)

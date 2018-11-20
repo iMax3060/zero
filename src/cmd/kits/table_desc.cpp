@@ -35,12 +35,12 @@
 #include "w_key.h"
 
 table_desc_t::table_desc_t(const char* name, int fieldcnt)
-    : _name(name), _field_count(fieldcnt), _db(NULL), _primary_idx(NULL),
+    : _name(name), _field_count(fieldcnt), _db(nullptr), _primary_idx(nullptr),
     _maxsize(0)
 {
     assert (fieldcnt>0);
 
-    pthread_mutex_init(&_fschema_mutex, NULL);
+    pthread_mutex_init(&_fschema_mutex, nullptr);
 
     // Create placeholders for the field descriptors
     _desc = new field_desc_t[fieldcnt];
@@ -50,7 +50,7 @@ table_desc_t::~table_desc_t()
 {
     if (_desc) {
         delete [] _desc;
-        _desc = NULL;
+        _desc = nullptr;
     }
 
     pthread_mutex_destroy(&_fschema_mutex);

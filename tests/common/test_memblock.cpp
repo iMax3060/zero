@@ -275,7 +275,7 @@ TEST(MemblockTest, TestBlock) {
 
     // but n - sizeof(block)/sizeof(int) should work
     block* bptr = (block*) ::memalign(8*sizeof(block_bits::bitmap)*sizeof(int), block_size);
-    ASSERT_TRUE (bptr != NULL);
+    ASSERT_TRUE (bptr != nullptr);
     new (bptr) block(chip_size, chip_count, block_size);
     block &b = *bptr;
     

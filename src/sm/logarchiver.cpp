@@ -175,7 +175,7 @@ ArchiverHeap::~ArchiverHeap()
 
 slot_t ArchiverHeap::allocate(size_t length)
 {
-    slot_t dest(NULL, 0);
+    slot_t dest(nullptr, 0);
     W_COERCE(workspace->allocate(length, dest));
 
     if (!dest.address) {

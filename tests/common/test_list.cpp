@@ -29,11 +29,11 @@ TEST(ListTest, List1) {
 
     for (i = 0; i < 10; i++)  {
         elem1_t* p = l.pop();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9 - i);
     }
 
-    EXPECT_TRUE(l.pop() == NULL);
+    EXPECT_TRUE(l.pop() == nullptr);
 
     for (i = 0; i < 10; i++)  {
         l.append(&array[i]);
@@ -41,10 +41,10 @@ TEST(ListTest, List1) {
 
     for (i = 0; i < 10; i++)  {
         elem1_t* p = l.chop();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9 - i);
     }
-    EXPECT_TRUE(l.chop() == NULL);
+    EXPECT_TRUE(l.chop() == nullptr);
 }
 
 
@@ -75,27 +75,27 @@ TEST(ListTest, List2) {
         w_list_i<elem2_t, unsafe_list_dummy_lock_t> iter(l);
         for (i = 0; i < 10; i++)  {
             elem2_t* p = iter.next();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, 9 - i);
         }
-        EXPECT_TRUE(iter.next() == NULL);
+        EXPECT_TRUE(iter.next() == nullptr);
 
         w_list_const_i<elem2_t, unsafe_list_dummy_lock_t> const_iter(l);
         for (i = 0; i < 10; i++)  {
             const elem2_t* p = const_iter.next();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, 9 - i);
         }
-        EXPECT_TRUE(const_iter.next() == NULL);
+        EXPECT_TRUE(const_iter.next() == nullptr);
     }
 
     for (i = 0; i < 10; i++)  {
         elem2_t* p = l.pop();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9 - i);
     }
 
-    EXPECT_TRUE(l.pop() == NULL);
+    EXPECT_TRUE(l.pop() == nullptr);
 
     for (i = 0; i < 10; i++)  {
         l.append(&array[i]);
@@ -105,17 +105,17 @@ TEST(ListTest, List2) {
         w_list_i<elem2_t, unsafe_list_dummy_lock_t> iter(l);
         for (i = 0; i < 10; i++)  {
             elem2_t* p = iter.next();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, i);
         }
     }
 
     for (i = 0; i < 10; i++)  {
         elem2_t* p = l.chop();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9 - i);
     }
-    EXPECT_TRUE(l.chop() == NULL);
+    EXPECT_TRUE(l.chop() == nullptr);
 }
 
 struct elem3_t {
@@ -155,7 +155,7 @@ TEST(ListTest, List3) {
 
         for (i = 0; i < 10; i++)  {
             p = u.search(i);
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, i);
         }
 
@@ -163,31 +163,31 @@ TEST(ListTest, List3) {
             w_list_i<elem3_t, unsafe_list_dummy_lock_t> iter(u);
             for (i = 0; i < 10; i++)  {
                 p = iter.next();
-                ASSERT_TRUE(p != NULL);
+                ASSERT_TRUE(p != nullptr);
                 EXPECT_EQ(p->i, i);
             }
-            EXPECT_TRUE(iter.next() == NULL);
+            EXPECT_TRUE(iter.next() == nullptr);
         }
 
         p = u.first();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 0);
 
         p = u.last();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9);
 
         for (i = 0; i < 10; i++)  {
             p = u.first();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, i);
             p = u.pop();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, i);
         }
 
         p = u.pop();
-        EXPECT_TRUE(p == NULL);
+        EXPECT_TRUE(p == nullptr);
     }
 
     {
@@ -210,30 +210,30 @@ TEST(ListTest, List3) {
             w_list_i<elem3_t, unsafe_list_dummy_lock_t> iter(d);
             for (i = 0; i < 10; i++)  {
                 p = iter.next();
-                ASSERT_TRUE(p != NULL);
+                ASSERT_TRUE(p != nullptr);
                 EXPECT_EQ(p->i, 9 - i);
             }
-            EXPECT_TRUE(iter.next() == NULL);
+            EXPECT_TRUE(iter.next() == nullptr);
         }
 
         p = d.first();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 9);
 
         p = d.last();
-        ASSERT_TRUE(p != NULL);
+        ASSERT_TRUE(p != nullptr);
         EXPECT_EQ(p->i, 0);
 
         for (i = 0; i < 10; i++)  {
             p = d.first();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, 9 - i);
             p = d.pop();
-            ASSERT_TRUE(p != NULL);
+            ASSERT_TRUE(p != nullptr);
             EXPECT_EQ(p->i, 9 - i);
         }
 
         p = d.pop();
-        EXPECT_TRUE(p == NULL);
+        EXPECT_TRUE(p == nullptr);
     }
 }

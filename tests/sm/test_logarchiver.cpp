@@ -246,7 +246,7 @@ rc_t runScannerTest(ss_m* /* ssm */, test_volume_t* /* test_vol */)
 
     // TODO: runScanner does not work with index because index blocks are read at the end
     LogArchiver::ArchiveDirectory dir(options);
-    EXPECT_EQ(NULL, dir.getIndex());
+    EXPECT_EQ(nullptr, dir.getIndex());
 
     unsigned total = 0;
     generateFakeArchive(&dir, BLOCK_SIZE*8, 1, total);
@@ -330,7 +330,7 @@ rc_t runMergerSeqTest(ss_m* /* ssm */, test_volume_t* /* test_vol */)
     options.set_string_option("sm_archdir", test_env->archive_dir);
 
     LogArchiver::ArchiveDirectory dir(options);
-    EXPECT_EQ(NULL, dir.getIndex());
+    EXPECT_EQ(nullptr, dir.getIndex());
 
     unsigned total = 0;
     generateFakeArchive(&dir, BLOCK_SIZE*8, 8, total);
@@ -428,7 +428,7 @@ rc_t archIndexTestSingle(ss_m*, test_volume_t*)
     size_t currBlock = 0;
     PageID firstPIDinBlock = 0;
     size_t lastBlockWithSamePID = 0;
-    logrec_t* lr = NULL;
+    logrec_t* lr = nullptr;
     while (rs.next(lr)) {
         PageID pid = lr->pid();
         if (bpos + lr->length() > blockSize) {

@@ -14,9 +14,9 @@
 sm_options basethread_t::_options;
 
 basethread_t::basethread_t()
-    : finished(false), current_xct(NULL)
+    : finished(false), current_xct(nullptr)
 {
-    DO_PTHREAD(pthread_mutex_init(&running_mutex, NULL));
+    DO_PTHREAD(pthread_mutex_init(&running_mutex, nullptr));
 }
 
 basethread_t::~basethread_t()
@@ -127,9 +127,9 @@ void basethread_t::print_stats()
  */
 void basethread_t::begin_xct()
 {
-    assert(current_xct == NULL);
+    assert(current_xct == nullptr);
     int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD;
-    current_xct = new xct_t(NULL, timeout, false, false, false);
+    current_xct = new xct_t(nullptr, timeout, false, false, false);
     smlevel_0::log->get_oldest_lsn_tracker()
         ->enter(reinterpret_cast<uintptr_t>(current_xct),
                 smlevel_0::log->curr_lsn());
@@ -137,7 +137,7 @@ void basethread_t::begin_xct()
 
 void basethread_t::commit_xct()
 {
-    assert(current_xct != NULL);
-    current_xct->commit(false, NULL);
+    assert(current_xct != nullptr);
+    current_xct->commit(false, nullptr);
     delete current_xct;
 }

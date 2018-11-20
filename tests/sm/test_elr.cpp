@@ -148,7 +148,7 @@ public:
                 _stid(stid), _key(key), _read(false), _exitted(false) {}
         ~lookup_thread_t()  {}
         void run() {
-            ::gettimeofday(&_start,NULL);
+            ::gettimeofday(&_start,nullptr);
             w_keystr_t key;
             key.construct_regularkey(_key, ::strlen(_key));
             rc_t rc;
@@ -177,7 +177,7 @@ public:
         }
         void report_time() {
             timeval now, result;
-            ::gettimeofday(&now,NULL);
+            ::gettimeofday(&now,nullptr);
             timersub(&now, &_start, &result);
             cout << (result.tv_sec * 1000000 + result.tv_usec);
         }
@@ -196,9 +196,9 @@ public:
 void spin_sleep (int usec) {
     cout << "sleep " << usec << " usec... ";
     timeval start, now, result;
-    ::gettimeofday(&start,NULL);
+    ::gettimeofday(&start,nullptr);
     while (true) {
-        ::gettimeofday(&now,NULL);
+        ::gettimeofday(&now,nullptr);
         timersub(&now, &start, &result);
         int elapsed = (result.tv_sec * 1000000 + result.tv_usec);
         if (elapsed > usec) {

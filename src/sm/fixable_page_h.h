@@ -33,7 +33,7 @@ public:
     // ======================================================================
 
     /// Create handle not yet fixed to a page
-    fixable_page_h() : generic_page_h(NULL), _bufferpool_managed(false), _mode(LATCH_NL) {}
+    fixable_page_h() : generic_page_h(nullptr), _bufferpool_managed(false), _mode(LATCH_NL) {}
     ~fixable_page_h() { unfix(); }
 
     /// assignment; steals the ownership of the page/latch p and unfixes old associated
@@ -45,7 +45,7 @@ public:
             _bufferpool_managed = p._bufferpool_managed;
             _mode               = p._mode;
             _Q_ticket           = p._Q_ticket;
-            p._pp               = NULL;
+            p._pp               = nullptr;
             p._mode             = LATCH_NL;
         }
         return *this;

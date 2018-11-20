@@ -218,7 +218,7 @@ void testdriver_thread_t::run()
         vout << "\nShutting down SSM "
             << (_functor->_clean_shutdown ? "cleanly" : "simulating a crash")
             << "..." << endl;
-        _env->_ssm = NULL;
+        _env->_ssm = nullptr;
     }
     vout << "Finished!" << endl;
 }
@@ -226,7 +226,7 @@ void testdriver_thread_t::run()
 
 btree_test_env::btree_test_env()
 {
-    _ssm = NULL;
+    _ssm = nullptr;
     _use_locks = false;
 }
 
@@ -263,8 +263,8 @@ void btree_test_env::empty_dir(const char *folder_name)
     // want to use boost::filesystem... but let's keep this project boost-free.
     vout << "removing existing files..." << endl;
     DIR *d = opendir(folder_name);
-    ASSERT_TRUE(d != NULL);
-    for (struct dirent *ent = readdir(d); ent != NULL; ent = readdir(d)) {
+    ASSERT_TRUE(d != nullptr);
+    for (struct dirent *ent = readdir(d); ent != nullptr; ent = readdir(d)) {
         // Skip "." and ".."
         if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, "..")) {
             continue;
@@ -808,7 +808,7 @@ int btree_test_env::runRestartPerfTest (
         std::cout << "Return value from system command: " << i << std::endl;
 /**/
         struct timeval tm_before;
-        gettimeofday( &tm_before, NULL );
+        gettimeofday( &tm_before, nullptr );
 
         std::cout << "More read... " << std::endl;
         int pfd;
@@ -906,7 +906,7 @@ int btree_test_env::runRestartPerfTest (
             std::cout << "Done with extra read" << std::endl;
 
             struct timeval tm_after;
-            gettimeofday( &tm_after, NULL );
+            gettimeofday( &tm_after, nullptr );
             DBGOUT0(<< "**** Random reads, elapsed time (milliseconds): "
                     << (((double)tm_after.tv_sec - (double)tm_before.tv_sec) * 1000.0)
                     + (double)tm_after.tv_usec/1000.0 - (double)tm_before.tv_usec/1000.0);
@@ -921,7 +921,7 @@ int btree_test_env::runRestartPerfTest (
 
         // Elapsed time in millisecs seconds
         struct timeval tm;
-        gettimeofday( &tm, NULL );
+        gettimeofday( &tm, nullptr );
 
         const double   MICROSECONDS_IN_SECOND  = 1000000.0; // microseconds in a second
         const double   MILLISECS_IN_SECOND     = 1000.0;    // millisecs in a second
@@ -1215,7 +1215,7 @@ int btree_test_env::runRestartPerfTestAfter (
 
         // Elapsed time in millisecs seconds
         struct timeval tm;
-        gettimeofday( &tm, NULL );
+        gettimeofday( &tm, nullptr );
 
         const double   MICROSECONDS_IN_SECOND  = 1000000.0; // microseconds in a second
         const double   MILLISECS_IN_SECOND     = 1000.0;    // millisecs in a second

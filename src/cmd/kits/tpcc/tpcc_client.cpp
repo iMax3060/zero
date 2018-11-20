@@ -111,7 +111,7 @@ w_rc_t baseline_tpcc_client_t::submit_one(int xct_type, int xctid)
     // Get one action from the trash stack
     trx_request_t* arequest = new (_env->_request_pool) trx_request_t;
     tid_t atid;
-    arequest->set(NULL,atid,xctid,atrt,xct_type,whid,_tspread);
+    arequest->set(nullptr,atid,xctid,atrt,xct_type,whid,_tspread);
 
     // Enqueue to worker thread
     assert (_worker);

@@ -52,8 +52,8 @@ void *test_work(void *t) {
         }
     }
     std::cout << "done:" << context.id << std::endl;
-    ::pthread_exit(NULL);
-    return NULL;
+    ::pthread_exit(nullptr);
+    return nullptr;
 }
 
 TEST(LogLsnTrackerTest, Parallel) {

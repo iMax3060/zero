@@ -524,7 +524,7 @@ int ShoreTPCCEnv::dump()
 {
     assert (0); // IP: Not implemented yet
 
-//     table_man_t* ptable_man = NULL;
+//     table_man_t* ptable_man = nullptr;
 //     for(table_man_list_iter table_man_iter = _table_man_list.begin();
 //         table_man_iter != _table_man_list.end(); table_man_iter++)
 //         {

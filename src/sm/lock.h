@@ -65,7 +65,7 @@ public:
      * This method returns very quickly because it only checks transaction-private data.
      * @pre the current thread is the only thread running the current transaction
      */
-    okvl_mode                   get_granted_mode(uint32_t hash, xct_t* xd = NULL);
+    okvl_mode                   get_granted_mode(uint32_t hash, xct_t* xd = nullptr);
 
     /**
      * \brief Acquires a lock of the given mode (or stronger)
@@ -98,13 +98,13 @@ public:
      * It is anyway released at commit time, but waiting lock entry should be removed
      * before the transaction does anything else.
      *
-     * @pre out != NULL
+     * @pre out != nullptr
      */
     rc_t lock(uint32_t hash, const okvl_mode &m,
             bool check, bool wait, bool acquire,
-            xct_t* = NULL,
+            xct_t* = nullptr,
             int timeout = timeout_t::WAIT_SPECIFIED_BY_XCT,
-            RawLock** out = NULL);
+            RawLock** out = nullptr);
 
     /** @copydoc RawLockQueue::retry_acquire() */
     rc_t                        retry_lock(RawLock** lock, bool check_only,

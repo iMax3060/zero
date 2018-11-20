@@ -175,10 +175,10 @@ public:
      * CS: New methods for serialization and deserialization
      * (a.k.a. conversion between disk and memory format)
      */
-    void load_key(char* data, index_desc_t* pindex = NULL);
-    void load_value(char* data, index_desc_t* pindex = NULL);
-    void store_key(char* data, size_t& length, index_desc_t* pindex = NULL);
-    void store_value(char* data, size_t& length, index_desc_t* pindex = NULL);
+    void load_key(char* data, index_desc_t* pindex = nullptr);
+    void load_value(char* data, index_desc_t* pindex = nullptr);
+    void store_key(char* data, size_t& length, index_desc_t* pindex = nullptr);
+    void store_value(char* data, size_t& length, index_desc_t* pindex = nullptr);
 
 
     /* -------------------- */
@@ -187,11 +187,11 @@ public:
 
     table_row_t();
     table_row_t(table_desc_t* ptd)
-	: _ptable(NULL),
+	: _ptable(nullptr),
 	  _field_cnt(0), _is_setup(false),
-	  _pvalues(NULL),
+	  _pvalues(nullptr),
 	  _fixed_offset(0),_var_slot_offset(0),_var_offset(0),_null_count(0),
-	  _rep(NULL), _rep_key(NULL)
+	  _rep(nullptr), _rep_key(nullptr)
     {
         assert (ptd);
         setup(ptd);
@@ -283,7 +283,7 @@ public:
     {
         if (_pvalues) {
             delete [] _pvalues;
-            _pvalues = NULL;
+            _pvalues = nullptr;
         }
     }
 

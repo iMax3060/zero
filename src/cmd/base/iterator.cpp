@@ -9,7 +9,7 @@ PageIterator::PageIterator(string inPath, string outPath,
         unsigned ioSizeInPages)
     : inPath(inPath), outPath(outPath), blockSize(ioSizeInPages * PAGE_SIZE),
     in(inPath), count(0), fpos(0), bpos(0), bytesRead(0), blocksRead(0),
-    prevPageNo(0), asyncBuf(NULL)
+    prevPageNo(0), asyncBuf(nullptr)
 {
     openOutput();
     buf = new char[ioSizeInPages * PAGE_SIZE];
@@ -21,7 +21,7 @@ PageIterator::PageIterator(string inPath, string outPath,
     :
     inPath(inPath), outPath(outPath), blockSize(ioSizeInPages * PAGE_SIZE),
     in(inPath), count(0), fpos(0), bpos(0), bytesRead(0), blocksRead(0),
-    buf(NULL), prevPageNo(0), asyncBuf(asyncBuf)
+    buf(nullptr), prevPageNo(0), asyncBuf(asyncBuf)
 {
 }
 
@@ -104,7 +104,7 @@ generic_page* PageIterator::next()
     if (asyncBuf && !hasNext()) {
         // consume request failed -> reader finished
         assert(!buf);
-        return NULL;
+        return nullptr;
     }
     // in async case, hasNext may change from assertion above til here
     assert(hasNext());

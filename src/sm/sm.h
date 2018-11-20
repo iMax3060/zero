@@ -553,8 +553,8 @@ public:
     rc_t                _truncate_log();
 
 private:
-//    void                _construct_once(LOG_WARN_CALLBACK_FUNC x=NULL,
-//                                           LOG_ARCHIVED_CALLBACK_FUNC y=NULL);
+//    void                _construct_once(LOG_WARN_CALLBACK_FUNC x=nullptr,
+//                                           LOG_ARCHIVED_CALLBACK_FUNC y=nullptr);
     void                _construct_once();
     void                _destruct_once();
     void                _do_restart();
@@ -653,7 +653,7 @@ public:
      */
     static rc_t           begin_sys_xct(
         bool single_log_sys_xct = false,
-        sm_stats_t*         stats = NULL,
+        sm_stats_t*         stats = nullptr,
         int            timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
 
     /**\brief Commit a transaction.
@@ -671,7 +671,7 @@ public:
      */
     static rc_t           commit_xct(
                                      bool   lazy = false,
-                                     lsn_t* plastlsn=NULL);
+                                     lsn_t* plastlsn=nullptr);
 
     /**\brief Commit an instrumented transaction and get its statistics.
      *\ingroup SSMXCT
@@ -690,7 +690,7 @@ public:
     static rc_t            commit_xct(
                                     sm_stats_t*& stats,
                                     bool              lazy = false,
-                                    lsn_t*            plastlsn=NULL);
+                                    lsn_t*            plastlsn=nullptr);
 
     /**
      * \brief Commit a system transaction, which doesn't cause log sync.

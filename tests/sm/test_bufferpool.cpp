@@ -32,11 +32,11 @@ w_rc_t bf_get_empty(ss_m* ssm, test_volume_t *test_volume) {
     // write out all pages and discard from bufferpool
     W_DO(bf_m::force_all(true));
 
-    generic_page *root_s = NULL;
+    generic_page *root_s = nullptr;
     smlevel_0::store_flag_t stflags;
     W_DO (bf_m::fix(root_s, root_pid, 0, LATCH_SH, false, stflags, true, smlevel_0::st_unallocated));
-    EXPECT_TRUE (root_s != NULL);
-    if (root_s == NULL) return RCOK;
+    EXPECT_TRUE (root_s != nullptr);
+    if (root_s == nullptr) return RCOK;
     EXPECT_EQ (root_s->nslots, 1); // first slot is header
     EXPECT_EQ (root_pid.page, root_s->pid.page);
     EXPECT_EQ (root_pid.store(), root_s->pid.store());
@@ -106,19 +106,19 @@ w_rc_t bf_get_many(ss_m* ssm, test_volume_t *test_volume) {
     for (size_t i = 0; i < pids.size(); ++i) {
         lpid_t child_pid = root_pid;
         child_pid.page = pids[i];
-        generic_page *child_s = NULL;
+        generic_page *child_s = nullptr;
 
         smlevel_0::store_flag_t stflags;
         w_rc_t rc = bf_m::fix(child_s, child_pid, 0, LATCH_SH, false, stflags, true, smlevel_0::st_unallocated);
         if (rc.is_error()) {
             // buffer pool is now full!
             EXPECT_EQ (rc.err_num(), (w_error_codes) fcFULL);
-            EXPECT_TRUE (child_s == NULL);
+            EXPECT_TRUE (child_s == nullptr);
             break;
         } else {
-            EXPECT_FALSE (child_s == NULL);
+            EXPECT_FALSE (child_s == nullptr);
         }
-        if (child_s != NULL) {
+        if (child_s != nullptr) {
             child_pages.push_back(child_s);
         }
     }
@@ -220,7 +220,7 @@ w_rc_t bf_careful_write_order(ss_m* ssm, test_volume_t *test_volume) {
     p[3].unfix_dirty();
 
     cout << "p[2] is still fixed. wait for cleaner..." << endl;
-    bf_m::activate_background_flushing(NULL, true); // aggressive=true to kick cleaner in urgent mode
+    bf_m::activate_background_flushing(nullptr, true); // aggressive=true to kick cleaner in urgent mode
     ::usleep(200*1000);
     W_DO (p[0].fix (pids[0], LATCH_SH));
     W_DO (p[1].fix (pids[1], LATCH_SH));
@@ -241,7 +241,7 @@ w_rc_t bf_careful_write_order(ss_m* ssm, test_volume_t *test_volume) {
     }
 
     cout << "do it again to make sure still other pages are dirty..." << endl;
-    bf_m::activate_background_flushing(NULL, true);
+    bf_m::activate_background_flushing(nullptr, true);
     ::usleep(200*1000);
     W_DO (p[0].fix (pids[0], LATCH_SH));
     W_DO (p[1].fix (pids[1], LATCH_SH));
@@ -264,7 +264,7 @@ w_rc_t bf_careful_write_order(ss_m* ssm, test_volume_t *test_volume) {
     cout << "finally, call cleaner with all pages unfixed to check if all pages will be written out..." << endl;
     p[2].unfix_dirty();
     for (int i = 0; i < 3; ++i) {
-        bf_m::activate_background_flushing(NULL, true);
+        bf_m::activate_background_flushing(nullptr, true);
         ::usleep(200*1000);
     }
     for (size_t i = 0; i < 4; ++i) {

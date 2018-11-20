@@ -49,9 +49,9 @@ using namespace boost;
 
 // Exported variables //
 
-ShoreEnv* _g_shore_env = NULL;
+ShoreEnv* _g_shore_env = nullptr;
 
-// procmonitor_t* _g_mon = NULL;
+// procmonitor_t* _g_mon = nullptr;
 
 
 
@@ -91,7 +91,7 @@ void env_stats_t::print_env_stats() const
 
 ShoreEnv::ShoreEnv(po::variables_map& vm)
     : db_iface(),
-      _pssm(NULL),
+      _pssm(nullptr),
       _initialized(false), _init_mutex(thread_mutex_create()),
       _loaded(false), _load_mutex(thread_mutex_create()),
       _statmap_mutex(thread_mutex_create()),
@@ -111,12 +111,12 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
       _request_pool(sizeof(trx_request_t)),
       _bUseELR(false),
       _bUseFlusher(false)
-      // _logger(NULL)
+      // _logger(nullptr)
 {
     optionValues = vm;
 
-    pthread_mutex_init(&_scaling_mutex, NULL);
-    pthread_mutex_init(&_queried_mutex, NULL);
+    pthread_mutex_init(&_scaling_mutex, nullptr);
+    pthread_mutex_init(&_queried_mutex, nullptr);
 
     _last_sm_stats.fill(0);
 }
@@ -160,7 +160,7 @@ w_rc_t ShoreEnv::load()
         return (RCOK);
     }
     CRITICAL_SECTION(scale_cs, _scaling_mutex);
-    time_t tstart = time(NULL);
+    time_t tstart = time(nullptr);
 
     _loaders_to_use = optionValues["threads"].as<int>();
 
@@ -182,7 +182,7 @@ w_rc_t ShoreEnv::load()
     set_measure(MST_PAUSE);
 
     // 5. Print stats, join checkpointer, and return
-    time_t tstop = time(NULL);
+    time_t tstop = time(nullptr);
     TRACE( TRACE_ALWAYS, "Loading finished in (%d) secs...\n", (tstop - tstart));
 
     // if (_chkpt_freq > 0) {

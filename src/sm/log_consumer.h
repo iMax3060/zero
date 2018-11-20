@@ -33,8 +33,8 @@
 class LogScanner {
 public:
     bool nextLogrec(char* src, size_t& pos, logrec_t*& lr,
-            lsn_t* nextLSN = NULL, lsn_t* stopLSN = NULL,
-            int* lrLength = NULL);
+            lsn_t* nextLSN = nullptr, lsn_t* stopLSN = nullptr,
+            int* lrLength = nullptr);
 
     bool hasPartialLogrec();
     void reset();

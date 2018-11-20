@@ -65,7 +65,7 @@ private:
 
 public:
 
-    timestamp_t() { _time = time(NULL); }
+    timestamp_t() { _time = time(nullptr); }
     ~timestamp_t() { }
 
     static int  size() { return sizeof(time_t); }
@@ -244,24 +244,24 @@ struct field_value_t
     /* -------------------- */
 
     field_value_t()
-        :  _pfield_desc(NULL), _null_flag(true), _data(NULL),
+        :  _pfield_desc(nullptr), _null_flag(true), _data(nullptr),
            _data_size(0), _real_size(0), _max_size(0)
     {
     }
 
 
     field_value_t(field_desc_t* pfd)
-        : _pfield_desc(pfd), _null_flag(true), _data(NULL),
+        : _pfield_desc(pfd), _null_flag(true), _data(nullptr),
           _data_size(0), _real_size(0), _max_size(0)
     {
-        setup(pfd); /* It will assert if pfd = NULL */
+        setup(pfd); /* It will assert if pfd = nullptr */
     }
 
 
     ~field_value_t() {
         if (_data) {
             free (_data);
-            _data = NULL;
+            _data = nullptr;
         }
     }
 

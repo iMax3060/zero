@@ -285,7 +285,7 @@ smthread_t::add_from_TL_stats(sm_stats_t &w)
 //     tcb_t*& t = tcb_ptr();
 //     while (t) {
 //         // this should be the empty tcb_t as dummy!
-//         w_assert2( t->xct == NULL);
+//         w_assert2( t->xct == nullptr);
 //         w_assert2( t->pin_count == 0);
 //         w_assert2( t->_xct_log == 0 );
 //         tcb_t* old = t;
@@ -393,11 +393,11 @@ smthread_t::attach_xct(xct_t* x)
     w_assert0(get_tcb_depth() == 1 || x->is_sys_xct()); // only system transactions can be nested
     // add the given transaction as top (outmost) transaction
     tcb_t *new_outmost = new tcb_t(tcb_ptr());
-    w_assert0(new_outmost != NULL);
+    w_assert0(new_outmost != nullptr);
     tcb_ptr() = new_outmost;
     new_outmost->xct = x;
 
-    w_assert0(xct() != NULL);
+    w_assert0(xct() != nullptr);
     w_assert0(xct() == x);
 }
 
@@ -497,12 +497,12 @@ smthread_t::no_xct(xct_t *x)
 
 //     o << "smthread_t: " << (char *)(is_in_sm()?"in sm ":"") << endl;
 //     o << "transactions in this thread (from bottom):" << endl;
-//     for (tcb_t* tcb = tcb_ptr(); tcb != NULL; tcb = tcb->_outer) {
+//     for (tcb_t* tcb = tcb_ptr(); tcb != nullptr; tcb = tcb->_outer) {
 //         o << "xct ";
 //         if (tcb->xct) {
 //             o << tcb->xct->tid() << (tcb->xct->is_sys_xct() ? "(sys_xct)" : "(usr_xct)");
 //         } else {
-//             o << "<NULL xct>";
+//             o << "<nullptr xct>";
 //         }
 //         o << endl;
 //     }

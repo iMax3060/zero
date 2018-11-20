@@ -546,8 +546,8 @@ ss_m::commit_xct(sm_stats_t*& _stats, bool lazy,
 rc_t
 ss_m::commit_sys_xct()
 {
-    sm_stats_t *_stats = NULL;
-    W_DO(_commit_xct(_stats, true, NULL)); // always lazy commit
+    sm_stats_t *_stats = nullptr;
+    W_DO(_commit_xct(_stats, true, nullptr)); // always lazy commit
     return RCOK;
 }
 
@@ -640,7 +640,7 @@ xct_t* ss_m::tid_to_xct(const tid_t& tid)
  *--------------------------------------------------------------*/
 tid_t ss_m::xct_to_tid(const xct_t* x)
 {
-    w_assert0(x != NULL);
+    w_assert0(x != nullptr);
     return x->tid();
 }
 
@@ -658,7 +658,7 @@ rc_t ss_m::dump_xcts(ostream& o)
  *--------------------------------------------------------------*/
 ss_m::xct_state_t ss_m::state_xct(const xct_t* x)
 {
-    w_assert3(x != NULL);
+    w_assert3(x != nullptr);
     return x->state();
 }
 
@@ -836,21 +836,21 @@ lil_global_table* ss_m::get_lil_global_table() {
     if (lm) {
         return lm->get_lil_global_table();
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
 rc_t ss_m::lock(const lockid_t& n, const okvl_mode& m,
            bool check_only, int timeout)
 {
-    W_DO( lm->lock(n.hash(), m, true, true, !check_only, NULL, timeout) );
+    W_DO( lm->lock(n.hash(), m, true, true, !check_only, nullptr, timeout) );
     return RCOK;
 }
 
 /*--------------------------------------------------------------*
  *  ss_m::_begin_xct(sm_stats_t *_stats, int timeout) *
  *
- * @param[in] _stats  If called by begin_xct without a _stats, then _stats is NULL here.
+ * @param[in] _stats  If called by begin_xct without a _stats, then _stats is nullptr here.
  *                    If not null, the transaction is instrumented.
  *                    The stats structure may be returned to the
  *                    client through the appropriate version of
@@ -863,8 +863,8 @@ ss_m::_begin_xct(sm_stats_t *_stats, tid_t& tid, int timeout, bool sys_xct,
     w_assert1(!single_log_sys_xct || sys_xct); // SSX is always system-transaction
 
     // system transaction can be a nested transaction, so
-    // xct() could be non-NULL
-    if (!sys_xct && xct() != NULL) {
+    // xct() could be non-nullptr
+    if (!sys_xct && xct() != nullptr) {
         return RC (eINTRANS);
     }
 

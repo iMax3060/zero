@@ -263,7 +263,7 @@ extern const char *form(const char *, ...);
    private member of b. This seems to work around the issue (bug?).
    OLD:
    //template<class T>
-   //static T* get_null() { return NULL; }
+   //static T* get_null() { return nullptr; }
    //#define    w_offsetof(class,member)    ((size_t) &get_null<class>()->member)
    NEW: below
  */

@@ -73,7 +73,7 @@ public:
             _commit ();
         }
         void _begin() {
-            ::gettimeofday(&_start,NULL);
+            ::gettimeofday(&_start,nullptr);
             _rc = ss_m::begin_xct();
             EXPECT_FALSE(_rc.is_error()) << _rc;
             xct()->set_query_concurrency(smlevel_0::t_cc_keyrange);
@@ -89,7 +89,7 @@ public:
         }
         void report_time() {
             timeval now, result;
-            ::gettimeofday(&now,NULL);
+            ::gettimeofday(&now,nullptr);
             timersub(&now, &_start, &result);
             cout << (result.tv_sec * 1000000 + result.tv_usec);
         }

@@ -20,22 +20,22 @@
 DECLARE_TLS(block_alloc<xct_lock_entry_t>, xctLockEntryPool);
 
 xct_lock_info_t::xct_lock_info_t()
-    : _head (NULL), _tail (NULL), _permission_to_violate (false) {
+    : _head (nullptr), _tail (nullptr), _permission_to_violate (false) {
     // init_wait_map(g_me());
 }
 
 // allows reuse rather than free/malloc of the structure
 xct_lock_info_t* xct_lock_info_t::reset_for_reuse() {
     // make sure the lock lists are empty
-    w_assert1(_head == NULL);
-    w_assert1(_tail == NULL);
+    w_assert1(_head == nullptr);
+    w_assert1(_tail == nullptr);
     new (this) xct_lock_info_t;
     return this;
 }
 
 xct_lock_info_t::~xct_lock_info_t() {
-    w_assert1(_head == NULL);
-    w_assert1(_tail == NULL);
+    w_assert1(_head == nullptr);
+    w_assert1(_tail == nullptr);
 }
 
 xct_lock_entry_t* xct_lock_info_t::link_to_new_request (lock_queue_t *queue,
@@ -43,7 +43,7 @@ xct_lock_entry_t* xct_lock_info_t::link_to_new_request (lock_queue_t *queue,
     xct_lock_entry_t* link = new (*xctLockEntryPool) xct_lock_entry_t();
     link->queue = queue;
     link->entry = entry;
-    if (_head == NULL) {
+    if (_head == nullptr) {
         _head = link;
         _tail = link;
     } else {
@@ -57,7 +57,7 @@ xct_lock_entry_t* xct_lock_info_t::link_to_new_request (lock_queue_t *queue,
 void xct_lock_info_t::remove_request (xct_lock_entry_t *entry) {
 #if W_DEBUG_LEVEL>=3
     bool found = false;
-    for (xct_lock_entry_t *p = _head; p != NULL; p = p->next) {
+    for (xct_lock_entry_t *p = _head; p != nullptr; p = p->next) {
         if (p == entry) {
             found = true;
             break;
@@ -65,24 +65,24 @@ void xct_lock_info_t::remove_request (xct_lock_entry_t *entry) {
     }
     w_assert3(found);
 #endif //W_DEBUG_LEVEL>=3
-    if (entry->prev == NULL) {
+    if (entry->prev == nullptr) {
         // then it should be current head
         w_assert1(_head == entry);
         _head = entry->next;
-        if (_head != NULL) {
-            _head->prev = NULL;
+        if (_head != nullptr) {
+            _head->prev = nullptr;
         }
     } else {
         w_assert1(entry->prev->next == entry);
         entry->prev->next = entry->next;
     }
 
-    if (entry->next == NULL) {
+    if (entry->next == nullptr) {
         // then it should be current tail
         w_assert1(_tail == entry);
         _tail = entry->prev;
-        if (_tail != NULL) {
-            _tail->next = NULL;
+        if (_tail != nullptr) {
+            _tail->next = nullptr;
         }
     } else {
         w_assert1(entry->next == _head || entry->next->prev == entry);
@@ -107,7 +107,7 @@ const okvl_mode& XctLockHashMap::get_granted_mode(uint32_t lock_id) const {
     uint32_t bid = _bucket_id(lock_id);
     // we don't take any latch here. See the comment of XctLockHashMap
     // for why this is safe.
-    for (const xct_lock_entry_t *current = _buckets[bid]; current != NULL;
+    for (const xct_lock_entry_t *current = _buckets[bid]; current != nullptr;
          current = current->private_hashmap_next) {
         if (current->queue->hash() == lock_id) {
             return current->entry->get_granted_mode();
@@ -119,18 +119,18 @@ const okvl_mode& XctLockHashMap::get_granted_mode(uint32_t lock_id) const {
 void XctLockHashMap::push_front(xct_lock_entry_t* link) {
     // link becomes a new head of the bucket
     uint32_t bid = _bucket_id(link->queue->hash());
-    link->private_hashmap_prev = NULL;
+    link->private_hashmap_prev = nullptr;
     link->private_hashmap_next = _buckets[bid];
-    if (_buckets[bid] != NULL) {
+    if (_buckets[bid] != nullptr) {
         _buckets[bid]->private_hashmap_prev = link;
     }
     _buckets[bid] = link;
 }
 void XctLockHashMap::remove(xct_lock_entry_t* link) {
-    if (link->private_hashmap_next != NULL) {
+    if (link->private_hashmap_next != nullptr) {
         link->private_hashmap_next->private_hashmap_prev = link->private_hashmap_prev;
     }
-    if (link->private_hashmap_prev != NULL) {
+    if (link->private_hashmap_prev != nullptr) {
         link->private_hashmap_prev->private_hashmap_next = link->private_hashmap_next;
     } else {
         // "link" was the head.

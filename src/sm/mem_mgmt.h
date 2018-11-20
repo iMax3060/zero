@@ -67,8 +67,8 @@ private:
             // set new length value but maintain ms bit of tag
             tag = (len & 0x7FFF) | (tag & 0x8000);
             update_footer();
-            prev = NULL;
-            next = NULL;
+            prev = nullptr;
+            next = nullptr;
         }
 
         void set_free() {

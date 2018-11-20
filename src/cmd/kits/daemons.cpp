@@ -82,11 +82,11 @@ int db_init_smt_t::rv()
 void close_smt_t::work()
 {
     TRACE( TRACE_ALWAYS, "Closing Shore...\n");
-    if (_env != NULL)
+    if (_env != nullptr)
     {
         _env->close();
         delete (_env);
-        _env = NULL;
+        _env = nullptr;
     }
 }
 
@@ -127,7 +127,7 @@ abort_smt_t::~abort_smt_t()
 void abort_smt_t::work()
 {
     w_rc_t r = RCOK;
-    xct_t* victim = NULL;
+    xct_t* victim = nullptr;
     // me()->alloc_sdesc_cache();
     for (vector<xct_t*>::iterator it = _toabort->begin();
          it != _toabort->end(); ++it) {

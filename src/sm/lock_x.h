@@ -22,8 +22,8 @@ class lockid_t;
  */
 class xct_lock_entry_t {
 public:
-    xct_lock_entry_t () : prev (NULL), next(NULL), private_hashmap_prev(NULL),
-        private_hashmap_next(NULL), queue (NULL), entry (NULL) {}
+    xct_lock_entry_t () : prev (nullptr), next(nullptr), private_hashmap_prev(nullptr),
+        private_hashmap_next(nullptr), queue (nullptr), entry (nullptr) {}
     // doubly linked list
     xct_lock_entry_t   *prev;
     xct_lock_entry_t   *next;

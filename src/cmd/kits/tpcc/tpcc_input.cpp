@@ -232,7 +232,7 @@ new_order_input_t create_new_order_input(int sf, int specificWH, int tspread)
     noin._ol_cnt = URand(5, 15);
     noin._rbk    = URand(1, 100); // if rbk == 1 - ROLLBACK
 
-    noin._tstamp = time(NULL);
+    noin._tstamp = time(nullptr);
 
     // generate the items order
     for (int i=0; i<noin._ol_cnt; i++) {
@@ -337,7 +337,7 @@ payment_input_t create_payment_input(int sf, int specificWH, int tspread)
     pin._home_wh_id  = get_wh(sf, specificWH, tspread);
     pin._home_d_id = URand(1, 10);
     pin._h_amount = (long)URand(100, 500000)/(long)100.00;
-    pin._h_date = time(NULL);
+    pin._h_date = time(nullptr);
 
 #ifndef USE_ONLY_LOCAL_WHS
     pin._v_cust_wh_selection = URand(1, 100); // 85 - 15
@@ -389,9 +389,9 @@ payment_input_t create_payment_input(int sf, int specificWH, int tspread)
     pin._remote_d_id =  3;
     pin._v_cust_ident_selection = 50;
     pin._c_id =  1500;
-    //pin._c_last = NULL;
+    //pin._c_last = nullptr;
     pin._h_amount = 1000.00;
-    pin._h_date = time(NULL);
+    pin._h_date = time(nullptr);
 #endif
 
     return (pin);
@@ -466,7 +466,7 @@ order_status_input_t create_order_status_input(int sf, int specificWH, int tspre
     osin._d_id     = 2;
     osin._c_select = 80;
     osin._c_id     = 3;
-    //osin._c_last   = NULL;
+    //osin._c_last   = nullptr;
 #endif
 
     return (osin);

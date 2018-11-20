@@ -309,7 +309,7 @@ w_rc_t ShoreTPCBEnv::xct_acct_update(const int /* xct_id */,
     prhist->set_value(1, ppin.t_id);
     prhist->set_value(2, ppin.a_id);
     prhist->set_value(3, ppin.delta);
-    prhist->set_value(4, time(NULL));
+    prhist->set_value(4, time(nullptr));
     W_DO(history_man->add_tuple(_pssm, prhist));
 
     // 3. Update teller
