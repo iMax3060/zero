@@ -50,6 +50,11 @@ typedef int32_t run_number_t;
 /* Type of a record# on a page  in SM (sans page,store,volume info) */
 typedef int16_t slotid_t;
 
+/* Type of a buffer index in the bufferpool */
+typedef uint32_t bf_idx;
+/* Pair of buffer indexes where the parent page of the first index can be found at the second one */
+typedef std::pair<bf_idx, bf_idx> bf_idx_pair;
+
 /**
 * \brief An integer to point to any record in B-tree pages.
 * \details

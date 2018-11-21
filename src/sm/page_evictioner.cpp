@@ -5,9 +5,6 @@
 #include "xct_logger.h"
 #include "btree_page_h.h"
 
-// Template definitions
-#include "bf_hashtable.cpp"
-
 page_evictioner_base::page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options)
     :
     worker_thread_t(options.get_int_option("sm_eviction_interval", 100)),
@@ -111,8 +108,7 @@ bool page_evictioner_base::evict_one(bf_idx victim) {
     // remove it from hashtable.
     w_assert1(cb._pin_cnt < 0);
     w_assert1(!cb._used);
-    bool removed = _bufferpool->_hashtable->remove(cb._pid);
-    w_assert1(removed);
+    delete (_bufferpool->_hashtable->erase(cb._pid));
 
     DBG2(<< "EVICTED " << victim << " pid " << cb._pid
          << " log-tail " << smlevel_0::log->curr_lsn());
@@ -267,12 +263,11 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx) {
     // STEP 1: Look for parent.
     //==========================================================================
     PageID pid = _bufferpool->_buffer[idx].pid;
-    bf_idx_pair idx_pair;
-    bool found = _bufferpool->_hashtable->lookup(pid, idx_pair);
-    w_assert1(found);
+    bf_idx_pair idx_pair = *(_bufferpool->_hashtable->get(pid));
+    w_assert1(idx_pair.first != 0);
 
     bf_idx parent_idx = idx_pair.second;
-    w_assert1(!found || idx == idx_pair.first);
+    w_assert1(idx_pair.first == 0 || idx == idx_pair.first);
 
     // If there is no parent, but write elision is off and the frame is not swizzled,
     // then it's OK to evict

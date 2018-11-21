@@ -10,7 +10,6 @@
 #include "tatas.h"
 #include "vol.h"
 #include "generic_page.h"
-#include "bf_hashtable.h"
 #include "bf_tree_cb.h"
 #include <iosfwd>
 #include "buffer_pool_free_list.hpp"
@@ -20,6 +19,8 @@
 #include "restore.h"
 
 #include <array>
+#include "junction/junction/ConcurrentMap_Leapfrog.h"
+#include <limits>
 
 class sm_options;
 class lsn_t;
@@ -511,7 +512,20 @@ private:
     generic_page*              _buffer;
 
     /** hashtable to locate a page in this bufferpool. swizzled pages are removed from bufferpool. */
-    bf_hashtable<bf_idx_pair>*        _hashtable;
+    struct HashtableKeyTraits {
+        typedef PageID Key;
+        typedef typename turf::util::BestFit<PageID>::Unsigned Hash;
+        static const Key NullKey = Key(std::numeric_limits<PageID>::max());
+        static const Hash NullHash = Hash(std::numeric_limits<PageID>::max());
+        static Hash hash(PageID key) {
+            return turf::util::avalanche(Hash(key));
+        }
+        static Key dehash(Hash hash) {
+            return (PageID) turf::util::deavalanche(hash);
+        }
+    };
+
+    std::shared_ptr<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>>        _hashtable;
 
     std::shared_ptr<zero::buffer_pool::FreeListLowContention> _freeList;
 

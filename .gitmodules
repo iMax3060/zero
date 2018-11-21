@@ -7,3 +7,9 @@
 [submodule "src/third_party/MPMCQueue"]
 	path = src/third_party/MPMCQueue
 	url = https://github.com/rigtorp/MPMCQueue
+[submodule "src/third_party/junction"]
+	path = src/third_party/junction
+	url = https://github.com/preshing/junction.git
+[submodule "src/third_party/turf"]
+	path = src/third_party/turf
+	url = https://github.com/preshing/turf.git

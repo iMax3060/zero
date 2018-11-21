@@ -4,7 +4,6 @@
 #include "smthread.h"
 #include "sm_options.h"
 #include "lsn.h"
-#include "bf_hashtable.h"
 #include "allocator.h"
 #include "generic_page.h"
 

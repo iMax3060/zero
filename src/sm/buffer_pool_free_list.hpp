@@ -5,7 +5,7 @@
 #include <queue>
 
 #include "sm_options.h"
-#include "bf_hashtable.h"
+#include "basics.h"
 #include "exception.hpp"
 
 #include "cds/container/fcqueue.h"

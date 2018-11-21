@@ -16,6 +16,8 @@ INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}/src/sm
         ${CMAKE_SOURCE_DIR}/src/cmd
         ${CMAKE_SOURCE_DIR}/src/third_party
+        ${CMAKE_SOURCE_DIR}/src/third_party/junction
+        ${CMAKE_SOURCE_DIR}/src/third_party/turf
 )
 
 # Add generated headers from config and src-subdirectories to the include directories:
@@ -25,6 +27,8 @@ INCLUDE_DIRECTORIES (
         ${CMAKE_BINARY_DIR}/src/sm
         ${CMAKE_BINARY_DIR}/src/cmd
         ${CMAKE_BINARY_DIR}/src/third_party
+        ${CMAKE_BINARY_DIR}/src/third_party/junction/include
+        ${CMAKE_BINARY_DIR}/src/third_party/junction/turf/include
 )
 
 ADD_SUBDIRECTORY(common)
