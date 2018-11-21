@@ -7,7 +7,6 @@
 
 #include "w_defines.h"
 #include "latch.h"
-#include "tatas.h"
 #include "vol.h"
 #include "generic_page.h"
 #include "bf_tree_cb.h"
@@ -27,23 +26,9 @@ class lsn_t;
 struct bf_tree_cb_t; // include bf_tree_cb.h in implementation codes
 
 class test_bf_tree;
-class test_bf_fixed;
 class page_evictioner_base;
 class bf_tree_cleaner;
 class btree_page_h;
-struct EvictionContext;
-
-/** Specifies how urgent we are to evict pages. \note Order does matter.  */
-enum evict_urgency_t {
-    /** Not urgent at all. We don't even try multiple rounds of traversal. */
-    EVICT_NORMAL = 0,
-    /** Continue until we evict the given number of pages or a few rounds of traversal. */
-    EVICT_EAGER,
-    /** We evict the given number of pages, even trying unswizzling some pages. */
-    EVICT_URGENT,
-    /** No mercy. Unswizzle/evict completely. Mainly for testcases/experiments. */
-    EVICT_COMPLETE,
-};
 
 /** a swizzled pointer (page ID) has this bit ON. */
 constexpr uint32_t SWIZZLED_PID_BIT = 0x80000000;
@@ -67,10 +52,8 @@ constexpr uint32_t SWIZZLED_PID_BIT = 0x80000000;
  */
 class bf_tree_m {
     friend class test_bf_tree; // for testcases
-    friend class test_bf_fixed; // for testcases
     friend class bf_tree_cleaner; // for page cleaning
     friend class page_evictioner_base;  // for page evictioning
-    friend class WarmupThread;
     friend class page_cleaner_decoupled;
     friend class GenericPageIterator;
     friend class zero::buffer_pool::FreeListLowContention;
@@ -527,6 +510,7 @@ private:
 
     std::shared_ptr<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>>        _hashtable;
 
+    /* free list containing the indexes of the unused buffer frames. */
     std::shared_ptr<zero::buffer_pool::FreeListLowContention> _freeList;
 
     /** the dirty page cleaner. */
@@ -616,18 +600,6 @@ public:
 
 private:
     bf_idx _idx;
-};
-
-// Thread that fetches pages into the buffer for warming up.
-// Instead of reading a contiguous chunk, it iterates over all
-// B-trees so that higher levels are loaded first.
-class WarmupThread : public thread_wrapper_t {
-public:
-    WarmupThread() {};
-    virtual ~WarmupThread() {}
-
-    virtual void run();
-    void fixChildren(btree_page_h& parent, size_t& fixed, size_t max);
 };
 
 class GenericPageIterator
