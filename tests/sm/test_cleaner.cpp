@@ -67,7 +67,6 @@ rc_t cleaner(ss_m* ssm, test_volume_t* test_vol)
 TEST (CleanerTest, cleaner) {
     test_env->empty_logdata_dir();
     sm_options options;
-    options.set_bool_option("sm_testenv_init_vol", true);
     options.set_bool_option("sm_archiving", true);
     options.set_bool_option("sm_archiver_eager", true);
     // options.set_string_option("sm_archdir", "/var/tmp/lucas/btree_test_env/archive");

@@ -75,6 +75,6 @@ namespace zero::buffer_pool {
 
     };
 
-}
+} // zero::buffer_pool
 
 #endif //ZERO_SM_BUFFER_POOL_FREE_LIST_HPP

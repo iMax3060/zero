@@ -34,12 +34,11 @@ LogArchiver::LogArchiver(const sm_options& options)
     shutdownFlag(false), control(&shutdownFlag), selfManaged(true),
     flushReqLSN(lsn_t::null)
 {
-    constexpr size_t defaultWorkspaceSize = 1600;
-    size_t workspaceSize = 1024 * 1024 * // convert MB -> B
-        options.get_int_option("sm_archiver_workspace_size", defaultWorkspaceSize);
+    size_t workspaceSize = 1024 * 1024 * // convert MiB -> B
+        options.get_int_option("sm_archiver_workspace_size", 1600);
 
     size_t blockSize = DFT_BLOCK_SIZE;
-    // CS TODO: archiver currently only works with 1MB blocks
+    // CS TODO: archiver currently only works with 1MiB blocks
         // options.get_int_option("sm_archiver_block_size", DFT_BLOCK_SIZE);
 
     eager = options.get_bool_option("sm_archiver_eager", DFT_EAGER);
