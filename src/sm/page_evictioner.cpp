@@ -108,7 +108,7 @@ bool page_evictioner_base::evict_one(bf_idx victim) {
     // remove it from hashtable.
     w_assert1(cb._pin_cnt < 0);
     w_assert1(!cb._used);
-    delete (_bufferpool->_hashtable->erase(cb._pid));
+    _bufferpool->_hashtable->erase(cb._pid);
 
     DBG2(<< "EVICTED " << victim << " pid " << cb._pid
          << " log-tail " << smlevel_0::log->curr_lsn());
@@ -263,7 +263,7 @@ bool page_evictioner_base::unswizzle_and_update_emlsn(bf_idx idx) {
     // STEP 1: Look for parent.
     //==========================================================================
     PageID pid = _bufferpool->_buffer[idx].pid;
-    bf_idx_pair idx_pair = *(_bufferpool->_hashtable->get(pid));
+    bf_idx_pair idx_pair = *(_bufferpool->_hashtable->lookupPair(pid));
     w_assert1(idx_pair.first != 0);
 
     bf_idx parent_idx = idx_pair.second;

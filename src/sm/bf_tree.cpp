@@ -153,7 +153,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
 
     _freeList = std::make_shared<zero::buffer_pool::FreeListLowContention>(this, options);
 
-    _hashtable = std::make_shared<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>>(nbufpages);
+    _hashtable = std::make_shared<zero::buffer_pool::Hashtable>(nbufpages);
     w_assert0(_hashtable != nullptr);
 
     _cleaner_decoupled = options.get_bool_option("sm_cleaner_decoupled", false);
@@ -207,26 +207,6 @@ std::shared_ptr<page_cleaner_base> bf_tree_m::get_cleaner()
 }
 
 ///////////////////////////////////   Initialization and Release END ///////////////////////////////////
-
-bf_idx bf_tree_m::lookup_parent(PageID pid) const
-{
-    bf_idx idx = 0;
-    bf_idx_pair* p = _hashtable->get(pid);
-    if (p) {
-        idx = (*p).second;
-    }
-    return idx;
-}
-
-bf_idx bf_tree_m::lookup(PageID pid) const
-{
-    bf_idx idx = 0;
-    bf_idx_pair* p = _hashtable->get(pid);
-    if (p) {
-        idx = (*p).first;
-    }
-    return idx;
-}
 
 void bf_tree_m::set_warmup_done()
 {
@@ -432,7 +412,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
     while (true)
     {
-        bf_idx_pair* p = _hashtable->get(pid);
+        bf_idx_pair* p = _hashtable->lookupPair(pid);
         bf_idx idx = 0;
         if (p) {
             idx = p->first;
@@ -486,14 +466,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Register the page on the hash table atomically. This guarantees
             // that only one thread will attempt to read the page
             bf_idx parent_idx = parent ? parent - _buffer : 0;
-            bool registered = false;
-            auto mutator = _hashtable->insertOrFind(pid);
-            bf_idx_pair* value = mutator.getValue();
-            if (!value) {
-                value = new bf_idx_pair(idx, parent_idx);
-                delete (mutator.exchangeValue(value));
-                registered = true;
-            }
+            bool registered = _hashtable->tryInsert(pid, new bf_idx_pair(idx, parent_idx));
             if (!registered) {
                 cb.latch().latch_release();
                 if (_evictioner) _evictioner->unbuffered(idx);
@@ -678,7 +651,7 @@ rc_t bf_tree_m::_read_page(PageID pid, bf_tree_cb_t& cb, bool from_backup)
     if (from_backup) { smlevel_0::vol->read_backup(pid, 1, page); }
     else { rc = smlevel_0::vol->read_page(pid, page); }
     if (rc.is_error()) {
-        delete (_hashtable->erase(pid));
+        _hashtable->erase(pid);
         cb.latch().latch_release();
         if (_evictioner) _evictioner->unbuffered(get_idx(&cb));
         _freeList->addFreeBufferpoolFrame(get_idx(&cb));
@@ -746,14 +719,7 @@ void bf_tree_m::prefetch_pages(PageID first, unsigned count)
         auto idx = get_idx(&cb);
 
         constexpr bf_idx parent_idx = 0;
-        bool registered = false;
-        auto mutator = _hashtable->insertOrFind(pid);
-        bf_idx_pair* value = mutator.getValue();
-        if (!value) {
-            value = new bf_idx_pair(idx, parent_idx);
-            delete (mutator.exchangeValue(value));
-            registered = true;
-        }
+        bool registered = _hashtable->tryInsert(pid, new bf_idx_pair(idx, parent_idx));
 
         if (registered) {
             cb.init(pid, frames[i]->lsn);
@@ -787,9 +753,9 @@ void bf_tree_m::print_page(PageID pid)
         idx = pid ^ SWIZZLED_PID_BIT;
     }
     else {
-        bf_idx_pair* p = _hashtable->get(pid);
+        bf_idx* p = _hashtable->lookup(pid);
         if (p) {
-            idx = p->first;
+            idx = *p;
         } else {
             cout << "not cached" << endl;
             return;
@@ -853,7 +819,7 @@ void bf_tree_m::switch_parent(PageID pid, generic_page* parent)
     }
     w_assert1(!is_swizzled_pointer(pid));
 
-    bf_idx_pair* p = _hashtable->get(pid);
+    bf_idx_pair* p = _hashtable->lookupPair(pid);
     // if page is not cached, there is nothing to update
     if (!p) {
         return;
@@ -1082,7 +1048,7 @@ void bf_tree_m::_delete_block(bf_idx idx) {
     cb._used = false; // clear _used BEFORE _dirty so that eviction thread will ignore this block.
 
     DBGOUT1(<<"delete block: remove page pid = " << cb._pid);
-    delete (_hashtable->erase(cb._pid));
+    _hashtable->erase(cb._pid);
 
     // after all, give back this block to the freelist. other threads can see this block from now on
     if (_evictioner) _evictioner->unbuffered(idx);
@@ -1178,8 +1144,7 @@ w_rc_t bf_tree_m::fix_root (generic_page*& page, StoreID store,
         PageID root_pid = smlevel_0::vol->get_store_root(store);
         W_DO(fix(nullptr, page, root_pid, mode, conditional, virgin));
 
-        bf_idx_pair p = *(_hashtable->get(root_pid));
-        idx = p.first;
+        idx = *(_hashtable->lookup(root_pid));
 
         w_assert1(!get_cb(idx)._check_recovery);
 
@@ -1226,7 +1191,7 @@ void bf_tree_m::unfix(const generic_page* p, bool evict)
             return;
         }
         w_assert0(cb.latch().is_mine());
-        delete (_hashtable->erase(p->pid));
+        _hashtable->erase(p->pid);
 
         if (_evictioner) _evictioner->unbuffered(idx);
         _freeList->addFreeBufferpoolFrame(idx);

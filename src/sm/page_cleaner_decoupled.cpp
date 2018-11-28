@@ -154,11 +154,11 @@ void page_cleaner_decoupled::flush_segments()
 void page_cleaner_decoupled::update_cb_clean(size_t from, size_t to)
 {
     for (size_t i = from; i < to; ++i) {
-        bf_idx idx = _bufferpool->lookup(_workspace[i].pid);
+        bf_idx* idx = _bufferpool->_hashtable->lookup(_workspace[i].pid);
 
-        if (idx == 0) { continue; }
+        if (!idx) { continue; }
 
-        bf_tree_cb_t &cb = _bufferpool->get_cb(idx);
+        bf_tree_cb_t &cb = _bufferpool->get_cb(*idx);
         if (!cb.pin()) { continue; }
 
         if (cb._pid == _workspace[i].pid) {
