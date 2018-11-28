@@ -18,8 +18,7 @@
 #include "restore.h"
 
 #include <array>
-#include "junction/junction/ConcurrentMap_Leapfrog.h"
-#include <limits>
+#include "bf_tree_hashtable.hpp"
 
 class sm_options;
 class lsn_t;
@@ -237,10 +236,6 @@ public:
      * @return               \c true if the page could be evicted, \c false else.
      */
     bool isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) const;
-
-    // useful for debugging
-    bf_idx lookup(PageID pid) const;
-    bf_idx lookup_parent(PageID pid) const;
 
     /**
      * Returns true if the page's _used flag is on

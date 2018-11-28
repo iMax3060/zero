@@ -153,7 +153,7 @@ bf_tree_m::bf_tree_m(const sm_options& options)
 
     _freeList = std::make_shared<zero::buffer_pool::FreeListLowContention>(this, options);
 
-    _hashtable = std::make_shared<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>>(nbufpages);
+    _hashtable = std::make_shared<zero::buffer_pool::Hashtable>(nbufpages);
     w_assert0(_hashtable != nullptr);
 
     _cleaner_decoupled = options.get_bool_option("sm_cleaner_decoupled", false);
@@ -207,26 +207,6 @@ std::shared_ptr<page_cleaner_base> bf_tree_m::get_cleaner()
 }
 
 ///////////////////////////////////   Initialization and Release END ///////////////////////////////////
-
-bf_idx bf_tree_m::lookup_parent(PageID pid) const
-{
-    bf_idx idx = 0;
-    bf_idx_pair* p = _hashtable->get(pid);
-    if (p) {
-        idx = (*p).second;
-    }
-    return idx;
-}
-
-bf_idx bf_tree_m::lookup(PageID pid) const
-{
-    bf_idx idx = 0;
-    bf_idx_pair* p = _hashtable->get(pid);
-    if (p) {
-        idx = (*p).first;
-    }
-    return idx;
-}
 
 void bf_tree_m::set_warmup_done()
 {
