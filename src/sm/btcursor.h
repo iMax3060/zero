@@ -7,7 +7,7 @@
 
 #include "w_defines.h"
 #include "w_key.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 class btree_page_h;
 

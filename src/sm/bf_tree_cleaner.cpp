@@ -4,7 +4,7 @@
 
 #include "bf_tree_cleaner.h"
 #include "sm_base.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "generic_page.h"
 #include "fixable_page_h.h"
 #include "log_core.h"
@@ -44,7 +44,7 @@ bf_tree_cleaner::~bf_tree_cleaner()
 
 void bf_tree_cleaner::do_work()
 {
-    if (ss_m::bf->is_no_db_mode() || !ss_m::vol || !ss_m::vol->caches_ready()) {
+    if (ss_m::bf->isNoDBMode() || !ss_m::vol || !ss_m::vol->caches_ready()) {
         // No volume manager initialized -- no point in starting cleaner
         return;
     }
@@ -66,8 +66,8 @@ void bf_tree_cleaner::do_work()
 void bf_tree_cleaner::clean_no_policy()
 {
     size_t w_index = 0;
-    for (bf_idx idx = 1; idx < _bufferpool->get_block_cnt(); ++idx) {
-        auto& cb = _bufferpool->get_cb(idx);
+    for (bf_idx idx = 1; idx < _bufferpool->getBlockCount(); ++idx) {
+        auto& cb = _bufferpool->getControlBlock(idx);
         if (!cb.pin()) { continue; }
 
         // If page is not dirty or not in use, no need to flush
@@ -210,17 +210,17 @@ void bf_tree_cleaner::flush_clusters(const vector<size_t>& clusters)
 
 bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
 {
-    const generic_page* const page_buffer = _bufferpool->_buffer;
-    bf_tree_cb_t &cb = _bufferpool->get_cb(idx);
+    generic_page* page = _bufferpool->getPage(idx);
+    bf_tree_cb_t &cb = _bufferpool->getControlBlock(idx);
 
     auto rc = cb.latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
     if (rc.is_error()) { return false; }
 
     // No need to pin CB here because eviction must hold EX latch
 
-    fixable_page_h page;
-    page.fix_nonbufferpool_page(const_cast<generic_page*>(&page_buffer[idx]));
-    if (cb.is_pinned_for_restore() || page.pid() != pid || !cb.is_in_use()) {
+    fixable_page_h fixed_page;
+    fixed_page.fix_nonbufferpool_page(page);
+    if (cb.is_pinned_for_restore() || fixed_page.pid() != pid || !cb.is_in_use()) {
         // New page was loaded in the frame -- skip it
         cb.latch().latch_release();
         return false;
@@ -230,14 +230,14 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
     // expected LSN is registered in the dirty page table by the evictioner
 
     // CS TODO: get rid of this buggy and ugly deletion mechanism
-    if (page.is_to_be_deleted()) {
+    if (fixed_page.is_to_be_deleted()) {
         sys_xct_section_t sxs(true);
         W_COERCE (sxs.check_error_on_start());
-        W_COERCE (smlevel_0::vol->deallocate_page(page_buffer[idx].pid));
+        W_COERCE (smlevel_0::vol->deallocate_page(page->pid));
         W_COERCE (sxs.end_sys_xct (RCOK));
 
         // drop the page from bufferpool too
-        _bufferpool->_delete_block(idx);
+        _bufferpool->_deletePage(idx);
 
         cb.latch().latch_release();
         return false;
@@ -245,7 +245,7 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
 
     // Copy page and update its page_lsn from what's on the cb
     generic_page& pdest = _workspace[wpos];
-    ::memcpy(&pdest, page_buffer + idx, sizeof (generic_page));
+    ::memcpy(&pdest, page, sizeof(generic_page));
     pdest.lsn = cb.get_page_lsn();
 
     // if the page contains a swizzled pointer, we need to convert
@@ -253,7 +253,7 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
     // before releasing SH latch because the pointer might be
     // unswizzled by other threads.
     if (pdest.tag == t_btree_p) {
-        _bufferpool->_convert_to_disk_page(&pdest);
+        _bufferpool->_convertToDiskPage(&pdest);
     }
 
     // Record the fact that we are taking a copy for flushing in the CB
@@ -332,10 +332,10 @@ void bf_tree_cleaner::collect_candidates()
     // Comparator to be used by the heap
     auto heap_cmp = get_policy_predicate(policy);
 
-    bf_idx block_cnt = _bufferpool->_block_cnt;
+    bf_idx block_cnt = _bufferpool->_blockCount;
 
     for (bf_idx idx = 1; idx < block_cnt; ++idx) {
-        auto& cb = _bufferpool->get_cb(idx);
+        auto& cb = _bufferpool->getControlBlock(idx);
         if (!cb.pin()) { continue; }
 
         // If page is not dirty or not in use, no need to flush

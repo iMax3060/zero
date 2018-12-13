@@ -1,7 +1,7 @@
 #include "btree_test_env.h"
 #include "sm_base.h"
 #include "log_core.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "vol.h"
 #include "chkpt.h"
 #include "btree_logrec.h"
@@ -31,7 +31,7 @@ void init()
 // here so that it doesn't mess up with the assertions
 void cleanPages()
 {
-    smlevel_0::bf->wakeup_cleaner(true, 1);
+    smlevel_0::bf->wakeupPageCleaner();
 }
 
 void flushLog()

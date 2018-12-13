@@ -6,7 +6,7 @@
 #include "logarchiver.h"
 #include "sm_options.h"
 #include "log_core.h"
-#include "bf_tree.h" // to check for warmup
+#include "buffer_pool.hpp" // to check for warmup
 #include "logarchive_scanner.h" // CS TODO just for RunMerger -- remove
 
 #include <algorithm>

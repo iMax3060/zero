@@ -11,7 +11,7 @@ namespace zero::buffer_pool {
     class Hashtable {
     public:
         Hashtable(bf_idx block_count) :
-                _hashtable(std::make_unique<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>>(block_count)) {};
+                _hashtable(std::make_unique<junction::ConcurrentMap_Leapfrog<PageID, atomic_bf_idx_pair*, HashtableKeyTraits>>(block_count)) {};
 
         ~Hashtable() {};
 
@@ -23,54 +23,54 @@ namespace zero::buffer_pool {
             delete(_hashtable->erase(pid));
         };
 
-        bf_idx_pair* lookupPair(const PageID& pid) const {
+        atomic_bf_idx_pair* lookupPair(const PageID& pid) const {
             return _hashtable->get(pid);
         };
 
-        bf_idx_pair* lookupPair(PageID&& pid) const {
+        atomic_bf_idx_pair* lookupPair(PageID&& pid) const {
             return _hashtable->get(pid);
         };
 
-        bf_idx* lookup(const PageID& pid) const {
-            bf_idx_pair* idx_pair = _hashtable->get(pid);
-            if (idx_pair) {
-                return &(idx_pair->first);
+        std::atomic<bf_idx>* lookup(const PageID& pid) const {
+            atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
+            if (indexPair) {
+                return &(indexPair->first);
             } else {
                 return nullptr;
             }
         };
 
-        bf_idx* lookup(PageID&& pid) const {
-            bf_idx_pair* idx_pair = _hashtable->get(pid);
-            if (idx_pair) {
-                return &(idx_pair->first);
+        std::atomic<bf_idx>* lookup(PageID&& pid) const {
+            atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
+            if (indexPair) {
+                return &(indexPair->first);
             } else {
                 return nullptr;
             }
         };
 
-        bf_idx* lookupParent(const PageID& pid) const {
-            bf_idx_pair* idx_pair = _hashtable->get(pid);
-            if (idx_pair) {
-                return &(idx_pair->second);
+        std::atomic<bf_idx>* lookupParent(const PageID& pid) const {
+            atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
+            if (indexPair) {
+                return &(indexPair->second);
             } else {
                 return nullptr;
             }
         };
 
-        bf_idx* lookupParent(PageID&& pid) const {
-            bf_idx_pair* idx_pair = _hashtable->get(pid);
-            if (idx_pair) {
-                return &(idx_pair->second);
+        std::atomic<bf_idx>* lookupParent(PageID&& pid) const {
+            atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
+            if (indexPair) {
+                return &(indexPair->second);
             } else {
                 return nullptr;
             }
         };
 
-        bool tryInsert(const PageID& pid, bf_idx_pair* idx_pair) {
+        bool tryInsert(const PageID& pid, atomic_bf_idx_pair* idx_pair) {
             bool inserted = false;
             auto mutator = _hashtable->insertOrFind(pid);
-            bf_idx_pair* value = mutator.getValue();
+            atomic_bf_idx_pair* value = mutator.getValue();
             if (!value) {
                 delete(mutator.exchangeValue(idx_pair));
                 inserted = true;
@@ -78,12 +78,12 @@ namespace zero::buffer_pool {
             return inserted;
         }
 
-        bool tryInsert(PageID&& pid, bf_idx_pair* idx_pair) {
+        bool tryInsert(PageID&& pid, atomic_bf_idx_pair* indexPair) {
             bool inserted = false;
             auto mutator = _hashtable->insertOrFind(pid);
-            bf_idx_pair* value = mutator.getValue();
+            atomic_bf_idx_pair* value = mutator.getValue();
             if (!value) {
-                delete(mutator.exchangeValue(idx_pair));
+                delete(mutator.exchangeValue(indexPair));
                 inserted = true;
             }
             return inserted;
@@ -103,7 +103,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        std::unique_ptr<junction::ConcurrentMap_Leapfrog<PageID, bf_idx_pair*, HashtableKeyTraits>> _hashtable;
+        std::unique_ptr<junction::ConcurrentMap_Leapfrog<PageID, atomic_bf_idx_pair*, HashtableKeyTraits>> _hashtable;
     };
 
 }

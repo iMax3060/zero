@@ -1,7 +1,7 @@
 #include "nodbgen.h"
 
 #include "allocator.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "xct_logger.h"
 #include "log_core.h"
 
@@ -35,11 +35,11 @@ void NoDBGen::run()
 
     vol_t* vol = new vol_t(_options);
     smlevel_0::vol = vol;
-    smlevel_0::bf = new bf_tree_m(_options);
+    smlevel_0::bf = new zero::buffer_pool::BufferPool();
 
     vol->build_caches(false);
 
-    smlevel_0::bf->post_init();
+    smlevel_0::bf->postInitialize();
 
     PageID pid = 0;
     PageID lastPID = vol->get_last_allocated_pid();

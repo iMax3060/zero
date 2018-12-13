@@ -7,7 +7,7 @@
 #include "w_error.h"
 
 #include "bf_tree_cb.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "sm_base.h"
 
 #include <vector>
@@ -25,12 +25,12 @@ btree_test_env *test_env;
  */
 
 w_rc_t flush_and_evict(ss_m* ssm) {
-    smlevel_0::bf->wakeup_cleaner(true, 1);
+    smlevel_0::bf->wakeupPageCleaner();
     // restart buffer manager to evict all pages
     // WARNING: no threads should be accessing it now
     smlevel_0::bf->shutdown();
     delete smlevel_0::bf;
-    smlevel_0::bf = new bf_tree_m(ss_m::get_options());
+    smlevel_0::bf = new zero::buffer_pool::BufferPool();
     return RCOK;
 }
 
@@ -61,7 +61,7 @@ w_rc_t prepare_test(ss_m* ssm, test_volume_t *test_volume, StoreID &stid, PageID
     }
     W_DO(ssm->commit_xct());
     W_DO(x_btree_verify(ssm, stid));
-    smlevel_0::bf->wakeup_cleaner(true, 1);
+    smlevel_0::bf->wakeupPageCleaner();
 
     {
         btree_page_h root_p;

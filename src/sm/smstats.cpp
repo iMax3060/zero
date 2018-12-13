@@ -98,7 +98,6 @@ const char* get_stat_name(sm_stat_id s)
         case sm_stat_id::bf_fix_nonroot_count: return "bf_fix_nonroot_count";
         case sm_stat_id::bf_fix_nonroot_miss_count: return "bf_fix_nonroot_miss_count";
         case sm_stat_id::bf_fix_adjusted_parent: return "bf_fix_adjusted_parent";
-        case sm_stat_id::bf_batch_wait_time: return "bf_batch_wait_time";
         case sm_stat_id::restart_log_analysis_time: return "restart_log_analysis_time";
         case sm_stat_id::restart_redo_time: return "restart_redo_time";
         case sm_stat_id::restart_dirty_pages: return "restart_dirty_pages";
@@ -176,7 +175,6 @@ const char* get_stat_expl(sm_stat_id s)
         case sm_stat_id::bf_fix_nonroot_count: return "Fix a non-root page";
         case sm_stat_id::bf_fix_nonroot_miss_count: return "Cache miss when fixing a non-root page";
         case sm_stat_id::bf_fix_adjusted_parent: return "Parent pointer adjusted in hash table while performing a fix";
-        case sm_stat_id::bf_batch_wait_time: return "Time spent waiting for batch warmup when ficing pages (usec; nodb mode only)";
         case sm_stat_id::restart_log_analysis_time: return "Time spend with log analysis (usec)";
         case sm_stat_id::restart_redo_time: return "Time spend with non-concurrent REDO (usec)";
         case sm_stat_id::restart_dirty_pages: return "Number of dirty pages computed in restart log analysis";

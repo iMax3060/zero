@@ -7,7 +7,6 @@
 
 #include "w_defines.h"
 #include "latch.h"
-#include "bf_tree.h"
 #include <cstring>
 #include <atomic>
 
@@ -70,6 +69,8 @@ struct bf_tree_cb_t {
      * variables.
      */
     static const uint16_t BP_MAX_REFCOUNT = 1024;
+
+    bf_tree_cb_t() {};
 
     /** Initializes all fields -- called by fix when fetching a new page */
     void init(PageID pid = 0, lsn_t page_lsn = lsn_t::null)
@@ -152,7 +153,7 @@ struct bf_tree_cb_t {
     lsn_t _persisted_lsn; // +8 -> 32
     lsn_t get_persisted_lsn() const { return _persisted_lsn; }
 
-    bool is_dirty()
+    bool is_dirty() const
     {
         // Unconditional latch may cause deadlocks!
         auto rc = latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
@@ -260,6 +261,8 @@ struct bf_tree_cb_t {
     /** offset to the latch to protect this page. */
     int8_t                      _latch_offset;  // +1 -> 64
 
+    latch_t                     _latch;
+
     // increment pin count atomically
     bool pin()
     {
@@ -317,16 +320,14 @@ struct bf_tree_cb_t {
     }
 
     // disabled (no implementation)
-    bf_tree_cb_t();
     bf_tree_cb_t(const bf_tree_cb_t&);
     bf_tree_cb_t& operator=(const bf_tree_cb_t&);
 
     latch_t* latchp() const {
-        uintptr_t p = reinterpret_cast<uintptr_t>(this) + _latch_offset;
-        return reinterpret_cast<latch_t*>(p);
+        return const_cast<latch_t*>(&_latch);
     }
 
-    latch_t &latch() {
+    latch_t &latch() const {
         return *latchp();
     }
 };

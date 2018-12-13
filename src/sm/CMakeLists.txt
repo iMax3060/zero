@@ -3,7 +3,7 @@ SET(sm_STAT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/alloc_cache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/alloc_page.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/allocator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/bf_tree.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/buffer_pool.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bf_tree_cleaner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/btcursor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/btree.cpp
@@ -42,6 +42,10 @@ SET(sm_STAT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/mem_mgmt.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/logrec.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_sf_skeleton.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_selector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_filter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/page_evictioner_filter_logic.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_cleaner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/page_cleaner_decoupled.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/partition.cpp

@@ -1,6 +1,6 @@
 #include "btree_test_env.h"
 
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "log_core.h"
 #include "logarchiver.h"
 #include "restore.h"
@@ -196,7 +196,7 @@ rc_t multiThreadedRestoreTest(ss_m* ssm, test_volume_t* test_volume)
 rc_t takeBackupTest(ss_m* ssm, test_volume_t* test_volume)
 {
     W_DO(populatePages(ssm, test_volume, 3 * SEGMENT_SIZE));
-    smlevel_0::bf->get_cleaner()->wakeup(true);
+    smlevel_0::bf->getPageCleaner()->wakeup(true);
     vol_t* volume = smlevel_0::vol;
 
     string backupPath = string(test_env->vol_dir) + "/backup";
@@ -210,7 +210,7 @@ rc_t takeBackupTest(ss_m* ssm, test_volume_t* test_volume)
 rc_t takeBackupMultiThreadedTest(ss_m* ssm, test_volume_t* test_volume)
 {
     W_DO(populatePages(ssm, test_volume, 16 * SEGMENT_SIZE));
-    smlevel_0::bf->get_cleaner()->wakeup(true);
+    smlevel_0::bf->getPageCleaner()->wakeup(true);
     vol_t* volume = smlevel_0::vol;
 
     string backupPath = string(test_env->vol_dir) + "/backup";

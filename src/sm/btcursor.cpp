@@ -12,7 +12,7 @@
 #include "btree_page_h.h"
 #include "btcursor.h"
 #include "btree_impl.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "vec_t.h"
 #include "xct.h"
 #include "lock.h"
@@ -91,7 +91,7 @@ void bt_cursor_t::close()
 
 void bt_cursor_t::_release_current_page() {
     if (_pid != 0) {
-        w_assert1(_pid_bfidx.idx() != 0);
+        w_assert1(_pid_bfidx._idx != 0);
         _pid_bfidx.release();
         _pid = 0;
     }
@@ -102,7 +102,7 @@ void bt_cursor_t::_set_current_page(btree_page_h &page) {
         _release_current_page();
     }
     w_assert1(_pid == 0);
-    w_assert1(_pid_bfidx.idx() == 0);
+    w_assert1(_pid_bfidx._idx == 0);
     _pid = page.pid();
     // pin this page for subsequent refix()
     _pid_bfidx.set(page.pin_for_refix());
@@ -235,7 +235,7 @@ rc_t bt_cursor_t::_check_page_update(btree_page_h &p)
 
 w_rc_t bt_cursor_t::_refix_current_key(btree_page_h &p) {
     while (true) {
-        w_rc_t fix_rt = p.refix_direct(_pid_bfidx.idx(), LATCH_SH);
+        w_rc_t fix_rt = p.refix_direct(_pid_bfidx._idx, LATCH_SH);
         if (!fix_rt.is_error()) {
             break; // mostly no error.
         }

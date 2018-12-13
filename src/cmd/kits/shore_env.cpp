@@ -710,7 +710,7 @@ bool ShoreEnv::has_log_analysis_finished()
 void ShoreEnv::wait_for_warmup()
 {
     while (true) {
-        if (ss_m::bf->is_warmup_done()) { break; }
+        if (ss_m::bf->isWarmupDone()) { break; }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }

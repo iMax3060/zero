@@ -9,7 +9,9 @@
 
 #include "worker_thread.h"
 
-class bf_tree_m;
+namespace zero::buffer_pool {
+    class BufferPool;
+}
 class generic_page;
 
 class page_cleaner_base : public worker_thread_t {
@@ -24,7 +26,7 @@ protected:
     void mark_pages_clean(size_t from, size_t to);
 
     /** the buffer pool this cleaner deals with. */
-    bf_tree_m*                  _bufferpool;
+    zero::buffer_pool::BufferPool* _bufferpool;
 
     /** in-transit buffer for written pages */
     vector<generic_page, memalign_allocator<generic_page>> _workspace;

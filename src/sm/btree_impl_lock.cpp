@@ -11,7 +11,7 @@
 #include "lock_s.h"
 #include "lock.h"
 #include "sm_base.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "btree_page_h.h"
 #include "btree_impl.h"
 #include "sm_base.h"
@@ -110,7 +110,7 @@ btree_impl::_ux_lock_key(
         // then, we try it unconditionally (this will block)
         W_DO(lm->retry_lock(&entry, !check_only /* acquire */));
         // now we got the lock.. but it might be changed because we unlatched.
-        w_rc_t refix_rc = leaf.refix_direct(pin_holder.idx(), latch_mode);
+        w_rc_t refix_rc = leaf.refix_direct(pin_holder._idx, latch_mode);
         if (refix_rc.is_error() || leaf.get_page_lsn() != prelsn)
         {
             // release acquired lock

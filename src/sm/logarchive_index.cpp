@@ -15,7 +15,7 @@
 #include "stopwatch.h"
 #include "worker_thread.h"
 #include "restart.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 class RunRecycler : public worker_thread_t
 {
@@ -328,8 +328,8 @@ rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPI
             if (smlevel_0::recovery) {
                 smlevel_0::recovery->notify_archived_lsn(runEndLSN);
             }
-            if (smlevel_0::bf) {
-                smlevel_0::bf->notify_archived_lsn(runEndLSN);
+            if (smlevel_0::bf->getPageCleaner()) {
+                smlevel_0::bf->getPageCleaner()->notify_archived_lsn(runEndLSN);
             }
         }
     }

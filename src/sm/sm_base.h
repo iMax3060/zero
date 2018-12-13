@@ -104,6 +104,9 @@ template <typename T, size_t A> class memalign_allocator;
 
 class chkpt_m;
 class restart_thread_t;
+namespace zero::buffer_pool {
+    class BufferPool;
+}
 class btree_m;
 class ss_m;
 
@@ -284,7 +287,7 @@ public:
 
     static BackupManager* bk;
     static vol_t* vol;
-    static bf_tree_m* bf;
+    static zero::buffer_pool::BufferPool* bf;
     static lock_m* lm;
 
     static log_core* log;

@@ -4,7 +4,7 @@
 #include "btree.h"
 #include "vol.h"
 #include "btree_page_h.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 btree_test_env *test_env;
 

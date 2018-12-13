@@ -5,7 +5,7 @@
 #include "restore.h"
 #include "logarchiver.h"
 #include "log_core.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "vol.h"
 #include "sm_options.h"
 #include "xct_logger.h"
@@ -20,10 +20,10 @@ void SegmentRestorer::bf_restore(unsigned segment_begin, unsigned segment_end,
 {
     PageID first_pid = segment_begin * segment_size;
     PageID total_pages = (segment_end - segment_begin) * segment_size;
-    if (smlevel_0::bf->is_media_failure(first_pid)) {
+    if (smlevel_0::bf->isMediaFailure(first_pid)) {
         auto count = std::min(total_pages,
-                smlevel_0::bf->get_media_failure_pid() - first_pid);
-        smlevel_0::bf->prefetch_pages(first_pid, count);
+                smlevel_0::bf->getMediaFailurePID() - first_pid);
+        smlevel_0::bf->batchPrefetch(first_pid, count);
     }
 
     for (unsigned s = segment_begin; s < segment_end; s++) {
@@ -63,12 +63,12 @@ void LogReplayer::replay(LogScan logs, PageIter& pagesBegin, PageIter pagesEnd)
         auto pid = lr->pid();
         w_assert0(pid > prev_pid || (pid == prev_pid && lr->lsn() > prev_lsn));
 
-        while (page != pagesEnd && page.current_pid() < pid) {
+        while (page != pagesEnd && page._current_pid < pid) {
             ++page;
         }
         if (page == pagesEnd) { break; }
 
-        if (page.current_pid() > pid) {
+        if (page._current_pid > pid) {
             /*
              * This icky situation occurs because of how our restore mechanism
              * interacts with page coupling (see comments in

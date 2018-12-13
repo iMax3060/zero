@@ -3,7 +3,7 @@
 #include <fstream>
 #include "logarchiver.h"
 #include "alloc_cache.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 void VerifyLog::setupOptions()
 {

@@ -185,7 +185,6 @@ enum class sm_stat_id : size_t
     bf_fix_nonroot_count,
     bf_fix_nonroot_miss_count,
     bf_fix_adjusted_parent,
-    bf_batch_wait_time,
     restart_log_analysis_time,
     restart_redo_time,
     restart_dirty_pages,

@@ -64,7 +64,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "sm.h"                 // Check system shutdown status
 #include "stopwatch.h"
 #include "xct_logger.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 #include <fcntl.h>              // Performance reporting
 #include <unistd.h>

@@ -20,7 +20,7 @@
 #include "vol.h"
 #include "xct.h"
 #include "sm_base.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 // NOTE we don't know the level of root until we start, so just give "-1" as magic value for root level
 const int16_t NOCHECK_ROOT_LEVEL = -1;
@@ -184,7 +184,7 @@ void btree_impl::inquery_verify_init(StoreID store)
     context.next_level = -1; // don't check level of root page
     context.next_low_key.construct_neginfkey();
     context.next_high_key.construct_posinfkey();
-    context.next_pid = smlevel_0::bf->get_root_page_id(store);
+    context.next_pid = smlevel_0::bf->getControlBlock(smlevel_0::bf->getRootIndex(store))._pid;
 }
 
 void btree_impl::inquery_verify_fact(btree_page_h &page)
@@ -359,7 +359,7 @@ bool verification_context::is_bitmap_clean () const
 rc_t btree_impl::_ux_verify_volume(
     int hash_bits, verify_volume_result &result)
 {
-    smlevel_0::bf->wakeup_cleaner(true, 1);
+    smlevel_0::bf->wakeupPageCleaner();
     vol_t *vol = ss_m::vol;
     w_assert1(vol);
     generic_page buf;

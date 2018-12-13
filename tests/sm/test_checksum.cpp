@@ -3,7 +3,7 @@
 #include "btree.h"
 #include "btree_page_h.h"
 #include "btree_impl.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 btree_test_env *test_env;
 /**
@@ -70,7 +70,7 @@ w_rc_t btree_page(ss_m* ssm, test_volume_t *test_volume) {
     W_DO(ssm->commit_xct());
 
     // write out the page to set checksum by bufferpool
-    smlevel_0::bf->wakeup_cleaner(true, 1);
+    smlevel_0::bf->wakeupPageCleaner();
 
     // check it again
     W_DO(ssm->begin_xct());

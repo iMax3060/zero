@@ -11,13 +11,16 @@
 #include "cds/container/fcqueue.h"
 #include "MPMCQueue/MPMCQueue.h"
 
-class bf_tree_m;
+namespace zero::buffer_pool {
+    class BufferPool;
+}
 
 namespace zero::buffer_pool {
+    using namespace zero::buffer_pool;
 
     class FreeList {
     public:
-        FreeList(bf_tree_m* bufferpool, const sm_options& options);
+        FreeList(BufferPool* bufferpool, const sm_options& options);
 
         virtual void addFreeBufferpoolFrame(bf_idx freeFrame) = 0;
 
@@ -39,13 +42,13 @@ namespace zero::buffer_pool {
         };
 
     protected:
-        bf_tree_m* bufferPool;
+        BufferPool* bufferPool;
 
     };
 
     class FreeListLowContention : public FreeList {
     public:
-        FreeListLowContention(bf_tree_m* bufferpool, const sm_options& options) noexcept;
+        FreeListLowContention(BufferPool* bufferpool, const sm_options& options) noexcept;
 
         virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final;
 
@@ -60,7 +63,7 @@ namespace zero::buffer_pool {
 
     class FreeListHighContention : public FreeList {
     public:
-        FreeListHighContention(bf_tree_m* bufferpool, const sm_options& options);
+        FreeListHighContention(BufferPool* bufferpool, const sm_options& options);
 
         virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) final;
 

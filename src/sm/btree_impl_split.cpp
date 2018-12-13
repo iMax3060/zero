@@ -19,7 +19,7 @@
 #include "w_key.h"
 #include "sm.h"
 #include "xct.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "vol.h"
 #include "xct_logger.h"
 
@@ -158,7 +158,7 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
         // cases, the slot i=1 will yield and invalid page in switch_parent
         // below. Because of this great design feature, switch_parent has to
         // cope with an invalid page.
-        smlevel_0::bf->switch_parent(*new_page.child_slot_address(i),
+        smlevel_0::bf->switchParent(*new_page.child_slot_address(i),
                 new_page.get_generic_page());
     }
 
@@ -267,11 +267,11 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
     w_assert0 (child.get_foster() != 0);
 
     PageID new_child_pid = child.get_foster();
-    if (smlevel_0::bf->is_swizzled_pointer(new_child_pid)) {
+    if (smlevel_0::bf->isSwizzledPointer(new_child_pid)) {
         smlevel_0::bf->unswizzlePagePointer(parent.get_generic_page(),
                                             GeneralRecordIds::FOSTER_CHILD, true, &new_child_pid);
     }
-    w_assert1(!smlevel_0::bf->is_swizzled_pointer(new_child_pid));
+    w_assert1(!smlevel_0::bf->isSwizzledPointer(new_child_pid));
 
     lsn_t child_emlsn = child.get_foster_emlsn();
     Logger::log_p<btree_foster_adopt_log> (&parent, &child, new_child_pid, child_emlsn, new_child_key);
@@ -280,7 +280,7 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
 
     // Switch parent of newly adopted child
     // CS TODO: I'm not sure we can do this because we don't hold a latch on new_child_pid
-    smlevel_0::bf->switch_parent(new_child_pid, parent.get_generic_page());
+    smlevel_0::bf->switchParent(new_child_pid, parent.get_generic_page());
 
     w_assert3(parent.is_consistent(true, true));
     w_assert3(child.is_consistent(true, true));

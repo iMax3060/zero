@@ -1,4 +1,5 @@
-/*
+/*                                int               l,               // Level of the destination page
+
  * (c) Copyright 2011-2013, Hewlett-Packard Development Company, LP
  */
 
@@ -10,7 +11,7 @@
  */
 
 #include "sm_base.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "btree_page_h.h"
 #include "btree_impl.h"
 #include "w_key.h"
@@ -166,7 +167,7 @@ btree_impl::_sx_grow_tree(btree_page_h& rp)
     int max_slot = cp.max_child_slot();
     for (general_recordid_t i = GeneralRecordIds::FOSTER_CHILD; i <= max_slot; ++i)
     {
-        smlevel_0::bf->switch_parent(*cp.child_slot_address(i), cp.get_generic_page());
+        smlevel_0::bf->switchParent(*cp.child_slot_address(i), cp.get_generic_page());
     }
 
     w_assert3(cp.is_consistent(true, true));
