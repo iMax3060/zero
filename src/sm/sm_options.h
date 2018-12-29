@@ -9,6 +9,8 @@
 #include <string>
 #include <map>
 
+// MG TODO: Rewrite as singleton!
+
 /**
  * \brief Start-up parameters for the storage engine.  See \ref OPTIONS.
  * \ingroup OPTIONS

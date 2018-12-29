@@ -154,7 +154,7 @@ void page_cleaner_decoupled::flush_segments()
 void page_cleaner_decoupled::update_cb_clean(size_t from, size_t to)
 {
     for (size_t i = from; i < to; ++i) {
-        bf_idx* idx = _bufferpool->_hashtable->lookup(_workspace[i].pid);
+        atomic_bf_idx* idx = _bufferpool->_hashtable->lookup(_workspace[i].pid);
 
         if (!idx) { continue; }
 

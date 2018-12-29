@@ -412,7 +412,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
 
     while (true)
     {
-        bf_idx_pair* p = _hashtable->lookupPair(pid);
+        atomic_bf_idx_pair* p = _hashtable->lookupPair(pid);
         bf_idx idx = 0;
         if (p) {
             idx = p->first;
@@ -466,7 +466,7 @@ w_rc_t bf_tree_m::fix(generic_page* parent, generic_page*& page,
             // Register the page on the hash table atomically. This guarantees
             // that only one thread will attempt to read the page
             bf_idx parent_idx = parent ? parent - _buffer : 0;
-            bool registered = _hashtable->tryInsert(pid, new bf_idx_pair(idx, parent_idx));
+            bool registered = _hashtable->tryInsert(pid, new atomic_bf_idx_pair(idx, parent_idx));
             if (!registered) {
                 cb.latch().latch_release();
                 if (_evictioner) _evictioner->unbuffered(idx);
@@ -719,7 +719,7 @@ void bf_tree_m::prefetch_pages(PageID first, unsigned count)
         auto idx = get_idx(&cb);
 
         constexpr bf_idx parent_idx = 0;
-        bool registered = _hashtable->tryInsert(pid, new bf_idx_pair(idx, parent_idx));
+        bool registered = _hashtable->tryInsert(pid, new atomic_bf_idx_pair(idx, parent_idx));
 
         if (registered) {
             cb.init(pid, frames[i]->lsn);
@@ -753,7 +753,7 @@ void bf_tree_m::print_page(PageID pid)
         idx = pid ^ SWIZZLED_PID_BIT;
     }
     else {
-        bf_idx* p = _hashtable->lookup(pid);
+        atomic_bf_idx* p = _hashtable->lookup(pid);
         if (p) {
             idx = *p;
         } else {
@@ -819,7 +819,7 @@ void bf_tree_m::switch_parent(PageID pid, generic_page* parent)
     }
     w_assert1(!is_swizzled_pointer(pid));
 
-    bf_idx_pair* p = _hashtable->lookupPair(pid);
+    atomic_bf_idx_pair* p = _hashtable->lookupPair(pid);
     // if page is not cached, there is nothing to update
     if (!p) {
         return;

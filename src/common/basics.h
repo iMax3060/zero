@@ -35,6 +35,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /*  -- do not edit anything above this line --   </std-header>*/
 
 #include "w_base.h"
+#include <atomic>
 
 /* sizes-in-bytes for all persistent data in the SM. */
 typedef uint32_t               smsize_t;
@@ -52,8 +53,10 @@ typedef int16_t slotid_t;
 
 /* Type of a buffer index in the bufferpool */
 typedef uint32_t bf_idx;
+typedef std::atomic<uint32_t> atomic_bf_idx;
 /* Pair of buffer indexes where the parent page of the first index can be found at the second one */
 typedef std::pair<bf_idx, bf_idx> bf_idx_pair;
+typedef std::pair<std::atomic<bf_idx>, std::atomic<bf_idx>> atomic_bf_idx_pair;
 
 /**
 * \brief An integer to point to any record in B-tree pages.

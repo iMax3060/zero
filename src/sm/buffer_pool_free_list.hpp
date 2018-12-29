@@ -69,9 +69,9 @@ namespace zero::buffer_pool {
         virtual bf_idx  getCount() final;
 
     private:
-        rigtorp::MPMCQueue<bf_idx>  list;
+        rigtorp::MPMCQueue<bf_idx> list;
 
-        mutable std::atomic<bf_idx> approximateListLength;
+        mutable atomic_bf_idx      approximateListLength;
 
     };
 
