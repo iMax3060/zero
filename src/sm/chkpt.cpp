@@ -68,7 +68,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "sm_base.h"
 #include "chkpt.h"
 #include "btree_logrec.h"       // Lock re-acquisition
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "sm.h"
 #include "lock_raw.h"      // Lock information gathering
 #include "w_okvl_inl.h"    // Lock information gathering
@@ -631,7 +631,7 @@ void chkpt_m::take(chkpt_t* chkpt)
         else {
             chkpt->init();
             smlevel_0::recovery->checkpoint_dirty_pages(*chkpt);
-            smlevel_0::bf->fuzzy_checkpoint(*chkpt);
+            smlevel_0::bf->fuzzyCheckpoint(*chkpt);
             xct_t::fuzzy_checkpoint(*chkpt);
             chkpt->set_last_scan_start(begin_lsn);
         }

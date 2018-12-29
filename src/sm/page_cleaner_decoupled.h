@@ -1,7 +1,7 @@
 #ifndef __PAGE_CLEANER_DECOUPLED_H
 #define __PAGE_CLEANER_DECOUPLED_H
 
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "logarchiver.h"
 #include "vol.h"
 #include "generic_page.h"

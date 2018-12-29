@@ -69,7 +69,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "log_carray.h"
 #include "log_lsn_tracker.h"
 #include "xct_logger.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "fixable_page_h.h"
 
 #include <algorithm>

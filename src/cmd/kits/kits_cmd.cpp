@@ -65,7 +65,7 @@ public:
     {
         ::sleep(delay);
 
-        smlevel_0::bf->set_media_failure();
+        smlevel_0::bf->setMediaFailure();
 
         // disable eager archiving
         // smlevel_0::logArchiver->setEager(false);
@@ -417,7 +417,7 @@ void KitsCommand::doWork()
         }
 
         // Now wait for device to be restored -- check every 1 second
-        while (smlevel_0::bf->is_media_failure()) {
+        while (smlevel_0::bf->isMediaFailure()) {
             sleep(1);
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }

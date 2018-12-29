@@ -5,7 +5,7 @@
 #include "restart.h"
 #include "vol.h"
 #include "btree.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 #include "log_lsn_tracker.h"
 #include "log_core.h"
@@ -42,7 +42,7 @@ void basethread_t::start_buffer()
 {
     if (!smlevel_0::bf) {
         cerr << "Initializing buffer manager ... ";
-        smlevel_0::bf = new bf_tree_m(_options);
+        smlevel_0::bf = new zero::buffer_pool::BufferPool();
         assert(smlevel_0::bf);
         cerr << "OK" << endl;
     }

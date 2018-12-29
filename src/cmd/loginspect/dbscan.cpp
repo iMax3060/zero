@@ -1,7 +1,7 @@
 #include "dbscan.h"
 
 #include "allocator.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 
 void DBScan::setupOptions()
 {
@@ -44,11 +44,11 @@ void DBScan::run()
 
     vol_t* vol = new vol_t(_options);
     smlevel_0::vol = vol;
-    smlevel_0::bf = new bf_tree_m(_options);
+    smlevel_0::bf = new zero::buffer_pool::BufferPool();
 
     vol->build_caches(false);
 
-    smlevel_0::bf->post_init();
+    smlevel_0::bf->postInitialize();
 
     vector<generic_page, memalign_allocator<generic_page>> buffer(BUFSIZE);
 

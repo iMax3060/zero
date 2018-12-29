@@ -7,7 +7,7 @@
 #include "w_error.h"
 
 #include "bf_tree_cb.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "sm_base.h"
 
 #include <vector>
@@ -21,12 +21,12 @@ btree_test_env *test_env;
  */
 class test_bf_tree {
 public:
-    static bf_idx get_bf_idx (bf_tree_m *bf, generic_page* page) {
-        return (page - bf->_buffer);
+    static bf_idx get_bf_idx (zero::buffer_pool::BufferPool *bf, generic_page* page) {
+        return bf->getIndex(page);
     }
-    static bf_tree_cb_t* get_bf_control_block (bf_tree_m *bf, generic_page* page) {
+    static bf_tree_cb_t& get_bf_control_block(zero::buffer_pool::BufferPool *bf, generic_page* page) {
         bf_idx idx = get_bf_idx(bf, page);
-        return bf->get_cbp(idx);
+        return bf->getControlBlock(idx);
     }
 
 
@@ -221,7 +221,7 @@ w_rc_t prepare_test(ss_m* ssm, test_volume_t *test_volume, StoreID &stid, PageID
         W_DO(ssm->commit_xct());
     }
     W_DO(x_btree_verify(ssm, stid));
-    smlevel_0::bf->get_cleaner()->wakeup(true);
+    smlevel_0::bf->getPageCleaner()->wakeup(true);
     return RCOK;
 }
 
@@ -298,12 +298,12 @@ TEST (TreeBufferpoolTest, EvictSwizzle) {
 }
 
 w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_swizzle) {
-    bf_tree_m &pool(*smlevel_0::bf);
+    zero::buffer_pool::BufferPool &pool(*smlevel_0::bf);
     PageID root_pid = 3;
 
     generic_page *root_page = nullptr;
     StoreID stid = 1;
-    W_DO(pool.fix_root(root_page, stid, LATCH_EX, false, true));
+    W_DO(pool.fixRootOldStyleExceptions(root_page, stid, LATCH_EX, false, true));
     EXPECT_TRUE (root_page != nullptr);
     ::memset(root_page, 0, sizeof(generic_page));
     btree_page *rbp = reinterpret_cast<btree_page*>(root_page);
@@ -312,13 +312,13 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
     rbp->btree_level = 2;
     rbp->btree_foster = 0;
     rbp->init_items();
-    bf_tree_cb_t &root_cb (*test_bf_tree::get_bf_control_block(&pool, root_page));
+    bf_tree_cb_t& root_cb = test_bf_tree::get_bf_control_block(&pool, root_page);
     // EXPECT_EQ(1, root_cb._pin_cnt); // root page is always swizzled by volume descriptor, so pin_cnt is 1.
     if (enable_swizzle) {
-        EXPECT_TRUE (pool.is_swizzled(root_page));
+        EXPECT_TRUE (pool.getControlBlock(root_page)._swizzled);
     }
 
-    pool.debug_dump_page_pointers(std::cout, root_page);
+    pool.debugDumpPagePointers(std::cout, root_page);
     for (size_t i = 0; i < 20; ++i) {
         generic_page *page = nullptr;
         PageID pid = root_pid + 1 + i;
@@ -333,13 +333,13 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
         } else {
             // EXPECT_EQ ((int) (1), root_cb._pin_cnt);
         }
-        W_DO(pool.fix_nonroot(page, root_page, pid, LATCH_EX, false, true));
+        W_DO(pool.fixNonRootOldStyleExceptions(page, root_page, pid, LATCH_EX, false, true));
         EXPECT_TRUE (page != nullptr);
         if (page != nullptr) {
-            bf_tree_cb_t &cb (*test_bf_tree::get_bf_control_block(&pool, page));
+            bf_tree_cb_t& cb = test_bf_tree::get_bf_control_block(&pool, page);
             if (enable_swizzle) {
                 // EXPECT_EQ (1, cb._pin_cnt); // because it's swizzled, pin_cnt is 1
-                EXPECT_TRUE (pool.is_swizzled(page));
+                EXPECT_TRUE (pool.getControlBlock(page)._swizzled);
 #ifdef BP_MAINTAIN_PARENT_PTR
                 // EXPECT_EQ ((int) (2 + i), root_cb._pin_cnt); // parent's pin_cnt is added
 #else // BP_MAINTAIN_PARENT_PTR
@@ -359,40 +359,40 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
             //  same after unfix too.
             if (enable_swizzle) {
                 // EXPECT_EQ (1, cb._pin_cnt);
-                EXPECT_TRUE (pool.is_swizzled(page));
+                EXPECT_TRUE (pool.getControlBlock(page)._swizzled);
             } else {
                 // EXPECT_EQ (0, cb._pin_cnt);
             }
         }
     }
-    pool.debug_dump_page_pointers(std::cout, root_page);
+    pool.debugDumpPagePointers(std::cout, root_page);
     if (enable_swizzle) {
-    // fix again
-    for (size_t i = 0; i < 20; ++i) {
-        generic_page *page = nullptr;
-        PageID pid = root_pid + 1 + i;
-        W_DO(pool.fix_nonroot(page, root_page, pid, LATCH_SH, false, false));
-        EXPECT_TRUE (page != nullptr);
-        if (page != nullptr) {
-            btree_page *bp = reinterpret_cast<btree_page*>(page);
-            bf_tree_cb_t &cb (*test_bf_tree::get_bf_control_block(&pool, page));
-            EXPECT_EQ(pid, page->pid);
-            EXPECT_EQ(1, bp->btree_level);
-            if (enable_swizzle) {
-                // EXPECT_EQ (1, cb._pin_cnt);
-                EXPECT_TRUE (pool.is_swizzled(page));
-            } else {
-                // EXPECT_EQ (0, cb._pin_cnt);
-            }
-            pool.unfix(page);
-            if (enable_swizzle) {
-                // EXPECT_EQ (1, cb._pin_cnt);
-                EXPECT_TRUE (pool.is_swizzled(page));
-            } else {
-                // EXPECT_EQ (0, cb._pin_cnt);
+        // fix again
+        for (size_t i = 0; i < 20; ++i) {
+            generic_page *page = nullptr;
+            PageID pid = root_pid + 1 + i;
+            W_DO(pool.fixNonRootOldStyleExceptions(page, root_page, pid, LATCH_SH, false, false));
+            EXPECT_TRUE (page != nullptr);
+            if (page != nullptr) {
+                btree_page *bp = reinterpret_cast<btree_page*>(page);
+                bf_tree_cb_t& cb = test_bf_tree::get_bf_control_block(&pool, page);
+                EXPECT_EQ(pid, page->pid);
+                EXPECT_EQ(1, bp->btree_level);
+                if (enable_swizzle) {
+                    // EXPECT_EQ (1, cb._pin_cnt);
+                    EXPECT_TRUE (pool.getControlBlock(page)._swizzled);
+                } else {
+                    // EXPECT_EQ (0, cb._pin_cnt);
+                }
+                pool.unfix(page);
+                if (enable_swizzle) {
+                    // EXPECT_EQ (1, cb._pin_cnt);
+                    EXPECT_TRUE (pool.getControlBlock(page)._swizzled);
+                } else {
+                    // EXPECT_EQ (0, cb._pin_cnt);
+                }
             }
         }
-    }
     if (enable_swizzle) {
 #ifdef BP_MAINTAIN_PARENT_PTR
         // EXPECT_EQ (1 + 20, root_cb._pin_cnt);
@@ -413,8 +413,8 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
         // EXPECT_EQ (1, root_cb._pin_cnt);
     }
 
-    pool.debug_dump_page_pointers(std::cout, root_page);
-    pool.debug_dump(std::cout);
+    pool.debugDumpPagePointers(std::cout, root_page);
+    pool.debugDump(std::cout);
     return RCOK;
 }
 w_rc_t test_bf_swizzle(ss_m* ssm, test_volume_t *test_volume) {

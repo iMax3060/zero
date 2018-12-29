@@ -1,5 +1,5 @@
-#ifndef __ZERO_BF_TREE_HASHTABLE_HPP
-#define __ZERO_BF_TREE_HASHTABLE_HPP
+#ifndef __SM_BUFFER_POOL_HASHTABLE_HPP
+#define __SM_BUFFER_POOL_HASHTABLE_HPP
 
 #include "basics.h"
 #include <limits>
@@ -108,4 +108,4 @@ namespace zero::buffer_pool {
 
 }
 
-#endif // __ZERO_BF_TREE_HASHTABLE_HPP
+#endif // __SM_BUFFER_POOL_HASHTABLE_HPP

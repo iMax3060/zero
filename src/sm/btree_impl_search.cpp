@@ -106,7 +106,7 @@ btree_impl::_ux_traverse(StoreID store, const w_keystr_t &key,
         inquery_verify_init(store); // initialize in-query verification
         btree_page_h root_p;
         bool should_try_ex = (leaf_latch_mode == LATCH_EX &&
-                              leaf_pid_causing_failed_upgrade == smlevel_0::bf->get_root_page_id(store));
+                              leaf_pid_causing_failed_upgrade == smlevel_0::bf->getControlBlock(smlevel_0::bf->getRootIndex(store))._pid);
         // Root page is pre-loaded into buffer pool
         W_DO( root_p.fix_root(store, should_try_ex ? LATCH_EX : LATCH_SH, false));
         w_assert1(root_p.is_fixed());
@@ -241,7 +241,7 @@ btree_impl::_ux_traverse_recurse(btree_page_h&                start,
                 should_try_ex = true;
             } else {
                 // this is also just a hint. TODO can we avoid normalize overhead?
-                should_try_ex = (smlevel_0::bf->normalize_pid(pid_to_follow_opaqueptr)
+                should_try_ex = (smlevel_0::bf->normalizePID(pid_to_follow_opaqueptr)
                                     == leaf_pid_causing_failed_upgrade);
             }
         }

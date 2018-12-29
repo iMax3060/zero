@@ -9,7 +9,7 @@
 
 #include "sm_base.h"
 #include "sm_base.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "btree_page_h.h"
 #include "btree_impl.h"
 #include "btcursor.h"
@@ -152,7 +152,7 @@ btree_m::print(const PageID& current,
     W_FATAL(fcNOTIMPLEMENTED);
 
     {
-        // PageID original_pid = smlevel_0::bf->debug_get_original_pageid(current);
+        // PageID original_pid = smlevel_0::bf->getControlBlock(smlevel_0::bf->removeSwizzledPIDBit(current))._pid;
         btree_page_h page;
         // W_COERCE( page.fix_direct(original_pid, LATCH_SH));// coerce ok-- debugging
 

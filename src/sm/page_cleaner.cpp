@@ -1,7 +1,7 @@
 #include "page_cleaner.h"
 
 #include "log_core.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "generic_page.h"
 
 page_cleaner_base::page_cleaner_base(const sm_options& _options)
@@ -14,7 +14,7 @@ page_cleaner_base::page_cleaner_base(const sm_options& _options)
     _workspace_size = _options.get_int_option("sm_cleaner_workspace_size", 0);
     if (_workspace_size == 0) {
         // if 0 given, set workspace size to 1/128 of the buffer pool size
-        auto bufpoolsize = _bufferpool->get_block_cnt();
+        auto bufpoolsize = _bufferpool->getBlockCount();
         _workspace_size = bufpoolsize >> 7;
         if (_workspace_size == 0) { _workspace_size = 1; }
     }
@@ -42,7 +42,7 @@ void page_cleaner_base::mark_pages_clean(size_t from, size_t to)
         bf_idx idx = _workspace_cb_indexes[i];
         if (idx == 0) { continue; }
 
-        bf_tree_cb_t &cb = _bufferpool->get_cb(idx);
+        bf_tree_cb_t &cb = _bufferpool->getControlBlock(idx);
         if (!cb.pin()) { continue; }
 
         if (cb._pid == _workspace[i].pid) {

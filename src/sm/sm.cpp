@@ -61,13 +61,12 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "chkpt.h"
 #include "sm.h"
 #include "vol.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "restart.h"
 #include "sm_options.h"
 #include "tid_t.h"
 #include "log_carray.h"
 #include "log_lsn_tracker.h"
-#include "bf_tree.h"
 #include "stopwatch.h"
 #include "alloc_cache.h"
 #include "btree_page.h"
@@ -102,7 +101,7 @@ static srwlock_t          _begin_xct_mutex;
 
 BackupManager* smlevel_0::bk = 0;
 vol_t* smlevel_0::vol = 0;
-bf_tree_m* smlevel_0::bf = 0;
+zero::buffer_pool::BufferPool* smlevel_0::bf = 0;
 log_core* smlevel_0::log = 0;
 LogArchiver* smlevel_0::logArchiver = 0;
 
@@ -267,7 +266,7 @@ ss_m::_construct_once()
 
     ERROUT(<< "[" << timer.time_ms() << "] Initializing buffer manager");
 
-    bf = new bf_tree_m(_options);
+    bf = new zero::buffer_pool::BufferPool();
     if (! bf) {
         W_FATAL(eOUTOFMEMORY);
     }
@@ -295,7 +294,7 @@ ss_m::_construct_once()
 
     ERROUT(<< "[" << timer.time_ms() << "] Starting recovery thread");
 
-    bf->post_init();
+    bf->postInitialize();
 
     if (!recovery->isInstant()) {
         recovery->wakeup();
@@ -371,8 +370,8 @@ ss_m::_destruct_once()
 
         W_COERCE(log->flush_all());
         do {
-            bf->wakeup_cleaner(true, 1 /* wait for 1 full round */);
-        } while (bf->has_dirty_frames());
+            bf->wakeupPageCleaner();
+        } while (bf->hasDirtyFrames());
         smthread_t::check_actual_pin_count(0);
 
         if (truncate) { W_COERCE(_truncate_log()); }
@@ -711,7 +710,7 @@ ss_m::activate_archiver()
 rc_t
 ss_m::dump_buffers(ostream &o)
 {
-    bf->debug_dump(o);
+    bf->debugDump(o);
     return RCOK;
 }
 
@@ -729,7 +728,7 @@ ss_m::config_info(sm_config_info_t& info) {
     // OK, now that _data is already aligned, we don't have to
     // lose those 4 bytes.
     info.lg_rec_page_space = btree_page::data_sz;
-    info.buffer_pool_size = bf->get_block_cnt() * ss_m::page_sz / 1024;
+    info.buffer_pool_size = bf->getBlockCount() * ss_m::page_sz / 1024;
     info.max_btree_entry_size  = btree_m::max_entry_size();
     info.exts_on_page  = 0;
     info.pages_per_ext = smlevel_0::ext_sz;

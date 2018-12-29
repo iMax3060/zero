@@ -12,9 +12,13 @@
 
 #include <random>
 
-class bf_tree_m;
+namespace zero::buffer_pool {
+    class BufferPool;
+}
 class generic_page;
 struct bf_tree_cb_t;
+
+using namespace zero::buffer_pool;
 
 /*!\class   page_evictioner_base
  * \brief   Basic Page Evictioner incl. RANDOM, LOOP, 0CLOCK and CLOCK strategies
@@ -80,11 +84,11 @@ public:
      *          It will serve the specified \c bufferpool and uses the specified
      *          \c options to specify the behavior of the page evictioner.
      *
-     * @param bufferpool The \link bf_tree_m \endlink the constructed page evictioner is
+     * @param bufferpool The \link zero::buffer_pool::BufferPool \endlink the constructed page evictioner is
      *                   used to select pages for eviction for.
      * @param options    The options passed to the program on startup.
      */
-	page_evictioner_base(bf_tree_m* bufferpool, const sm_options& options);
+	page_evictioner_base(BufferPool* bufferpool, const sm_options& options);
 
     /*!\fn      ~page_evictioner_base()
      * \brief   Destructor for page_evictioner_base
@@ -222,7 +226,7 @@ public:
      *                                  constructed.
      *                               -# Buffer frame was freed explicitly: Therefore
      *                                  the function
-     *                                  \link bf_tree_m::_add_free_block(bf_idx idx) \endlink
+     *                                  \link zero::buffer_pool::FreeList::addFreeBufferpoolFrame(bf_idx idx) \endlink
      *                                  was called. If the function was called from
      *                                  within
      *                                  \link page_evictioner_base::do_work() \endlink
@@ -279,7 +283,7 @@ public:
      * \details Evicts the page from the specified buffer frame corresponding to index
      *          \c idx. If enabled, it unswizzles the page, updates its EMLSN, takes
      *          care about the cleaning of the page and removes it from the hash table
-     *          \link bf_tree_m::_hashtable \endlink.
+     *          \link zero::buffer_pool::BufferPool::_hashtable \endlink.
      * \pre     The buffer frame corresponding to index \c idx is latched in
      *          \link latch_mode_t::LATCH_EX \endlink mode by this thread.
      *
@@ -295,7 +299,7 @@ protected:
      * \details The buffer pool for which this evictioner is responsible to evict pages
      *          from.
      */
-    bf_tree_m*                            _bufferpool;
+    BufferPool*                           _bufferpool;
 
     /*!\var     _swizzling_enabled
      * \brief   Pointer swizzling used in the buffer pool
@@ -389,7 +393,7 @@ protected:
      *          page cleaner
      * \details Number of picks of pages in a row that cannot be evicted before the
      *          page cleaner of the \link _bufferpool \endlink gets woken up
-     *          (\link bf_tree_m::wakeup_cleaner() \endlink).
+     *          (\link zero::buffer_pool::BufferPool::wakeupPageCleaner() \endlink).
      *
      * \remark  Dirty pages that need to get cleaned are a typical reason for stuck
      *          page evictions.

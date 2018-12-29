@@ -6,7 +6,7 @@
 #include "vol.h"
 #include "alloc_cache.h"
 #include "stnode_page.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "bf_tree_cleaner.h"
 #include "base/command.h"
 #include "xct_logger.h"
@@ -27,7 +27,7 @@ po::variables_map options;
 sm_options sm_opt;
 
 vol_t* vol;
-bf_tree_m* bf;
+zero::buffer_pool::BufferPool* bf;
 
 size_t dirty_rate;
 size_t duration;
@@ -132,11 +132,11 @@ void init_bf()
 {
     // Allocate and fix-init all pages
     generic_page* page;
-    last_pid = bf->get_block_cnt();
+    last_pid = bf->getBlockCount();
     while (vol->num_used_pages() < last_pid) {
         PageID pid;
         W_COERCE(vol->alloc_a_page(pid));
-        W_COERCE(bf->fix_nonroot(page, nullptr, pid, LATCH_EX, false, true));
+        W_COERCE(bf->fixNonRootOldStyleExceptions(page, nullptr, pid, LATCH_EX, false, true));
         page->lsn = lsn_t::null;
         page->pid = pid;
         page->store = 0;
@@ -189,7 +189,7 @@ public:
         }
 
         vol = new vol_t(sm_opt, nullptr);
-        bf = new bf_tree_m(sm_opt);
+        bf = new zero::buffer_pool::BufferPool();
 
         smlevel_0::bf = bf;
         smlevel_0::vol = vol;
@@ -200,7 +200,7 @@ public:
 
         cout << "stress_cleaner initialization done!" << endl;
 
-        bf->get_cleaner();
+        bf->getPageCleaner();
         page_dirtier_thread dirtier;
         dirtier.fork();
         dirtier.join();

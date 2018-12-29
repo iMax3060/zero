@@ -23,7 +23,7 @@
 #include <sstream>
 #include "chkpt.h"
 #include "logrec.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "lock_raw.h"
 #include "log_lsn_tracker.h"
 #include "log_core.h"

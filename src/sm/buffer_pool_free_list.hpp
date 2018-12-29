@@ -1,5 +1,5 @@
-#ifndef ZERO_SM_BUFFER_POOL_FREE_LIST_HPP
-#define ZERO_SM_BUFFER_POOL_FREE_LIST_HPP
+#ifndef __SM_BUFFER_POOL_FREE_LIST_HPP
+#define __SM_BUFFER_POOL_FREE_LIST_HPP
 
 #include <atomic>
 #include <queue>
@@ -11,13 +11,12 @@
 #include "cds/container/fcqueue.h"
 #include "MPMCQueue/MPMCQueue.h"
 
-class bf_tree_m;
-
 namespace zero::buffer_pool {
+    class BufferPool;
 
     class FreeList {
     public:
-        FreeList(bf_tree_m* bufferpool, const sm_options& options);
+        FreeList(BufferPool* bufferpool, const sm_options& options);
 
         virtual void addFreeBufferpoolFrame(bf_idx freeFrame) = 0;
 
@@ -35,17 +34,17 @@ namespace zero::buffer_pool {
         public:
             AddFreeBufferpoolFrameException(bf_idx const triedFrame) :
                     RunTimeException("Failed to add buffer frame " + std::to_string(triedFrame)
-                                   + " to the free list of the buffer pool.") {};
+                                     + " to the free list of the buffer pool.") {};
         };
 
     protected:
-        bf_tree_m* bufferPool;
+        BufferPool* bufferPool;
 
     };
 
     class FreeListLowContention : public FreeList {
     public:
-        FreeListLowContention(bf_tree_m* bufferpool, const sm_options& options) noexcept;
+        FreeListLowContention(BufferPool* bufferpool, const sm_options& options) noexcept;
 
         virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final;
 
@@ -60,7 +59,7 @@ namespace zero::buffer_pool {
 
     class FreeListHighContention : public FreeList {
     public:
-        FreeListHighContention(bf_tree_m* bufferpool, const sm_options& options);
+        FreeListHighContention(BufferPool* bufferpool, const sm_options& options);
 
         virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) final;
 
@@ -77,4 +76,4 @@ namespace zero::buffer_pool {
 
 } // zero::buffer_pool
 
-#endif //ZERO_SM_BUFFER_POOL_FREE_LIST_HPP
+#endif // __SM_BUFFER_POOL_FREE_LIST_HPP

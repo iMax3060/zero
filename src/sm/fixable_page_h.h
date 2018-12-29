@@ -5,7 +5,7 @@
 #ifndef __FIXABLE_PAGE_H_H
 #define __FIXABLE_PAGE_H_H
 
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "generic_page.h"
 #include "latch.h"
 #include "sm_base.h"
@@ -209,6 +209,12 @@ public:
     /// valid slots are [-1 .. max_child_slot()], where -1 is foster pointer and 0 is pid0
     /// @pre We do not hold current page's latch in Q mode
     PageID*     child_slot_address(int child_slot) const;
+
+    /**
+     * Search in the given page to find the slot that contains the page id as a child.
+     * Returns >0 if a normal slot, 0 if pid0, -1 if foster, -2 if not found.
+     */
+    static general_recordid_t find_page_id_slot(generic_page* page, PageID pid);
 
     PageID root() const;
 

@@ -10,7 +10,7 @@
 #include "btree_page_h.h"
 #include "btree_impl.h"
 #include "w_key.h"
-#include "bf_tree.h"
+#include "buffer_pool.hpp"
 #include "restart.h"
 #include "log_core.h"
 #include "xct_logger.h"
@@ -20,7 +20,7 @@ PageID btree_page_h::pid0() const
 {
     PageID pid = page()->btree_pid0;
     if (pid) {
-        return smlevel_0::bf->normalize_pid(pid);
+        return smlevel_0::bf->normalizePID(pid);
     }
     return pid;
 }
@@ -28,7 +28,7 @@ PageID btree_page_h::pid0() const
 PageID btree_page_h::get_foster() const {
     PageID pid = page()->btree_foster;
     if (pid) {
-        return smlevel_0::bf->normalize_pid(pid);
+        return smlevel_0::bf->normalizePID(pid);
     }
     return pid;
 }
@@ -37,7 +37,7 @@ PageID btree_page_h::child(slotid_t slot) const
 {
     PageID pid = child_opaqueptr(slot);
     if (pid) {
-        return smlevel_0::bf->normalize_pid(pid);
+        return smlevel_0::bf->normalizePID(pid);
     }
     return pid;
 }
