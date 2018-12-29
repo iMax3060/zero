@@ -155,7 +155,7 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_page_img_compression", po::value<int>()->default_value(0),
         "Enables before- and after-image compression for every N log bytes (N=0 turns off)")
     ("sm_bufpoolsize", po::value<int>()->default_value(1024),
-        "Size of buffer pool in MB")
+        "Size of buffer pool in MiB")
     ("sm_chkpt_interval", po::value<int>(),
         "Interval for checkpoint flushes")
     ("sm_chkpt_log_based", po::value<bool>()->implicit_value(true),
@@ -188,7 +188,7 @@ void Command::setupSMOptions(po::options_description& options)
         "Whether to open volume (i.e., db file) with O_DIRECT")
     ("sm_no_db", po::value<bool>()->default_value(false)->implicit_value(true),
         "No-database mode, a.k.a. log-structured mode, a.k.a. extreme write elision: DB file is written and all fetched pages are rebuilt using single-page recovery from scratch")
-    ("sm_batch_segment_size", po::value<int>(),
+    ("sm_batch_segment_size", po::value<size_t>(),
         "Size of segments to use during batch restore warmup")
     ("sm_restart_instant", po::value<bool>()->implicit_value(true),
         "Enable instant restart")
@@ -214,9 +214,9 @@ void Command::setupSMOptions(po::options_description& options)
         "Lock table size")
     ("sm_rawlock_xctpool_initseg", po::value<int>(),
         "Transaction Pool Initialization Segment")
-    ("sm_bf_warmup_hit_ratio", po::value<int>(),
+    ("sm_bf_warmup_hit_ratio", po::value<int>()->notifier(check_range<int>(0, 100, "sm_bf_warmup_hit_ratio")),
         "Hit ratio to be achieved until system is considered warmed up (int from 0 to 100)")
-    ("sm_bf_warmup_min_fixes", po::value<int>(),
+    ("sm_bf_warmup_min_fixes", po::value<unsigned int>(),
         "Only consider warmup hit ratio once this minimum number of fixes has been performed")
     ("sm_cleaner_decoupled", po::value<bool>()->implicit_value(true),
         "Enable/Disable decoupled cleaner")
