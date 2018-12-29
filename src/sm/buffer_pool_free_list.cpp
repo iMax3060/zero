@@ -2,21 +2,23 @@
 
 #include "bf_tree.h"
 
-zero::buffer_pool::FreeList::FreeList(bf_tree_m *bufferpool, const sm_options &options) :
+using namespace zero::buffer_pool;
+
+FreeList::FreeList(bf_tree_m *bufferpool, const sm_options &options) :
         bufferPool(bufferpool) {}
 
-zero::buffer_pool::FreeListLowContention::FreeListLowContention(bf_tree_m *bufferpool, const sm_options &options) noexcept :
+FreeListLowContention::FreeListLowContention(bf_tree_m *bufferpool, const sm_options &options) noexcept :
         FreeList(bufferpool, options) {
     for (bf_idx i = 1; i < bufferpool->get_block_cnt(); i++) {
         list.enqueue(i);
     }
 }
 
-void zero::buffer_pool::FreeListLowContention::addFreeBufferpoolFrame(bf_idx freeFrame) noexcept {
+void FreeListLowContention::addFreeBufferpoolFrame(bf_idx freeFrame) noexcept {
     list.enqueue(freeFrame);
 }
 
-bool zero::buffer_pool::FreeListLowContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) noexcept {
+bool FreeListLowContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) noexcept {
     while (true) {
         if (list.dequeue(freeFrame)) {
             return true;
@@ -41,11 +43,11 @@ bool zero::buffer_pool::FreeListLowContention::grabFreeBufferpoolFrame(bf_idx &f
     }
 }
 
-bf_idx zero::buffer_pool::FreeListLowContention::getCount() {
+bf_idx FreeListLowContention::getCount() {
     return list.size();
 };
 
-zero::buffer_pool::FreeListHighContention::FreeListHighContention(bf_tree_m *bufferpool, const sm_options &options) :
+FreeListHighContention::FreeListHighContention(bf_tree_m *bufferpool, const sm_options &options) :
         FreeList(bufferpool, options),
         list(bufferpool->get_block_cnt()) {
     bf_idx pushSuccessful = 0;
@@ -56,13 +58,13 @@ zero::buffer_pool::FreeListHighContention::FreeListHighContention(bf_tree_m *buf
     approximateListLength = bufferpool->get_block_cnt() - 1;
 }
 
-void zero::buffer_pool::FreeListHighContention::addFreeBufferpoolFrame(bf_idx freeFrame) {
+void FreeListHighContention::addFreeBufferpoolFrame(bf_idx freeFrame) {
     bool pushSuccessful = list.try_push(std::move(freeFrame));
     throw1(!pushSuccessful, AddFreeBufferpoolFrameException(freeFrame));
     approximateListLength++;
 };
 
-bool zero::buffer_pool::FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) {
+bool FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) {
     while (true) {
         if (list.try_pop(freeFrame)) {
             approximateListLength--;
@@ -88,6 +90,6 @@ bool zero::buffer_pool::FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &
     }
 };
 
-bf_idx zero::buffer_pool::FreeListHighContention::getCount() {
+bf_idx FreeListHighContention::getCount() {
     return approximateListLength;
 };
