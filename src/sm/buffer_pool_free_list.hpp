@@ -34,7 +34,7 @@ namespace zero::buffer_pool {
         public:
             AddFreeBufferpoolFrameException(bf_idx const triedFrame) :
                     RunTimeException("Failed to add buffer frame " + std::to_string(triedFrame)
-                                     + " to the free list of the buffer pool.") {};
+                                   + " to the free list of the buffer pool.") {};
         };
 
     protected:

@@ -185,9 +185,9 @@ void BufferPool::fixRoot(generic_page*& targetPage, StoreID store, latch_mode_t 
     w_assert1(getControlBlock(rootIndex).latch().held_by_me());
 
     DBG(<< "Fixed root "
-                << rootIndex
-                << " with pin count "
-                << getControlBlock(rootIndex)._pin_cnt);
+        << rootIndex
+        << " with pin count "
+        << getControlBlock(rootIndex)._pin_cnt);
 }
 
 w_rc_t BufferPool::fixRootOldStyleExceptions(generic_page*& targetPage, StoreID store, latch_mode_t latchMode,
@@ -234,15 +234,16 @@ bf_idx BufferPool::pinForRefix(const generic_page* pinPage) {
     bool pinned = getControlBlock(pinIndex).pin();
     w_assert0(pinned);
     DBG(<< "Refix set pin cnt to "
-                << getControlBlock(pinIndex)._pin_cnt);
+        << getControlBlock(pinIndex)._pin_cnt);
     return pinIndex;
 }
 
 void BufferPool::refixDirect(generic_page*& targetPage, bf_idx refixIndex, latch_mode_t latchMode, bool conditional) {
     bf_tree_cb_t& refixControlBlock = getControlBlock(refixIndex);
 
-    w_rc_t latchAcquireStatus = refixControlBlock.latch().latch_acquire(latchMode, conditional ? timeout_t::WAIT_IMMEDIATE
-                                                                                               : timeout_t::WAIT_FOREVER);
+    w_rc_t latchAcquireStatus = refixControlBlock.latch().latch_acquire(latchMode,
+                                                                        conditional ? timeout_t::WAIT_IMMEDIATE
+                                                                                    : timeout_t::WAIT_FOREVER);
     if (latchAcquireStatus.is_error()) {
         throw BufferPoolOldStyleException(latchAcquireStatus);
     }
@@ -251,9 +252,9 @@ void BufferPool::refixDirect(generic_page*& targetPage, bf_idx refixIndex, latch
     // refixControlBlock.pin();
 
     DBG(<< "Refix direct of "
-                << refixIndex
-                << " set pin cnt to "
-                << refixControlBlock._pin_cnt);
+        << refixIndex
+        << " set pin cnt to "
+        << refixControlBlock._pin_cnt);
 
     refixControlBlock.inc_ref_count();
     if (latchMode == LATCH_EX) {
@@ -289,7 +290,7 @@ void BufferPool::unpinForRefix(bf_idx unpinIndex) {
     _evictioner->unfix_ref(unpinIndex);
 
     DBG(<< "Unpin for refix set pin cnt to "
-                << getControlBlock(unpinIndex)._pin_cnt);
+        << getControlBlock(unpinIndex)._pin_cnt);
     w_assert1(getControlBlock(unpinIndex)._pin_cnt >= 0);
 }
 
@@ -483,7 +484,8 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
         bf_idx index = getIndex(frames[i]);
 
         constexpr bf_idx parentIndex = 0;
-        bool registered = _hashtable->tryInsert(pid, new atomic_bf_idx_pair(index, parentIndex));
+        atomic_bf_idx_pair* indexPair = new atomic_bf_idx_pair(index, parentIndex);
+        bool registered = _hashtable->tryInsert(pid, indexPair);
 
         if (registered) {
             controlBlock.init(pid, frames[i]->lsn);
@@ -495,6 +497,7 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
 
             _evictioner->miss_ref(index, pid);
         } else {
+            delete indexPair;
             _freeList->addFreeBufferpoolFrame(index);
         }
 
@@ -599,11 +602,11 @@ void BufferPool::switchParent(PageID childPID, generic_page* newParentPage) noex
         childIndexPair->second = newParentIndex;
 
         DBG5(<< "Parent of "
-                     << childPID
-                     << " updated to "
-                     << newParentIndex
-                     << " from "
-                     << childIndexPair->second);
+             << childPID
+             << " updated to "
+             << newParentIndex
+             << " from "
+             << childIndexPair->second);
     }
 
     // The page cannot be evicted since the first lookup because the caller latched it.
@@ -630,12 +633,12 @@ void BufferPool::setMediaFailure() noexcept {
     // Make sure log is archived until failureLSN
     lsn_t failureLSN = Logger::log_sys<restore_begin_log>(volPages);
     ERROUT(<< "Media failure injected! Waiting for log archiver to reach LSN "
-                   << failureLSN);
+           << failureLSN);
     stopwatch_t timer;
     smlevel_0::logArchiver->archiveUntilLSN(failureLSN);
     ERROUT(<< "Failure LSN reached in "
-                   << timer.time()
-                   << " seconds");
+           << timer.time()
+           << " seconds");
 
     _restoreCoordinator->set_lsns(backupLSN, failureLSN);
     _restoreCoordinator->start();
@@ -901,8 +904,10 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                  * STEP 3: Register the page on the hash table atomically to guarantee that only one thread attempts to
                  *         read the page
                  */
-                bool registered = _hashtable->tryInsert(pid, new atomic_bf_idx_pair(pageIndex, parentIndex));
+                atomic_bf_idx_pair* pageIndexPair = new atomic_bf_idx_pair(pageIndex, parentIndex);
+                bool registered = _hashtable->tryInsert(pid, pageIndexPair);
                 if (!registered) {
+                    delete pageIndexPair;
                     pageControlBlock->latch().latch_release();
                     _freeList->addFreeBufferpoolFrame(pageIndex);
                     continue;
@@ -963,9 +968,9 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
 
                 w_assert1(pageControlBlock->latch().is_mine());
                 DBG(<< "Fixed page "
-                            << pid
-                            << " (miss) to frame "
-                            << pageIndex);
+                    << pid
+                    << " (miss) to frame "
+                    << pageIndex);
             } else {                                    // page hit
                 pageControlBlock = &getControlBlock(pageIndex);
 
@@ -1006,9 +1011,9 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 w_assert1(!doRecovery || !pageControlBlock->is_pinned_for_restore());
                 w_assert1(!pageControlBlock->_check_recovery || pageControlBlock->latch().is_mine());
                 DBG(<< "Fixed page "
-                            << pid
-                            << " (hit) to frame "
-                            << pageIndex);
+                    << pid
+                    << " (hit) to frame "
+                    << pageIndex);
 
                 INC_TSTAT(bf_hit_cnt);
                 _hitCount++;
@@ -1087,7 +1092,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 *childPID = addSwizzledPIDBit(pageIndex);
                 w_assert1(isActiveIndex(pageIndex));
                 w_assert1(fixable_page_h::find_page_id_slot(parentPage, addSwizzledPIDBit(pageIndex))
-                          != GeneralRecordIds::INVALID);
+                       != GeneralRecordIds::INVALID);
             }
 
             return true;
@@ -1141,7 +1146,7 @@ void BufferPool::_deletePage(bf_idx index) noexcept {
     controlBlock._used = false; // clear _used BEFORE _dirty so that eviction thread will ignore this block.
 
     DBGOUT1(<<"delete block: remove page pid = "
-                    << controlBlock._pid);
+            << controlBlock._pid);
     _hashtable->erase(controlBlock._pid);
 
     _evictioner->unbuffered(index);

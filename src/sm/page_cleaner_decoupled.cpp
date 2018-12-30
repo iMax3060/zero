@@ -156,7 +156,7 @@ void page_cleaner_decoupled::update_cb_clean(size_t from, size_t to)
     for (size_t i = from; i < to; ++i) {
         atomic_bf_idx* idx = _bufferpool->getHashtable()->lookup(_workspace[i].pid);
 
-        if (!idx) { continue; }
+        if (idx == 0) { continue; }
 
         bf_tree_cb_t &cb = _bufferpool->getControlBlock(*idx);
         if (!cb.pin()) { continue; }

@@ -2,6 +2,7 @@
 #define __SM_BUFFER_POOL_HASHTABLE_HPP
 
 #include "basics.h"
+#include <cmath>
 #include <limits>
 #include <memory>
 #include "junction/junction/ConcurrentMap_Leapfrog.h"
@@ -11,7 +12,7 @@ namespace zero::buffer_pool {
     class Hashtable {
     public:
         Hashtable(bf_idx block_count) :
-                _hashtable(std::make_unique<junction::ConcurrentMap_Leapfrog<PageID, atomic_bf_idx_pair*, HashtableKeyTraits>>(block_count)) {};
+                _hashtable(std::make_unique<junction::ConcurrentMap_Leapfrog<PageID, atomic_bf_idx_pair*, HashtableKeyTraits>>(static_cast<size_t>(std::pow(2, std::ceil(std::log2(block_count)))))) {};
 
         ~Hashtable() {};
 
@@ -40,7 +41,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        std::atomic<bf_idx>* lookup(PageID&& pid) const {
+        atomic_bf_idx* lookup(PageID&& pid) const {
             atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
             if (indexPair) {
                 return &(indexPair->first);
@@ -49,7 +50,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        std::atomic<bf_idx>* lookupParent(const PageID& pid) const {
+        atomic_bf_idx* lookupParent(const PageID& pid) const {
             atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
             if (indexPair) {
                 return &(indexPair->second);
@@ -58,7 +59,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        std::atomic<bf_idx>* lookupParent(PageID&& pid) const {
+        atomic_bf_idx* lookupParent(PageID&& pid) const {
             atomic_bf_idx_pair* indexPair = _hashtable->get(pid);
             if (indexPair) {
                 return &(indexPair->second);
@@ -93,8 +94,8 @@ namespace zero::buffer_pool {
         struct HashtableKeyTraits {
             typedef PageID Key;
             typedef typename turf::util::BestFit<PageID>::Unsigned Hash;
-            static const Key NullKey = Key(std::numeric_limits<PageID>::max());
-            static const Hash NullHash = Hash(std::numeric_limits<PageID>::max());
+            static const Key NullKey = Key(4294967295);
+            static const Hash NullHash = Hash(2180083513);
             static Hash hash(PageID key) {
                 return turf::util::avalanche(Hash(key));
             }
