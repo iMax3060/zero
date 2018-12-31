@@ -13,7 +13,7 @@
 #include <iosfwd>
 #include "buffer_pool_free_list.hpp"
 #include "page_cleaner.h"
-#include "page_evictioner.h"
+#include "page_evictioner.hpp"
 #include "restart.h"
 #include "restore.h"
 
@@ -29,12 +29,17 @@ class test_bf_tree;
 class bf_tree_cleaner;
 class btree_page_h;
 class GenericPageIterator;
-class page_evictioner_base;
 
 namespace zero::buffer_pool {
+    template <class selector_class, class filter_class, bool filter_early>
+    class PageEvictionerSelectAndFilter;
+
+    class PageEvictionerSelectorLOOPAbsolutelyAccurate;
+    class PageEvictionerFilterNone;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
 
     /*!\var   swizzledPIDBit
-     * \brief Bit which is marks in swizzled pointers
+     * \brief Bit which is set in swizzled pointers to mark those
      */
     constexpr PageID swizzledPIDBit = 0x80000000;
 
@@ -47,9 +52,10 @@ namespace zero::buffer_pool {
         friend class ::bf_tree_cleaner; // for page cleaning
         friend class page_cleaner_decoupled; // for log-based "decoubled" page cleaning
         friend class ::GenericPageIterator;
-        friend class zero::buffer_pool::FreeListLowContention;
-        friend class zero::buffer_pool::FreeListHighContention;
-        friend class page_evictioner_base;
+        friend class FreeListLowContention;
+        friend class FreeListHighContention;
+        friend class PageEvictioner;
+        template <class selector_class, class filter_class, bool filter_early> friend class PageEvictionerSelectAndFilter;
 
     public:
         /*!\fn      BufferPool()
@@ -171,7 +177,7 @@ namespace zero::buffer_pool {
          *
          * @return The page evictioner (thread) responsible evict pages from this buffer pool once its full.
          */
-        const std::shared_ptr<page_evictioner_base> getPageEvictioner() const noexcept;
+        const std::shared_ptr<zero::buffer_pool::PageEvictioner> getPageEvictioner() const noexcept;
 
         /*!\fn      hasDirtyFrames() const
          * \brief   Whether this buffer pool has dirty buffer frames
@@ -733,7 +739,7 @@ namespace zero::buffer_pool {
          *          this buffer pool. The array index represents the buffer frame index.
          */
         std::vector<bf_tree_cb_t, boost::alignment::aligned_allocator<bf_tree_cb_t, sizeof(bf_tree_cb_t)>>
-                _controlBlocks;
+                                                                    _controlBlocks;
 
         /*!\var     _buffer
          * \brief   Array of buffered pages
@@ -778,7 +784,7 @@ namespace zero::buffer_pool {
          *          unoccupied buffer frames in this buffer pool while currently not buffered pages should be added to
          *          this buffer pool.
          */
-        std::shared_ptr<page_evictioner_base>                       _evictioner;
+        std::shared_ptr<PageEvictionerLOOPAbsolutelyAccurate>       _evictioner;
 
         /*!\var     _asyncEviction
          * \brief   Use a dedicated thread for eviction
@@ -1314,9 +1320,9 @@ private:
              * log replay is not required.
              */
             if (exception.getOldStyleException().err_num() == stINUSE
-                || exception.getOldStyleException().err_num() == stTIMEOUT) {
+             || exception.getOldStyleException().err_num() == stTIMEOUT) {
                 ERROUT(<< "failed to fix "
-                               << _current_pid);
+                       << _current_pid);
                 _current = nullptr;
                 return false;
             }

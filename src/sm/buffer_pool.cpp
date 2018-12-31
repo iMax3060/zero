@@ -32,7 +32,10 @@
 #include "xct.h"
 #include "xct_logger.h"
 
-#include "page_evictioner.h"
+#include "page_evictioner.hpp"
+#include "page_evictioner_select_and_filter.hpp"
+#include "page_evictioner_selector.hpp"
+#include "page_evictioner_filter.hpp"
 
 using namespace zero::buffer_pool;
 
@@ -49,7 +52,7 @@ BufferPool::BufferPool() :
         _hashtable(std::make_shared<Hashtable>(_blockCount)),
         _freeList(std::make_shared<FreeListLowContention>(this, ss_m::get_options())),
         _cleanerDecoupled(ss_m::get_options().get_bool_option("sm_cleaner_decoupled", false)),
-        _evictioner(std::make_shared<page_evictioner_base>(this, ss_m::get_options())),
+        _evictioner(std::make_shared<PageEvictionerLOOPAbsolutelyAccurate>()),
         _asyncEviction(ss_m::get_options().get_bool_option("sm_async_eviction", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _useWriteElision(ss_m::get_options().get_bool_option("sm_write_elision", false)),
@@ -261,7 +264,7 @@ void BufferPool::refixDirect(generic_page*& targetPage, bf_idx refixIndex, latch
         refixControlBlock.inc_ref_count_ex();
     }
 
-    _evictioner->hit_ref(refixIndex);
+    _evictioner->updateOnPageHit(refixIndex);
     targetPage = getPage(refixIndex);
 }
 
@@ -287,7 +290,7 @@ void BufferPool::unpinForRefix(bf_idx unpinIndex) {
     // w_assert1(getControlBlock(unpinIndex).latch().held_by_me());
     getControlBlock(unpinIndex).unpin();
 
-    _evictioner->unfix_ref(unpinIndex);
+    _evictioner->updateOnPageUnfix(unpinIndex);
 
     DBG(<< "Unpin for refix set pin cnt to "
         << getControlBlock(unpinIndex)._pin_cnt);
@@ -306,7 +309,7 @@ void BufferPool::unfix(const generic_page* unfixPage, bool evict) {
             w_assert0(cb.latch().is_mine());
             _hashtable->erase(unfixPage->pid);
 
-            _evictioner->unbuffered(unfixIndex);
+            _evictioner->updateOnPageExplicitlyUnbuffered(unfixIndex);
             _freeList->addFreeBufferpoolFrame(unfixIndex);
         } else {
             return;
@@ -315,14 +318,14 @@ void BufferPool::unfix(const generic_page* unfixPage, bool evict) {
         w_assert1(cb._pin_cnt >= 0);
     }
     DBG(<< "Unfixed "
-                << unfixIndex
-                << " pin count "
-                << cb._pin_cnt);
-    _evictioner->unfix_ref(unfixIndex);
+        << unfixIndex
+        << " pin count "
+        << cb._pin_cnt);
+    _evictioner->updateOnPageUnfix(unfixIndex);
     cb.latch().latch_release();
 }
 
-const std::shared_ptr<page_evictioner_base> BufferPool::getPageEvictioner() const noexcept {
+const std::shared_ptr<zero::buffer_pool::PageEvictioner> BufferPool::getPageEvictioner() const noexcept {
     return _evictioner;
 }
 
@@ -411,43 +414,43 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     p.fix_nonbufferpool_page(&_buffer[indexToCheck]);
     // We do not consider for eviction...
     if (// ... the stnode page
-            p.tag() == t_stnode_p
-            // ... B-tree root pages (note, single-node B-tree is both root and leaf)
-            || (p.tag() == t_btree_p && p.pid() == p.root())
-            ) {
-        _evictioner->block_ref(indexToCheck);
+           p.tag() == t_stnode_p
+        // ... B-tree root pages (note, single-node B-tree is both root and leaf)
+        || (p.tag() == t_btree_p && p.pid() == p.root())
+       ) {
+        _evictioner->updateOnPageBlocked(indexToCheck);
         DBG5(<< "Eviction failed on node type for " << idx);
         return false;
     }
     if (// ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
-            (_enableSwizzling && p.tag() == t_btree_p && !p.is_leaf())
-            // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
-            || (_enableSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
-            ) {
-        _evictioner->swizzle_ref(indexToCheck);
+           (_enableSwizzling && p.tag() == t_btree_p && !p.is_leaf())
+        // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
+        || (_enableSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
+       ) {
+        _evictioner->updateOnPageSwizzled(indexToCheck);
         DBG5(<< "Eviction failed on swizzled for " << idx);
         return false;
     }
 
     if (// ... dirty pages, unless we're told to ignore them
-            (!ignore_dirty && controlBlockToCheck.is_dirty())
-            ) {
-        _evictioner->dirty_ref(indexToCheck);
+           (!ignore_dirty && controlBlockToCheck.is_dirty())
+       ) {
+        _evictioner->updateOnPageDirty(indexToCheck);
         DBG5(<< "Eviction failed on dirty for " << idx);
         return false;
     }
     if (// ... unused frames, which don't hold a valid page
-            !controlBlockToCheck._used
-            // ... frames prefetched by restore but not yet restored
-            || controlBlockToCheck.is_pinned_for_restore()
-            ) {
+           !controlBlockToCheck._used
+        // ... frames prefetched by restore but not yet restored
+        || controlBlockToCheck.is_pinned_for_restore()
+       ) {
         DBG5(<< "Eviction failed on unused for " << idx);
         return false;
     }
     if (// ... pinned frames, i.e., someone required it not be evicted
-            controlBlockToCheck._pin_cnt != 0
-            ) {
-        _evictioner->block_ref(indexToCheck);
+           controlBlockToCheck._pin_cnt != 0
+       ) {
+        _evictioner->updateOnPageBlocked(indexToCheck);
         DBG5(<< "Eviction failed on pinned for " << idx);
         return false;
     }
@@ -495,7 +498,7 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
                 controlBlock.pin_for_restore();
             }
 
-            _evictioner->miss_ref(index, pid);
+            _evictioner->updateOnPageMiss(index, pid);
         } else {
             delete indexPair;
             _freeList->addFreeBufferpoolFrame(index);
@@ -822,7 +825,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
         w_assert1(pageControlBlock._pid == _buffer[pageIndex].pid);
 
         pageControlBlock.inc_ref_count();
-        _evictioner->hit_ref(pageIndex);
+        _evictioner->updateOnPageHit(pageIndex);
         if (latchMode == LATCH_EX) {
             pageControlBlock.inc_ref_count_ex();
         }
@@ -964,7 +967,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 /*
                  * STEP 5: Register the page in the page evictioner
                  */
-                _evictioner->miss_ref(pageIndex, pid);
+                _evictioner->updateOnPageMiss(pageIndex, pid);
 
                 w_assert1(pageControlBlock->latch().is_mine());
                 DBG(<< "Fixed page "
@@ -1027,7 +1030,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
             // Pin the page:
             w_assert1(isActiveIndex(pageIndex));
             pageControlBlock->inc_ref_count();
-            _evictioner->hit_ref(pageIndex);
+            _evictioner->updateOnPageHit(pageIndex);
             if (latchMode == LATCH_EX) {
                 pageControlBlock->inc_ref_count_ex();
             }
@@ -1106,14 +1109,14 @@ void BufferPool::_convertToDiskPage(generic_page* page) const noexcept {
 
     for (general_recordid_t recordID = GeneralRecordIds::FOSTER_CHILD; recordID <= fixedPage.max_child_slot(); recordID++) {
         PageID* pid = fixedPage.child_slot_address(recordID);
-        PageID normalizedPID = normalizePID(*pid);
-
-        // CS TODO: Slot 1 (which is actually 0 in the internal page representation) is not used sometimes (I think when
-        // a page is first created?) so we must skip it manually here to avoid getting an invalid page below.
-        if (recordID == 1 && !isActiveIndex(normalizedPID)) {
-            continue;
-        } else {
-            *pid = normalizedPID;
+        if (isSwizzledPointer(*pid)) {
+            // CS TODO: Slot 1 (which is actually 0 in the internal page representation) is not used sometimes (I think
+            // when a page is first created?) so we must skip it manually here to avoid getting an invalid page below.
+            if (recordID == 1 && !isActiveIndex(removeSwizzledPIDBit(*pid))) {
+                continue;
+            } else {
+                *pid = normalizePID(*pid);
+            }
         }
     }
 }
@@ -1130,7 +1133,7 @@ void BufferPool::_readPage(PageID pid, generic_page* targetPage, bool fromBackup
         if (readStatus.is_error()) {
             _hashtable->erase(pid);
             targetControlBlock.latch().latch_release();
-            _evictioner->unbuffered(getIndex(targetPage));
+            _evictioner->updateOnPageExplicitlyUnbuffered(getIndex(targetPage));
             _freeList->addFreeBufferpoolFrame(getIndex(targetPage));
             throw BufferPoolOldStyleException(readStatus);
         }
@@ -1149,7 +1152,7 @@ void BufferPool::_deletePage(bf_idx index) noexcept {
             << controlBlock._pid);
     _hashtable->erase(controlBlock._pid);
 
-    _evictioner->unbuffered(index);
+    _evictioner->updateOnPageExplicitlyUnbuffered(index);
     _freeList->addFreeBufferpoolFrame(index);
 }
 
