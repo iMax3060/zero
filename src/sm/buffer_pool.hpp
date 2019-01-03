@@ -19,6 +19,7 @@
 
 #include <array>
 #include "buffer_pool_hashtable.hpp"
+#include "page_evictioner_typedefs.hpp"
 
 #include "boost/align/aligned_allocator.hpp"
 
@@ -31,13 +32,7 @@ class btree_page_h;
 class GenericPageIterator;
 
 namespace zero::buffer_pool {
-    template <class selector_class, class filter_class, bool filter_early>
-    class PageEvictionerSelectAndFilter;
-
-    class PageEvictionerSelectorLOOPAbsolutelyAccurate;
-    class PageEvictionerFilterNone;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
-
+    
     /*!\var   swizzledPIDBit
      * \brief Bit which is set in swizzled pointers to mark those
      */

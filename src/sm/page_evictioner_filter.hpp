@@ -268,6 +268,142 @@ namespace zero::buffer_pool {
 
     };
 
+    /*!\class   PageEvictionerFilterCLOCK
+     * \brief   _CLOCK_ buffer frame filter
+     * \details The _CLOCK_ buffer frame filter policy sets the referenced bit of a buffer pool frame during each page
+     *          reference. The buffer frame is filtered out iff the corresponding referenced bit is set. This filtering
+     *          also resets the corresponding referenced bit.
+     *
+     * @tparam on_hit      If set, the eviction statistics are updated on page hit.
+     * @tparam on_unfix    If set, the eviction statistics are updated on page unfix.
+     * @tparam on_miss     If set, the eviction statistics are updated on page miss.
+     * @tparam on_fixed    If set, the eviction statistics are updated when a page is discovered fixed during eviction.
+     * @tparam on_dirty    If set, the eviction statistics are updated when a page is discovered dirty during eviction.
+     * @tparam on_blocked  If set, the eviction statistics are updated when a page is discovered to be unevictable at
+     *                     all.
+     * @tparam on_swizzled If set, the eviction statistics are updated when a page is discovered containing swizzled
+     *                     pointers during eviction.
+     */
+    template <bool on_hit /*= true*/, bool on_unfix /*= false*/, bool on_miss /*= true*/, bool on_fixed /*= false*/, bool on_dirty /*= false*/, bool on_blocked /*= false*/, bool on_swizzled /*= false*/>
+    class PageEvictionerFilterCLOCK : public PageEvictionerFilter {
+    public:
+        /*!\fn      PageEvictionerFilterCLOCK()
+         * \brief   Constructs a _CLOCK_ buffer frame filter
+         */
+        PageEvictionerFilterCLOCK();
+
+        /*!\fn      preFilter(bf_idx idx) noexcept
+         * \brief   Filters a buffer frame for eviction
+         * \details Filters out the specified buffer frame if its corresponding referenced bit is set.
+         *
+         * \warning This function does not reset the referenced bit corresponding to the specified buffer frame. For
+         *          each buffer frame discovered evictable, \link filter() \endlink needs to be called exactly once.
+         *
+         * @param idx The selected buffer frame where the contained page should be evicted from.
+         * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx .
+         */
+        bool preFilter(bf_idx idx) const noexcept final;
+
+        /*!\fn      filter(bf_idx idx) noexcept
+         * \brief   Filters a buffer frame for eviction
+         * \details Filters out the specified buffer frame if its corresponding referenced bit is set and resets this
+         *          referenced bit afterwards.
+         *
+         * @param idx The selected buffer frame where the contained page should be evicted from.
+         * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx before this
+         *            function was called.
+         */
+        bool filter(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final;
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the referenced bit of the specified buffer frame (inside \link _refBits \endlink) if the
+         *          template parameter \c on_hit is set.
+         *
+         * \note    This behaviour is an optimization that saves one check for evictablity using the buffer pool.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
+
+    private:
+        /*!\var     _refBits
+         * \brief   Referenced bits for the buffer frames
+         * \details The index of the referenced bit corresponding to buffer frame \c n is \c n .
+         */
+        std::vector<bool> _refBits;
+
+    };
+
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_FILTER_HPP

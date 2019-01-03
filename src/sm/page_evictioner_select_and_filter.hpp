@@ -4,6 +4,7 @@
 #include "page_evictioner.hpp"
 #include "page_evictioner_selector.hpp"
 #include "page_evictioner_filter.hpp"
+#include "page_evictioner_typedefs.hpp"
 
 #include <random>
 
@@ -12,8 +13,6 @@ class generic_page;
 struct bf_tree_cb_t;
 
 namespace zero::buffer_pool {
-
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
 
     /*!\class   PageEvictionerSelectAndFilter
      * \brief   _Select-and-Filter_ page evictioner for the buffer pool
