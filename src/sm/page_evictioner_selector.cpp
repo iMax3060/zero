@@ -8,8 +8,8 @@ using namespace zero::buffer_pool;
 /////////////////////////// PageEvictionerSelector ///////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-PageEvictionerSelector::PageEvictionerSelector() :
-        _maxBufferpoolIndex(smlevel_0::bf->getBlockCount() - 1) {}
+PageEvictionerSelector::PageEvictionerSelector(const BufferPool* bufferPool) :
+        _maxBufferpoolIndex(bufferPool->getBlockCount() - 1) {}
 
 PageEvictionerSelector::~PageEvictionerSelector() {}
 
@@ -17,8 +17,8 @@ PageEvictionerSelector::~PageEvictionerSelector() {}
 //////////////// PageEvictionerSelectorLOOPAbsolutelyAccurate ////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-PageEvictionerSelectorLOOPAbsolutelyAccurate::PageEvictionerSelectorLOOPAbsolutelyAccurate() :
-        PageEvictionerSelector(),
+PageEvictionerSelectorLOOPAbsolutelyAccurate::PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool) :
+        PageEvictionerSelector(bufferPool),
         _currentFrame(_maxBufferpoolIndex) {}
 
 bf_idx PageEvictionerSelectorLOOPAbsolutelyAccurate::select() noexcept {

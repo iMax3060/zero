@@ -52,7 +52,7 @@ BufferPool::BufferPool() :
         _hashtable(std::make_shared<Hashtable>(_blockCount)),
         _freeList(std::make_shared<FreeListLowContention>(this, ss_m::get_options())),
         _cleanerDecoupled(ss_m::get_options().get_bool_option("sm_cleaner_decoupled", false)),
-        _evictioner(std::make_shared<PageEvictionerLOOPAbsolutelyAccurate>()),
+        _evictioner(std::make_shared<PageEvictionerLOOPAbsolutelyAccurate>(this)),
         _asyncEviction(ss_m::get_options().get_bool_option("sm_async_eviction", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _useWriteElision(ss_m::get_options().get_bool_option("sm_write_elision", false)),

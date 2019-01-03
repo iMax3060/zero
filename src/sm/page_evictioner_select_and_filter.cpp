@@ -5,8 +5,10 @@
 using namespace zero::buffer_pool;
 
 template <class selector_class, class filter_class, bool filter_early>
-PageEvictionerSelectAndFilter<selector_class, filter_class, filter_early>::PageEvictionerSelectAndFilter() :
-        PageEvictioner() {
+PageEvictionerSelectAndFilter<selector_class, filter_class, filter_early>::PageEvictionerSelectAndFilter(const BufferPool* bufferPool) :
+        PageEvictioner(bufferPool),
+        _selector(bufferPool),
+        _filter(bufferPool) {
     static_assert(std::is_base_of<PageEvictionerSelector, selector_class>::value,
                   "'selector_class' is not of type 'PageEvictionerSelector'!");
     static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
@@ -137,7 +139,7 @@ void PageEvictionerSelectAndFilter<selector_class, filter_class, filter_early>::
     _filter.updateOnPageExplicitlyUnbuffered(idx);
 };
 
-template PageEvictionerLOOPAbsolutelyAccurate::PageEvictionerSelectAndFilter();
+template PageEvictionerLOOPAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 template bf_idx PageEvictionerLOOPAbsolutelyAccurate::pickVictim();
 template void PageEvictionerLOOPAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
 template void PageEvictionerLOOPAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
@@ -148,7 +150,7 @@ template void PageEvictionerLOOPAbsolutelyAccurate::updateOnPageBlocked(bf_idx i
 template void PageEvictionerLOOPAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
 template void PageEvictionerLOOPAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
 
-template PageEvictionerCLOCKFixAbsolutelyAccurate::PageEvictionerSelectAndFilter();
+template PageEvictionerCLOCKFixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 template bf_idx PageEvictionerCLOCKFixAbsolutelyAccurate::pickVictim();
 template void PageEvictionerCLOCKFixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
 template void PageEvictionerCLOCKFixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
@@ -159,7 +161,7 @@ template void PageEvictionerCLOCKFixAbsolutelyAccurate::updateOnPageBlocked(bf_i
 template void PageEvictionerCLOCKFixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
 template void PageEvictionerCLOCKFixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
 
-template PageEvictionerCLOCKUnfixAbsolutelyAccurate::PageEvictionerSelectAndFilter();
+template PageEvictionerCLOCKUnfixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 template bf_idx PageEvictionerCLOCKUnfixAbsolutelyAccurate::pickVictim();
 template void PageEvictionerCLOCKUnfixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
 template void PageEvictionerCLOCKUnfixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
@@ -170,7 +172,7 @@ template void PageEvictionerCLOCKUnfixAbsolutelyAccurate::updateOnPageBlocked(bf
 template void PageEvictionerCLOCKUnfixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
 template void PageEvictionerCLOCKUnfixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
 
-template PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::PageEvictionerSelectAndFilter();
+template PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 template bf_idx PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::pickVictim();
 template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
 template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);

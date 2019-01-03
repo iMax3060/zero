@@ -18,8 +18,10 @@ namespace zero::buffer_pool {
     public:
         /*!\fn      PageEvictionerFilter()
          * \brief   Constructs a buffer frame filter
+         *
+         * @param bufferPool The buffer pool this buffer frame filter is responsible for.
          */
-        PageEvictionerFilter();
+        PageEvictionerFilter(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerFilter()
          * \brief   Destructs a buffer frame filter
@@ -175,8 +177,10 @@ namespace zero::buffer_pool {
     public:
         /*!\fn      PageEvictionerFilterNone()
          * \brief   Constructs a non-filtering buffer frame filter
+         *
+         * @param bufferPool The buffer pool this non-filtering buffer frame filter is responsible for.
          */
-        PageEvictionerFilterNone();
+        PageEvictionerFilterNone(const BufferPool* bufferPool);
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -289,8 +293,10 @@ namespace zero::buffer_pool {
     public:
         /*!\fn      PageEvictionerFilterCLOCK()
          * \brief   Constructs a _CLOCK_ buffer frame filter
+         *
+         * @param bufferPool The buffer pool this _CLOCK_ buffer frame filter is responsible for.
          */
-        PageEvictionerFilterCLOCK();
+        PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction

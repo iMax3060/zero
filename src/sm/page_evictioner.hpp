@@ -30,8 +30,10 @@ namespace zero::buffer_pool {
          *
          * \note    Due to the fact that this is a constructor of an abstract class, this can only be called from within
          *          the member initializer list of a constructor of an inheriting class.
+         *
+         * @param bufferPool The buffer pool this page evictioner is responsible for.
          */
-        PageEvictioner();
+        PageEvictioner(const BufferPool* bufferPool);
 
         /*!\fn      PageEvictioner(const PageEvictioner&)
          * \brief   Explicitly deleted copy constructor of an abstract page evictioner

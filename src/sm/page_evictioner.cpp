@@ -7,14 +7,14 @@
 
 using namespace zero::buffer_pool;
 
-PageEvictioner::PageEvictioner() :
+PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
         worker_thread_t(ss_m::get_options().get_int_option("sm_evictioner_interval_millisec", 1000)),
         _evictionBatchSize(static_cast<uint_fast32_t>(ss_m::get_options().get_int_option("sm_evictioner_batch_ratio_ppm", 100000))),
         _enabledSwizzling(ss_m::get_options().get_bool_option("sm_bufferpool_swizzle", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _flushDirty(ss_m::get_options().get_bool_option("sm_bf_evictioner_flush_dirty_pages", false)),
         _logEvictions(ss_m::get_options().get_bool_option("sm_bf_evictioner_log_evictions", false)),
-        _maxAttempts(1000 * smlevel_0::bf->getBlockCount()) {}
+        _maxAttempts(1000 * bufferPool->getBlockCount()) {}
 
 PageEvictioner::~PageEvictioner() {}
 

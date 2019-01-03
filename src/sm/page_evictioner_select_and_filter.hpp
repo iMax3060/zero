@@ -54,8 +54,10 @@ namespace zero::buffer_pool {
         /*!\fn      PageEvictionerSelectAndFilter()
          * \brief   Constructs a _Select-and-Filter_ page evictioner
          * \details This constructor also constructs the buffer frame selector and filter.
+         *
+         * @param bufferPool The buffer pool this _Select-and-Filter_ page evictioner is responsible for.
          */
-        PageEvictionerSelectAndFilter();
+        PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerSelectAndFilter()
          * \brief   Destructs a _Select-and-Filter_ page evictioner

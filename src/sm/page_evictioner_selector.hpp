@@ -20,8 +20,10 @@ namespace zero::buffer_pool {
     public:
         /*!\fn      PageEvictionerSelector()
          * \brief   Constructs a buffer frame selector
+         *
+         * @param bufferPool The buffer pool this buffer frame selector is responsible for.
          */
-        PageEvictionerSelector();
+        PageEvictionerSelector(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerSelector()
          * \brief   Destructs a buffer frame selector
@@ -159,8 +161,10 @@ namespace zero::buffer_pool {
     public:
         /*!\fn      PageEvictionerSelectorLOOPAbsolutelyAccurate()
          * \brief   Constructs a _LOOP_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLOOPAbsolutelyAccurate();
+        PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
