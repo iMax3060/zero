@@ -23,6 +23,8 @@
 
 #include "boost/align/aligned_allocator.hpp"
 
+#include "shore-config-env.h"
+
 class sm_options;
 class lsn_t;
 
@@ -32,7 +34,7 @@ class btree_page_h;
 class GenericPageIterator;
 
 namespace zero::buffer_pool {
-    
+
     /*!\var   swizzledPIDBit
      * \brief Bit which is set in swizzled pointers to mark those
      */
@@ -172,7 +174,7 @@ namespace zero::buffer_pool {
          *
          * @return The page evictioner (thread) responsible evict pages from this buffer pool once its full.
          */
-        const std::shared_ptr<zero::buffer_pool::PageEvictioner> getPageEvictioner() const noexcept;
+        const std::shared_ptr<PAGE_EVICTIONER> getPageEvictioner() const noexcept;
 
         /*!\fn      hasDirtyFrames() const
          * \brief   Whether this buffer pool has dirty buffer frames
@@ -779,7 +781,7 @@ namespace zero::buffer_pool {
          *          unoccupied buffer frames in this buffer pool while currently not buffered pages should be added to
          *          this buffer pool.
          */
-        std::shared_ptr<PageEvictionerLOOPAbsolutelyAccurate>       _evictioner;
+        std::shared_ptr<PAGE_EVICTIONER>                            _evictioner;
 
         /*!\var     _asyncEviction
          * \brief   Use a dedicated thread for eviction

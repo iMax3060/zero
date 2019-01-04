@@ -348,3 +348,11 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #cmakedefine WORDS_BIGENDIAN
+
+/****************** Others. **************************/
+
+/* Allows specifying the preprocessor macro PAGE_EVICTIONER which allows the selection of the page evictioner used by
+* the buffer pool */
+#ifndef PAGE_EVICTIONER
+#cmakedefine PAGE_EVICTIONER @PAGE_EVICTIONER@
+#endif // PAGE_EVICTIONER

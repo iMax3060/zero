@@ -52,7 +52,7 @@ BufferPool::BufferPool() :
         _hashtable(std::make_shared<Hashtable>(_blockCount)),
         _freeList(std::make_shared<FreeListLowContention>(this, ss_m::get_options())),
         _cleanerDecoupled(ss_m::get_options().get_bool_option("sm_cleaner_decoupled", false)),
-        _evictioner(std::make_shared<PageEvictionerLOOPAbsolutelyAccurate>(this)),
+        _evictioner(std::make_shared<PAGE_EVICTIONER>(this)),
         _asyncEviction(ss_m::get_options().get_bool_option("sm_async_eviction", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _useWriteElision(ss_m::get_options().get_bool_option("sm_write_elision", false)),
@@ -325,7 +325,7 @@ void BufferPool::unfix(const generic_page* unfixPage, bool evict) {
     cb.latch().latch_release();
 }
 
-const std::shared_ptr<zero::buffer_pool::PageEvictioner> BufferPool::getPageEvictioner() const noexcept {
+const std::shared_ptr<PAGE_EVICTIONER> BufferPool::getPageEvictioner() const noexcept {
     return _evictioner;
 }
 
