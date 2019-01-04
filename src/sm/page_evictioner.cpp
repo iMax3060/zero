@@ -9,7 +9,7 @@ using namespace zero::buffer_pool;
 
 PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
         worker_thread_t(ss_m::get_options().get_int_option("sm_evictioner_interval_millisec", 1000)),
-        _evictionBatchSize(static_cast<uint_fast32_t>(ss_m::get_options().get_int_option("sm_evictioner_batch_ratio_ppm", 100000))),
+        _evictionBatchSize(static_cast<uint_fast32_t>(bufferPool->getBlockCount() * 0.000001 * ss_m::get_options().get_int_option("sm_evictioner_batch_ratio_ppm", 10000))),
         _enabledSwizzling(ss_m::get_options().get_bool_option("sm_bufferpool_swizzle", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _flushDirty(ss_m::get_options().get_bool_option("sm_bf_evictioner_flush_dirty_pages", false)),
