@@ -127,6 +127,28 @@ void PageEvictionerFilterCLOCK<on_hit, on_unfix, on_miss, on_fixed, on_dirty, on
     _refBits[idx] = true;
 }
 
+template PageEvictionerFilterCLOCK<>::PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterCLOCK<>::filter(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterCLOCK<>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterCLOCK<>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
+template PageEvictionerFilterCLOCK<false, true>::PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterCLOCK<false, true>::filter(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterCLOCK<false, true>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// PageEvictionerFilterGCLOCK //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -486,3 +508,51 @@ uint8_t PageEvictionerFilterGCLOCK<decrement, discriminate_pages, on_hit, set_on
         return 0;
     }
 }
+
+template PageEvictionerFilterGCLOCK<>::PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterGCLOCK<>::filter(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+template uint8_t PageEvictionerFilterGCLOCK<>::getLevel(const bf_idx& idx) const;
+
+template PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::filter(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+template uint8_t PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::getLevel(const bf_idx& idx) const;
+
+template PageEvictionerFilterGCLOCK<1, true>::PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterGCLOCK<1, true>::filter(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+template uint8_t PageEvictionerFilterGCLOCK<1, true>::getLevel(const bf_idx& idx) const;
+
+template PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+template bool PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::filter(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageHit(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+template uint8_t PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>::getLevel(const bf_idx& idx) const;
