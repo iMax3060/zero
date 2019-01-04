@@ -169,7 +169,8 @@ namespace zero::buffer_pool {
          * \note    This member function must be implemented by every specific page evictioner which inherits from this
          *          abstract page evictioner.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         virtual void        updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
@@ -193,7 +194,7 @@ namespace zero::buffer_pool {
          *          if \link _logEvictions \endlink is set, a log record of type \link evict_page_log \endlink is in the
          *          log.
          *
-         * @param victim The index of the buffer frame from which the page should be evicted
+         * @param victim The index of the buffer frame from which the page should be evicted.
          * @return       Returns \c true if the page could successfully be evicted, otherwise \c false .
          */
         bool                evictOne(bf_idx victim);

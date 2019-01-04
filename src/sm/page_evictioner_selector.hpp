@@ -138,7 +138,8 @@ namespace zero::buffer_pool {
          *
          * \note    This member function must be implemented by every specific buffer frame selection policy.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
@@ -242,7 +243,8 @@ namespace zero::buffer_pool {
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
 

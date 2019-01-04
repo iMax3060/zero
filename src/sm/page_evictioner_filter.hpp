@@ -162,7 +162,8 @@ namespace zero::buffer_pool {
          *
          * \note    This member function must be implemented by every specific buffer frame filter policy.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
@@ -266,7 +267,8 @@ namespace zero::buffer_pool {
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details This buffer frame filter does not require any statistics and therefore this function does nothing.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
 
@@ -397,7 +399,8 @@ namespace zero::buffer_pool {
          *
          * \note    This behaviour is an optimization that saves one check for evictablity using the buffer pool.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
 
@@ -407,6 +410,318 @@ namespace zero::buffer_pool {
          * \details The index of the referenced bit corresponding to buffer frame \c n is \c n .
          */
         std::vector<bool> _refBits;
+
+    };
+
+    /*!\class   PageEvictionerFilterGCLOCK
+     * \brief   _GCLOCK_ buffer frame filter
+     * \details The _GCLOCK_ buffer frame filter policy is an extremely flexible implementation of the _GCLOCK_ cache
+     *          eviction strategy. It combines the variations _GCLOCK-V1_, _GCLOCK-V2_ and (partially) _DGCLOCK_ in one
+     *          class. It sets (or increments) the referenced integer of a buffer pool frame to a specified value (by a
+     *          specified value) during each page reference. Those values can also be selected dynamically by the level
+     *          of the contained page inside the b-tree index structure. The buffer frame is filtered out iff the
+     *          corresponding referenced integer is greater than 0. This filtering also decrements the corresponding
+     *          referenced integer by a specified value. See the specification of the template parameters for more
+     *          details about the customizability of this class.
+     *
+     * @tparam decrement          The value by which a referenced integer is decremented when the corresponding buffer
+     *                            frame index is encountered during eviction.
+     * @tparam discriminate_pages If set, the values \c level0_on_* , \c level1_on_* and \c level2_on_* are used for the
+     *                            updates of the referenced integers depending on the page contained in the
+     *                            corresponding buffer frame. Otherwise only the \c level0_on_* values are used.
+     * @tparam on_hit             If set, the eviction statistics are updated on page hit.
+     * @tparam set_on_hit         If set, the referenced integer is set to the value of \c level_*_on_hit on page hit.
+     *                            Otherwise, the referenced integer is incremented by this value.
+     * @tparam level0_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page hit when either \c discriminate_pages is \c false or
+     *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
+     *                            or a b-tree root page.
+     * @tparam level1_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page hit when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is child of a b-tree root page.
+     * @tparam level2_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page hit when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
+     *                            nor the child of a root b-tree page.
+     * @tparam on_unfix           If set, the eviction statistics are updated on page unfix.
+     * @tparam set_on_unfix       If set, the referenced integer is set to the value of \c level_*_on_unfix on page
+     *                            unfix. Otherwise, the referenced integer is incremented by this value.
+     * @tparam level0_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page unfix when either \c discriminate_pages is \c false or
+     *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
+     *                            or a b-tree root page.
+     * @tparam level1_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page unfix when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is child of a b-tree root page.
+     * @tparam level2_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page unfix when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
+     *                            nor the child of a root b-tree page.
+     * @tparam on_miss            If set, the eviction statistics are updated on page miss.
+     * @tparam set_on_miss        If set, the referenced integer is set to the value of \c level_*_on_miss on page miss.
+     *                            Otherwise, the referenced integer is incremented by this value.
+     * @tparam level0_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page miss when either \c discriminate_pages is \c false or
+     *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
+     *                            or a b-tree root page.
+     * @tparam level1_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page miss when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is child of a b-tree root page.
+     * @tparam level2_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) on page miss when \c discriminate_pages is \c true and when the
+     *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
+     *                            nor the child of a root b-tree page.
+     * @tparam on_fixed           If set, the eviction statistics are updated when a page is discovered fixed during
+     *                            eviction.
+     * @tparam set_on_fixed       If set, the referenced integer is set to the value of \c level_*_on_fixed when a page
+     *                            is discovered fixed during eviction. Otherwise, the referenced integer is incremented
+     *                            by this value.
+     * @tparam level0_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered fixed during eviction and when either
+     *                            \c discriminate_pages is \c false or when the page contained in the corresponding
+     *                            buffer frame is either a non-b-tree page or a b-tree root page.
+     * @tparam level1_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered fixed during eviction, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is child of a b-tree root page.
+     * @tparam level2_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered fixed during eviction, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
+     * @tparam on_dirty           If set, the eviction statistics are updated when a page is discovered dirty during
+     *                            eviction.
+     * @tparam set_on_dirty       If set, the referenced integer is set to the value of \c level_*_on_dirty when a page
+     *                            is discovered dirty during eviction. Otherwise, the referenced integer is incremented
+     *                            by this value.
+     * @tparam level0_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered dirty during eviction and when either
+     *                            \c discriminate_pages is \c false or when the page contained in the corresponding
+     *                            buffer frame is either a non-b-tree page or a b-tree root page.
+     * @tparam level1_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered dirty during eviction, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is child of a b-tree root page.
+     * @tparam level2_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered dirty during eviction, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
+     * @tparam on_blocked         If set, the eviction statistics are updated when a page is discovered to be
+     *                            unevictable at all.
+     * @tparam set_on_blocked     If set, the referenced integer is set to the value of \c level_*_on_blocked when a
+     *                            page is discovered unevictable at all. Otherwise, the referenced integer is
+     *                            incremented by this value.
+     * @tparam level0_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered unevictable at all during eviction and
+     *                            when either \c discriminate_pages is \c false or when the page contained in the
+     *                            corresponding buffer frame is either a non-b-tree page or a b-tree root page.
+     * @tparam level1_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered unevictable at all, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is child of a b-tree root page.
+     * @tparam level2_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered unevictable at all, when
+     *                            \c discriminate_pages is \c true and when the page contained in the corresponding
+     *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
+     * @tparam on_swizzled        If set, the eviction statistics are updated when a page is discovered containing
+     *                            swizzled pointers during eviction.
+     * @tparam set_on_swizzled    If set, the referenced integer is set to the value of \c level_*_on_swizzled when a
+     *                            page is discovered containing swizzled pointers during eviction. Otherwise, the
+     *                            referenced integer is incremented by this value.
+     * @tparam level0_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
+     *                            eviction and when either \c discriminate_pages is \c false or when the page contained
+     *                            in the corresponding buffer frame is either a non-b-tree page or a b-tree root page.
+     * @tparam level1_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
+     *                            eviction, when \c discriminate_pages is \c true and when the page contained in the
+     *                            corresponding buffer frame is child of a b-tree root page.
+     * @tparam level2_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
+     *                            eviction, when \c discriminate_pages is \c true and when the page contained in the
+     *                            corresponding buffer frame is a b-tree page but neither a root, nor the child of a
+     *                            root b-tree page.
+     */
+    template <uint16_t decrement, bool discriminate_pages,
+            bool on_hit, bool set_on_hit, uint16_t level0_on_hit, uint16_t level1_on_hit, uint16_t level2_on_hit,
+            bool on_unfix, bool set_on_unfix, uint16_t level0_on_unfix, uint16_t level1_on_unfix, uint16_t level2_on_unfix,
+            bool on_miss, bool set_on_miss, uint16_t level0_on_miss, uint16_t level1_on_miss, uint16_t level2_on_miss,
+            bool on_fixed, bool set_on_fixed, uint16_t level0_on_fixed, uint16_t level1_on_fixed, uint16_t level2_on_fixed,
+            bool on_dirty, bool set_on_dirty, uint16_t level0_on_dirty, uint16_t level1_on_dirty, uint16_t level2_on_dirty,
+            bool on_blocked, bool set_on_blocked, uint16_t level0_on_blocked, uint16_t level1_on_blocked, uint16_t level2_on_blocked,
+            bool on_swizzled, bool set_on_swizzled, uint16_t level0_on_swizzled, uint16_t level1_on_swizzled, uint16_t level2_on_swizzled>
+    class PageEvictionerFilterGCLOCK : PageEvictionerFilter {
+    public:
+        /*!\fn      PageEvictionerFilterGCLOCK()
+         * \brief   Constructs a _GCLOCK_ buffer frame filter
+         *
+         * @param bufferPool The buffer pool this _GCLOCK_ buffer frame filter is responsible for.
+         */
+        PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+
+        /*!\fn      preFilter(bf_idx idx) noexcept
+         * \brief   Filters a buffer frame for eviction
+         * \details Filters out the specified buffer frame if its corresponding referenced integer greater than 0.
+         *
+         * \warning This function does not decrement the referenced integer corresponding to the specified buffer frame.
+         *          For each buffer frame discovered evictable, \link filter() \endlink needs to be called exactly once.
+         *
+         * @param idx The selected buffer frame where the contained page should be evicted from.
+         * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
+         *            greater than 0.
+         */
+        bool preFilter(bf_idx idx) const noexcept final;
+
+        /*!\fn      preFilter(bf_idx idx) noexcept
+         * \brief   Filters a buffer frame for eviction
+         * \details Filters out the specified buffer frame if its corresponding referenced integer greater than 0 and
+         *          decrements this by the value of the template parameter \c decrement .
+         *
+         * @param idx The selected buffer frame where the contained page should be evicted from.
+         * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
+         *            greater than 0.
+         */
+        bool filter(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_hit is set. If the template parameter \c discriminate_pages is not set, the
+         *          value of the template parameter \c level0_on_hit will be used for the update, otherwise the values
+         *          of the template parameters \c level0_on_hit , \c level1_on_hit and \c level2_on_hit will be used
+         *          depending on the level of the contained page inside the B-tree. If the template parameter
+         *          \c set_on_hit is not set, the referenced integer is decremented by the appropriate value, if it is
+         *          set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_unfix is set. If the template parameter \c discriminate_pages is not set,
+         *          the value of the template parameter \c level0_on_unfix will be used for the update, otherwise the
+         *          values of the template parameters \c level0_on_unfix , \c level1_on_unfix and \c level2_on_unfix
+         *          will be used depending on the level of the contained page inside the B-tree. If the template
+         *          parameter \c set_on_unfix is not set, the referenced integer is decremented by the appropriate
+         *          value, if it is set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_miss is set. If the template parameter \c discriminate_pages is not set,
+         *          the value of the template parameter \c level0_on_miss will be used for the update, otherwise the
+         *          values of the template parameters \c level0_on_miss , \c level1_on_miss and \c level2_on_miss will
+         *          be used depending on the level of the contained page inside the B-tree. If the template parameter
+         *          \c set_on_miss is not set, the referenced integer is decremented by the appropriate value, if it is
+         *          set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final;
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_fixed is set. If the template parameter \c discriminate_pages is not set,
+         *          the value of the template parameter \c level0_on_fixed will be used for the update, otherwise the
+         *          values of the template parameters \c level0_on_fixed , \c level1_on_fixed and \c level2_on_fixed
+         *          will be used depending on the level of the contained page inside the B-tree. If the template
+         *          parameter \c set_on_fixed is not set, the referenced integer is decremented by the appropriate
+         *          value, if it is set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_dirty is set. If the template parameter \c discriminate_pages is not set,
+         *          the value of the template parameter \c level0_on_dirty will be used for the update, otherwise the
+         *          values of the template parameters \c level0_on_dirty , \c level1_on_dirty and \c level2_on_dirty
+         *          will be used depending on the level of the contained page inside the B-tree. If the template
+         *          parameter \c set_on_dirty is not set, the referenced integer is decremented by the appropriate
+         *          value, if it is set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_blocked is set. If the template parameter \c discriminate_pages is not set,
+         *          the value of the template parameter \c level0_on_blocked will be used for the update, otherwise the
+         *          values of the template parameters \c level0_on_blocked , \c level1_on_blocked and
+         *          \c level2_on_blocked will be used depending on the level of the contained page inside the B-tree. If
+         *          the template parameter \c set_on_blocked is not set, the referenced integer is decremented by the
+         *          appropriate value, if it is set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Updates the referenced integer of the specified buffer frame (inside \link _refInts \endlink) if the
+         *          template parameter \c on_swizzled is set. If the template parameter \c discriminate_pages is not
+         *          set, the value of the template parameter \c level0_on_swizzled will be used for the update,
+         *          otherwise the values of the template parameters \c level0_on_swizzled , \c level1_on_swizzled and
+         *          \c level2_on_swizzled will be used depending on the level of the contained page inside the B-tree.
+         *          If the template parameter \c set_on_swizzled is not set, the referenced integer is decremented by
+         *          the appropriate value, if it is set, the referenced integer is set to this value.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final;
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the referenced integer of the specified buffer frame (inside \link _refInts \endlink) to the
+         *          highest possible value.
+         *
+         * \note    This behaviour is an optimization that saves many checks for evictablity using the buffer pool.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
+
+    private:
+        /*!\fn      getLevel(const bf_idx& idx) const
+         * \brief   B-tree depth of the contained page
+         * \details Calculates the depth of the page contained in the buffer frame with index \c idx . If the page is a
+         *          B-tree root page, the depth is \c 0 , if it is child of a root, the depth is \c 1 . If it is any
+         *          other B-tree page, the depth is \c 2 . Non-b-tree pages are treated like B-tree root pages.
+         * 
+         * \pre     The buffer frame with index \c idx contains a page.
+         * 
+         * \note    This function is uses to discriminate the pages when the template parameter \c discriminate_pages is
+         *          set. The values of the template parameter \c level0_on_* is used, when this returns \c 0 etc.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is contains the
+         *            page to check.
+         * @return    \c o if the page is a non-b-tree page or a b-tree root page, \c 1 if it is a child page of a root
+         *            page and \c 2 if it is another b-tree page.
+         */
+        inline uint8_t getLevel(const bf_idx& idx) const;
+
+        /*!\var     _refBits
+         * \brief   Referenced integers for the buffer frames
+         * \details The index of the referenced integer corresponding to buffer frame \c n is \c n .
+         */
+        std::vector<std::atomic<uint16_t>> _refInts;
 
     };
 

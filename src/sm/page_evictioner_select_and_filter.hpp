@@ -156,7 +156,8 @@ namespace zero::buffer_pool {
          * \details Updates the statistics of the selected buffer frame selector and filter when a page got explicitly
          *          unbuffered.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that is freed explicitly.
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
 

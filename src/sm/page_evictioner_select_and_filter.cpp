@@ -182,4 +182,48 @@ template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageDirty(b
 template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageBlocked(bf_idx idx);
 template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
 template void PageEvictionerCLOCKFixUnfixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
+template PageEvictionerGCLOCKV1FixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+template bf_idx PageEvictionerGCLOCKV1FixAbsolutelyAccurate::pickVictim();
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerGCLOCKV1FixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
+template PageEvictionerGCLOCKV2FixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+template bf_idx PageEvictionerGCLOCKV2FixAbsolutelyAccurate::pickVictim();
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerGCLOCKV2FixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
+template PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+template bf_idx PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::pickVictim();
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerDGCLOCKV1FixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
+
+template PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+template bf_idx PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::pickVictim();
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageHit(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageUnfix(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageMiss(bf_idx idx, PageID pid);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageFixed(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageDirty(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageBlocked(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx);
+template void PageEvictionerDGCLOCKV2FixAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx);
 // to be continued ...
