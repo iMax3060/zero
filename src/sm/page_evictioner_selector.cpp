@@ -48,3 +48,40 @@ void PageEvictionerSelectorLOOPAbsolutelyAccurate::updateOnPageBlocked(bf_idx id
 void PageEvictionerSelectorLOOPAbsolutelyAccurate::updateOnPageSwizzled(bf_idx idx) noexcept {}
 
 void PageEvictionerSelectorLOOPAbsolutelyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept {}
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////// PageEvictionerSelectorLOOPPracticallyAccurate ////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+PageEvictionerSelectorLOOPPracticallyAccurate::PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool) :
+        PageEvictionerSelector(bufferPool),
+        _current_frame(1) {}
+
+bf_idx PageEvictionerSelectorLOOPPracticallyAccurate::select() noexcept { // Not exact after 18446744073709551616 (1 per ns -> once in 585 years) incrementations!
+    w_assert1(_current_frame > 0 && _current_frame <= _maxBufferpoolIndex);
+
+    while (true) {
+        uint_fast32_t this_frame = _current_frame++ % (_maxBufferpoolIndex + 1);
+        if (this_frame == 0) {
+            continue;
+        } else {
+            return this_frame;
+        }
+    }
+}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageHit(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageUnfix(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageFixed(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageDirty(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageBlocked(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageSwizzled(bf_idx idx) noexcept {}
+
+void PageEvictionerSelectorLOOPPracticallyAccurate::updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept {}
