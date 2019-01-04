@@ -163,7 +163,7 @@ void Command::setupSMOptions(po::options_description& options)
     ("sm_chkpt_use_log_archive", po::value<bool>()->implicit_value(true),
         "Checkpoints use archived LSN to compute min_rec_lsn")
     ("sm_chkpt_print_propstats", po::value<bool>(),
-        "Print min recl lsn and dirty page coutn for every chkpt taken")
+        "Print min recl lsn and dirty page count for every chkpt taken")
     ("sm_log_fetch_buf_partitions", po::value<uint>()->default_value(0),
         "Number of partitions to buffer in memory for recovery")
     ("sm_carray_slots", po::value<int>()->default_value(ConsolidationArray::DEFAULT_ACTIVE_SLOT_COUNT),
@@ -214,6 +214,8 @@ void Command::setupSMOptions(po::options_description& options)
         "Lock table size")
     ("sm_rawlock_xctpool_initseg", po::value<int>(),
         "Transaction Pool Initialization Segment")
+    ("sm_bf_maintain_emlsn", po::value<bool>()->default_value(false)->implicit_value(true),
+        "Maintain the EMLSNs")
     ("sm_bf_warmup_hit_ratio", po::value<int>()->notifier(check_range<int>(0, 100, "sm_bf_warmup_hit_ratio")),
         "Hit ratio to be achieved until system is considered warmed up (int from 0 to 100)")
     ("sm_bf_warmup_min_fixes", po::value<unsigned int>(),
@@ -232,13 +234,17 @@ void Command::setupSMOptions(po::options_description& options)
         "Page cleaner only writes clusters of pages with this minimum size")
     ("sm_cleaner_min_write_ignore_freq", po::value<int>(),
         "Ignore min_write_size every N rounds of cleaning")
-    ("sm_evict_dirty_pages", po::value<bool>()->implicit_value(true),
-        "Do not skip dirty pages when performing eviction and write them out if necessary")
     ("sm_async_eviction", po::value<bool>(),
         "Perform eviction in a dedicated thread, while fixing threads wait")
-    ("sm_eviction_interval", po::value<int>(),
-        "Interval for async eviction thread (in msec)")
-    ("sm_log_page_evictions", po::value<bool>(),
+    ("sm_evictioner_interval_millisec", po::value<int>()->default_value(1000),
+        "Evictioner sleep interval in ms when asyc eviction is used")
+    ("sm_evictioner_batch_ratio_ppm", po::value<uint32_t>()->default_value(10000),
+        "Target value of free buffer frames for the evictioner is ppm")
+    ("sm_evict_dirty_pages", po::value<bool>()->implicit_value(true),
+        "Do not skip dirty pages when performing eviction and write them out if necessary")
+    ("sm_bf_evictioner_flush_dirty_pages", po::value<bool>()->default_value(false)->implicit_value(true),
+        "Do flush dirty pages when evicting pages")
+    ("sm_bf_evictioner_log_evictions", po::value<bool>(),
         "Generate evict_page log records for every page evicted from the buffer pool")
     ("sm_log_page_fetches", po::value<bool>(),
         "Generate fetch_page log records for every page fetched (and recovered) into the buffer pool")
