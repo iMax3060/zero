@@ -1,10 +1,11 @@
 #ifndef __PAGE_EVICTIONER_FILTER_HPP
 #define __PAGE_EVICTIONER_FILTER_HPP
 
-#include "page_evictioner.hpp"
-
 #include <vector>
 #include <atomic>
+
+#include "buffer_pool.hpp"
+#include "btree_page_h.h"
 
 namespace zero::buffer_pool {
 
@@ -21,12 +22,12 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this buffer frame filter is responsible for.
          */
-        PageEvictionerFilter(const BufferPool* bufferPool);
+        PageEvictionerFilter(const BufferPool* bufferPool) {};
 
         /*!\fn      ~PageEvictionerFilter()
          * \brief   Destructs a buffer frame filter
          */
-        virtual ~PageEvictionerFilter() = 0;
+        virtual ~PageEvictionerFilter() {};
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -181,7 +182,8 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this non-filtering buffer frame filter is responsible for.
          */
-        PageEvictionerFilterNone(const BufferPool* bufferPool);
+        PageEvictionerFilterNone(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool) {};
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -190,7 +192,9 @@ namespace zero::buffer_pool {
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    Always \c true !
          */
-        bool preFilter(bf_idx idx) const noexcept final;
+        bool preFilter(bf_idx idx) const noexcept final {
+            return true;
+        };
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -199,7 +203,9 @@ namespace zero::buffer_pool {
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    Always \c true !
          */
-        bool filter(bf_idx idx) noexcept final;
+        bool filter(bf_idx idx) noexcept final {
+            return true;
+        };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -207,7 +213,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final;
+        void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -215,7 +221,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final;
+        void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -225,7 +231,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final;
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -234,7 +240,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final;
+        void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -243,7 +249,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final;
+        void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -252,7 +258,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final;
+        void updateOnPageBlocked(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -261,7 +267,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final;
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -270,7 +276,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
 
     };
 
@@ -298,7 +304,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _CLOCK_ buffer frame filter is responsible for.
          */
-        PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
+        PageEvictionerFilterCLOCK(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool),
+                _refBits(bufferPool->getBlockCount()) {};
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -310,7 +318,13 @@ namespace zero::buffer_pool {
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx .
          */
-        bool preFilter(bf_idx idx) const noexcept final;
+        bool preFilter(bf_idx idx) const noexcept final {
+            if (_refBits[idx]) {
+                return false;
+            } else {
+                return true;
+            }
+        };
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -321,7 +335,14 @@ namespace zero::buffer_pool {
          * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx before this
          *            function was called.
          */
-        bool filter(bf_idx idx) noexcept final;
+        bool filter(bf_idx idx) noexcept final {
+            if (_refBits[idx]) {
+                _refBits[idx] = false;
+                return false;
+            } else {
+                return true;
+            }
+        };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -330,7 +351,11 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final;
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            if constexpr (on_hit) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -339,7 +364,11 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final;
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            if constexpr (on_unfix) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -350,7 +379,11 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final;
+        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+            if constexpr (on_miss) {
+                _refBits[b_idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -360,7 +393,11 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final;
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            if constexpr (on_fixed) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -370,7 +407,11 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final;
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            if constexpr (on_dirty) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -380,7 +421,11 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final;
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            if constexpr (on_blocked) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -390,7 +435,11 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final;
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            if constexpr (on_swizzled) {
+                _refBits[idx] = true;
+            }
+        };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -402,7 +451,9 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _refBits[idx] = true;
+        };
 
     private:
         /*!\var     _refBits
@@ -432,42 +483,42 @@ namespace zero::buffer_pool {
      * @tparam on_hit             If set, the eviction statistics are updated on page hit.
      * @tparam set_on_hit         If set, the referenced integer is set to the value of \c level_*_on_hit on page hit.
      *                            Otherwise, the referenced integer is incremented by this value.
-     * @tparam level0_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_hit      The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page hit when either \c discriminate_pages is \c false or
      *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
      *                            or a b-tree root page.
-     * @tparam level1_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_hit      The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page hit when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is child of a b-tree root page.
-     * @tparam level2_on_hit      The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_hit      The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page hit when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
      *                            nor the child of a root b-tree page.
      * @tparam on_unfix           If set, the eviction statistics are updated on page unfix.
      * @tparam set_on_unfix       If set, the referenced integer is set to the value of \c level_*_on_unfix on page
      *                            unfix. Otherwise, the referenced integer is incremented by this value.
-     * @tparam level0_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_unfix    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page unfix when either \c discriminate_pages is \c false or
      *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
      *                            or a b-tree root page.
-     * @tparam level1_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_unfix    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page unfix when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is child of a b-tree root page.
-     * @tparam level2_on_unfix    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_unfix    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page unfix when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
      *                            nor the child of a root b-tree page.
      * @tparam on_miss            If set, the eviction statistics are updated on page miss.
      * @tparam set_on_miss        If set, the referenced integer is set to the value of \c level_*_on_miss on page miss.
      *                            Otherwise, the referenced integer is incremented by this value.
-     * @tparam level0_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_miss     The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page miss when either \c discriminate_pages is \c false or
      *                            when the page contained in the corresponding buffer frame is either a non-b-tree page
      *                            or a b-tree root page.
-     * @tparam level1_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_miss     The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page miss when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is child of a b-tree root page.
-     * @tparam level2_on_miss     The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_miss     The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) on page miss when \c discriminate_pages is \c true and when the
      *                            page contained in the corresponding buffer frame is a b-tree page but neither a root,
      *                            nor the child of a root b-tree page.
@@ -476,15 +527,15 @@ namespace zero::buffer_pool {
      * @tparam set_on_fixed       If set, the referenced integer is set to the value of \c level_*_on_fixed when a page
      *                            is discovered fixed during eviction. Otherwise, the referenced integer is incremented
      *                            by this value.
-     * @tparam level0_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_fixed    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered fixed during eviction and when either
      *                            \c discriminate_pages is \c false or when the page contained in the corresponding
      *                            buffer frame is either a non-b-tree page or a b-tree root page.
-     * @tparam level1_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_fixed    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered fixed during eviction, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is child of a b-tree root page.
-     * @tparam level2_on_fixed    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_fixed    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered fixed during eviction, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
@@ -493,15 +544,15 @@ namespace zero::buffer_pool {
      * @tparam set_on_dirty       If set, the referenced integer is set to the value of \c level_*_on_dirty when a page
      *                            is discovered dirty during eviction. Otherwise, the referenced integer is incremented
      *                            by this value.
-     * @tparam level0_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_dirty    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered dirty during eviction and when either
      *                            \c discriminate_pages is \c false or when the page contained in the corresponding
      *                            buffer frame is either a non-b-tree page or a b-tree root page.
-     * @tparam level1_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_dirty    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered dirty during eviction, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is child of a b-tree root page.
-     * @tparam level2_on_dirty    The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_dirty    The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered dirty during eviction, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
@@ -510,15 +561,15 @@ namespace zero::buffer_pool {
      * @tparam set_on_blocked     If set, the referenced integer is set to the value of \c level_*_on_blocked when a
      *                            page is discovered unevictable at all. Otherwise, the referenced integer is
      *                            incremented by this value.
-     * @tparam level0_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_blocked  The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered unevictable at all during eviction and
      *                            when either \c discriminate_pages is \c false or when the page contained in the
      *                            corresponding buffer frame is either a non-b-tree page or a b-tree root page.
-     * @tparam level1_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_blocked  The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered unevictable at all, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is child of a b-tree root page.
-     * @tparam level2_on_blocked  The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_blocked  The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered unevictable at all, when
      *                            \c discriminate_pages is \c true and when the page contained in the corresponding
      *                            buffer frame is a b-tree page but neither a root, nor the child of a root b-tree page.
@@ -527,15 +578,15 @@ namespace zero::buffer_pool {
      * @tparam set_on_swizzled    If set, the referenced integer is set to the value of \c level_*_on_swizzled when a
      *                            page is discovered containing swizzled pointers during eviction. Otherwise, the
      *                            referenced integer is incremented by this value.
-     * @tparam level0_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level0_on_swizzled The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
      *                            eviction and when either \c discriminate_pages is \c false or when the page contained
      *                            in the corresponding buffer frame is either a non-b-tree page or a b-tree root page.
-     * @tparam level1_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level1_on_swizzled The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
      *                            eviction, when \c discriminate_pages is \c true and when the page contained in the
      *                            corresponding buffer frame is child of a b-tree root page.
-     * @tparam level2_on_swizzled The value by which a referenced integer is incremented (or to which it is set when 
+     * @tparam level2_on_swizzled The value by which a referenced integer is incremented (or to which it is set when
      *                            \c set_on_hit is set) when a page is discovered containing swizzled pointers during
      *                            eviction, when \c discriminate_pages is \c true and when the page contained in the
      *                            corresponding buffer frame is a b-tree page but neither a root, nor the child of a
@@ -556,7 +607,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _GCLOCK_ buffer frame filter is responsible for.
          */
-        PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+        PageEvictionerFilterGCLOCK(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool),
+                _refInts(bufferPool->getBlockCount()) {};
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -569,7 +622,13 @@ namespace zero::buffer_pool {
          * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
          *            greater than 0.
          */
-        bool preFilter(bf_idx idx) const noexcept final;
+        bool preFilter(bf_idx idx) const noexcept final {
+            if (_refInts[idx] > 0) {
+                return false;
+            } else {
+                return true;
+            }
+        };
 
         /*!\fn      preFilter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -580,7 +639,14 @@ namespace zero::buffer_pool {
          * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
          *            greater than 0.
          */
-        bool filter(bf_idx idx) noexcept final;
+        bool filter(bf_idx idx) noexcept final {
+            if (_refInts[idx] > 0) {
+                _refInts[idx] = std::max(_refInts[idx] - decrement, 0);
+                return false;
+            } else {
+                return true;
+            }
+        };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -594,7 +660,36 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final;
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            if constexpr (on_hit) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_hit) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_hit;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_hit;
+                        } else {
+                            _refInts[idx] = level2_on_hit;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_hit;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_hit;
+                        } else {
+                            _refInts[idx] += level2_on_hit;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_hit) {
+                        _refInts[idx] = level2_on_hit;
+                    } else {
+                        _refInts[idx] += level2_on_hit;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -608,7 +703,36 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final;
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            if constexpr (on_unfix) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_unfix) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_unfix;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_unfix;
+                        } else {
+                            _refInts[idx] = level2_on_unfix;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_unfix;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_unfix;
+                        } else {
+                            _refInts[idx] += level2_on_unfix;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_unfix) {
+                        _refInts[idx] = level2_on_unfix;
+                    } else {
+                        _refInts[idx] += level2_on_unfix;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -624,7 +748,36 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final;
+        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+            if constexpr (on_miss) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(b_idx);
+                    if constexpr (set_on_miss) {
+                        if (page_level == 0) {
+                            _refInts[b_idx] = level0_on_miss;
+                        } else if (page_level == 1) {
+                            _refInts[b_idx] = level1_on_miss;
+                        } else {
+                            _refInts[b_idx] = level2_on_miss;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[b_idx] += level0_on_miss;
+                        } else if (page_level == 1) {
+                            _refInts[b_idx] += level1_on_miss;
+                        } else {
+                            _refInts[b_idx] += level2_on_miss;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_miss) {
+                        _refInts[b_idx] = level2_on_miss;
+                    } else {
+                        _refInts[b_idx] += level2_on_miss;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -639,7 +792,36 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final;
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            if constexpr (on_fixed) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_fixed) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_fixed;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_fixed;
+                        } else {
+                            _refInts[idx] = level2_on_fixed;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_fixed;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_fixed;
+                        } else {
+                            _refInts[idx] += level2_on_fixed;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_fixed) {
+                        _refInts[idx] = level2_on_fixed;
+                    } else {
+                        _refInts[idx] += level2_on_fixed;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -654,7 +836,36 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final;
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            if constexpr (on_dirty) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_dirty) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_dirty;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_dirty;
+                        } else {
+                            _refInts[idx] = level2_on_dirty;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_dirty;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_dirty;
+                        } else {
+                            _refInts[idx] += level2_on_dirty;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_dirty) {
+                        _refInts[idx] = level2_on_dirty;
+                    } else {
+                        _refInts[idx] += level2_on_dirty;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -669,7 +880,36 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final;
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            if constexpr (on_blocked) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_blocked) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_blocked;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_blocked;
+                        } else {
+                            _refInts[idx] = level2_on_blocked;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_blocked;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_blocked;
+                        } else {
+                            _refInts[idx] += level2_on_blocked;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_blocked) {
+                        _refInts[idx] = level2_on_blocked;
+                    } else {
+                        _refInts[idx] += level2_on_blocked;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -684,7 +924,36 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final;
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            if constexpr (on_swizzled) {
+                if constexpr (discriminate_pages) {
+                    uint8_t page_level = getLevel(idx);
+                    if constexpr (set_on_swizzled) {
+                        if (page_level == 0) {
+                            _refInts[idx] = level0_on_swizzled;
+                        } else if (page_level == 1) {
+                            _refInts[idx] = level1_on_swizzled;
+                        } else {
+                            _refInts[idx] = level2_on_swizzled;
+                        }
+                    } else {
+                        if (page_level == 0) {
+                            _refInts[idx] += level0_on_swizzled;
+                        } else if (page_level == 1) {
+                            _refInts[idx] += level1_on_swizzled;
+                        } else {
+                            _refInts[idx] += level2_on_swizzled;
+                        }
+                    }
+                } else {
+                    if constexpr (set_on_swizzled) {
+                        _refInts[idx] = level2_on_swizzled;
+                    } else {
+                        _refInts[idx] += level2_on_swizzled;
+                    }
+                }
+            }
+        };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -696,7 +965,9 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final;
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _refInts[idx] = std::numeric_limits<uint16_t>::max();
+        };
 
     private:
         /*!\fn      getLevel(const bf_idx& idx) const
@@ -704,9 +975,9 @@ namespace zero::buffer_pool {
          * \details Calculates the depth of the page contained in the buffer frame with index \c idx . If the page is a
          *          B-tree root page, the depth is \c 0 , if it is child of a root, the depth is \c 1 . If it is any
          *          other B-tree page, the depth is \c 2 . Non-b-tree pages are treated like B-tree root pages.
-         * 
+         *
          * \pre     The buffer frame with index \c idx contains a page.
-         * 
+         *
          * \note    This function is uses to discriminate the pages when the template parameter \c discriminate_pages is
          *          set. The values of the template parameter \c level0_on_* is used, when this returns \c 0 etc.
          *
@@ -715,7 +986,23 @@ namespace zero::buffer_pool {
          * @return    \c o if the page is a non-b-tree page or a b-tree root page, \c 1 if it is a child page of a root
          *            page and \c 2 if it is another b-tree page.
          */
-        inline uint8_t getLevel(const bf_idx& idx) const;
+        inline uint8_t getLevel(const bf_idx& idx) const {
+            const generic_page* page = smlevel_0::bf->getPage(idx);
+            w_assert1(page != nullptr);
+            if (page->tag == t_btree_p) {
+                btree_page_h fixedPage;
+                fixedPage.fix_nonbufferpool_page(const_cast<generic_page*>(page));
+                if (fixedPage.pid() == fixedPage.btree_root() || fixedPage.level() > 2) {
+                    return 0;
+                } else if (fixedPage.level() == 2) {
+                    return 1;
+                } else if (fixedPage.level() == 1) {
+                    return 2;
+                }
+            } else {     // Non-B-Tree pages are interpreted as B-Tree root pages!
+                return 0;
+            }
+        };
 
         /*!\var     _refBits
          * \brief   Referenced integers for the buffer frames

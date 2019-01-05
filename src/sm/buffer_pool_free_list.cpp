@@ -1,6 +1,8 @@
 #include "buffer_pool_free_list.hpp"
 
 #include "buffer_pool.hpp"
+#include "page_evictioner.hpp"
+#include "page_evictioner_select_and_filter.hpp"
 
 using namespace zero::buffer_pool;
 

@@ -1,11 +1,8 @@
 #ifndef __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
 #define __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
 
-#include "page_evictioner_select_and_filter.hpp"
-#include "page_evictioner_selector.hpp"
-#include "page_evictioner_filter.hpp"
-
 namespace zero::buffer_pool {
+    /* BEGIN --- Forward Declarations ---BEGIN */
     template <class selector_class, class filter_class, bool filter_early> class PageEvictionerSelectAndFilter;
 
     class PageEvictionerSelectorLOOPAbsolutelyAccurate;
@@ -20,6 +17,7 @@ namespace zero::buffer_pool {
             bool on_dirty = false, bool set_on_dirty = false, uint16_t level0_on_dirty = 5, uint16_t level1_on_dirty = 2, uint16_t level2_on_dirty = 1,
             bool on_blocked = false, bool set_on_blocked = false, uint16_t level0_on_blocked = 5, uint16_t level1_on_blocked = 2, uint16_t level2_on_blocked = 1,
             bool on_swizzled = false, bool set_on_swizzled = false, uint16_t level0_on_swizzled = 5, uint16_t level1_on_swizzled = 2, uint16_t level2_on_swizzled = 1> class PageEvictionerFilterGCLOCK;
+    /* END --- Forward Declarations --- END */
 
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterCLOCK<>, true> PageEvictionerCLOCKFixAbsolutelyAccurate;
