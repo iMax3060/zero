@@ -17,7 +17,7 @@ namespace zero::buffer_pool {
      */
     class PageEvictionerFilter {
     public:
-        /*!\fn      PageEvictionerFilter()
+        /*!\fn      PageEvictionerFilter(const BufferPool* bufferPool)
          * \brief   Constructs a buffer frame filter
          *
          * @param bufferPool The buffer pool this buffer frame filter is responsible for.
@@ -177,7 +177,7 @@ namespace zero::buffer_pool {
      */
     class PageEvictionerFilterNone : public PageEvictionerFilter {
     public:
-        /*!\fn      PageEvictionerFilterNone()
+        /*!\fn      PageEvictionerFilterNone(const BufferPool* bufferPool)
          * \brief   Constructs a non-filtering buffer frame filter
          *
          * @param bufferPool The buffer pool this non-filtering buffer frame filter is responsible for.
@@ -299,7 +299,7 @@ namespace zero::buffer_pool {
     template <bool on_hit /*= true*/, bool on_unfix /*= false*/, bool on_miss /*= true*/, bool on_fixed /*= false*/, bool on_dirty /*= false*/, bool on_blocked /*= false*/, bool on_swizzled /*= false*/>
     class PageEvictionerFilterCLOCK : public PageEvictionerFilter {
     public:
-        /*!\fn      PageEvictionerFilterCLOCK()
+        /*!\fn      PageEvictionerFilterCLOCK(const BufferPool* bufferPool)
          * \brief   Constructs a _CLOCK_ buffer frame filter
          *
          * @param bufferPool The buffer pool this _CLOCK_ buffer frame filter is responsible for.
@@ -602,7 +602,7 @@ namespace zero::buffer_pool {
             bool on_swizzled, bool set_on_swizzled, uint16_t level0_on_swizzled, uint16_t level1_on_swizzled, uint16_t level2_on_swizzled>
     class PageEvictionerFilterGCLOCK : PageEvictionerFilter {
     public:
-        /*!\fn      PageEvictionerFilterGCLOCK()
+        /*!\fn      PageEvictionerFilterGCLOCK(const BufferPool* bufferPool)
          * \brief   Constructs a _GCLOCK_ buffer frame filter
          *
          * @param bufferPool The buffer pool this _GCLOCK_ buffer frame filter is responsible for.

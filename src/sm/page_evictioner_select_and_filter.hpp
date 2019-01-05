@@ -51,7 +51,7 @@ namespace zero::buffer_pool {
     template<class selector_class, class filter_class, bool filter_early = false>
     class PageEvictionerSelectAndFilter : public PageEvictioner {
     public:
-        /*!\fn      PageEvictionerSelectAndFilter()
+        /*!\fn      PageEvictionerSelectAndFilter(const BufferPool* bufferPool)
          * \brief   Constructs a _Select-and-Filter_ page evictioner
          * \details This constructor also constructs the buffer frame selector and filter.
          *
