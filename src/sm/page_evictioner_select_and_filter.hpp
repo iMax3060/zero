@@ -78,13 +78,16 @@ namespace zero::buffer_pool {
          *            -# Select a buffer frame using \link PageEvictionerSelector::select() \endlink of the buffer frame
          *               selector specified in the template parameter \c selector_class .
          *            -# If the template parameter \c filter_early is set, filter the selected buffer frame using
-         *               \link PageEvictionerFilter::preFilter() \endlink of the buffer frame filter specified in the
-         *               template parameter \c filter_class .
+         *               \link PageEvictionerFilter::filterAndUpdate() \endlink of the buffer frame filter specified in
+         *               the template parameter \c filter_class .
          *            -# Further filter the selected buffer frame using \link BufferPool::isEvictable() \endlink of the
          *               buffer pool (includes the potentially expensive latching of selected buffer frame in mode
          *               \link latch_mode_t::LATCH_EX \endlink without waiting for other threads).
-         *            -# Finally, filter the selected buffer frame using \link PageEvictionerFilter::filter() \endlink
-         *               of the buffer frame filter specified in the template parameter \c filter_class .
+         *            -# Finally, if the template parameter \c filter_early is not set, filter the selected buffer frame
+         *               using \link PageEvictionerFilter::filterAndUpdate() \endlink of the buffer frame filter
+         *               specified in the template parameter \c filter_class . Otherwise filter the selected buffer
+         *               frame using \link PageEvictionerFilter::filter() \endlink of the buffer frame filter specified
+         *               in the template parameter \c filter_class .
          *
          * \post    The picked victim is latched in \link latch_mode_t::LATCH_EX \endlink mode as the buffer pool frame
          *          will be changed during eviction (page will be removed).
@@ -101,7 +104,7 @@ namespace zero::buffer_pool {
                 bf_idx idx = _selector.select();
 
                 if constexpr (filter_early) {
-                    if (!_filter.preFilter(idx)) {
+                    if (!_filter.filterAndUpdate(idx)) {
                         continue;
                     }
                 }
@@ -144,9 +147,16 @@ namespace zero::buffer_pool {
                 w_assert1(cb.latch().is_mine());
 
                 // Only evict if clock referenced bit is not set
-                if (!_filter.filter(idx)) {
-                    cb.latch().latch_release();
-                    continue;
+                if constexpr (filter_early) {
+                    if (!_filter.filter(idx)) {
+                        cb.latch().latch_release();
+                        continue;
+                    }
+                } else {
+                    if (!_filter.filterAndUpdate(idx)) {
+                        cb.latch().latch_release();
+                        continue;
+                    }
                 }
 
                 // Only evict actually evictable pages (not required to stay in the buffer pool)

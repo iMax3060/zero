@@ -29,7 +29,7 @@ namespace zero::buffer_pool {
          */
         virtual ~PageEvictionerFilter() {};
 
-        /*!\fn      preFilter(bf_idx idx) noexcept
+        /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters the specified buffer frame to be evicted a page from according to the selected buffer frame
          *          filter. The \link PageEvictionerSelectAndFilter \endlink first selects a buffer frame using a
@@ -40,15 +40,15 @@ namespace zero::buffer_pool {
          *
          * \warning This function does not update the eviction statistics (e.g. resets the referenced bit of the
          *          buffer frame when the _CLOCK_-filter is used). For each buffer frame discovered evictable,
-         *          \link filter() \endlink needs to be called exactly once.
+         *          \link filterAndUpdate() \endlink needs to be called exactly once.
          *
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    If the page in the buffer frame \c idx should be evicted according the buffer frame filter policy,
          *            \c true , else \c false .
          */
-        virtual bool preFilter(bf_idx idx) const noexcept = 0;
+        virtual bool filter(bf_idx idx) const noexcept = 0;
 
-        /*!\fn      filter(bf_idx idx) noexcept
+        /*!\fn      filterAndUpdate(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters the specified buffer frame to be evicted a page from according to the selected buffer frame
          *          filter. The \link PageEvictionerSelectAndFilter \endlink first selects a buffer frame using a
@@ -59,13 +59,13 @@ namespace zero::buffer_pool {
          *
          * \warning This function potentially updates the eviction statistics (e.g. resets the referenced bit of the
          *          buffer frame when the _CLOCK_-filter is used). This function should only be called, when a page is
-         *          actually evictable. Call \link preFilter() \endlink otherwise.
+         *          actually evictable. Call \link filter() \endlink otherwise.
          *
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    If the page in the buffer frame \c idx should be evicted according the buffer frame filter policy,
          *            \c true , else \c false .
          */
-        virtual bool filter(bf_idx idx) noexcept = 0;
+        virtual bool filterAndUpdate(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -185,17 +185,6 @@ namespace zero::buffer_pool {
         PageEvictionerFilterNone(const BufferPool* bufferPool) :
                 PageEvictionerFilter(bufferPool) {};
 
-        /*!\fn      preFilter(bf_idx idx) noexcept
-         * \brief   Filters a buffer frame for eviction
-         * \details This buffer frame filter is non-filtering and therefore this does not filter out buffer frames.
-         *
-         * @param idx The selected buffer frame where the contained page should be evicted from.
-         * @return    Always \c true !
-         */
-        bool preFilter(bf_idx idx) const noexcept final {
-            return true;
-        };
-
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details This buffer frame filter is non-filtering and therefore this does not filter out buffer frames.
@@ -203,7 +192,18 @@ namespace zero::buffer_pool {
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    Always \c true !
          */
-        bool filter(bf_idx idx) noexcept final {
+        bool filter(bf_idx idx) const noexcept final {
+            return true;
+        };
+
+        /*!\fn      filterAndUpdate(bf_idx idx) noexcept
+         * \brief   Filters a buffer frame for eviction
+         * \details This buffer frame filter is non-filtering and therefore this does not filter out buffer frames.
+         *
+         * @param idx The selected buffer frame where the contained page should be evicted from.
+         * @return    Always \c true !
+         */
+        bool filterAndUpdate(bf_idx idx) noexcept final {
             return true;
         };
 
@@ -308,17 +308,18 @@ namespace zero::buffer_pool {
                 PageEvictionerFilter(bufferPool),
                 _refBits(bufferPool->getBlockCount()) {};
 
-        /*!\fn      preFilter(bf_idx idx) noexcept
+        /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters out the specified buffer frame if its corresponding referenced bit is set.
          *
          * \warning This function does not reset the referenced bit corresponding to the specified buffer frame. For
-         *          each buffer frame discovered evictable, \link filter() \endlink needs to be called exactly once.
+         *          each buffer frame discovered evictable, \link filterAndUpdate() \endlink needs to be called exactly
+         *          once.
          *
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx .
          */
-        bool preFilter(bf_idx idx) const noexcept final {
+        bool filter(bf_idx idx) const noexcept final {
             if (_refBits[idx]) {
                 return false;
             } else {
@@ -326,7 +327,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        /*!\fn      filter(bf_idx idx) noexcept
+        /*!\fn      filterAndUpdate(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters out the specified buffer frame if its corresponding referenced bit is set and resets this
          *          referenced bit afterwards.
@@ -335,7 +336,7 @@ namespace zero::buffer_pool {
          * @return    The value of the referenced bit corresponding to the buffer frame with index \c idx before this
          *            function was called.
          */
-        bool filter(bf_idx idx) noexcept final {
+        bool filterAndUpdate(bf_idx idx) noexcept final {
             if (_refBits[idx]) {
                 _refBits[idx] = false;
                 return false;
@@ -611,18 +612,19 @@ namespace zero::buffer_pool {
                 PageEvictionerFilter(bufferPool),
                 _refInts(bufferPool->getBlockCount()) {};
 
-        /*!\fn      preFilter(bf_idx idx) noexcept
+        /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters out the specified buffer frame if its corresponding referenced integer greater than 0.
          *
          * \warning This function does not decrement the referenced integer corresponding to the specified buffer frame.
-         *          For each buffer frame discovered evictable, \link filter() \endlink needs to be called exactly once.
+         *          For each buffer frame discovered evictable, \link filterAndUpdate() \endlink needs to be called
+         *          exactly once.
          *
          * @param idx The selected buffer frame where the contained page should be evicted from.
          * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
          *            greater than 0.
          */
-        bool preFilter(bf_idx idx) const noexcept final {
+        bool filter(bf_idx idx) const noexcept final {
             if (_refInts[idx] > 0) {
                 return false;
             } else {
@@ -630,7 +632,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        /*!\fn      preFilter(bf_idx idx) noexcept
+        /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
          * \details Filters out the specified buffer frame if its corresponding referenced integer greater than 0 and
          *          decrements this by the value of the template parameter \c decrement .
@@ -639,7 +641,7 @@ namespace zero::buffer_pool {
          * @return    Whether the value of the referenced integer corresponding to the buffer frame with index \c idx is
          *            greater than 0.
          */
-        bool filter(bf_idx idx) noexcept final {
+        bool filterAndUpdate(bf_idx idx) noexcept final {
             if (_refInts[idx] > 0) {
                 _refInts[idx] = std::max(_refInts[idx] - decrement, 0);
                 return false;
