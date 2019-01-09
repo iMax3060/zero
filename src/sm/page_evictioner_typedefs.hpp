@@ -1,6 +1,8 @@
 #ifndef __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
 #define __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
 
+#include <cstdint>
+
 namespace zero::buffer_pool {
     /* BEGIN --- Forward Declarations ---BEGIN */
     template <class selector_class, class filter_class, bool filter_early> class PageEvictionerSelectAndFilter;
