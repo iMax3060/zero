@@ -9,6 +9,9 @@ namespace zero::buffer_pool {
     class PageEvictionerSelectorLOOPPracticallyAccurate;
     class PageEvictionerSelectorRANDOMDefault;
     class PageEvictionerSelectorRANDOMFastRand;
+    template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
+    template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOHighContention;
+    template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFILOLowContention;
     class PageEvictionerFilterNone;
     template <bool on_hit = true, bool on_unfix = false, bool on_miss = true, bool on_fixed = false, bool on_dirty = false, bool on_blocked = false, bool on_swizzled = false> class PageEvictionerFilterCLOCK;
     template <uint16_t decrement = 1, bool discriminate_pages = false,
@@ -39,6 +42,9 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictioner0GCLOCKV2Fix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, true>, true> PageEvictioner0DGCLOCKV1Fix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictioner0DGCLOCKV2Fix;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOLowContention;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOHighContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOHighContention;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFILOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFILOLowContention;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
