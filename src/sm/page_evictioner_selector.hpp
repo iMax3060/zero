@@ -11,6 +11,8 @@
 #include "MPMCQueue/MPMCQueue.h"
 #include <vector>
 
+#include "hashtable_deque.hpp"
+
 #include "buffer_pool.hpp"
 
 namespace zero::buffer_pool {
@@ -348,7 +350,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {};
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -459,7 +461,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {};
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -574,7 +576,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {};
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -664,7 +666,7 @@ namespace zero::buffer_pool {
         /*!\fn      PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool)
          * \brief   Constructs a _FIFO_ buffer frame selector
          *
-         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
         PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
@@ -878,7 +880,7 @@ namespace zero::buffer_pool {
         /*!\fn      PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool)
          * \brief   Constructs a _FIFO_ buffer frame selector
          *
-         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
         PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
@@ -1112,9 +1114,9 @@ namespace zero::buffer_pool {
     class PageEvictionerSelectorQuasiFILOLowContention : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool)
-         * \brief   Constructs a _FIFO_ buffer frame selector
+         * \brief   Constructs a _FILO_ buffer frame selector
          *
-         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         * @param bufferPool The buffer pool this _FILO_ buffer frame selector is responsible for.
          */
         PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
@@ -1298,6 +1300,667 @@ namespace zero::buffer_pool {
          *          \link _retryList \endlink have this flag unset.
          */
         std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
+
+    };
+
+    /*!\class   PageEvictionerSelectorLRU
+     * \brief   _LRU_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LRU_
+     *          policy. The _LRU_ policy selects the buffer frame that was not used for the longest time. This is
+     *          implemented using a queue which allows to move referenced buffer frames from some place within the queue
+     *          up. This requires latching during each page reference to prevent races.
+     */
+    class PageEvictionerSelectorLRU : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorLRU(const BufferPool* bufferPool)
+         * \brief   Constructs a _LRU_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _lruList(bufferPool->getBlockCount()) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the buffer pool that was not used for the longest time.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            bf_idx selected;
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            _lruList.popFromFront(selected);
+            return selected;
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Adds the buffer frame index to the back of the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Moves the buffer frame index from some place within the queue to the back.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Removes the buffer frame index from the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _lruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        };
+
+    private:
+        /*!\var     _lruList
+         * \brief   Queue of recently referenced buffer frame indexes (most recent in the back)
+         */
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _lruList;
+
+        /*!\var     _lruListLock
+         * \brief   Latch protecting the \link _lruList \endlink from concurrent manipulations
+         */
+        std::mutex                      _lruListLock;
+
+    };
+
+    /*!\class   PageEvictionerSelectorQuasiMRU
+     * \brief   _MRU_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _MRU_
+     *          policy. The _MRU_ policy selects the buffer frame that was not used for the shortest time. But due to
+     *          the fact that currently fixed or dirty pages or pages containing swizzled pointers cannot (always) be
+     *          evicted until their state changes w.r.t. that, this buffer frame selector does not implement a perfect
+     *          _MRU_ policy. This selector does manage a stack and an additional queue---the stack for the frames which
+     *          were not found not evictable since last time a page was loaded into them (\link _mruList \endlink) and
+     *          the queue for pages which could not be evicted the last time they were selected by this
+     *          (\link _retryList \endlink). A thread evicting alternately selects buffer frames from the stack and the
+     *          queue. The template parameters of this selector specify the number of buffer frames to select before
+     *          changing the list.
+     *
+     * @tparam retry_list_check_ppm The fraction (in PPM) of the \link _retryList \endlink queue selected by a thread
+     *                              before selecting buffer frames from the \link _mruList \endlink.
+     * @tparam mru_list_check_ppm   The fraction (in PPM) of the \link _mruList \endlink queue selected by a thread
+     *                              before selecting buffer frames from the \link _retryList \endlink.
+     *
+     * \note See the function specifications for more details about the implementation.
+     */
+    template <uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t mru_list_check_ppm/* = 10000*/>
+    class PageEvictionerSelectorQuasiMRU : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool)
+         * \brief   Constructs a _MRU_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _MRU_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _mruList(bufferPool->getBlockCount()) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details If a thread is currently selecting pages from the \link _mruList \endlink, if it should continue
+         *          with that according to the template parameter \c mru_list_check_ppm and if the
+         *          \link _mruList \endlink is not empty, this selects the front of the \link _mruList \endlink.
+         *          Otherwise, it selects the front of the \link _retryList \endlink.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            static thread_local bool currentlyCheckingRetryList;
+            static thread_local size_t retriedBufferIndexes;
+
+            bf_idx selected;
+            while (true) {
+                if (currentlyCheckingRetryList) {       // This thread checked the front of the _retryList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.length())
+                        || _mruList.length() == 0) {    // Check again the front of the _retryList:
+                        _retryListLock.lock();
+                        _retryList.popFromFront(selected);
+                        _retryListLock.unlock();
+                        retriedBufferIndexes++;
+                        return selected;
+                    } else {                            // Change to checking entries from the front of the _initialList
+                        _mruListLock.lock();
+                        _mruList.popFromFront(selected);
+                        _mruListLock.unlock();
+                        retriedBufferIndexes = 0;
+                        currentlyCheckingRetryList = false;
+                        return selected;
+                    }
+                } else {                                // This thread checked the front of the _initialList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(mru_list_check_ppm * 0.000001 * _mruList.length())
+                        || _retryList.length() == 0) {  // Check again the front of the _initialList:
+                        _mruListLock.lock();
+                        _mruList.popFromFront(selected);
+                        _mruListLock.unlock();
+                        retriedBufferIndexes++;
+                        return selected;
+                    } else {                            // Change to checking entries from the front of the _retryList
+                        _retryListLock.lock();
+                        _retryList.popFromFront(selected);
+                        _retryListLock.unlock();
+                        retriedBufferIndexes = 0;
+                        currentlyCheckingRetryList = true;
+                        return selected;
+                    }
+                }
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Recently fixed buffer frames are usually not evictable and therefore the respective buffer frame
+         *          index is only moved to the top of the \link _mruList \endlink when it is unfixed.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Moves the buffer frame index from some place within the stack or queue to the top of the stack.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+            _mruList.pushToFront(idx);
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Adds the buffer frame index to the top of the stack.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            _mruList.pushToFront(idx);
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+            _retryList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+            _retryList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+            _retryList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+            _retryList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Removes the buffer frame index from the stack or the queue.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_mruListLock);
+            try {
+                _mruList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _retryList.remove(idx);
+            }
+        };
+
+    private:
+        /*!\var     _mruList
+         * \brief   Stack of recently referenced buffer frame indexes (most recent at the top)
+         * \details Stack of the recently referenced buffer frame indexes without those already found not evictable
+         *          during eviction.
+         */
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _mruList;
+
+        /*!\var     _mruListLock
+         * \brief   Latch protecting the \link _mruList \endlink from concurrent manipulations
+         */
+        std::mutex                      _mruListLock;
+
+        /*!\var     _retryList
+         * \brief   Queue of buffer frames currently last selected for eviction
+         * \details Contains the buffer frame indexes of currently used buffer frames which were already found not
+         *          evictable during eviction. The front of the queue is the buffer frame index that was the last found
+         *          to be not evictable during eviction.
+         */
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _retryList;
+
+        /*!\var     _retryListLock
+         * \brief   Latch protecting the \link _retryList \endlink from concurrent manipulations
+         */
+        std::mutex                      _retryListLock;
+
+    };
+
+    /*!\class   PageEvictionerSelectorTimestampLRU
+     * \brief   _LRU_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LRU_
+     *          policy. The _LRU_ policy selects the buffer frame that was not used for the longest time. This is
+     *          implemented using timestamps and (cached) sorting.
+     *
+     * @tparam resort_threshold_ppm The fraction (in PPM) of buffer frames checked in the currently used sorted list of
+     *                              buffer frames before one thread starts the process of resorting the other list
+     *                              based on the most recent timestamps of page references.
+     */
+    template <bf_idx resort_threshold_ppm/* = 750000*/>
+    class PageEvictionerSelectorTimestampLRU : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool)
+         * \brief   Constructs a _LRU_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _timestampsLive(bufferPool->getBlockCount()),
+                _lruList0(bufferPool->getBlockCount()),
+                _lruList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _useLRUList0(false),
+                _useLRUList1(false) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the buffer pool that was not used for the longest time. This is done
+         *          using one of the lists of buffer frames sorted by last page reference (\link _lruList0 \endlink or
+         *          \link _lruList1 \endlink). If \c resort_threshold_ppm of the buffer frames of the currently used
+         *          list were already checked and if no other thread currently re-sorts the list which is currently not
+         *          used based on the most recent timestamps of page references (from \link _timestampsLive \endlink),
+         *          this thread sorts the buffer frames according to the timestamps from \link _timestampsLive \endlink
+         *          into the list which is currently not used. If the currently sorted list was completely checked and
+         *          if the sorting is currently in progress, this thread waits for the new list to be sorted.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            while (true) {
+                if (_useLRUList0) {
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                     && !_sortingInProgress.test_and_set()) {
+                        _waitForSorted.lock();
+                        sort(_lruList1);
+                        _useLRUList0 = true;
+                        _lastChecked = 0;
+                        _waitForSorted.unlock();
+                        _useLRUList1 = false;
+                        _sortingInProgress.clear();
+                        continue;
+                    } else {
+                        bf_idx checkThis = ++_lastChecked;
+                        if (checkThis > _maxBufferpoolIndex) {
+                            _waitForSorted.lock();
+                            _waitForSorted.unlock();
+                            continue;
+                        } else {
+                            if (std::get<1>(_lruList0[checkThis]) == _timestampsLive[std::get<0>(_lruList0[checkThis])]) {
+                                return std::get<0>(_lruList0[checkThis]);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                } else if (_useLRUList1) {
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                     && !_sortingInProgress.test_and_set()) {
+                        _waitForSorted.lock();
+                        sort(_lruList0);
+                        _useLRUList1 = true;
+                        _lastChecked = 0;
+                        _waitForSorted.unlock();
+                        _useLRUList0 = false;
+                        _sortingInProgress.clear();
+                        continue;
+                    } else {
+                        bf_idx checkThis = ++_lastChecked;
+                        if (checkThis > _maxBufferpoolIndex) {
+                            _waitForSorted.lock();
+                            _waitForSorted.unlock();
+                            continue;
+                        } else {
+                            if (std::get<1>(_lruList1[checkThis]) == _timestampsLive[std::get<0>(_lruList1[checkThis])]) {
+                                return std::get<0>(_lruList1[checkThis]);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                } else if (!_sortingInProgress.test_and_set()) {
+                    _waitForSorted.lock();
+                    sort(_lruList0);
+                    _useLRUList0 = true;
+                    _lastChecked = 0;
+                    _waitForSorted.unlock();
+                    _useLRUList1 = false;
+                    _sortingInProgress.clear();
+                } else {
+
+                }
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        };
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the highest possible
+         *          time to prevent further unsuccessful evictions until this buffer frame is reused.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _timestampsLive[idx] = std::chrono::high_resolution_clock::duration::max().count();
+        };
+
+    private:
+        /*!\var     _timestampsLive
+         * \brief   Most recent page reference timestamps for the buffer frames
+         * \details This array contains for each buffer frame the timestamp of the most recent page reference of the
+         *          contained page. The index of the page reference timestamps corresponding to buffer frame \c n is
+         *          \c n .
+         */
+        std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>                     _timestampsLive;
+
+        /*!\var     _lruList0
+         * \brief   List of buffer frame indexes sorted by page reference recency
+         * \details If \link _useLRUList0 \endlink is set, this contains a list of buffer frames sorted according to the
+         *          timestamps of most recent references at the time when this list was created. Each entry also
+         *          contains the timestamp that was used for sorting.
+         */
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>              _lruList0;
+
+        /*!\var     _lruList1
+         * \brief   List of buffer frame indexes sorted by page reference recency
+         * \details If \link _useLRUList1 \endlink is set, this contains a list of buffer frames sorted according to the
+         *          timestamps of most recent references at the time when this list was created. Each entry also
+         *          contains the timestamp that was used for sorting.
+         */
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>              _lruList1;
+
+        /*!\var     _lastChecked
+         * \brief   The last checked index of the currently sorted list of buffer frames
+         */
+        atomic_bf_idx                                                                                   _lastChecked;
+
+        /*!\var     _useLRUList0
+         * \brief   \link _lruList0 \endlink is most recently sorted list if set
+         */
+        std::atomic<bool>                                                                               _useLRUList0;
+
+        /*!\var     _useLRUList1
+         * \brief   \link _lruList1 \endlink is most recently sorted list if set
+         */
+        std::atomic<bool>                                                                               _useLRUList1;
+
+        /*!\var     _sortingInProgress
+         * \brief   One thread currently sorts one of the lists if set
+         */
+        std::atomic_flag                                                                                _sortingInProgress;
+
+        /*!\var     _waitForSorted
+         * \brief   Manages a queue for the sorting process
+         * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
+         *          threads wait for the new list to be sorted. This is used to notify those threads.
+         */
+        std::mutex                                                                                      _waitForSorted;
+
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+         * \brief   Sorts the buffer frames according to timestamps
+         * \details Sorts the buffer frame indexes according to the timestamps in \link _timestampsLive \endlink into
+         *          the specified list of buffer frame indexes.
+         *
+         * @param into The list of buffer frame indexes to sort into.
+         */
+        void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+            for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
+                into[index] = std::make_tuple(index, _timestampsLive[index]);
+            }
+
+            std::sort(/*std::parallel::par,*/
+                    into.begin(),
+                    into.end(),
+                    [](const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& a,
+                       const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& b) {
+                        return std::get<1>(a) < std::get<1>(b);
+                    });
+        };
 
     };
 
