@@ -66,7 +66,7 @@ namespace zero::hashtable_dequeu {
          * @param k The key that should be searched for in this deque.
          * @return  \c true if this deque contains an entry with \c k as key, \c false else.
          */
-        bool contains(const key_type &k) const noexcept {
+        bool contains(const key_type& k) const noexcept {
             return static_cast<bool>(_directAccessDeque->count(k));
         }
 
@@ -77,7 +77,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                       The key that is added to this deque.
          * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
          */
-        void pushToBack(const key_type &k) {
+        void pushToBack(const key_type& k) {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
@@ -109,7 +109,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                       The key that is added to this deque.
          * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
          */
-        void pushToBack(key_type &&k) {
+        void pushToBack(key_type&& k) {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
@@ -141,7 +141,7 @@ namespace zero::hashtable_dequeu {
          * @param[out] k The key that was removed from the front of this queue.
          * @throws       HashtableDequeEmptyException Thrown if this deque was already empty.
          */
-        void popFromFront(key_type &k) {
+        void popFromFront(key_type& k) {
             if (_directAccessDeque->empty()) {
                 throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
             } else if (_directAccessDeque->size() == 1) {
@@ -176,7 +176,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                       The key that is added to this deque.
          * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
          */
-        void pushToFront(const key_type &k) {
+        void pushToFront(const key_type& k) {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
@@ -208,7 +208,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                       The key that is added to this deque.
          * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
          */
-        void pushToFront(key_type &&k) {
+        void pushToFront(key_type&& k) {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
@@ -240,7 +240,7 @@ namespace zero::hashtable_dequeu {
          * @param[out] k The key that was removed from the front of this queue.
          * @throws       HashtableDequeEmptyException Thrown if this deque was already empty.
          */
-        void popFromBack(key_type &k) {
+        void popFromBack(key_type& k) {
             if (_directAccessDeque->empty()) {
                 throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
             } else if (_directAccessDeque->size() == 1) {
@@ -276,7 +276,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                    The key to remove from this deque.
          * @throws HashtableDequeNotContainedException Thrown if the key was not contained in this deque.
          */
-        void remove(const key_type &k) {
+        void remove(const key_type& k) {
             if (!_directAccessDeque->count(k)) {
                 throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(), _back,
                                                                                  _front, k);
@@ -306,7 +306,7 @@ namespace zero::hashtable_dequeu {
          * @param k                                    The key to remove from this deque.
          * @throws HashtableDequeNotContainedException Thrown if the key was not contained in this deque.
          */
-        void remove(key_type &&k) {
+        void remove(key_type&& k) {
             if (!_directAccessDeque->count(k)) {
                 throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(), _back,
                                                                                  _front, k);
@@ -363,7 +363,7 @@ namespace zero::hashtable_dequeu {
              * @param previous The initial value of \link _previous \endlink.
              * @param next     The initial value of \link _next \endlink.
              */
-            KeyPair(const key_type &previous, const key_type &next) {
+            KeyPair(const key_type& previous, const key_type& next) {
                 this->_previous = previous;
                 this->_next = next;
             }

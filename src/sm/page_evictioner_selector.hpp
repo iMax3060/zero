@@ -1453,12 +1453,241 @@ namespace zero::buffer_pool {
         /*!\var     _lruList
          * \brief   Queue of recently referenced buffer frame indexes (most recent in the back)
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _lruList;
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _lruList;
 
         /*!\var     _lruListLock
          * \brief   Latch protecting the \link _lruList \endlink from concurrent manipulations
          */
-        std::mutex                      _lruListLock;
+        std::mutex                                          _lruListLock;
+
+    };
+
+    /*!\class   PageEvictionerSelectorSLRU
+     * \brief   _SLRU_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the
+     *          _Segmented LRU_ policy as proposed in _Caching Strategies to Improve Disk System Performance_ by
+     *          R. Karedla, J.S. Love and B.G. Wherry. The _SLRU_ policy is an extension of the _LRU_ policy. This
+     *          requires latching during each page reference to prevent races.
+     *
+     * @tparam protected_block_ppm The fraction (in PPM) of buffer frames that fit into the protected segment.
+     */
+    template <bf_idx protected_block_ppm/* = 10000*/>
+    class PageEvictionerSelectorSLRU : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorSLRU(const BufferPool* bufferPool)
+         * \brief   Constructs a _Segmented LRU_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _SLRU_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorSLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _protectedBlockCount(static_cast<bf_idx>(protected_block_ppm * 0.000001 * smlevel_0::bf->getBlockCount())),
+                _protectedLRUList(_protectedBlockCount),
+                _probationaryLRUList(bufferPool->getBlockCount()) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the probationary segment that was not used for the longest time.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            bf_idx selected;
+            _probationaryLRUList.popFromFront(selected);
+            return selected;
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Adds the buffer frame index to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            _probationaryLRUList.pushToBack(b_idx);
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
+         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
+         *          protected segment to the back of the probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
+                bf_idx downgradeIndex;
+                _protectedLRUList.popFromFront(downgradeIndex);
+                _probationaryLRUList.pushToBack(downgradeIndex);
+            }
+            _protectedLRUList.pushToBack(idx);
+        };
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Removes the buffer frame index from the protected or probationary segment.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            std::lock_guard<std::mutex> lock(_lruListLock);
+            try {
+                _protectedLRUList.remove(idx);
+            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+                _probationaryLRUList.remove(idx);
+            }
+        };
+
+    private:
+        /*!\var     _protectedLRUList
+         * \brief   The protected segment sorted according to reference recency
+         */
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _protectedLRUList;
+
+        /*!\var     _probationaryLRUList
+         * \brief   The probationary segment sorted according to reference recency
+         */
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _probationaryLRUList;
+
+        /*!\var     _protectedBlockCount
+         * \brief   Maximum number of buffer frame indexes in the protected segment
+         */
+        const bf_idx                                        _protectedBlockCount;
+
+        /*!\var     _lruListLock
+         * \brief   Protects the protected and probationary segments from concurrent manupulations
+         */
+        std::mutex                                          _lruListLock;
 
     };
 
@@ -1673,12 +1902,12 @@ namespace zero::buffer_pool {
          * \details Stack of the recently referenced buffer frame indexes without those already found not evictable
          *          during eviction.
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _mruList;
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _mruList;
 
         /*!\var     _mruListLock
          * \brief   Latch protecting the \link _mruList \endlink from concurrent manipulations
          */
-        std::mutex                      _mruListLock;
+        std::mutex                                          _mruListLock;
 
         /*!\var     _retryList
          * \brief   Queue of buffer frames currently last selected for eviction
@@ -1686,12 +1915,12 @@ namespace zero::buffer_pool {
          *          evictable during eviction. The front of the queue is the buffer frame index that was the last found
          *          to be not evictable during eviction.
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>       _retryList;
+        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _retryList;
 
         /*!\var     _retryListLock
          * \brief   Latch protecting the \link _retryList \endlink from concurrent manipulations
          */
-        std::mutex                      _retryListLock;
+        std::mutex                                          _retryListLock;
 
     };
 
