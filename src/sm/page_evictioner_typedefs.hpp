@@ -20,6 +20,7 @@ namespace zero::buffer_pool {
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t mru_list_check_ppm = 10000> class PageEvictionerSelectorQuasiMRU;
     template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorTimestampLRU;
     template <size_t k = 2, bf_idx resort_threshold_ppm = 750000, bool on_page_unfix = false> class PageEvictionerSelectorTimestampLRUK;
+    template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFU;
     class PageEvictionerFilterNone;
     template <bool on_hit = true, bool on_unfix = false, bool on_miss = true, bool on_fixed = false, bool on_dirty = false, bool on_blocked = false, bool on_swizzled = false> class PageEvictionerFilterCLOCK;
     template <uint16_t decrement = 1, bool discriminate_pages = false,
@@ -63,6 +64,7 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<2>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU2;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<3>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU3;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<4>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU4;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone, false> PageEvictionerLFU;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP

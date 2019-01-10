@@ -2115,8 +2115,8 @@ namespace zero::buffer_pool {
      *          implemented using timestamps and (cached) sorting.
      *
      * @tparam resort_threshold_ppm The fraction (in PPM) of buffer frames checked in the currently used sorted list of
-     *                              buffer frames before one thread starts the process of resorting the other list based
-     *                              on the most recent timestamps of page references.
+     *                              buffer frames before one thread starts the process of re-sorting the other list
+     *                              based on the most recent timestamps of page references.
      */
     template <bf_idx resort_threshold_ppm/* = 750000*/>
     class PageEvictionerSelectorTimestampLRU : public PageEvictionerSelector {
@@ -2387,8 +2387,8 @@ namespace zero::buffer_pool {
      *
      * @tparam k                    The number of last references considered per buffer frame.
      * @tparam resort_threshold_ppm The fraction (in PPM) of buffer frames checked in the currently used sorted list of
-     *                              buffer frames before one thread starts the process of resorting the other list based
-     *                              on the most recent timestamps of page references.
+     *                              buffer frames before one thread starts the process of re-sorting the other list
+     *                              based on the most recent timestamps of page references.
      * @tparam on_page_unfix        Count the unfix of a page as a reference instead of the fix.
      */
     template <size_t k/* = 2*/, bf_idx resort_threshold_ppm/* = 750000*/, bool on_page_unfix/* = false*/>
@@ -2686,6 +2686,268 @@ namespace zero::buffer_pool {
                     into.end(),
                     [](const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& a,
                        const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& b) {
+                        return std::get<1>(a) < std::get<1>(b);
+                    });
+        };
+
+    };
+
+    /*!\class   PageEvictionerSelectorLFU
+     * \brief   _LFU_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LFU_
+     *          policy. The _LFU_ policy selects the buffer frame that was least frequently used. This is implemented
+     *          using reference counters and (cached) sorting.
+     *
+     * @tparam resort_threshold_ppm The fraction (in PPM) of buffer frames checked in the currently used sorted list of
+     *                              buffer frames before one thread starts the process of re-sorting the other list
+     *                              based on the most recent reference counters of buffer frames.
+     */
+    template <bf_idx resort_threshold_ppm/* = 750000*/>
+    class PageEvictionerSelectorLFU : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorLFU(const BufferPool* bufferPool)
+         * \brief   Constructs a _LFU_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LFU_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorLFU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frequenciesLive(bufferPool->getBlockCount()),
+                _lfuList0(bufferPool->getBlockCount()),
+                _lfuList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _useLFUList0(false),
+                _useLFUList1(false) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the buffer pool that was referenced least frequently. This is done
+         *          using one of the lists of buffer frames sorted by reference frequency (\link _lfuList0 \endlink or
+         *          \link _lfuList1 \endlink). If \c resort_threshold_ppm of the buffer frames of the currently used
+         *          list were already checked and if no other thread currently re-sorts the list which is currently not
+         *          used based on the most recent reference frequencies (from \link _frequenciesLive \endlink), this
+         *          thread sorts the buffer frames according to the reference frequencies of buffer frames from
+         *          \link _frequenciesLive \endlink into the list which is currently not used. If the currently sorted
+         *          list was completely checked and if the sorting is currently in progress, this thread waits for the
+         *          new list to be sorted.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            while (true) {
+                if (_useLFUList0) {
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                     && !_sortingInProgress.test_and_set()) {
+                        _waitForSorted.lock();
+                        sort(_lfuList1);
+                        _useLFUList1 = true;
+                        _lastChecked = 0;
+                        _waitForSorted.unlock();
+                        _useLFUList0 = false;
+                        _sortingInProgress.clear();
+                        continue;
+                    } else {
+                        bf_idx checkThis = ++_lastChecked;
+                        if (checkThis > _maxBufferpoolIndex) {
+                            _waitForSorted.lock();
+                            _waitForSorted.unlock();
+                            continue;
+                        } else {
+                            if (std::get<1>(_lfuList0[checkThis]) == _frequenciesLive[std::get<0>(_lfuList0[checkThis])]) {
+                                return std::get<0>(_lfuList0[checkThis]);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                } else if (_useLFUList1) {
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                     && !_sortingInProgress.test_and_set()) {
+                        _waitForSorted.lock();
+                        sort(_lfuList0);
+                        _useLFUList0 = true;
+                        _lastChecked = 0;
+                        _waitForSorted.unlock();
+                        _useLFUList1 = false;
+                        _sortingInProgress.clear();
+                        continue;
+                    } else {
+                        bf_idx checkThis = ++_lastChecked;
+                        if (checkThis > _maxBufferpoolIndex) {
+                            _waitForSorted.lock();
+                            _waitForSorted.unlock();
+                            continue;
+                        } else {
+                            if (std::get<1>(_lfuList1[checkThis]) == _frequenciesLive[std::get<0>(_lfuList1[checkThis])]) {
+                                return std::get<0>(_lfuList1[checkThis]);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                } else if (!_sortingInProgress.test_and_set()) {
+                    _waitForSorted.lock();
+                    sort(_lfuList0);
+                    _useLFUList0 = true;
+                    _lastChecked = 0;
+                    _waitForSorted.unlock();
+                    _useLFUList1 = false;
+                    _sortingInProgress.clear();
+                } else {
+                    _waitForSorted.lock();
+                    _waitForSorted.unlock();
+                    continue;
+                }
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Increments the reference counter of the buffer frame by 1.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            _frequenciesLive[idx]++;
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Sets the reference counter of the buffer frame to 0.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
+         *            with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _frequenciesLive[idx] = 1;
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the reference counter of the buffer frame to the highest possible value to prevent further
+         *          unsuccessful evictions until this buffer frame is reused.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
+        }
+
+    private:
+        /*!\var     _frequenciesLive
+         * \brief   Reference counters for the buffer frames
+         * \details This array contains for each buffer frame the timestamp of the most recent page reference of the
+         *          contained page. The index of the page reference timestamps corresponding to buffer frame \c n is
+         *          \c n .
+         */
+        std::vector<std::atomic<uint64_t>>              _frequenciesLive;
+
+        /*!\var     _lfuList0
+         * \brief   List of buffer frame indexes sorted by page reference frequency
+         * \details If \link _useLFUList0 \endlink is set, this contains a list of buffer frames sorted according to the
+         *          reference frequencies of the buffer frames at the time when this list was created. Each entry also
+         *          contains the reference frequency that was used for sorting.
+         */
+        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList0;
+
+        /*!\var     _lfuList1
+         * \brief   List of buffer frame indexes sorted by page reference frequency
+         * \details If \link _useLFUList1 \endlink is set, this contains a list of buffer frames sorted according to the
+         *          reference frequencies of the buffer frames at the time when this list was created. Each entry also
+         *          contains the reference frequency that was used for sorting.
+         */
+        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList1;
+
+        /*!\var     _lastChecked
+         * \brief   The last checked index of the currently sorted list of buffer frames
+         */
+        atomic_bf_idx                                   _lastChecked;
+
+        /*!\var     _useLFUList0
+         * \brief   \link _lfuList0 \endlink is most recently sorted list if set
+         */
+        std::atomic<bool>                               _useLFUList0;
+
+        /*!\var     _useLFUList1
+         * \brief   \link _lfuList1 \endlink is most recently sorted list if set
+         */
+        std::atomic<bool>                               _useLFUList1;
+
+        /*!\var     _sortingInProgress
+         * \brief   One thread currently sorts one of the lists if set
+         */
+        std::atomic_flag                                _sortingInProgress;
+
+        /*!\var     _waitForSorted
+         * \brief   Manages a queue for the sorting process
+         * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
+         *          threads wait for the new list to be sorted. This is used to notify those threads.
+         */
+        std::mutex                                      _waitForSorted;
+
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+         * \brief   Sorts the buffer frames according to reference frequencies
+         * \details Sorts the buffer frame indexes according to the reference frequencies in
+         *          \link _frequenciesLive \endlink into the specified list of buffer frame indexes.
+         *
+         * @param into The list of buffer frame indexes to sort into.
+         */
+        void sort(std::vector<std::tuple<bf_idx, uint64_t>>& into) noexcept {
+            for (bf_idx index = 0; index < _frequenciesLive.size(); index++) {
+                into[index] = std::make_tuple(index, _frequenciesLive[index].load());
+            }
+
+            std::sort(/*std::parallel::par,*/
+                    into.begin(),
+                    into.end(),
+                    [](const std::tuple<bf_idx, uint64_t>& a,
+                       const std::tuple<bf_idx, uint64_t>& b) {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
