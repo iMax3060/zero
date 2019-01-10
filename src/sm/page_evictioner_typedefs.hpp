@@ -21,6 +21,7 @@ namespace zero::buffer_pool {
     template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorTimestampLRU;
     template <size_t k = 2, bf_idx resort_threshold_ppm = 750000, bool on_page_unfix = false> class PageEvictionerSelectorTimestampLRUK;
     template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFU;
+    template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFUDA;
     class PageEvictionerFilterNone;
     template <bool on_hit = true, bool on_unfix = false, bool on_miss = true, bool on_fixed = false, bool on_dirty = false, bool on_blocked = false, bool on_swizzled = false> class PageEvictionerFilterCLOCK;
     template <uint16_t decrement = 1, bool discriminate_pages = false,
@@ -65,6 +66,7 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<3>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU3;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<4>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU4;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone, false> PageEvictionerLFU;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA<>, PageEvictionerFilterNone, false> PageEvictionerLFUDA;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
