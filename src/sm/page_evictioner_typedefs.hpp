@@ -22,6 +22,10 @@ namespace zero::buffer_pool {
     template <size_t k = 2, bf_idx resort_threshold_ppm = 750000, bool on_page_unfix = false> class PageEvictionerSelectorTimestampLRUK;
     template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFU;
     template <bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFUDA;
+    class PageEvictionerSelectorLRDV1;
+    template <uint64_t subtrahend = 10> struct AgingFunctionSubtraction;
+    template <uint64_t factor_ppm = 750000> struct AgingFunctionMultiplication;
+    template <uint64_t aging_frequency = 10, class aging_function = AgingFunctionSubtraction<>> class PageEvictionerSelectorLRDV2;
     class PageEvictionerFilterNone;
     template <bool on_hit = true, bool on_unfix = false, bool on_miss = true, bool on_fixed = false, bool on_dirty = false, bool on_blocked = false, bool on_swizzled = false> class PageEvictionerFilterCLOCK;
     template <uint16_t decrement = 1, bool discriminate_pages = false,
@@ -67,6 +71,9 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<4>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU4;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone, false> PageEvictionerLFU;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA<>, PageEvictionerFilterNone, false> PageEvictionerLFUDA;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV1, PageEvictionerFilterNone, false> PageEvictionerLRDV1;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionSubtraction<10>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Subtraction;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionMultiplication<>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Multiplication;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP

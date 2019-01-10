@@ -3223,6 +3223,409 @@ namespace zero::buffer_pool {
 
     };
 
+    /*!\class   PageEvictionerSelectorLRDV1
+     * \brief   _LRD-V1_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the
+     *          _Least Reference Density V1_ policy. The _LRD-V1_ policy selects the buffer frame with the lowest
+     *          reference density since the time the currently contained page was loaded into the buffer frame. The
+     *          reference density is defined as the number of references of that page divided by the number of all the
+     *          page references.
+     */
+    class PageEvictionerSelectorLRDV1 : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorLRDV1(const BufferPool* bufferPool)
+         * \brief   Constructs a _Least Reference Density V1_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LRD-V1_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorLRDV1(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frameReferences(bufferPool->getBlockCount()),
+                _frameFirstReferenced(bufferPool->getBlockCount()),
+                _frameAlreadySelected(bufferPool->getBlockCount()),
+                _globalReferences(0) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the buffer pool with the lowest page reference density. This is done
+         *          by iterating over all the buffer frame indexes, calculating the reference density of each buffer
+         *          frame and selecting the buffer frame index with the minimal reference density.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            bf_idx minLRDIndex = 0;
+            uint64_t minLRDReferences;
+            double minLRDReferenceDensity = std::numeric_limits<double>::max();
+
+            while (true) {
+                for (bf_idx index = 1; index <= _maxBufferpoolIndex; index++) {
+                    if ((static_cast<double>(_frameReferences[index])
+                       / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
+                      < minLRDReferenceDensity) {
+                        if (!_frameAlreadySelected[index].test_and_set()) {
+                            _frameAlreadySelected[minLRDIndex].clear();
+                            minLRDIndex = index;
+                            minLRDReferences = _frameReferences[index];
+                            minLRDReferenceDensity = static_cast<double>(_frameReferences[index])
+                                                   / static_cast<double>(_globalReferences - _frameFirstReferenced[index]);
+                        }
+                    }
+                }
+
+                if (_frameReferences[minLRDIndex] != minLRDReferences) {
+                    _frameAlreadySelected[minLRDIndex].clear();
+                    minLRDReferenceDensity = std::numeric_limits<double>::max();
+                    continue;
+                } else {
+                    return minLRDIndex;
+                }
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Increments the reference counter of the buffer frame and the global reference counter by 1. Also
+         *          sets the buffer frame index to be active (in case it was selected but not evicted).
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            _globalReferences++;
+            _frameReferences[idx]++;
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Each page reference consists of a page fix and a page unfix. Only the page fix should be counted as
+         *          page reference and therefore this only sets the page as active as the eviction of this might have
+         *          been blocked by this fix previously.
+         *
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Sets the reference counter of the buffer frame to 1, increments the global reference counter by 1,
+         *          sets the time of first reference of the buffer frame to the old global reference count and sets the
+         *          buffer frame index to be active.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
+         *            with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _frameFirstReferenced[idx] = _globalReferences++;
+            _frameReferences[idx] = 1;
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the reference counter of the buffer frame and the time of first reference of the buffer frame
+         *          to 0 and sets the buffer frame index to be already selected.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _frameFirstReferenced[idx] = 0;
+            _frameReferences[idx] = 0;
+            _frameAlreadySelected[idx].test_and_set();
+        };
+
+    private:
+        /*!\var     _frameReferences
+         * \brief   Reference counters for the buffer frames
+         */
+        std::vector<std::atomic<uint64_t>>      _frameReferences;
+
+        /*!\var     _frameFirstReferenced
+         * \brief   Times of first reference of the buffer frames
+         */
+        std::vector<std::atomic<uint64_t>>      _frameFirstReferenced;
+
+        /*!\var     _frameAlreadySelected
+         * \brief   Whether a buffer frame index was already selected by one thread
+         */
+        std::vector<std::atomic_flag>           _frameAlreadySelected;
+
+        /*!\var     _globalReferences
+         * \brief   Global reference counter
+         */
+        std::atomic<uint64_t>                   _globalReferences;
+
+    };
+
+    struct AgingFunction {
+        virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept = 0;
+    };
+
+    template <uint64_t subtrahend/* = 10*/>
+    struct AgingFunctionSubtraction : public AgingFunction {
+        virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept {
+            if (referenceCount > subtrahend) {
+                referenceCount -= subtrahend;
+            } else {
+                referenceCount = 0;
+            }
+        }
+    };
+
+    template <uint64_t factor_ppm/* = 750000*/>
+    struct AgingFunctionMultiplication : public AgingFunction {
+        virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept {
+            referenceCount = static_cast<uint64_t>(factor_ppm * 0.000001 * referenceCount);
+        }
+    };
+
+    /*!\class   PageEvictionerSelectorLRDV2
+     * \brief   _LRD-V2_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the
+     *          _Least Reference Density V2_ policy. The _LRD-V2_ policy selects the buffer frame with the lowest
+     *          reference density since the time the currently contained page was loaded into the buffer frame. The
+     *          reference density is defined as the number of references of that page divided by the number of all the
+     *          page references. This buffer frame selector extends the _LRD-V1_ with an aging function (see template
+     *          parameter \c aging_function ) which is periodically (see template parameter \c aging_frequency ) applied
+     *          to each page reference counter.
+     *
+     * @tparam aging_frequency The aging function is applied to all the page reference counters after this times the
+     *                         buffer frame count many global page references.
+     * @tparam aging_function  The aging function which is used to reduce the influence of old page references. It has
+     *                         to be of type \link AgingFunction \endlink
+     */
+    template <uint64_t aging_frequency/* = 10*/, class aging_function>
+    class PageEvictionerSelectorLRDV2 : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorLRDV2(const BufferPool* bufferPool)
+         * \brief   Constructs a _Least Reference Density V2_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LRD-V2_ buffer frame selector is responsible for.
+         */
+        PageEvictionerSelectorLRDV2(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frameReferences(bufferPool->getBlockCount()),
+                _frameFirstReferenced(bufferPool->getBlockCount()),
+                _frameAlreadySelected(bufferPool->getBlockCount()),
+                _globalReferences(0),
+                _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {
+            static_assert(std::is_base_of<AgingFunction, aging_function>::value,
+                          "'selector_class' is not of type 'AgingFunction'!");
+        };
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects the buffer frame from the buffer pool with the lowest page reference density. This is done
+         *          by iterating over all the buffer frame indexes, calculating the reference density of each buffer
+         *          frame and selecting the buffer frame index with the minimal reference density.
+         *
+         * @return The selected buffer frame.
+         */
+        bf_idx select() noexcept final {
+            bf_idx minLRDIndex = 0;
+            uint64_t minLRDReferences;
+            double minLRDReferenceDensity = std::numeric_limits<double>::max();
+
+            while (true) {
+                for (bf_idx index = 1; index <= _maxBufferpoolIndex; index++) {
+                    if ((static_cast<double>(_frameReferences[index])
+                       / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
+                      < minLRDReferenceDensity) {
+                        if (!_frameAlreadySelected[index].test_and_set()) {
+                            _frameAlreadySelected[minLRDIndex].clear();
+                            minLRDIndex = index;
+                            minLRDReferences = _frameReferences[index];
+                            minLRDReferenceDensity = static_cast<double>(_frameReferences[index])
+                                                   / static_cast<double>(_globalReferences - _frameFirstReferenced[index]);
+                        }
+                    }
+                }
+
+                if (_frameReferences[minLRDIndex] != minLRDReferences) {
+                    _frameAlreadySelected[minLRDIndex].clear();
+                    minLRDReferenceDensity = std::numeric_limits<double>::max();
+                    continue;
+                } else {
+                    return minLRDIndex;
+                }
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details Increments the reference counter of the buffer frame and the global reference counter by 1. Also
+         *          sets the buffer frame index to be active (in case it was selected but not evicted). If the old
+         *          global reference count was a integer multiple of the aging frequency, the aging of all the page
+         *          reference counters is executed using the aging function.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageHit(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;
+            if (_globalReferences++ % _agingFrequency == 0) {
+                std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
+                              [this](std::atomic<uint64_t>& referenceCount){_agingFunction(referenceCount);});
+            }
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details Each page reference consists of a page fix and a page unfix. Only the page fix should be counted as
+         *          page reference and therefore this only sets the page as active as the eviction of this might have
+         *          been blocked by this fix previously.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        void updateOnPageUnfix(bf_idx idx) noexcept final {
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details Sets the reference counter of the buffer frame to 1, increments the global reference counter by 1,
+         *          sets the time of first reference of the buffer frame to the old global reference count and sets the
+         *          buffer frame index to be active. If the old global reference count was a integer multiple of the
+         *          aging frequency, the aging of all the page reference counters is executed using the aging function.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
+         *            with index \c idx .
+         */
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _frameFirstReferenced[idx] = _globalReferences++;
+            if (_frameFirstReferenced[idx] % _agingFrequency == 0) {
+                std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
+                              [this](std::atomic<uint64_t>& referenceCount){_agingFunction(referenceCount);});
+            }
+            _frameReferences[idx] = 1;
+            _frameAlreadySelected[idx].clear();
+        };
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details Sets the reference counter of the buffer frame and the time of first reference of the buffer frame
+         *          to 0 and sets the buffer frame index to be already selected.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _frameFirstReferenced[idx] = 0;
+            _frameReferences[idx] = 0;
+            _frameAlreadySelected[idx].test_and_set();
+        };
+
+    private:
+        /*!\var     _frameReferences
+         * \brief   Reference counters for the buffer frames
+         */
+        std::vector<std::atomic<uint64_t>>      _frameReferences;
+
+        /*!\var     _frameFirstReferenced
+         * \brief   Times of first reference of the buffer frames
+         */
+        std::vector<std::atomic<uint64_t>>      _frameFirstReferenced;
+
+        /*!\var     _frameAlreadySelected
+         * \brief   Whether a buffer frame index was already selected by one thread
+         */
+        std::vector<std::atomic_flag>           _frameAlreadySelected;
+
+        /*!\var     _globalReferences
+         * \brief   Global reference counter
+         */
+        std::atomic<uint64_t>                   _globalReferences;
+
+        /*!\var     _agingFrequency
+         * \brief   Global page references between aging runs
+         */
+        uint64_t                                _agingFrequency;
+
+        /*!\var     _agingFunction
+         * \brief   Instance of the aging function
+         */
+        aging_function                          _agingFunction;
+
+    };
+
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_SELECTOR_HPP
