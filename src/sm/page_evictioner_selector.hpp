@@ -2401,7 +2401,8 @@ namespace zero::buffer_pool {
          */
         PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
-                _timestampsLive(bufferPool->getBlockCount(), std::make_tuple(0, std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>(k, std::atomic<std::chrono::high_resolution_clock::duration::rep>(0)))),
+                _timestampsLiveOldestTimestamp(bufferPool->getBlockCount()),
+                _timestampsLive(bufferPool->getBlockCount()),
                 _lruList0(bufferPool->getBlockCount()),
                 _lruList1(bufferPool->getBlockCount()),
                 _lastChecked(0),
@@ -2417,7 +2418,8 @@ namespace zero::buffer_pool {
          *          list which is currently not used based on the _k_ most recent timestamps of page references (from
          *          \link _timestampsLive \endlink), this thread sorts the buffer frames according to the timestamps
          *          from \link _timestampsLive \endlink into the list which is currently not used. If the currently
-         *          sorted list was completely checked and if the sorting is currently in progress, this thread waits for the new list to be sorted.
+         *          sorted list was completely checked and if the sorting is currently in progress, this thread waits
+         *          for the new list to be sorted.
          *
          * @return The selected buffer frame.
          */
@@ -2429,33 +2431,6 @@ namespace zero::buffer_pool {
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
-                        _useLRUList0 = true;
-                        _lastChecked = 0;
-                        _waitForSorted.unlock();
-                        _useLRUList1 = false;
-                        _sortingInProgress.clear();
-                        continue;
-                    } else {
-                        bf_idx checkThis = ++_lastChecked;
-                        if (checkThis > _maxBufferpoolIndex) {
-                            _waitForSorted.lock();
-                            _waitForSorted.unlock();
-                            continue;
-                        } else {
-                            if (std::get<1>(_lruList0[checkThis])
-                             == std::get<1>(_timestampsLive[checkThis])[std::get<0>(_timestampsLive[checkThis]) % k]) {
-                                return std::get<0>(_lruList0[checkThis]);
-                            } else {
-                                continue;
-                            }
-                        }
-                    }
-                } else if (_useLRUList1) {
-                    if (_lastChecked
-                      > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
-                     && !_sortingInProgress.test_and_set()) {
-                        _waitForSorted.lock();
-                        sort(_lruList0);
                         _useLRUList1 = true;
                         _lastChecked = 0;
                         _waitForSorted.unlock();
@@ -2469,8 +2444,35 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
+                            if (std::get<1>(_lruList0[checkThis])
+                             == _timestampsLive[checkThis][_timestampsLiveOldestTimestamp[checkThis] % k]) {
+                                return std::get<0>(_lruList0[checkThis]);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                } else if (_useLRUList1) {
+                    if (_lastChecked
+                      > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                     && !_sortingInProgress.test_and_set()) {
+                        _waitForSorted.lock();
+                        sort(_lruList0);
+                        _useLRUList0 = true;
+                        _lastChecked = 0;
+                        _waitForSorted.unlock();
+                        _useLRUList1 = false;
+                        _sortingInProgress.clear();
+                        continue;
+                    } else {
+                        bf_idx checkThis = ++_lastChecked;
+                        if (checkThis > _maxBufferpoolIndex) {
+                            _waitForSorted.lock();
+                            _waitForSorted.unlock();
+                            continue;
+                        } else {
                             if (std::get<1>(_lruList1[checkThis])
-                             == std::get<1>(_timestampsLive[checkThis])[std::get<0>(_timestampsLive[checkThis]) % k]) {
+                             == _timestampsLive[checkThis][_timestampsLiveOldestTimestamp[checkThis] % k]) {
                                 return std::get<0>(_lruList1[checkThis]);
                             } else {
                                 continue;
@@ -2501,7 +2503,7 @@ namespace zero::buffer_pool {
          */
         void updateOnPageHit(bf_idx idx) noexcept final {
             if constexpr (!on_page_unfix) {
-                std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+                _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
             }
         };
@@ -2516,7 +2518,7 @@ namespace zero::buffer_pool {
          */
         void updateOnPageUnfix(bf_idx idx) noexcept final {
             if constexpr (on_page_unfix) {
-                std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+                _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
             }
         };
@@ -2529,9 +2531,11 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _timestampsLiveOldestTimestamp[idx] = 0;
+            _timestampsLive[idx] = std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>(k);
             for (size_t i = 0; i < k; i++) {
-                std::get<1>(_timestampsLive[b_idx])[std::get<0>(_timestampsLive[b_idx])++ % k]
+                _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
             }
         };
@@ -2545,7 +2549,7 @@ namespace zero::buffer_pool {
          *            corresponding frame was fixed.
          */
         void updateOnPageFixed(bf_idx idx) noexcept final {
-            std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2558,7 +2562,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a dirty page.
          */
         void updateOnPageDirty(bf_idx idx) noexcept final {
-            std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2571,7 +2575,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         void updateOnPageBlocked(bf_idx idx) noexcept final {
-            std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2584,7 +2588,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a page with swizzled pointers.
          */
         void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            std::get<1>(_timestampsLive[idx])[std::get<0>(_timestampsLive[idx])++ % k]
+            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2597,18 +2601,29 @@ namespace zero::buffer_pool {
          *            explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            _timestampsLive[idx]
-                    = std::make_tuple(0, std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>(k, std::atomic<std::chrono::high_resolution_clock::duration::rep>(std::chrono::high_resolution_clock::duration::max().count())));
+            for (size_t i = 0; i < k; i++) {
+                _timestampsLive[idx][i]
+                        = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            }
         };
 
     private:
+        /*!\var     _timestampsLiveOldestTimestamp
+         * \brief   Index of oldest timestamp for each buffer frame
+         * \details This array contains the index for to the nested array of \link _timestampsLive \endlink of the
+         *          oldest timestamp for each buffer frame. The index of the oldest timestamp index corresponding to
+         *          buffer frame \c n is \c n .
+         */
+        std::vector<size_t>                                                                         _timestampsLiveOldestTimestamp;
+
         /*!\var     _timestampsLive
          * \brief   _k_ most recent page reference timestamps for the buffer frames
-         * \details This array contains for each buffer frame the pointer to the oldest timestamp in the first component
-         *          and the _k_ page reference timestamps of the contained page. The index of the page reference
-         *          timestamps corresponding to buffer frame \c n is \c n .
+         * \details This array contains for each buffer frame the _k_ most recent page reference timestamps of the
+         *          contained page. The oldest of them has the index found in the corresponding element in
+         *          \link _timestampsLiveOldestTimestamp \endlink. The index of the page reference timestamps
+         *          corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::tuple<size_t, std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>>>    _timestampsLive;
+        std::vector<std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>>    _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2616,7 +2631,7 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>                              _lruList0;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>          _lruList0;
 
         /*!\var     _lruList1
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2624,34 +2639,34 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>                              _lruList1;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>          _lruList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
          */
-        atomic_bf_idx                                                                                                   _lastChecked;
+        atomic_bf_idx                                                                               _lastChecked;
 
         /*!\var     _useLRUList0
          * \brief   \link _lruList0 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                                               _useLRUList0;
+        std::atomic<bool>                                                                           _useLRUList0;
 
         /*!\var     _useLRUList1
          * \brief   \link _lruList1 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                                               _useLRUList1;
+        std::atomic<bool>                                                                           _useLRUList1;
 
         /*!\var     _sortingInProgress
          * \brief   One thread currently sorts one of the lists if set
          */
-        std::atomic_flag                                                                                                _sortingInProgress;
+        std::atomic_flag                                                                            _sortingInProgress;
 
         /*!\var     _waitForSorted
          * \brief   Manages a queue for the sorting process
          * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
-        std::mutex                                                                                                      _waitForSorted;
+        std::mutex                                                                                  _waitForSorted;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
@@ -2663,7 +2678,7 @@ namespace zero::buffer_pool {
          */
         void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
-                into[index] = std::make_tuple(index, std::get<1>(_timestampsLive[index])[std::get<0>(_timestampsLive[index]) % k]);
+                into[index] = std::make_tuple(index, _timestampsLive[index][_timestampsLiveOldestTimestamp[index] % k].load());
             }
 
             std::sort(/*std::parallel::par,*/
