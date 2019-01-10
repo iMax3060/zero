@@ -1551,9 +1551,9 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             std::lock_guard<std::mutex> lock(_lruListLock);
-            _probationaryLRUList.pushToBack(b_idx);
+            _probationaryLRUList.pushToBack(idx);
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -1769,10 +1769,10 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx b_idx, PageID pid) noexcept final {
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             std::lock_guard<std::mutex> lock(_lruListLock);
-            _frameReferences[b_idx] = 0;
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[b_idx]++ % k) + k * b_idx));
+            _frameReferences[idx] = 0;
+            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -2155,10 +2155,10 @@ namespace zero::buffer_pool {
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
-                        _useLRUList0 = true;
+                        _useLRUList1 = true;
                         _lastChecked = 0;
                         _waitForSorted.unlock();
-                        _useLRUList1 = false;
+                        _useLRUList0 = false;
                         _sortingInProgress.clear();
                         continue;
                     } else {
@@ -2180,10 +2180,10 @@ namespace zero::buffer_pool {
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList0);
-                        _useLRUList1 = true;
+                        _useLRUList0 = true;
                         _lastChecked = 0;
                         _waitForSorted.unlock();
-                        _useLRUList0 = false;
+                        _useLRUList1 = false;
                         _sortingInProgress.clear();
                         continue;
                     } else {
@@ -2209,7 +2209,9 @@ namespace zero::buffer_pool {
                     _useLRUList1 = false;
                     _sortingInProgress.clear();
                 } else {
-
+                    _waitForSorted.lock();
+                    _waitForSorted.unlock();
+                    continue;
                 }
             }
         };
@@ -2363,7 +2365,7 @@ namespace zero::buffer_pool {
          */
         void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
-                into[index] = std::make_tuple(index, _timestampsLive[index]);
+                into[index] = std::make_tuple(index, _timestampsLive[index].load());
             }
 
             std::sort(/*std::parallel::par,*/
