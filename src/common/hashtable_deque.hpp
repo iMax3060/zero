@@ -7,7 +7,7 @@
 
 #include "hashtable_deque_exceptions.hpp"
 
-namespace zero::hashtable_dequeu {
+namespace zero::hashtable_deque {
 
 /*!\class   HashtableDeque
  * \brief   Deque with Direct Access
@@ -134,12 +134,44 @@ namespace zero::hashtable_dequeu {
             }
         }
 
+        /*!\fn      popFromFront()
+         * \brief   Removes the next key from this deque
+         * \details Removes an entry from the front of this deque.
+         *
+         * @throws HashtableDequeEmptyException Thrown if this deque was already empty.
+         */
+        void popFromFront() {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else if (_directAccessDeque->size() == 1) {
+                w_assert1(_back == _front);
+                w_assert1((*_directAccessDeque)[_front]._next == invalid_key);
+                w_assert1((*_directAccessDeque)[_front]._previous == invalid_key);
+
+                _directAccessDeque->erase(_front);
+                _front = invalid_key;
+                _back = invalid_key;
+                w_assert1(_directAccessDeque->size() == 0);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                key_type oldFront = _front;
+                KeyPair oldFrontEntry = (*_directAccessDeque)[_front];
+                w_assert1(_back != _front);
+                w_assert1(_back != invalid_key);
+
+                _front = oldFrontEntry._next;
+                (*_directAccessDeque)[oldFrontEntry._next]._previous = invalid_key;
+                _directAccessDeque->erase(oldFront);
+                w_assert1(_directAccessDeque->size() == oldSize - 1);
+            }
+        }
+
         /*!\fn      popFromFront(key_type& k)
          * \brief   Removes the next key from this deque
          * \details Removes an entry from the front of this deque.
          *
-         * @param[out] k The key that was removed from the front of this queue.
-         * @throws       HashtableDequeEmptyException Thrown if this deque was already empty.
+         * @param[out] k                        The key that was removed from the front of this queue.
+         * @throws HashtableDequeEmptyException Thrown if this deque was already empty.
          */
         void popFromFront(key_type& k) {
             if (_directAccessDeque->empty()) {
@@ -233,12 +265,44 @@ namespace zero::hashtable_dequeu {
             }
         }
 
+        /*!\fn      popFromBack()
+         * \brief   Removes the next key from this deque
+         * \details Removes an entry from the back of this deque.
+         *
+         * @throws HashtableDequeEmptyException Thrown if this deque was already empty.
+         */
+        void popFromBack() {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else if (_directAccessDeque->size() == 1) {
+                w_assert1(_back == _front);
+                w_assert1((*_directAccessDeque)[_front]._next == invalid_key);
+                w_assert1((*_directAccessDeque)[_front]._previous == invalid_key);
+
+                _directAccessDeque->erase(_front);
+                _front = invalid_key;
+                _back = invalid_key;
+                w_assert1(_directAccessDeque->size() == 0);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                key_type oldBack = _back;
+                KeyPair oldBackEntry = (*_directAccessDeque)[_back];
+                w_assert1(_back != _front);
+                w_assert1(_back != invalid_key);
+
+                _back = oldBackEntry._previous;
+                (*_directAccessDeque)[oldBackEntry._previous]._next = invalid_key;
+                _directAccessDeque->erase(oldBack);
+                w_assert1(_directAccessDeque->size() == oldSize - 1);
+            }
+        }
+
         /*!\fn      popFromBack(key_type& k)
          * \brief   Removes the next key from this deque
          * \details Removes an entry from the back of this deque.
          *
-         * @param[out] k The key that was removed from the front of this queue.
-         * @throws       HashtableDequeEmptyException Thrown if this deque was already empty.
+         * @param[out] k                        The key that was removed from the front of this queue.
+         * @throws HashtableDequeEmptyException Thrown if this deque was already empty.
          */
         void popFromBack(key_type& k) {
             if (_directAccessDeque->empty()) {
@@ -355,7 +419,7 @@ namespace zero::hashtable_dequeu {
              */
             KeyPair() {}
 
-            /*!\fn      KeyPair(const key& previous, const key& next)
+            /*!\fn      KeyPair(const key_type& previous, const key_type& next)
              * \brief   Constructor for a pair of keys with initial values
              * \details This constructor instantiates a key pair and initializes the members \link _previous \endlink
              *          and \link _next \endlink as specified.
@@ -419,6 +483,6 @@ namespace zero::hashtable_dequeu {
 
     };
 
-}
+} // zero::hashtable_deque
 
 #endif // __HASHTABLE_DEQUE_HPP

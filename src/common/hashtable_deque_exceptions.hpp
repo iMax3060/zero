@@ -1,7 +1,7 @@
 #ifndef __HASHTABLE_DEQUE_EXCEPTIONS_HPP
 #define __HASHTABLE_DEQUE_EXCEPTIONS_HPP
 
-namespace zero::hashtable_dequeu {
+namespace zero::hashtable_deque {
 
 	/*!\class   HashtableDequeException
 	 * \brief   Exception thrown in \link HashtableDeque \endlink
@@ -16,7 +16,7 @@ namespace zero::hashtable_dequeu {
     template<class key_type, key_type invalid_key>
     class HashtableDequeException : public std::exception {
     public:
-        /*!\fn      HashtableDeque_exception(const uint64_t& size, const key_type& back, const key_type& front)
+        /*!\fn      HashtableDequeException(const uint64_t& size, const key_type& back, const key_type& front)
          * \brief   Constructor of an exception thrown in \link HashtableDeque \endlink
          * \details This constructor instantiates an \c HashtableDequeException with all its variables.
          *
@@ -24,7 +24,7 @@ namespace zero::hashtable_dequeu {
          * @param back    See \link _back \endlink .
          * @param front   See \link _front \endlink .
          */
-        HashtableDequeException(const uint64_t &size, const key_type &back, const key_type &front) :
+        HashtableDequeException(const uint64_t& size, const key_type& back, const key_type& front) :
                 _size(size),
                 _back(back),
                 _front(front) {};
@@ -104,8 +104,8 @@ namespace zero::hashtable_dequeu {
          * @param front        See \link _front \endlink .
          * @param containedKey See \link _containedKey \endlink .
          */
-        HashtableDequeAlreadyContainsException(const uint64_t &size, const key_type &back, const key_type &front,
-                                               const key_type &containedKey) :
+        HashtableDequeAlreadyContainsException(const uint64_t& size, const key_type& back, const key_type& front,
+                                               const key_type& containedKey) :
                 HashtableDequeException<key_type, invalid_key>(size, back, front),
                 _containedKey(containedKey) {};
 
@@ -173,8 +173,8 @@ namespace zero::hashtable_dequeu {
          * @param front        See \link _front \endlink.
          * @param requestedKey See \link _requestedKey \endlink.
          */
-        HashtableDequeNotContainedException(const uint64_t &size, const key_type &back, const key_type &front,
-                                            const key_type &requestedKey) :
+        HashtableDequeNotContainedException(const uint64_t& size, const key_type& back, const key_type& front,
+                                            const key_type& requestedKey) :
                 HashtableDequeException<key_type, invalid_key>(size, back, front),
                 _requestedKey(requestedKey) {};
 

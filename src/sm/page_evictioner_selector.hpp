@@ -1344,7 +1344,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1358,7 +1358,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1386,7 +1386,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1401,7 +1401,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1416,7 +1416,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1431,7 +1431,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             _lruList.pushToBack(idx);
         };
 
@@ -1446,14 +1446,14 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
         };
 
     private:
         /*!\var     _lruList
          * \brief   Queue of recently referenced buffer frame indexes (most recent in the back)
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _lruList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _lruList;
 
         /*!\var     _lruListLock
          * \brief   Latch protecting the \link _lruList \endlink from concurrent manipulations
@@ -1509,7 +1509,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1532,7 +1532,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1569,7 +1569,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1593,7 +1593,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1617,7 +1617,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1641,7 +1641,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
@@ -1663,7 +1663,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _probationaryLRUList.remove(idx);
             }
         };
@@ -1672,12 +1672,12 @@ namespace zero::buffer_pool {
         /*!\var     _protectedLRUList
          * \brief   The protected segment sorted according to reference recency
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _protectedLRUList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _protectedLRUList;
 
         /*!\var     _probationaryLRUList
          * \brief   The probationary segment sorted according to reference recency
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _probationaryLRUList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _probationaryLRUList;
 
         /*!\var     _protectedBlockCount
          * \brief   Maximum number of buffer frame indexes in the protected segment
@@ -1704,7 +1704,7 @@ namespace zero::buffer_pool {
     template <size_t k/* = 2*/, bool on_page_unfix/* = false*/>
     class PageEvictionerSelectorLRUK : public PageEvictionerSelector {
     public:
-        /*!\fn      PageEvictionerSelectorLRU(const BufferPool* bufferPool)
+        /*!\fn      PageEvictionerSelectorLRUK(const BufferPool* bufferPool)
          * \brief   Constructs a _LRU-k_ buffer frame selector
          *
          * @param bufferPool The buffer pool this _LRU-k_ buffer frame selector is responsible for.
@@ -1739,7 +1739,7 @@ namespace zero::buffer_pool {
                 std::lock_guard<std::mutex> lock(_lruListLock);
                 try {
                     _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-                } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
                 _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             }
         };
@@ -1756,7 +1756,7 @@ namespace zero::buffer_pool {
                 std::lock_guard<std::mutex> lock(_lruListLock);
                 try {
                     _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-                } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
                 _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             }
         };
@@ -1787,7 +1787,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
         };
 
@@ -1803,7 +1803,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
         };
 
@@ -1819,7 +1819,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
         };
 
@@ -1835,7 +1835,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_lruListLock);
             try {
                 _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
         };
 
@@ -1853,14 +1853,14 @@ namespace zero::buffer_pool {
                 for (size_t i; i < k; i++) {
                     _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
                 }
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
         };
 
     private:
         /*!\var     _lruList
          * \brief   At most _k_ page references per buffer frame index (most recent in the back)
          */
-        zero::hashtable_dequeu::HashtableDeque<uint64_t, 0> _lruList;
+        zero::hashtable_deque::HashtableDeque<uint64_t, 0>  _lruList;
 
         /*!\var     _frameReferences
          * \brief   Last used page reference numbers per buffer frame index
@@ -1977,7 +1977,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _mruList.pushToFront(idx);
@@ -2007,7 +2007,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _retryList.pushToBack(idx);
@@ -2024,7 +2024,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _retryList.pushToBack(idx);
@@ -2041,7 +2041,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _retryList.pushToBack(idx);
@@ -2058,7 +2058,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _retryList.pushToBack(idx);
@@ -2075,7 +2075,7 @@ namespace zero::buffer_pool {
             std::lock_guard<std::mutex> lock(_mruListLock);
             try {
                 _mruList.remove(idx);
-            } catch (const zero::hashtable_dequeu::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
+            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
         };
@@ -2086,7 +2086,7 @@ namespace zero::buffer_pool {
          * \details Stack of the recently referenced buffer frame indexes without those already found not evictable
          *          during eviction.
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _mruList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _mruList;
 
         /*!\var     _mruListLock
          * \brief   Latch protecting the \link _mruList \endlink from concurrent manipulations
@@ -2099,7 +2099,7 @@ namespace zero::buffer_pool {
          *          evictable during eviction. The front of the queue is the buffer frame index that was the last found
          *          to be not evictable during eviction.
          */
-        zero::hashtable_dequeu::HashtableDeque<bf_idx, 0>   _retryList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _retryList;
 
         /*!\var     _retryListLock
          * \brief   Latch protecting the \link _retryList \endlink from concurrent manipulations

@@ -103,10 +103,8 @@ namespace zero::buffer_pool {
 
                 bf_idx idx = _selector.select();
 
-                if constexpr (filter_early) {
-                    if (!_filter.filterAndUpdate(idx)) {
-                        continue;
-                    }
+                if (!_filter.filterAndUpdate(idx)) {
+                    continue;
                 }
 
                 attempts++;
@@ -117,57 +115,12 @@ namespace zero::buffer_pool {
                     smlevel_0::bf->wakeupPageCleaner();
                 }
 
-                bf_tree_cb_t &cb = smlevel_0::bf->getControlBlock(idx);
-
-                if (!cb._used) {
-                    continue;
-                }
-
-                // If I already hold the latch on this page (e.g., with latch coupling), then the latch acquisition below will
-                // succeed, but the page is obviously not available for eviction. This would not happen if every fix would also
-                // pin the page, which I didn't want to do because it seems like a waste. Note that this is only a problem with
-                // threads performing their own eviction (i.e., with the option _asyncEviction set to false in BufferPool),
-                // because otherwise the evictioner thread never holds any latches other than when trying to evict a page.
-                // This bug cost me 2 days of work. Anyway, it should work with the check below for now.
-                if (cb.latch().held_by_me()) {
-                    // I (this thread) currently have the latch on this frame, so
-                    // obviously I should not evict it
-                    updateOnPageFixed(idx);
-                    continue;
-                }
-
-                // Step 1: latch page in EX mode and check if eligible for eviction
-                rc_t latch_rc;
-                latch_rc = cb.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
-                if (latch_rc.is_error()) {
-                    updateOnPageFixed(idx);
-                    DBG3(<< "Eviction failed on latch for " << idx);
-                    continue;
-                }
-                w_assert1(cb.latch().is_mine());
-
-                // Only evict if clock referenced bit is not set
-                if constexpr (filter_early) {
-                    if (!_filter.filter(idx)) {
-                        cb.latch().latch_release();
-                        continue;
-                    }
-                } else {
-                    if (!_filter.filterAndUpdate(idx)) {
-                        cb.latch().latch_release();
-                        continue;
-                    }
-                }
-
-                // Only evict actually evictable pages (not required to stay in the buffer pool)
-                if (!smlevel_0::bf->isEvictable(idx, _flushDirty)) {
-                    cb.latch().latch_release();
-                    continue;
-                }
-
-                // If we got here, we passed all tests and have a victim!
-                w_assert1(smlevel_0::bf->isActiveIndex(idx));
                 w_assert0(idx != 0);
+
+                if (!evictOne(idx)) {
+                    continue;
+                }
+
                 ADD_TSTAT(bf_eviction_attempts, attempts);
                 return idx;
             }

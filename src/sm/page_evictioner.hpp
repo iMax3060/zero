@@ -23,7 +23,7 @@ namespace zero::buffer_pool {
      */
     class PageEvictioner : public worker_thread_t {
     public:
-        /*!\fn      PageEvictioner(BufferPool* bufferPool, const sm_options& options)
+        /*!\fn      PageEvictioner(const BufferPool* bufferPool)
          * \brief   Constructs an abstract page evictioner
          * \details This constructor initializes the member variables according to specifications of the
          *          \link BufferPool \endlink and settings from the \link sm_options \endlink.
@@ -52,7 +52,7 @@ namespace zero::buffer_pool {
         /*!\fn      ~PageEvictioner()
          * \brief   Destructs an abstract page evictioner
          */
-        virtual             ~PageEvictioner();
+        virtual ~PageEvictioner();
 
         /*!\fn      pickVictim() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -66,7 +66,7 @@ namespace zero::buffer_pool {
          *
          * @return The buffer frame that can be freed or \c 0 if no eviction victim could be found.
          */
-        virtual bf_idx      pickVictim() noexcept = 0;
+        virtual bf_idx pickVictim() noexcept = 0;
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -80,7 +80,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        virtual void        updateOnPageHit(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageHit(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -94,7 +94,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        virtual void        updateOnPageUnfix(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageUnfix(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -107,7 +107,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        virtual void        updateOnPageMiss(bf_idx idx, PageID pid) noexcept = 0;
+        virtual void updateOnPageMiss(bf_idx idx, PageID pid) noexcept = 0;
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -120,7 +120,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        virtual void        updateOnPageFixed(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageFixed(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -133,7 +133,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        virtual void        updateOnPageDirty(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageDirty(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -146,7 +146,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        virtual void        updateOnPageBlocked(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageBlocked(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -159,7 +159,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        virtual void        updateOnPageSwizzled(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageSwizzled(bf_idx idx) noexcept = 0;
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -172,7 +172,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        virtual void        updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
+        virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
         /*!\fn      evictOne(bf_idx victim)
          * \brief   Evicts a page from the buffer pool
@@ -197,7 +197,7 @@ namespace zero::buffer_pool {
          * @param victim The index of the buffer frame from which the page should be evicted.
          * @return       Returns \c true if the page could successfully be evicted, otherwise \c false .
          */
-        bool                evictOne(bf_idx victim);
+        bool evictOne(bf_idx victim);
 
     protected:
         /*!\var     _enabledSwizzling

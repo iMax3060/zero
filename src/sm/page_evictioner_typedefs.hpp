@@ -36,6 +36,7 @@ namespace zero::buffer_pool {
             bool on_dirty = false, bool set_on_dirty = false, uint16_t level0_on_dirty = 5, uint16_t level1_on_dirty = 2, uint16_t level2_on_dirty = 1,
             bool on_blocked = false, bool set_on_blocked = false, uint16_t level0_on_blocked = 5, uint16_t level1_on_blocked = 2, uint16_t level2_on_blocked = 1,
             bool on_swizzled = false, bool set_on_swizzled = false, uint16_t level0_on_swizzled = 5, uint16_t level1_on_swizzled = 2, uint16_t level2_on_swizzled = 1> class PageEvictionerFilterGCLOCK;
+    template <bool on_page_unfix = false> class PageEvictionerCAR;
     /* END --- Forward Declarations --- END */
 
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
@@ -74,6 +75,8 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV1, PageEvictionerFilterNone, false> PageEvictionerLRDV1;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionSubtraction<10>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Subtraction;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionMultiplication<>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Multiplication;
+    typedef PageEvictionerCAR<> PageEvictionerCARFix;
+    typedef PageEvictionerCAR<true> PageEvictionerUnfix;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP

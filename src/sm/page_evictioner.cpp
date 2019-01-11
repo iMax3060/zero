@@ -5,6 +5,8 @@
 #include "xct_logger.h"
 #include "btree_page_h.h"
 
+#include <cmath>
+
 using namespace zero::buffer_pool;
 
 PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
@@ -20,6 +22,41 @@ PageEvictioner::~PageEvictioner() {}
 
 bool PageEvictioner::evictOne(bf_idx victim) {
     bf_tree_cb_t& victimControlBlock = smlevel_0::bf->getControlBlock(victim);
+
+    if (!victimControlBlock._used) {
+        return false;
+    }
+
+    // If I already hold the latch on this page (e.g., with latch coupling), then the latch acquisition below will
+    // succeed, but the page is obviously not available for eviction. This would not happen if every fix would also
+    // pin the page, which I didn't want to do because it seems like a waste. Note that this is only a problem with
+    // threads performing their own eviction (i.e., with the option _asyncEviction set to false in BufferPool),
+    // because otherwise the evictioner thread never holds any latches other than when trying to evict a page.
+    // This bug cost me 2 days of work. Anyway, it should work with the check below for now.
+    if (victimControlBlock.latch().held_by_me()) {
+        // I (this thread) currently have the latch on this frame, so
+        // obviously I should not evict it
+        updateOnPageFixed(victim);
+        return false;
+    }
+
+    // Only evict actually evictable pages (not required to stay in the buffer pool)
+    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
+        victimControlBlock.latch().latch_release();
+        return false;
+    }
+
+    // If we got here, we passed all tests and have a victim!
+    w_assert1(smlevel_0::bf->isActiveIndex(victim));
+
+    // Step 1: latch page in EX mode and check if eligible for eviction
+    rc_t latch_rc;
+    latch_rc = victimControlBlock.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
+    if (latch_rc.is_error()) {
+        updateOnPageFixed(victim);
+        DBG3(<< "Eviction failed on latch for " << idx);
+        return false;
+    }
     w_assert1(victimControlBlock.latch().is_mine());
 
     // Try to unswizzle/update the parent of the victim.
@@ -199,10 +236,7 @@ void PageEvictioner::flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noex
 void PageEvictioner::do_work() {
     while (smlevel_0::bf->getFreeList()->getCount() < _evictionBatchSize) {
         bf_idx victim = pickVictim();
-
-        if (evictOne(victim)) {
-            smlevel_0::bf->getFreeList()->addFreeBufferpoolFrame(victim);
-        }
+        smlevel_0::bf->getFreeList()->addFreeBufferpoolFrame(victim);
 
         notify_one();
 

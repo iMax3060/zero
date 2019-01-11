@@ -1006,7 +1006,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        /*!\var     _refBits
+        /*!\var     _refInts
          * \brief   Referenced integers for the buffer frames
          * \details The index of the referenced integer corresponding to buffer frame \c n is \c n .
          */

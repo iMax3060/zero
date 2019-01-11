@@ -36,6 +36,7 @@
 #include "page_evictioner_select_and_filter.hpp"
 #include "page_evictioner_selector.hpp"
 #include "page_evictioner_filter.hpp"
+#include "page_evictioner_other.hpp"
 
 using namespace zero::buffer_pool;
 

@@ -3,6 +3,7 @@
 #include "buffer_pool.hpp"
 #include "page_evictioner.hpp"
 #include "page_evictioner_select_and_filter.hpp"
+#include "page_evictioner_other.hpp"
 
 using namespace zero::buffer_pool;
 
@@ -80,11 +81,10 @@ bool FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) {
                 bufferPool->getPageEvictioner()->wakeup(true);
             } else {
                 freeFrame = 0;
-                bool success = false;
-                while (!success) {
+                while (freeFrame == 0) {
                     freeFrame = bufferPool->getPageEvictioner()->pickVictim();
                     w_assert0(freeFrame > 0);
-                    success = bufferPool->getPageEvictioner()->evictOne(freeFrame);
+                    addFreeBufferpoolFrame(freeFrame);
                 }
                 return true;
             }
