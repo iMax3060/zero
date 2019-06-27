@@ -42,6 +42,7 @@ bool PageEvictioner::evictOne(bf_idx victim) {
 
     // Only evict actually evictable pages (not required to stay in the buffer pool)
     if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
+        updateOnPageBlocked(victim);
         victimControlBlock.latch().latch_release();
         return false;
     }
@@ -62,6 +63,7 @@ bool PageEvictioner::evictOne(bf_idx victim) {
     // Try to unswizzle/update the parent of the victim.
     // Proceeding with this victim is not possible if this fails so another victim is tried.
     if (!unswizzleAndUpdateEMLSN(victim)) {
+        updateOnPageSwizzled(victim);
         victimControlBlock.latch().latch_release();
         return false;
     }
@@ -69,6 +71,7 @@ bool PageEvictioner::evictOne(bf_idx victim) {
     // Try to atomically decrement the pin count of the page from 0 to -1.
     // Proceeding with this victim is not possible if this fails so another victim is tried.
     if (!victimControlBlock.prepare_for_eviction()) {
+        updateOnPageFixed(victim);
         victimControlBlock.latch().latch_release();
         return false;
     }
