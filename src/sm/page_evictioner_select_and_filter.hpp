@@ -57,15 +57,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _Select-and-Filter_ page evictioner is responsible for.
          */
-        PageEvictionerSelectAndFilter(const BufferPool* bufferPool) :
-                PageEvictioner(bufferPool),
-                _selector(bufferPool),
-                _filter(bufferPool) {
-            static_assert(std::is_base_of<PageEvictionerSelector, selector_class>::value,
-                          "'selector_class' is not of type 'PageEvictionerSelector'!");
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
-                          "'filter_class' is not of type 'PageEvictionerFilter'!");
-        };
+        PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerSelectAndFilter()
          * \brief   Destructs a _Select-and-Filter_ page evictioner
@@ -94,37 +86,7 @@ namespace zero::buffer_pool {
          *
          * @return The buffer frame that can be freed or \c 0 if no eviction victim could be found.
          */
-        bf_idx pickVictim() noexcept final {
-            uint32_t attempts = 0;
-
-            while (true) {
-
-                if (should_exit()) return 0; // the buffer index 0 has the semantics of null
-
-                bf_idx idx = _selector.select();
-
-                if (!_filter.filterAndUpdate(idx)) {
-                    continue;
-                }
-
-                attempts++;
-                if (attempts >= _maxAttempts) {
-                    W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
-                } else if (!(_flushDirty && smlevel_0::bf->isNoDBMode() && smlevel_0::bf->usesWriteElision())
-                           && attempts % _wakeupCleanerAttempts == 0) {
-                    smlevel_0::bf->wakeupPageCleaner();
-                }
-
-                w_assert0(idx != 0);
-
-                if (!evictOne(idx)) {
-                    continue;
-                }
-
-                ADD_TSTAT(bf_eviction_attempts, attempts);
-                return idx;
-            }
-        };
+        bf_idx pickVictim() noexcept final;
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
@@ -132,7 +94,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _selector.updateOnPageHit(idx);
             _filter.updateOnPageHit(idx);
         };
@@ -143,7 +105,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             _selector.updateOnPageUnfix(idx);
             _filter.updateOnPageUnfix(idx);
         };
@@ -156,7 +118,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _selector.updateOnPageMiss(idx, pid);
             _filter.updateOnPageMiss(idx, pid);
         };
@@ -169,7 +131,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _selector.updateOnPageFixed(idx);
             _filter.updateOnPageFixed(idx);
         };
@@ -182,7 +144,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _selector.updateOnPageDirty(idx);
             _filter.updateOnPageDirty(idx);
         };
@@ -195,7 +157,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _selector.updateOnPageBlocked(idx);
             _filter.updateOnPageBlocked(idx);
         };
@@ -208,7 +170,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _selector.updateOnPageSwizzled(idx);
             _filter.updateOnPageSwizzled(idx);
         };
@@ -221,7 +183,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _selector.updateOnPageExplicitlyUnbuffered(idx);
             _filter.updateOnPageExplicitlyUnbuffered(idx);
         };
