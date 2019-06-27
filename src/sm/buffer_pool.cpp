@@ -470,6 +470,7 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
             w_rc_t latchStatus = getControlBlock(freeFrameIndex).latch().latch_acquire(LATCH_EX,
                                                                                        timeout_t::WAIT_IMMEDIATE);
             if (latchStatus.is_error()) {
+                _evictioner->updateOnPageExplicitlyUnbuffered(freeFrameIndex);
                 _freeList->addFreeBufferpoolFrame(freeFrameIndex);
             } else {
                 break;
@@ -502,6 +503,7 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
             _evictioner->updateOnPageMiss(index, pid);
         } else {
             delete indexPair;
+            _evictioner->updateOnPageExplicitlyUnbuffered(index);
             _freeList->addFreeBufferpoolFrame(index);
         }
 
@@ -900,6 +902,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                  */
                 w_rc_t latchStatus = pageControlBlock->latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
                 if (latchStatus.is_error()) {
+                    _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
                     _freeList->addFreeBufferpoolFrame(pageIndex);
                     continue;
                 }
@@ -913,6 +916,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 if (!registered) {
                     delete pageIndexPair;
                     pageControlBlock->latch().latch_release();
+                    _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
                     _freeList->addFreeBufferpoolFrame(pageIndex);
                     continue;
                 }
