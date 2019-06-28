@@ -239,6 +239,7 @@ void PageEvictioner::flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noex
 void PageEvictioner::do_work() {
     while (smlevel_0::bf->getFreeList()->getCount() < _evictionBatchSize) {
         bf_idx victim = pickVictim();
+        releaseInternalLatches();
         smlevel_0::bf->getFreeList()->addFreeBufferpoolFrame(victim);
 
         notify_one();

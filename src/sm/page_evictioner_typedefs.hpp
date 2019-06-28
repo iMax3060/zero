@@ -9,8 +9,7 @@ namespace zero::buffer_pool {
 
     class PageEvictionerSelectorLOOPAbsolutelyAccurate;
     class PageEvictionerSelectorLOOPPracticallyAccurate;
-    class PageEvictionerSelectorRANDOMDefault;
-    class PageEvictionerSelectorRANDOMFastRand;
+    class PageEvictionerSelectorLOOPThreadLocallyAccurate;
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOHighContention;
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFILOLowContention;
@@ -41,8 +40,7 @@ namespace zero::buffer_pool {
 
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPPracticallyAccurate;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMDefault, PageEvictionerFilterNone, false> PageEvictionerDafaultRandom;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterNone, false> PageEvictionerFastRand;
+    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPThreadLocallyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPThreadLocallyAccurate;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<>, true> PageEvictionerCLOCKFix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<false, true>, true> PageEvictionerCLOCKUnfix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<true, true>, true> PageEvictionerCLOCKFixUnfix;
@@ -50,13 +48,6 @@ namespace zero::buffer_pool {
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictionerGCLOCKV2Fix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true>, true> PageEvictionerDGCLOCKV1Fix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictionerDGCLOCKV2Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterCLOCK<>, true> PageEvictioner0CLOCKFix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterCLOCK<false, true>, true> PageEvictioner0CLOCKUnfix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterCLOCK<true, true>, true> PageEvictioner0CLOCKFixUnfix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<>, true> PageEvictioner0GCLOCKV1Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictioner0GCLOCKV2Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, true>, true> PageEvictioner0DGCLOCKV1Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMFastRand, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictioner0DGCLOCKV2Fix;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOLowContention;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOHighContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOHighContention;
     typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFILOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFILOLowContention;

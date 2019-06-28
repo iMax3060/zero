@@ -30,8 +30,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this buffer frame selector is responsible for.
          */
-        PageEvictionerSelector(const BufferPool* bufferPool) :
-                _maxBufferpoolIndex(bufferPool->getBlockCount() - 1) {};
+        explicit PageEvictionerSelector(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerSelector()
          * \brief   Destructs a buffer frame selector
@@ -151,6 +150,16 @@ namespace zero::buffer_pool {
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of the buffer frame selector
+         * \details Some methods of buffer frame selectors hold internal latches beyond the invocation of one method but
+         *          expect another method to be called later to release those internal latches. This should be used to
+         *          explicitly release those latches.
+         *
+         * \note    This member function must be implemented by every specific buffer frame selection policy.
+         */
+        virtual void releaseInternalLatches() noexcept = 0;
+
     protected:
         /*!\var     _maxBufferpoolIndex
          * \brief   The maximum buffer frame index
@@ -173,9 +182,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _currentFrame(_maxBufferpoolIndex) {};
+        explicit PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -185,7 +192,7 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             w_assert1(_currentFrame > 0 && _currentFrame <= _maxBufferpoolIndex);
 
             std::lock_guard<std::mutex> guard(_currentFrameLock);
@@ -203,7 +210,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -211,7 +218,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -221,7 +228,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -230,7 +237,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -239,7 +246,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -248,7 +255,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -257,7 +264,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -266,7 +273,13 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _currentFrame
@@ -301,9 +314,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _currentFrame(1) {};
+        explicit PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -313,7 +324,7 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {// Not exact after 18446744073709551616 (1 per ns -> once in 585 years) incrementations!
+        inline bf_idx select() noexcept final {// Not exact after 18446744073709551616 (1 per ns -> once in 585 years) incrementations!
             w_assert1(_currentFrame > 0 && _currentFrame <= _maxBufferpoolIndex);
 
             while (true) {
@@ -332,7 +343,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -340,7 +351,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -350,7 +361,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -359,7 +370,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -368,7 +379,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -377,7 +388,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -386,7 +397,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -395,7 +406,13 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _currentFrame
@@ -409,147 +426,40 @@ namespace zero::buffer_pool {
 
     };
 
-    /*!\class   PageEvictionerSelectorRANDOMDefault
-     * \brief   _RANDOM_ buffer frame selector
-     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _RANDOM_
-     *          policy. The _RANDOM_ policy selects buffer frames randomly. The default version of the _RANDOM_ policy
-     *          uses the random number generator of the C++ Standard Library over a uniform distribution.
+    /*!\class   PageEvictionerSelectorLOOPThreadLocallyAccurate
+     * \brief   _LOOP_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LOOP_
+     *          policy. The _LOOP_ policy selects buffer frames by looping over the buffer frame IDs from \c 1 to
+     *          \link _maxBufferpoolIndex \endlink and afterwards restarting from \c 1 again. When only one thread is
+     *          used for eviction, the buffer frames are selected in perfect _LOOP_ order but if multiple threads are
+     *          used for eviction, the _LOOP_ order of buffer frame selects is only thread-local when this
+     *          thread-locally accurate version of the _LOOP_ policy is used.
      */
-    class PageEvictionerSelectorRANDOMDefault : public PageEvictionerSelector {
+    class PageEvictionerSelectorLOOPThreadLocallyAccurate : public PageEvictionerSelector {
     public:
-        /*!\fn      PageEvictionerSelectorRANDOMDefault(const BufferPool* bufferPool)
-         * \brief   Constructs a _RANDOM_ buffer frame selector
+        /*!\fn      PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool)
+         * \brief   Constructs a _LOOP_ buffer frame selector
          *
-         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorRANDOMDefault(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _randomDistribution(1, _maxBufferpoolIndex) {};
+        explicit PageEvictionerSelectorLOOPThreadLocallyAccurate(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
-         * \details Selects a buffer frame randomly using the random number generator of the C++ Standard Library over a
-         *          uniform distribution.
+         * \details If it selected the buffer frame \c n the last time this function was called, then it selects
+         *          \c n \c + \c 1 if \c n \c + \c 1 \c <= \link _maxBufferpoolIndex \endlink or \c 1 if \c n \c +
+         *          \c 1 \c > \link _maxBufferpoolIndex \endlink.
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
-            return _randomDistribution(_standardRandomEngine);
-        };
+        inline bf_idx select() noexcept final {
+            w_assert1(_currentFrame > 0 && _currentFrame <= _maxBufferpoolIndex);
 
-        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
-         */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
-         */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
-         * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
-         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
-         *             frame with index \c idx .
-         */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
-
-        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
-         *            corresponding frame was fixed.
-         */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
-         *            corresponding frame contained a dirty page.
-         */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
-         *            that cannot be evicted at all.
-         */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
-         *            corresponding frame contained a page with swizzled pointers.
-         */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
-
-        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
-         * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
-         *
-         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
-         *            explicitly.
-         */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
-
-    private:
-        /*!\var     _standardRandomEngine
-         * \brief   The used pseudo-random number generator
-         */
-        std::default_random_engine _standardRandomEngine;
-
-        /*!\var     _randomDistribution
-         * \brief   The uniform distribution and range for the pseudo-random number generator (post-processor)
-         */
-        std::uniform_int_distribution<uint_fast32_t> _randomDistribution;
-
-    };
-
-    /*!\class   PageEvictionerSelectorRANDOMDefault
-     * \brief   _RANDOM_ buffer frame selector
-     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _RANDOM_
-     *          policy. The _RANDOM_ policy selects buffer frames randomly. The fast version of the _RANDOM_ policy
-     *          uses a very fast linear congruential generator and a thread-local state.
-     */
-    class PageEvictionerSelectorRANDOMFastRand : public PageEvictionerSelector {
-    public:
-        /*!\fn      PageEvictionerSelectorRANDOMFastRand(const BufferPool* bufferPool)
-         * \brief   Constructs a _RANDOM_ buffer frame selector
-         *
-         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
-         */
-        PageEvictionerSelectorRANDOMFastRand(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool) {};
-
-        /*!\fn      select() noexcept
-         * \brief   Selects a page to be evicted from the buffer pool
-         * \details Selects a buffer frame randomly using a very fast linear congruential generator.
-         *
-         * @return The selected buffer frame.
-         */
-        bf_idx select() noexcept final {
-            if (!_randomStateInitialized) {
-                _randomState = std::random_device{}();
-                _randomStateInitialized = true;
+            _currentFrame++;
+            if (_currentFrame > _maxBufferpoolIndex) {
+                _currentFrame = 1;
             }
-            _randomState = 214013 * _randomState + 2531011;
-            return ((_randomState >> 16 & 0x7FFF) % _maxBufferpoolIndex) + 1;
+            return _currentFrame;
         };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
@@ -558,7 +468,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -566,7 +476,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -576,7 +486,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -585,7 +495,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -594,7 +504,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -603,7 +513,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -612,7 +522,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -621,21 +531,23 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
-        /*!\var     _randomStateInitialized
-         * \brief   Whether the state of the LCG is initialized on this thread
-         * \details The first time \link select() \endlink runs on a particular thread, the state of the linear
-         *          congruential generator needs to be initialized. If this is set on a thread, the state is already
-         *          initialized on this thread.
+        /*!\var     _currentFrame
+         * \brief   Last control block examined (per evicting thread)
+         * \details Represents the clock hand pointing to the control block that was examined last during the most
+         *          recent execution of \link select() \endlink (evicted last) on this thread.
+         *
+         * \remark  Only used by __LOOP__ and __CLOCK__.
          */
-        static thread_local bool _randomStateInitialized;
-
-        /*!\var     _randomState
-         * \brief   The state of the linear congruential generator
-         */
-        static thread_local uint_fast32_t _randomState;
+        static thread_local bf_idx _currentFrame;
 
     };
 
@@ -668,9 +580,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -683,47 +593,51 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             static thread_local bool currentlyCheckingRetryList;
             static thread_local size_t retriedBufferIndexes;
 
             bf_idx selected;
             while (true) {
-                if (currentlyCheckingRetryList) {   // This thread checked the front of the _retryList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.size())
-                     || _initialList.empty()) {     // Check again the front of the _retryList:
-                        _retryList.pop(selected);
-                        retriedBufferIndexes++;
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                            continue;               // This buffer frame was explicitly evicted
-                        }
-                        return selected;
-                    } else {                        // Change to checking entries from the front of the _initialList
-                        _initialList.pop(selected);
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                            continue;               // This buffer frame was explicitly evicted
-                        }
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = false;
-                        return selected;
-                    }
-                } else {                            // This thread checked the front of the _initialList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(initial_list_check_ppm * 0.000001 * _initialList.size())
+                if (!currentlyCheckingRetryList) {   // This thread checked the front of the _initialList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _initialList.size())
                      || _retryList.empty()) {       // Check again the front of the _initialList:
                         _initialList.pop(selected);
                         retriedBufferIndexes++;
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            return selected;
+                        } else {
                             continue;               // This buffer frame was explicitly evicted
                         }
-                        return selected;
                     } else {                        // Change to checking entries from the front of the _retryList
                         _retryList.pop(selected);
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            retriedBufferIndexes = 0;
+                            currentlyCheckingRetryList = true;
+                            return selected;
+                        } else {
                             continue;               // This buffer frame was explicitly evicted
                         }
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = true;
-                        return selected;
+                    }
+                } else {                            // This thread checked the front of the _retryList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _retryList.size())
+                     || _initialList.empty()) {     // Check again the front of the _retryList:
+                        _retryList.pop(selected);
+                        retriedBufferIndexes++;
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            return selected;
+                        } else {
+                            continue;               // This buffer frame was explicitly evicted
+                        }
+                    } else {                        // Change to checking entries from the front of the _initialList
+                        _initialList.pop(selected);
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            retriedBufferIndexes = 0;
+                            currentlyCheckingRetryList = false;
+                            return selected;
+                        } else {
+                            continue;               // This buffer frame was explicitly evicted
+                        }
                     }
                 }
             }
@@ -736,7 +650,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -745,22 +659,20 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details Adds the buffer frame index to the back of the \link _initialList \endlink queue if the respective
-         *          buffer frame index was not explicitly evicted previously. Then, the buffer frame index stays in the
-         *          list it was before it was explicitly evicted.
+         * \details Adds the buffer frame index to the back of the \link _initialList \endlink queue and sets it to be
+         *          not explicitly evicted.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            if (!_notExplicitlyEvictedList[idx].test_and_set()) {
-                _initialList.push(idx);
-            }
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _notExplicitlyEvictedList[idx].test_and_set();
+            _initialList.push(idx);
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -770,7 +682,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -781,7 +693,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -792,7 +704,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -803,7 +715,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -817,9 +729,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _notExplicitlyEvictedList[idx].clear();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _initialList
@@ -850,6 +768,18 @@ namespace zero::buffer_pool {
          *          \link _retryList \endlink have this flag unset.
          */
         std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
+
+        /*!\var     _retryListCheck
+         * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _initialList \endlink
+         */
+        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+
+        /*!\var     _initialListCheck
+         * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _retryList \endlink
+         */
+        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
 
     };
 
@@ -882,70 +812,81 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _approximateInitialListLength(0),
-                _approximateRetryListLength(0),
-                _initialList(bufferPool->getBlockCount()),
-                _retryList(bufferPool->getBlockCount()),
-                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool);
 
-        bf_idx select() noexcept final {
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details If a thread is currently selecting pages from the \link _initialList \endlink, if it should continue
+         *          with that according to the template parameter \c initial_list_check_ppm and if the
+         *          \link _initialList \endlink is not empty, this selects the front of the \link _initialList \endlink.
+         *          Otherwise, it selects the front of the \link _retryList \endlink.
+         *
+         *          Explicitly evicted buffer frames are removed from the queue.
+         *
+         * @return The selected buffer frame.
+         */
+        inline bf_idx select() noexcept final {
             static thread_local bool currentlyCheckingRetryList;
             static thread_local size_t retriedBufferIndexes;
 
             bf_idx selected;
             while (true) {
-                if (currentlyCheckingRetryList) {               // This thread checked the front of the _retryList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _approximateRetryListLength)) {
-                        if (!_retryList.try_pop(selected)) {    // Check again the front of the _retryList
-                            currentlyCheckingRetryList = false;
-                            continue;
-                        } else {
-                            _approximateRetryListLength--;
-                            retriedBufferIndexes++;
-                            if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                                continue;                       // This buffer frame was explicitly evicted
-                            }
-                            return selected;
-                        }
-                    } else {                                    // Change to checking entries from the front of the _initialList
-                        if (!_initialList.try_pop(selected)) {
-                            currentlyCheckingRetryList = true;
-                            continue;
-                        } else {
+                if (!currentlyCheckingRetryList) {               // This thread checked the front of the _initialList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _approximateInitialListLength)
+                     || _approximateRetryListLength == 0) {
+                        if (_initialList.try_pop(selected)) {  // Check again the front of the _initialList
                             _approximateInitialListLength--;
                             retriedBufferIndexes++;
-                            if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                            if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                                return selected;
+                            } else {
                                 continue;                       // This buffer frame was explicitly evicted
                             }
-                            return selected;
-                        }
-                    }
-                } else {                                        // This thread checked the front of the _initialList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(initial_list_check_ppm * 0.000001 * _approximateInitialListLength)) {     // Check again the front of the _initialList:
-                        if (!_initialList.try_pop(selected)) {  // Check again the front of the _initialList
+                        } else {
                             currentlyCheckingRetryList = true;
                             continue;
-                        } else {
-                            _approximateInitialListLength--;
-                            retriedBufferIndexes++;
-                            if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                                continue;                       // This buffer frame was explicitly evicted
-                            }
-                            return selected;
                         }
                     } else {                                    // Change to checking entries from the front of the _retryList
-                        if (!_retryList.try_pop(selected)) {
-                            currentlyCheckingRetryList = false;
-                            continue;
-                        } else {
+                        if (_retryList.try_pop(selected)) {
                             _approximateRetryListLength--;
-                            retriedBufferIndexes++;
-                            if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                            retriedBufferIndexes = 0;
+                            if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                                return selected;
+                            } else {
                                 continue;                       // This buffer frame was explicitly evicted
                             }
-                            return selected;
+                        } else {
+                            currentlyCheckingRetryList = false;
+                            continue;
+                        }
+                    }
+                } else {                                        // This thread checked the front of the _retryList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _approximateRetryListLength)
+                     || _approximateInitialListLength == 0) {
+                        if (_retryList.try_pop(selected)) {    // Check again the front of the _retryList
+                            _approximateRetryListLength--;
+                            retriedBufferIndexes++;
+                            if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                                return selected;
+                            } else {
+                                continue;                       // This buffer frame was explicitly evicted
+                            }
+                        } else {
+                            currentlyCheckingRetryList = false;
+                            continue;
+                        }
+                    } else {                                    // Change to checking entries from the front of the _initialList
+                        if (_initialList.try_pop(selected)) {
+                            _approximateInitialListLength--;
+                            retriedBufferIndexes = 0;
+                            if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                                return selected;
+                            } else {
+                                continue;                       // This buffer frame was explicitly evicted
+                            }
+                        } else {
+                            currentlyCheckingRetryList = true;
+                            continue;
                         }
                     }
                 }
@@ -959,7 +900,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -968,22 +909,21 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details Adds the buffer frame index to the back of the \link _initialList \endlink queue if the respective
-         *          buffer frame index was not explicitly evicted previously. Then, the buffer frame index stays in the
-         *          list it was before it was explicitly evicted.
+         * \details Adds the buffer frame index to the back of the \link _initialList \endlink queue and sets it to be
+         *          not explicitly evicted.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            if (!_notExplicitlyEvictedList[idx].test_and_set()) {
-                _initialList.push(idx);
-            }
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _notExplicitlyEvictedList[idx].test_and_set();
+            _initialList.push(idx);
+            _approximateInitialListLength++;
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -993,7 +933,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _retryList.push(idx);
             _approximateRetryListLength++;
         };
@@ -1005,7 +945,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _retryList.push(idx);
             _approximateRetryListLength++;
         };
@@ -1017,7 +957,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _retryList.push(idx);
             _approximateRetryListLength++;
         };
@@ -1029,7 +969,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _retryList.push(idx);
             _approximateRetryListLength++;
         };
@@ -1044,9 +984,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _notExplicitlyEvictedList[idx].clear();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _initialList
@@ -1088,6 +1034,18 @@ namespace zero::buffer_pool {
          */
         std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
 
+        /*!\var     _retryListCheck
+         * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _initialList \endlink
+         */
+        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+
+        /*!\var     _initialListCheck
+         * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _retryList \endlink
+         */
+        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
+
     };
 
     /*!\class   PageEvictionerSelectorQuasiFILOLowContention
@@ -1118,9 +1076,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FILO_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1133,47 +1089,52 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             static thread_local bool currentlyCheckingRetryList;
             static thread_local size_t retriedBufferIndexes;
 
             bf_idx selected;
             while (true) {
-                if (currentlyCheckingRetryList) {   // This thread checked the front of the _retryList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.size())
-                     || _initialList.empty()) {     // Check again the front of the _retryList:
-                        _retryList.pop(selected);
-                        retriedBufferIndexes++;
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                            continue;               // This buffer frame was explicitly evicted
-                        }
-                        return selected;
-                    } else {                        // Change to checking entries from the front of the _initialList
-                        _initialList.pop(selected);
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
-                            continue;               // This buffer frame was explicitly evicted
-                        }
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = false;
-                        return selected;
-                    }
-                } else {                            // This thread checked the front of the _initialList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(initial_list_check_ppm * 0.000001 * _initialList.size())
+                if (!currentlyCheckingRetryList) {   // This thread checked the front of the _retryList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _initialList.size())
                      || _retryList.empty()) {       // Check again the front of the _initialList:
                         _initialList.pop(selected);
                         retriedBufferIndexes++;
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            return selected;
+                        } else {
                             continue;               // This buffer frame was explicitly evicted
                         }
-                        return selected;
                     } else {                        // Change to checking entries from the front of the _retryList
                         _retryList.pop(selected);
-                        if (!_notExplicitlyEvictedList[selected].test_and_set()) {
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            retriedBufferIndexes = 0;
+                            currentlyCheckingRetryList = true;
+                            return selected;
+                        } else {
+                            continue;               // This buffer frame was explicitly evicted
+
+                        }
+                    }
+                } else {                            // This thread checked the front of the _initialList last:
+                    if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _retryList.size())
+                     || _initialList.empty()) {     // Check again the front of the _retryList:
+                        _retryList.pop(selected);
+                        retriedBufferIndexes++;
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            return selected;
+                        } else {
                             continue;               // This buffer frame was explicitly evicted
                         }
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = true;
-                        return selected;
+                    } else {                        // Change to checking entries from the front of the _initialList
+                        _initialList.pop(selected);
+                        if (_notExplicitlyEvictedList[selected].test_and_set()) {
+                            retriedBufferIndexes = 0;
+                            currentlyCheckingRetryList = false;
+                            return selected;
+                        } else {
+                            continue;               // This buffer frame was explicitly evicted
+                        }
                     }
                 }
             }
@@ -1186,7 +1147,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -1195,22 +1156,20 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details Adds the buffer frame index to the top of the \link _initialList \endlink stack if the respective
-         *          buffer frame index was not explicitly evicted previously. Then, the buffer frame index stays in the
-         *          list it was before it was explicitly evicted.
-         *
+         * \details Adds the buffer frame index to the top of the \link _initialList \endlink stack and sets it to be
+         *          not explicitly evicted.
+
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            if (!_notExplicitlyEvictedList[idx].test_and_set()) {
-                _initialList.push(idx);
-            }
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _notExplicitlyEvictedList[idx].test_and_set();
+            _initialList.push(idx);
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -1220,7 +1179,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -1231,7 +1190,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -1242,7 +1201,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -1253,7 +1212,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _retryList.push(idx);
         };
 
@@ -1267,9 +1226,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _notExplicitlyEvictedList[idx].clear();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _initialList
@@ -1301,6 +1266,18 @@ namespace zero::buffer_pool {
          */
         std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
 
+        /*!\var     _retryListCheck
+         * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _initialList \endlink
+         */
+        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+
+        /*!\var     _initialListCheck
+         * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
+         *          frames from the \link _retryList \endlink
+         */
+        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
+
     };
 
     /*!\class   PageEvictionerSelectorLRU
@@ -1309,7 +1286,10 @@ namespace zero::buffer_pool {
      *          policy. The _LRU_ policy selects the buffer frame that was not used for the longest time. This is
      *          implemented using a queue which allows to move referenced buffer frames from some place within the queue
      *          up. This requires latching during each page reference to prevent races.
-     */
+     *
+     * \warning The behavior of this class is undefined if the implementation of \c std::recursive_mutex::unlock()
+     *          does not allow too many invocations of it.
+    */
     class PageEvictionerSelectorLRU : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorLRU(const BufferPool* bufferPool)
@@ -1317,19 +1297,20 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLRU(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _lruList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorLRU(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
-         * \details Selects the buffer frame from the buffer pool that was not used for the longest time.
+         * \details Selects the buffer frame from the buffer pool that was not used for the longest time. The respective
+         *          buffer frame index is removed from the queue.
+         *
+         * \post    The \link _lruListLock \endlink is acquired by this thread.
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             bf_idx selected;
-            std::lock_guard<std::mutex> lock(_lruListLock);
+            _lruListLock.lock();
             _lruList.popFromFront(selected);
             return selected;
         };
@@ -1340,11 +1321,9 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
+            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
+            _lruList.remove(idx);
             _lruList.pushToBack(idx);
         };
 
@@ -1354,11 +1333,9 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
+            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
+            _lruList.remove(idx);
             _lruList.pushToBack(idx);
         };
 
@@ -1366,87 +1343,133 @@ namespace zero::buffer_pool {
          * \brief   Updates the eviction statistics on page miss
          * \details Adds the buffer frame index to the back of the queue.
          *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _lruListLock.lock();
             _lruList.pushToBack(idx);
+            _lruListLock.unlock();
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Moves the buffer frame index from some place within the queue to the back.
+         * \details Adds the buffer frame index to the back of the queue.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _lruList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Moves the buffer frame index from some place within the queue to the back.
+         * \details Adds the buffer frame index to the back of the queue.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _lruList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Moves the buffer frame index from some place within the queue to the back.
+         * \details Adds the buffer frame index to the back of the queue.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _lruList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Moves the buffer frame index from some place within the queue to the back.
+         * \details Adds the buffer frame index to the back of the queue.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _lruList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details Removes the buffer frame index from the queue.
          *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _lruListLock.lock();
             try {
                 _lruList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            _lruListLock.unlock();
+            _lruListLock.unlock();
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
+         *          \link updateOnPageMiss(bf_idx, PageID) \endlink, \link updateOnPageFixed(bf_idx) \endlink,
+         *          \link updateOnPageDirty(bf_idx) \endlink, \link updateOnPageBlocked(bf_idx) \endlink,
+         *          \link updateOnPageSwizzled(bf_idx) \endlink,
+         *          \link updateOnPageExplicitlyUnbuffered(bf_idx) \endlink.
+         *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _lruListLock.unlock();
         };
 
     private:
@@ -1458,7 +1481,7 @@ namespace zero::buffer_pool {
         /*!\var     _lruListLock
          * \brief   Latch protecting the \link _lruList \endlink from concurrent manipulations
          */
-        std::mutex                                          _lruListLock;
+        std::recursive_mutex                                _lruListLock;
 
     };
 
@@ -1468,6 +1491,9 @@ namespace zero::buffer_pool {
      *          _Segmented LRU_ policy as proposed in _Caching Strategies to Improve Disk System Performance_ by
      *          R. Karedla, J.S. Love and B.G. Wherry. The _SLRU_ policy is an extension of the _LRU_ policy. This
      *          requires latching during each page reference to prevent races.
+     *
+     * \warning The behavior of this class is undefined if the implementation of \c std::recursive_mutex::unlock()
+     *          does not allow too many invocations of it.
      *
      * @tparam protected_block_ppm The fraction (in PPM) of buffer frames that fit into the protected segment.
      */
@@ -1479,20 +1505,20 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _SLRU_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorSLRU(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _protectedBlockCount(static_cast<bf_idx>(protected_block_ppm * 0.000001 * smlevel_0::bf->getBlockCount())),
-                _protectedLRUList(_protectedBlockCount),
-                _probationaryLRUList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorSLRU(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
-         * \details Selects the buffer frame from the probationary segment that was not used for the longest time.
+         * \details Selects the buffer frame from the probationary segment that was not used for the longest time. The
+         *          respective buffer frame index is removed from the probationary segment.
+         *
+         * \post    The \link _lruListLock \endlink is acquired by this thread.
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             bf_idx selected;
+            _lruListLock.lock();
             _probationaryLRUList.popFromFront(selected);
             return selected;
         };
@@ -1505,8 +1531,8 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
+            _lruListLock.lock();
             try {
                 _protectedLRUList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
@@ -1518,6 +1544,7 @@ namespace zero::buffer_pool {
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
@@ -1528,8 +1555,8 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
+            _lruListLock.lock();
             try {
                 _protectedLRUList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
@@ -1541,131 +1568,172 @@ namespace zero::buffer_pool {
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
          * \details Adds the buffer frame index to the back of the probationary segment.
          *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
         void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+            _lruListLock.lock();
             _probationaryLRUList.pushToBack(idx);
+            _lruListLock.unlock();
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
-         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
-         *          protected segment to the back of the probationary segment.
+         * \details Added the buffer frame index to the back of the protected segment. If the protected segment is
+         *          greater than supposed, the least recently used buffer frame is moved from the protected segment to
+         *          the back of the probationary segment.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
-            }
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
                 bf_idx downgradeIndex;
                 _protectedLRUList.popFromFront(downgradeIndex);
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
-         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
-         *          protected segment to the back of the probationary segment.
+         * \details Added the buffer frame index to the back of the protected segment. If the protected segment is
+         *          greater than supposed, the least recently used buffer frame is moved from the protected segment to
+         *          the back of the probationary segment.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
-            }
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
                 bf_idx downgradeIndex;
                 _protectedLRUList.popFromFront(downgradeIndex);
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
-         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
-         *          protected segment to the back of the probationary segment.
+         * \details Added the buffer frame index to the back of the protected segment. If the protected segment is
+         *          greater than supposed, the least recently used buffer frame is moved from the protected segment to
+         *          the back of the probationary segment.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
-            }
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
                 bf_idx downgradeIndex;
                 _protectedLRUList.popFromFront(downgradeIndex);
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
-         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
-         *          protected segment to the back of the probationary segment.
+         * \details Added the buffer frame index to the back of the protected segment. If the protected segment is
+         *          greater than supposed, the least recently used buffer frame is moved from the protected segment to
+         *          the back of the probationary segment.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
-            }
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
                 bf_idx downgradeIndex;
                 _protectedLRUList.popFromFront(downgradeIndex);
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details Removes the buffer frame index from the protected or probationary segment.
          *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
+                try {
+                    _probationaryLRUList.remove(idx);
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             }
+            _lruListLock.unlock();
+            _lruListLock.unlock();
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
+         *          \link updateOnPageMiss(bf_idx, PageID) \endlink, \link updateOnPageFixed(bf_idx) \endlink,
+         *          \link updateOnPageDirty(bf_idx) \endlink, \link updateOnPageBlocked(bf_idx) \endlink,
+         *          \link updateOnPageSwizzled(bf_idx) \endlink,
+         *          \link updateOnPageExplicitlyUnbuffered(bf_idx) \endlink.
+         *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _lruListLock.unlock();
         };
 
     private:
@@ -1687,7 +1755,7 @@ namespace zero::buffer_pool {
         /*!\var     _lruListLock
          * \brief   Protects the protected and probationary segments from concurrent manupulations
          */
-        std::mutex                                          _lruListLock;
+        std::recursive_mutex                                _lruListLock;
 
     };
 
@@ -1697,6 +1765,9 @@ namespace zero::buffer_pool {
      *          policy. The _LRU-k_ policy selects the buffer frame that was not used _k_-times for the longest time.
      *          This is implemented using a queue which allows to move referenced buffer frames from some place within
      *          the queue up. This requires latching during each page reference to prevent races.
+     *
+     * \warning The behavior of this class is undefined if the implementation of \c std::recursive_mutex::unlock()
+     *          does not allow too many invocations of it.
      *
      * @tparam k             The number of last references considered per buffer frame.
      * @tparam on_page_unfix Count the unfix of a page as a reference instead of the fix.
@@ -1709,20 +1780,18 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU-k_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLRUK(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _lruList(bufferPool->getBlockCount()),
-                _frameReferences(bufferPool->getBlockCount(), 0) {};
+        explicit PageEvictionerSelectorLRUK(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
          * \details Selects the buffer frame from the buffer pool whose _k_-th page reference is furthest in the past.
+         *          The respective buffer frame index is removed from the queue.
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            uint64_t selected;
+        inline bf_idx select() noexcept final {
+            uint64_t selected;                  // Does not remove more tracked references because the page might be not
+            _lruListLock.lock();                // evictable right now.
             _lruList.popFromFront(selected);
             return static_cast<bf_idx>(selected / k);
         };
@@ -1734,13 +1803,14 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             if constexpr (!on_page_unfix) {
-                std::lock_guard<std::mutex> lock(_lruListLock);
+                _lruListLock.lock();
                 try {
-                    _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
+                    _lruList.remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
                 _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+                _lruListLock.unlock();
             }
         };
 
@@ -1751,109 +1821,144 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             if constexpr (on_page_unfix) {
-                std::lock_guard<std::mutex> lock(_lruListLock);
+                _lruListLock.lock();
                 try {
-                    _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
+                    _lruList.remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
                 _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+                _lruListLock.unlock();
             }
         };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details Adds a page reference of the buffer frame index to the page reference statistics.
+         * \details Adds a page reference of the buffer frame index to the page reference statistics. But before that
+         *          it removes all the tracked page references from previous uses of this buffer frame that might still
+         *          exist in the queue.
+         *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _lruListLock.lock();
             _frameReferences[idx] = 0;
+            for (size_t i; i < k; i++) {    // select() does not remove all the tracked references therefore this is
+                try {       // done here to prevent influence of the old reference history on the new page.
+                    _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            }
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _lruListLock.unlock();
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Replaces the stored page reference of the buffer frame index which is the furthest in the past with
-         *          a new one.
+         * \details Adds a page reference of the buffer frame index to the page reference statistics.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Replaces the stored page reference of the buffer frame index which is the furthest in the past with
-         *          a new one.
+         * \details Adds a page reference of the buffer frame index to the page reference statistics.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Replaces the stored page reference of the buffer frame index which is the furthest in the past with
-         *          a new one.
+         * \details Adds a page reference of the buffer frame index to the page reference statistics.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Replaces the stored page reference of the buffer frame index which is the furthest in the past with
-         *          a new one.
+         * \details Adds a page reference of the buffer frame index to the page reference statistics.
+         *
+         * \pre     The \link _lruListLock \endlink is acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
-            try {
-                _lruList.remove(static_cast<uint64_t>(((_frameReferences[idx] - 1) % k) + k * idx));
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details Removes all the stored page references of the buffer frame index from the page reference statistics.
          *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_lruListLock);
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _lruListLock.lock();
             _frameReferences[idx] = 0;
-            try {
-                for (size_t i; i < k; i++) {
+            for (size_t i; i < k; i++) {
+                try {
                     _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
-                }
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+            }
+            _lruListLock.unlock();
+            _lruListLock.unlock();
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
+         *          \link updateOnPageMiss(bf_idx, PageID) \endlink, \link updateOnPageFixed(bf_idx) \endlink,
+         *          \link updateOnPageDirty(bf_idx) \endlink, \link updateOnPageBlocked(bf_idx) \endlink,
+         *          \link updateOnPageSwizzled(bf_idx) \endlink,
+         *          \link updateOnPageExplicitlyUnbuffered(bf_idx) \endlink.
+         *
+         * \pre     The \link _lruListLock \endlink might be acquired by this thread.
+         * \post    The \link _lruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _lruListLock.unlock();
         };
 
     private:
@@ -1871,7 +1976,7 @@ namespace zero::buffer_pool {
          * \brief   Latch protecting the \link _lruList \endlink and \link _frameReferences \endlink from concurrent
          *          manipulations
          */
-        std::mutex                                          _lruListLock;
+        std::recursive_mutex                                _lruListLock;
 
     };
 
@@ -1888,6 +1993,9 @@ namespace zero::buffer_pool {
      *          queue. The template parameters of this selector specify the number of buffer frames to select before
      *          changing the list.
      *
+     * \warning The behavior of this class is undefined if the implementation of \c std::recursive_mutex::unlock()
+     *          does not allow too many invocations of it.
+     *
      * @tparam retry_list_check_ppm The fraction (in PPM) of the \link _retryList \endlink queue selected by a thread
      *                              before selecting buffer frames from the \link _mruList \endlink.
      * @tparam mru_list_check_ppm   The fraction (in PPM) of the \link _mruList \endlink queue selected by a thread
@@ -1903,20 +2011,21 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _MRU_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _mruList(bufferPool->getBlockCount()) {};
+        explicit PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
          * \details If a thread is currently selecting pages from the \link _mruList \endlink, if it should continue
          *          with that according to the template parameter \c mru_list_check_ppm and if the
          *          \link _mruList \endlink is not empty, this selects the front of the \link _mruList \endlink.
-         *          Otherwise, it selects the front of the \link _retryList \endlink.
+         *          Otherwise, it selects the front of the \link _retryList \endlink. The respective buffer frame index
+         *          is removed from the respective stack or queue.
+         *
+         * \post    The \link _mruListLock \endlink is acquired by this thread.
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             static thread_local bool currentlyCheckingRetryList;
             static thread_local size_t retriedBufferIndexes;
 
@@ -1924,32 +2033,28 @@ namespace zero::buffer_pool {
             while (true) {
                 if (currentlyCheckingRetryList) {       // This thread checked the front of the _retryList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.length())
-                        || _mruList.length() == 0) {    // Check again the front of the _retryList:
-                        _retryListLock.lock();
+                     || _mruList.length() == 0) {    // Check again the front of the _retryList:
+                        _mruListLock.lock();
                         _retryList.popFromFront(selected);
-                        _retryListLock.unlock();
                         retriedBufferIndexes++;
                         return selected;
                     } else {                            // Change to checking entries from the front of the _initialList
                         _mruListLock.lock();
                         _mruList.popFromFront(selected);
-                        _mruListLock.unlock();
                         retriedBufferIndexes = 0;
                         currentlyCheckingRetryList = false;
                         return selected;
                     }
                 } else {                                // This thread checked the front of the _initialList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(mru_list_check_ppm * 0.000001 * _mruList.length())
-                        || _retryList.length() == 0) {  // Check again the front of the _initialList:
+                     || _retryList.length() == 0) {  // Check again the front of the _initialList:
                         _mruListLock.lock();
                         _mruList.popFromFront(selected);
-                        _mruListLock.unlock();
                         retriedBufferIndexes++;
                         return selected;
                     } else {                            // Change to checking entries from the front of the _retryList
-                        _retryListLock.lock();
+                        _mruListLock.lock();
                         _retryList.popFromFront(selected);
-                        _retryListLock.unlock();
                         retriedBufferIndexes = 0;
                         currentlyCheckingRetryList = true;
                         return selected;
@@ -1965,7 +2070,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {};
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
@@ -1973,111 +2078,160 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             try {
                 _mruList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
                 _retryList.remove(idx);
             }
             _mruList.pushToFront(idx);
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
          * \details Adds the buffer frame index to the top of the stack.
          *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _mruListLock.lock();
             _mruList.pushToFront(idx);
+            _mruListLock.unlock();
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         * \details Adds the buffer frame index to the top of the stack.
+         *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
-            try {
-                _mruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _retryList.remove(idx);
-            }
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             _retryList.pushToBack(idx);
+            _mruListLock.unlock();
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         * \details Adds the buffer frame index to the top of the stack.
+         *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
-            try {
-                _mruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _retryList.remove(idx);
-            }
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             _retryList.pushToBack(idx);
+            _mruListLock.unlock();
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         * \details Adds the buffer frame index to the top of the stack.
+         *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
-            try {
-                _mruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _retryList.remove(idx);
-            }
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             _retryList.pushToBack(idx);
+            _mruListLock.unlock();
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Moves the buffer frame index from some place within the stack or the queue to the back of the queue.
+         * \details Adds the buffer frame index to the top of the stack.
+         *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
-            try {
-                _mruList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _retryList.remove(idx);
-            }
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             _retryList.pushToBack(idx);
+            _mruListLock.unlock();
+            _mruListLock.unlock();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
          * \details Removes the buffer frame index from the stack or the queue.
          *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            std::lock_guard<std::mutex> lock(_mruListLock);
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            _mruListLock.lock();
             try {
                 _mruList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _retryList.remove(idx);
+                try {
+                    _retryList.remove(idx);
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
             }
+            _mruListLock.unlock();
+            _mruListLock.unlock();
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
+         *          \link updateOnPageMiss(bf_idx, PageID) \endlink, \link updateOnPageFixed(bf_idx) \endlink,
+         *          \link updateOnPageDirty(bf_idx) \endlink, \link updateOnPageBlocked(bf_idx) \endlink,
+         *          \link updateOnPageSwizzled(bf_idx) \endlink,
+         *          \link updateOnPageExplicitlyUnbuffered(bf_idx) \endlink.
+         *
+         * \pre     The \link _mruListLock \endlink might be acquired by this thread.
+         * \post    The \link _mruListLock \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::recursive_mutex::unlock()
+         *          does not allow too many invocations of it.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _mruListLock.unlock();
         };
 
     private:
@@ -2089,9 +2243,10 @@ namespace zero::buffer_pool {
         zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _mruList;
 
         /*!\var     _mruListLock
-         * \brief   Latch protecting the \link _mruList \endlink from concurrent manipulations
+         * \brief   Latch protecting the \link _mruList \endlink and the \link _retryList \endlink from concurrent
+         *          manipulations
          */
-        std::mutex                                          _mruListLock;
+        std::recursive_mutex                                _mruListLock;
 
         /*!\var     _retryList
          * \brief   Queue of buffer frames currently last selected for eviction
@@ -2100,11 +2255,6 @@ namespace zero::buffer_pool {
          *          to be not evictable during eviction.
          */
         zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _retryList;
-
-        /*!\var     _retryListLock
-         * \brief   Latch protecting the \link _retryList \endlink from concurrent manipulations
-         */
-        std::mutex                                          _retryListLock;
 
     };
 
@@ -2126,14 +2276,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _timestampsLive(bufferPool->getBlockCount()),
-                _lruList0(bufferPool->getBlockCount()),
-                _lruList1(bufferPool->getBlockCount()),
-                _lastChecked(0),
-                _useLRUList0(false),
-                _useLRUList1(false) {};
+        explicit PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2148,10 +2291,10 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             while (true) {
                 if (_useLRUList0) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
@@ -2176,7 +2319,7 @@ namespace zero::buffer_pool {
                         }
                     }
                 } else if (_useLRUList1) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList0);
@@ -2222,7 +2365,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2232,7 +2375,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2244,7 +2387,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2255,7 +2398,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2266,19 +2409,21 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Sets the timestamp of the last page reference of the respective buffer frame to the current time.
+         * \details Sets the timestamp of the last page reference of the respective buffer frame to the highest possible
+         *          timestamp to prevent further unsuccessful evictions until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _timestampsLive[idx]
+                    = std::chrono::time_point<std::chrono::high_resolution_clock>::max().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
@@ -2288,7 +2433,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
@@ -2300,9 +2445,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::duration::max().count();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _timestampsLive
@@ -2363,7 +2514,7 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+        inline void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
                 into[index] = std::make_tuple(index, _timestampsLive[index].load());
             }
@@ -2399,15 +2550,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU-k_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _timestampsLiveOldestTimestamp(bufferPool->getBlockCount()),
-                _timestampsLive(bufferPool->getBlockCount()),
-                _lruList0(bufferPool->getBlockCount()),
-                _lruList1(bufferPool->getBlockCount()),
-                _lastChecked(0),
-                _useLRUList0(false),
-                _useLRUList1(false) {};
+        explicit PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2423,11 +2566,10 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             while (true) {
                 if (_useLRUList0) {
-                    if (_lastChecked
-                      > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
@@ -2445,7 +2587,7 @@ namespace zero::buffer_pool {
                             continue;
                         } else {
                             if (std::get<1>(_lruList0[checkThis])
-                             == _timestampsLive[checkThis][_timestampsLiveOldestTimestamp[checkThis] % k]) {
+                             == _timestampsLive[std::get<0>(_lruList0[checkThis])][_timestampsLiveOldestTimestamp[std::get<0>(_lruList0[checkThis])] % k]) {
                                 return std::get<0>(_lruList0[checkThis]);
                             } else {
                                 continue;
@@ -2453,8 +2595,7 @@ namespace zero::buffer_pool {
                         }
                     }
                 } else if (_useLRUList1) {
-                    if (_lastChecked
-                      > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList0);
@@ -2472,7 +2613,7 @@ namespace zero::buffer_pool {
                             continue;
                         } else {
                             if (std::get<1>(_lruList1[checkThis])
-                             == _timestampsLive[checkThis][_timestampsLiveOldestTimestamp[checkThis] % k]) {
+                             == _timestampsLive[std::get<0>(_lruList1[checkThis])][_timestampsLiveOldestTimestamp[std::get<0>(_lruList1[checkThis])] % k]) {
                                 return std::get<0>(_lruList1[checkThis]);
                             } else {
                                 continue;
@@ -2488,7 +2629,9 @@ namespace zero::buffer_pool {
                     _useLRUList1 = false;
                     _sortingInProgress.clear();
                 } else {
-
+                    _waitForSorted.lock();
+                    _waitForSorted.unlock();
+                    continue;
                 }
             }
         };
@@ -2501,7 +2644,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             if constexpr (!on_page_unfix) {
                 _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -2516,7 +2659,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             if constexpr (on_page_unfix) {
                 _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -2531,12 +2674,10 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _timestampsLiveOldestTimestamp[idx] = 0;
-            _timestampsLive[idx] = std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>(k);
             for (size_t i = 0; i < k; i++) {
-                _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                        = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                _timestampsLive[idx][i] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
             }
         };
 
@@ -2548,7 +2689,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
@@ -2561,22 +2702,24 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Sets the next timestamp to update according to the first component of \link _timestampsLive \endlink
-         *          in the second component of \link _timestampsLive \endlink to the current time.
+         * \details Sets all timestamps of the respective buffer frame to the highest possible timestamp to prevent
+         *          further unsuccessful evictions until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                    = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            for (size_t i = 0; i < k; i++) {
+                _timestampsLive[idx][i]
+                        = std::chrono::time_point<std::chrono::high_resolution_clock>::max().time_since_epoch().count();
+            }
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
@@ -2587,7 +2730,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
                     = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         };
@@ -2600,12 +2743,18 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             for (size_t i = 0; i < k; i++) {
                 _timestampsLive[idx][i]
                         = std::chrono::high_resolution_clock::now().time_since_epoch().count();
             }
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _timestampsLiveOldestTimestamp
@@ -2623,7 +2772,7 @@ namespace zero::buffer_pool {
          *          \link _timestampsLiveOldestTimestamp \endlink. The index of the page reference timestamps
          *          corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>>    _timestampsLive;
+        std::vector<std::array<std::atomic<std::chrono::high_resolution_clock::duration::rep>, k>>  _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2676,7 +2825,7 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+        inline void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
                 into[index] = std::make_tuple(index, _timestampsLive[index][_timestampsLiveOldestTimestamp[index] % k].load());
             }
@@ -2710,14 +2859,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LFU_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLFU(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _frequenciesLive(bufferPool->getBlockCount()),
-                _lfuList0(bufferPool->getBlockCount()),
-                _lfuList1(bufferPool->getBlockCount()),
-                _lastChecked(0),
-                _useLFUList0(false),
-                _useLFUList1(false) {};
+        explicit PageEvictionerSelectorLFU(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2733,10 +2875,10 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             while (true) {
                 if (_useLFUList0) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList1);
@@ -2761,7 +2903,7 @@ namespace zero::buffer_pool {
                         }
                     }
                 } else if (_useLFUList1) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList0);
@@ -2807,7 +2949,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _frequenciesLive[idx]++;
         };
 
@@ -2817,7 +2959,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -2827,7 +2969,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
          *            with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _frequenciesLive[idx] = 1;
         };
 
@@ -2838,7 +2980,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -2847,16 +2989,19 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Sets the reference frequency to the highest possible value to prevent further unsuccessful evictions
+         *          until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -2865,7 +3010,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -2875,9 +3020,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
         }
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _frequenciesLive
@@ -2937,7 +3088,7 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        void sort(std::vector<std::tuple<bf_idx, uint64_t>>& into) noexcept {
+        inline void sort(std::vector<std::tuple<bf_idx, uint64_t>>& into) noexcept {
             for (bf_idx index = 0; index < _frequenciesLive.size(); index++) {
                 into[index] = std::make_tuple(index, _frequenciesLive[index].load());
             }
@@ -2974,15 +3125,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LFUDA_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLFUDA(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _frequenciesLive(bufferPool->getBlockCount()),
-                _lfuList0(bufferPool->getBlockCount()),
-                _lfuList1(bufferPool->getBlockCount()),
-                _lastChecked(0),
-                _ageFactor(1),
-                _useLFUList0(false),
-                _useLFUList1(false) {};
+        explicit PageEvictionerSelectorLFUDA(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2998,10 +3141,10 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             while (true) {
                 if (_useLFUList0) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList1);
@@ -3027,7 +3170,7 @@ namespace zero::buffer_pool {
                         }
                     }
                 } else if (_useLFUList1) {
-                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * smlevel_0::bf->getBlockCount())
+                    if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
                      && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList0);
@@ -3061,7 +3204,9 @@ namespace zero::buffer_pool {
                     _useLFUList1 = false;
                     _sortingInProgress.clear();
                 } else {
-
+                    _waitForSorted.lock();
+                    _waitForSorted.unlock();
+                    continue;
                 }
             }
         };
@@ -3072,7 +3217,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _frequenciesLive[idx].fetch_add(_ageFactor);
         };
 
@@ -3082,7 +3227,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {};
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -3092,7 +3237,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
          *            with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _frequenciesLive[idx] = _ageFactor.load();
         };
 
@@ -3103,7 +3248,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -3112,16 +3257,19 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Sets the reference frequency to the highest possible value to prevent further unsuccessful evictions
+         *          until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -3130,7 +3278,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -3140,9 +3288,15 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _frequenciesLive
@@ -3207,7 +3361,7 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        void sort(std::vector<std::tuple<bf_idx, uint64_t>>& into) noexcept {
+        inline void sort(std::vector<std::tuple<bf_idx, uint64_t>>& into) noexcept {
             for (bf_idx index = 0; index < _frequenciesLive.size(); index++) {
                 into[index] = std::make_tuple(index, _frequenciesLive[index].load());
             }
@@ -3238,12 +3392,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRD-V1_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLRDV1(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _frameReferences(bufferPool->getBlockCount()),
-                _frameFirstReferenced(bufferPool->getBlockCount()),
-                _frameAlreadySelected(bufferPool->getBlockCount()),
-                _globalReferences(0) {};
+        explicit PageEvictionerSelectorLRDV1(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3253,7 +3402,7 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             bf_idx minLRDIndex = 0;
             uint64_t minLRDReferences;
             double minLRDReferenceDensity = std::numeric_limits<double>::max();
@@ -3290,10 +3439,9 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _globalReferences++;
             _frameReferences[idx]++;
-            _frameAlreadySelected[idx].clear();
         };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
@@ -3302,12 +3450,9 @@ namespace zero::buffer_pool {
          *          page reference and therefore this only sets the page as active as the eviction of this might have
          *          been blocked by this fix previously.
          *
-         *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
-            _frameAlreadySelected[idx].clear();
-        };
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -3319,7 +3464,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
          *            with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _frameFirstReferenced[idx] = _globalReferences++;
             _frameReferences[idx] = 1;
             _frameAlreadySelected[idx].clear();
@@ -3327,39 +3472,54 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Sets the reference counter of the buffer frame to the highest possible value to prevent further
+         *          unsuccessful evictions until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _frameReferences[idx] = std::numeric_limits<uint64_t>::max();   // Prevent further tries of eviction!
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -3369,11 +3529,17 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _frameFirstReferenced[idx] = 0;
             _frameReferences[idx] = 0;
             _frameAlreadySelected[idx].test_and_set();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _frameReferences
@@ -3404,7 +3570,7 @@ namespace zero::buffer_pool {
 
     template <uint64_t subtrahend/* = 10*/>
     struct AgingFunctionSubtraction : public AgingFunction {
-        virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept {
+        inline void operator()(std::atomic<uint64_t>& referenceCount) noexcept final {
             if (referenceCount > subtrahend) {
                 referenceCount -= subtrahend;
             } else {
@@ -3415,7 +3581,7 @@ namespace zero::buffer_pool {
 
     template <uint64_t factor_ppm/* = 750000*/>
     struct AgingFunctionMultiplication : public AgingFunction {
-        virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept {
+        inline void operator()(std::atomic<uint64_t>& referenceCount) noexcept final {
             referenceCount = static_cast<uint64_t>(factor_ppm * 0.000001 * referenceCount);
         }
     };
@@ -3443,16 +3609,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRD-V2_ buffer frame selector is responsible for.
          */
-        PageEvictionerSelectorLRDV2(const BufferPool* bufferPool) :
-                PageEvictionerSelector(bufferPool),
-                _frameReferences(bufferPool->getBlockCount()),
-                _frameFirstReferenced(bufferPool->getBlockCount()),
-                _frameAlreadySelected(bufferPool->getBlockCount()),
-                _globalReferences(0),
-                _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {
-            static_assert(std::is_base_of<AgingFunction, aging_function>::value,
-                          "'selector_class' is not of type 'AgingFunction'!");
-        };
+        explicit PageEvictionerSelectorLRDV2(const BufferPool* bufferPool);
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3462,7 +3619,7 @@ namespace zero::buffer_pool {
          *
          * @return The selected buffer frame.
          */
-        bf_idx select() noexcept final {
+        inline bf_idx select() noexcept final {
             bf_idx minLRDIndex = 0;
             uint64_t minLRDReferences;
             double minLRDReferenceDensity = std::numeric_limits<double>::max();
@@ -3501,13 +3658,12 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageHit(bf_idx idx) noexcept final {
+        inline void updateOnPageHit(bf_idx idx) noexcept final {
             _frameReferences[idx]++;
             if (_globalReferences++ % _agingFrequency == 0) {
                 std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
                               [this](std::atomic<uint64_t>& referenceCount){_agingFunction(referenceCount);});
             }
-            _frameAlreadySelected[idx].clear();
         };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
@@ -3518,9 +3674,7 @@ namespace zero::buffer_pool {
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
-        void updateOnPageUnfix(bf_idx idx) noexcept final {
-            _frameAlreadySelected[idx].clear();
-        };
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
@@ -3533,7 +3687,7 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer frame
          *            with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _frameFirstReferenced[idx] = _globalReferences++;
             if (_frameFirstReferenced[idx] % _agingFrequency == 0) {
                 std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
@@ -3545,39 +3699,54 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Sets the reference counter of the buffer frame to the highest possible value to prevent further
+         *          unsuccessful evictions until this buffer frame is reused.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _frameReferences[idx] = std::numeric_limits<uint64_t>::max();   // Prevent further tries of eviction!
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Only page fixes are considered page references. Nothing needs to be done here.
+         * \details Increments the reference counter of the buffer frame by 1 to prevent infinite loops of non-evictable
+         *          buffer frames to be selected. It also sets the buffer frame index to be active.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            _frameReferences[idx]++;    // Prevent infinite loops of non-evictable selects.
+            _frameAlreadySelected[idx].clear();
+        };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -3587,11 +3756,17 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _frameFirstReferenced[idx] = 0;
             _frameReferences[idx] = 0;
             _frameAlreadySelected[idx].test_and_set();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _frameReferences

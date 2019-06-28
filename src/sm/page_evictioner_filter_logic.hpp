@@ -20,7 +20,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this invert buffer frame filter is responsible for.
          */
-        PageEvictionerFilterLogicNOT(const BufferPool* bufferPool) :
+        explicit PageEvictionerFilterLogicNOT(const BufferPool* bufferPool) :
                 _filter(bufferPool) {
             static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value, "'filter_class' is not of type 'PageEvictionerFilter'!");
         };
@@ -168,7 +168,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this ANDed buffer frame filter is responsible for.
          */
-        PageEvictionerFilterLogicAND(const BufferPool* bufferPool) :
+        explicit PageEvictionerFilterLogicAND(const BufferPool* bufferPool) :
                 _filter0(bufferPool),
                 _filter1(bufferPool) {
             static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value, "'filter_class0' is not of type 'PageEvictionerFilter'!");
@@ -333,7 +333,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this ORed buffer frame filter is responsible for.
          */
-        PageEvictionerFilterLogicOR(const BufferPool* bufferPool) :
+        explicit PageEvictionerFilterLogicOR(const BufferPool* bufferPool) :
                 _filter0(bufferPool),
                 _filter1(bufferPool) {
             static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value, "'filter_class0' is not of type 'PageEvictionerFilter'!");

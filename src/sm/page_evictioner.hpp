@@ -33,7 +33,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this page evictioner is responsible for.
          */
-        PageEvictioner(const BufferPool* bufferPool);
+        explicit PageEvictioner(const BufferPool* bufferPool);
 
         /*!\fn      PageEvictioner(const PageEvictioner&)
          * \brief   Explicitly deleted copy constructor of an abstract page evictioner
@@ -173,6 +173,14 @@ namespace zero::buffer_pool {
          *            explicitly.
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of
+         * \details Some methods of page evictioners hold internal latches beyond the invocation of one method but
+         *          expect another method to be called later to release those internal latches. This should be used to
+         *          explicitly release those latches.
+         */
+        virtual void releaseInternalLatches() noexcept = 0;
 
         /*!\fn      evictOne(bf_idx victim)
          * \brief   Evicts a page from the buffer pool

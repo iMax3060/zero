@@ -57,7 +57,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _Select-and-Filter_ page evictioner is responsible for.
          */
-        PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerSelectAndFilter()
          * \brief   Destructs a _Select-and-Filter_ page evictioner
@@ -186,6 +186,17 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _selector.updateOnPageExplicitlyUnbuffered(idx);
             _filter.updateOnPageExplicitlyUnbuffered(idx);
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of
+         * \details Some methods of page evictioners hold internal latches beyond the invocation of one method but
+         *          expect another method to be called later to release those internal latches. This should be used to
+         *          explicitly release those latches.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _selector.releaseInternalLatches();
+            _filter.releaseInternalLatches();
         };
 
     private:

@@ -22,7 +22,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this buffer frame filter is responsible for.
          */
-        PageEvictionerFilter(const BufferPool* bufferPool);
+        explicit PageEvictionerFilter(const BufferPool* bufferPool);
 
         /*!\fn      ~PageEvictionerFilter()
          * \brief   Destructs a buffer frame filter
@@ -168,6 +168,16 @@ namespace zero::buffer_pool {
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of the buffer frame filter
+         * \details Some methods of buffer frame filters hold internal latches beyond the invocation of one method but
+         *          expect another method to be called later to release those internal latches. This should be used to
+         *          explicitly release those latches.
+         *
+         * \note    This member function must be implemented by every specific buffer frame selection policy.
+         */
+        virtual void releaseInternalLatches() noexcept = 0;
+
     };
 
     /*!\class   PageEvictionerFilterNone
@@ -182,7 +192,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this non-filtering buffer frame filter is responsible for.
          */
-        PageEvictionerFilterNone(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterNone(const BufferPool* bufferPool);
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -277,6 +287,12 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
 
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details This buffer frame filter does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
+
     };
 
     /*!\class   PageEvictionerFilterCLOCK
@@ -303,7 +319,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _CLOCK_ buffer frame filter is responsible for.
          */
-        PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -452,6 +468,12 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _refBits[idx] = true;
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details This buffer frame filter does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\var     _refBits
@@ -605,7 +627,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _GCLOCK_ buffer frame filter is responsible for.
          */
-        PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -965,6 +987,12 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _refInts[idx] = std::numeric_limits<uint16_t>::max();
         };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details This buffer frame filter does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
 
     private:
         /*!\fn      getLevel(const bf_idx& idx) const
