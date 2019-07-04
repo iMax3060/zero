@@ -1554,7 +1554,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
         inline void updateOnPageHit(bf_idx idx) noexcept final {
-            _lruListLock.lock();
+            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
@@ -1566,7 +1566,6 @@ namespace zero::buffer_pool {
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
-            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
@@ -1578,7 +1577,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
         inline void updateOnPageUnfix(bf_idx idx) noexcept final {
-            _lruListLock.lock();
+            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
             try {
                 _protectedLRUList.remove(idx);
             } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
@@ -1590,7 +1589,6 @@ namespace zero::buffer_pool {
                 _probationaryLRUList.pushToBack(downgradeIndex);
             }
             _protectedLRUList.pushToBack(idx);
-            _lruListLock.unlock();
         };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
@@ -2057,35 +2055,33 @@ namespace zero::buffer_pool {
             static thread_local size_t retriedBufferIndexes;
 
             bf_idx selected;
-            while (true) {
-                if (currentlyCheckingRetryList) {       // This thread checked the front of the _retryList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.length())
-                     || _mruList.length() == 0) {    // Check again the front of the _retryList:
-                        _mruListLock.lock();
-                        _retryList.popFromFront(selected);
-                        retriedBufferIndexes++;
-                        return selected;
-                    } else {                            // Change to checking entries from the front of the _initialList
-                        _mruListLock.lock();
-                        _mruList.popFromFront(selected);
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = false;
-                        return selected;
-                    }
-                } else {                                // This thread checked the front of the _initialList last:
-                    if (retriedBufferIndexes < static_cast<bf_idx>(mru_list_check_ppm * 0.000001 * _mruList.length())
-                     || _retryList.length() == 0) {  // Check again the front of the _initialList:
-                        _mruListLock.lock();
-                        _mruList.popFromFront(selected);
-                        retriedBufferIndexes++;
-                        return selected;
-                    } else {                            // Change to checking entries from the front of the _retryList
-                        _mruListLock.lock();
-                        _retryList.popFromFront(selected);
-                        retriedBufferIndexes = 0;
-                        currentlyCheckingRetryList = true;
-                        return selected;
-                    }
+            if (currentlyCheckingRetryList) {       // This thread checked the front of the _retryList last:
+                if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.length())
+                 || _mruList.length() == 0) {    // Check again the front of the _retryList:
+                    _mruListLock.lock();
+                    _retryList.popFromFront(selected);
+                    retriedBufferIndexes++;
+                    return selected;
+                } else {                            // Change to checking entries from the front of the _initialList
+                    _mruListLock.lock();
+                    _mruList.popFromFront(selected);
+                    retriedBufferIndexes = 0;
+                    currentlyCheckingRetryList = false;
+                    return selected;
+                }
+            } else {                                // This thread checked the front of the _initialList last:
+                if (retriedBufferIndexes < static_cast<bf_idx>(mru_list_check_ppm * 0.000001 * _mruList.length())
+                  || _retryList.length() == 0) {  // Check again the front of the _initialList:
+                    _mruListLock.lock();
+                    _mruList.popFromFront(selected);
+                    retriedBufferIndexes++;
+                    return selected;
+                } else {                            // Change to checking entries from the front of the _retryList
+                    _mruListLock.lock();
+                    _retryList.popFromFront(selected);
+                    retriedBufferIndexes = 0;
+                    currentlyCheckingRetryList = true;
+                    return selected;
                 }
             }
         };
