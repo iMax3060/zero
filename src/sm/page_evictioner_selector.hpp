@@ -30,7 +30,8 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelector(const BufferPool* bufferPool);
+        explicit PageEvictionerSelector(const BufferPool* bufferPool) :
+                _maxBufferpoolIndex(bufferPool->getBlockCount() - 1) {};
 
         /*!\fn      ~PageEvictionerSelector()
          * \brief   Destructs a buffer frame selector
@@ -182,7 +183,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLOOPAbsolutelyAccurate(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _currentFrame(_maxBufferpoolIndex) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -314,7 +317,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _currentFrame(1) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -442,7 +447,8 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLOOPThreadLocallyAccurate(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLOOPThreadLocallyAccurate(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -580,7 +586,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -812,7 +820,13 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FIFO_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _approximateInitialListLength(0),
+                _approximateRetryListLength(0),
+                _initialList(bufferPool->getBlockCount()),
+                _retryList(bufferPool->getBlockCount()),
+                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1076,7 +1090,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _FILO_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _notExplicitlyEvictedList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1297,7 +1313,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLRU(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _lruList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1505,7 +1523,11 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _SLRU_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorSLRU(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorSLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _protectedBlockCount(static_cast<bf_idx>(protected_block_ppm * 0.000001 * bufferPool->getBlockCount())),
+                _protectedLRUList(_protectedBlockCount),
+                _probationaryLRUList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1780,7 +1802,10 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU-k_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLRUK(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLRUK(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _lruList(k * bufferPool->getBlockCount()),
+                _frameReferences(bufferPool->getBlockCount(), 0) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2011,7 +2036,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _MRU_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _mruList(bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2276,7 +2303,16 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _timestampsLive(bufferPool->getBlockCount()),
+                _lruList0(bufferPool->getBlockCount()),
+                _lruList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _useLRUList0(false),
+                _useLRUList1(false) {
+            _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+        };
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2550,7 +2586,17 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRU-k_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _timestampsLiveOldestTimestamp(bufferPool->getBlockCount()),
+                _timestampsLive(bufferPool->getBlockCount()),
+                _lruList0(bufferPool->getBlockCount()),
+                _lruList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _useLRUList0(false),
+                _useLRUList1(false) {
+            _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+        };
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -2859,7 +2905,16 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LFU_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLFU(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLFU(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frequenciesLive(bufferPool->getBlockCount()),
+                _lfuList0(bufferPool->getBlockCount()),
+                _lfuList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _useLFUList0(false),
+                _useLFUList1(false) {
+            _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+        };
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3125,7 +3180,17 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LFUDA_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLFUDA(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLFUDA(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frequenciesLive(bufferPool->getBlockCount()),
+                _lfuList0(bufferPool->getBlockCount()),
+                _lfuList1(bufferPool->getBlockCount()),
+                _lastChecked(0),
+                _ageFactor(1),
+                _useLFUList0(false),
+                _useLFUList1(false) {
+            _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+        };
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3392,7 +3457,12 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRD-V1_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLRDV1(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLRDV1(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frameReferences(bufferPool->getBlockCount()),
+                _frameFirstReferenced(bufferPool->getBlockCount()),
+                _frameAlreadySelected(bufferPool->getBlockCount()),
+                _globalReferences(0) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3609,7 +3679,16 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _LRD-V2_ buffer frame selector is responsible for.
          */
-        explicit PageEvictionerSelectorLRDV2(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectorLRDV2(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _frameReferences(bufferPool->getBlockCount()),
+                _frameFirstReferenced(bufferPool->getBlockCount()),
+                _frameAlreadySelected(bufferPool->getBlockCount()),
+                _globalReferences(0),
+                _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {
+            static_assert(std::is_base_of<AgingFunction, aging_function>::value,
+                          "'selector_class' is not of type 'AgingFunction'!");
+        };
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool

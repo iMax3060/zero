@@ -57,7 +57,15 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _Select-and-Filter_ page evictioner is responsible for.
          */
-        explicit PageEvictionerSelectAndFilter(const BufferPool* bufferPool);
+        explicit PageEvictionerSelectAndFilter(const BufferPool* bufferPool) :
+                PageEvictioner(bufferPool),
+                _selector(bufferPool),
+                _filter(bufferPool) {
+            static_assert(std::is_base_of<PageEvictionerSelector, selector_class>::value,
+                          "'selector_class' is not of type 'PageEvictionerSelector'!");
+            static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
+                          "'filter_class' is not of type 'PageEvictionerFilter'!");
+        };
 
         /*!\fn      ~PageEvictionerSelectAndFilter()
          * \brief   Destructs a _Select-and-Filter_ page evictioner
@@ -86,7 +94,38 @@ namespace zero::buffer_pool {
          *
          * @return The buffer frame that can be freed or \c 0 if no eviction victim could be found.
          */
-        bf_idx pickVictim() noexcept final;
+        bf_idx pickVictim() noexcept final {
+            uint32_t attempts = 0;
+
+            while (true) {
+                if (should_exit()) return 0; // the buffer index 0 has the semantics of null
+
+                bf_idx selected_index = _selector.select();
+
+                if (!_filter.filterAndUpdate(selected_index)) {
+                    continue;
+                }
+
+                attempts++;
+                if (attempts >= _maxAttempts) {
+                    W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
+                } else if (!(_flushDirty
+                          && smlevel_0::bf->isNoDBMode()
+                          && smlevel_0::bf->usesWriteElision())
+                        && attempts % _wakeupCleanerAttempts == 0) {
+                    smlevel_0::bf->wakeupPageCleaner();
+                }
+
+                w_assert0(selected_index != 0);
+
+                if (!evictOne(selected_index)) {
+                    continue;
+                }
+
+                ADD_TSTAT(bf_eviction_attempts, attempts);
+                return selected_index;
+            }
+        };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit

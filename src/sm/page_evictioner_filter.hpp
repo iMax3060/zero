@@ -22,7 +22,7 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this buffer frame filter is responsible for.
          */
-        explicit PageEvictionerFilter(const BufferPool* bufferPool);
+        explicit PageEvictionerFilter(const BufferPool* bufferPool) {};
 
         /*!\fn      ~PageEvictionerFilter()
          * \brief   Destructs a buffer frame filter
@@ -192,7 +192,8 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this non-filtering buffer frame filter is responsible for.
          */
-        explicit PageEvictionerFilterNone(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterNone(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -319,7 +320,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _CLOCK_ buffer frame filter is responsible for.
          */
-        explicit PageEvictionerFilterCLOCK(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterCLOCK(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool),
+                _refBits(bufferPool->getBlockCount()) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -627,7 +630,9 @@ namespace zero::buffer_pool {
          *
          * @param bufferPool The buffer pool this _GCLOCK_ buffer frame filter is responsible for.
          */
-        explicit PageEvictionerFilterGCLOCK(const BufferPool* bufferPool);
+        explicit PageEvictionerFilterGCLOCK(const BufferPool* bufferPool) :
+                PageEvictionerFilter(bufferPool),
+                _refInts(bufferPool->getBlockCount()) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
