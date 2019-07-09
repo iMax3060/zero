@@ -459,6 +459,16 @@ namespace zero::buffer_pool {
          * @return The selected buffer frame.
          */
         inline bf_idx select() noexcept final {
+
+            /*!\var     _currentFrame
+             * \brief   Last control block examined (per evicting thread)
+             * \details Represents the clock hand pointing to the control block that was examined last during the most
+             *          recent execution of \link select() \endlink (evicted last) on this thread.
+             *
+             * \remark  Only used by __LOOP__ and __CLOCK__.
+             */
+            static thread_local bf_idx _currentFrame;
+
             w_assert1(_currentFrame > 0 && _currentFrame <= _maxBufferpoolIndex);
 
             _currentFrame++;
@@ -544,16 +554,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
-    private:
-        /*!\var     _currentFrame
-         * \brief   Last control block examined (per evicting thread)
-         * \details Represents the clock hand pointing to the control block that was examined last during the most
-         *          recent execution of \link select() \endlink (evicted last) on this thread.
-         *
-         * \remark  Only used by __LOOP__ and __CLOCK__.
-         */
-        static thread_local bf_idx _currentFrame;
 
     };
 
