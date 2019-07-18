@@ -483,8 +483,7 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
                     // Start the asynchronous eviction and block until a page was evicted:
                     _evictioner->wakeup(true);
                 } else {
-                    freeFrameIndex = _evictioner->pickVictim();
-                    w_assert0(freeFrameIndex > 0);
+                    w_assert0(_evictioner->evictOne(freeFrameIndex));
                 }
             }
             w_rc_t latchStatus = getControlBlock(freeFrameIndex).latch().latch_acquire(LATCH_EX,
@@ -921,8 +920,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                         // Start the asynchronous eviction and block until a page was evicted:
                         _evictioner->wakeup(true);
                     } else {
-                        pageIndex = _evictioner->pickVictim();
-                        w_assert0(pageIndex > 0);
+                        w_assert0(_evictioner->evictOne(pageIndex));
                     }
                 }
                 pageControlBlock = &getControlBlock(pageIndex);

@@ -96,35 +96,16 @@ namespace zero::buffer_pool {
          * @return The buffer frame that can be freed or \c 0 if no eviction victim could be found.
          */
         bf_idx pickVictim() noexcept final {
-            uint32_t attempts = 0;
-
             while (true) {
                 if (should_exit()) return 0; // the buffer index 0 has the semantics of null
 
-                bf_idx selected_index = _selector.select();
+                bf_idx selectedIndex = _selector.select();
 
-                if (!_filter.filterAndUpdate(selected_index)) {
+                if (!_filter.filterAndUpdate(selectedIndex)) {
                     continue;
                 }
 
-                attempts++;
-                if (attempts >= _maxAttempts) {
-                    W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
-                } else if (!(_flushDirty
-                          && smlevel_0::bf->isNoDBMode()
-                          && smlevel_0::bf->usesWriteElision())
-                        && attempts % _wakeupCleanerAttempts == 0) {
-                    smlevel_0::bf->wakeupPageCleaner();
-                }
-
-                w_assert0(selected_index != 0);
-
-                if (!evictOne(selected_index)) {
-                    continue;
-                }
-
-                ADD_TSTAT(bf_eviction_attempts, attempts);
-                return selected_index;
+                return selectedIndex;
             }
         };
 

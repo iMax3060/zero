@@ -19,7 +19,7 @@ namespace zero::buffer_pool {
      * \note    This class is strongly coupled to the buffer pool and some other components of Zero. The inheriting page
      *          evictioners implementing specific page eviction algorithms do not need to be coupled to all those
      *          components but should just rely on the implementations of \link evictOne() \endlink,
-     *          \link unswizzleAndUpdateEMLSN() \endlink, \link flushDirtyPage() \endlink and \link do_work() \endlink.
+     *          \link _unswizzleAndUpdateEMLSN() \endlink, \link _flushDirtyPage() \endlink and \link do_work() \endlink.
      */
     class PageEvictioner : public worker_thread_t {
     public:
@@ -182,30 +182,14 @@ namespace zero::buffer_pool {
          */
         virtual void releaseInternalLatches() noexcept = 0;
 
-        /*!\fn      evictOne(bf_idx victim)
+        /*!\fn      evictOne(bf_idx& victim)
          * \brief   Evicts a page from the buffer pool
-         * \details Evicts the page from the specified buffer pool frame by:
-         *            - Unswizzling its pointer in its parent (if needed)
-         *            - Updating its EMLSN (if needed)
-         *            - Preparing the corresponding \link bf_tree_cb_t \endlink for the eviction
-         *            - Flushing the page to the database (if needed and allowed)
-         *            - Logging the eviction (if supposed to)
-         *            - Adding the page for recovery (if NoDB is used)
-         *            - Removing the page from the \link Hashtable \endlink
-         *            - Releasing the latch of the buffer frame
+         * \details Selects a page for eviction and executes the eviction of it.
          *
-         * \pre     The buffer frame at index \c victim needs to be latched in \link latch_mode_t::LATCH_EX \endlink
-         *          mode.
-         *
-         * \post    The buffer frame at index \c victim is not used (if this is successful) and it is not latched. If
-         *          \link _flushDirty \endlink is set and if the page is dirty, the page is flushed to the database and
-         *          if \link _logEvictions \endlink is set, a log record of type \link evict_page_log \endlink is in the
-         *          log.
-         *
-         * @param victim The index of the buffer frame from which the page should be evicted.
-         * @return       Returns \c true if the page could successfully be evicted, otherwise \c false .
+         * @param[out] victim The index of the buffer frame from which the page was evicted.
+         * @return            Returns \c true if the \c victim could successfully be evicted, otherwise \c false .
          */
-        bool evictOne(bf_idx victim);
+        bool evictOne(bf_idx& victim);
 
     protected:
         /*!\var     _enabledSwizzling
@@ -255,8 +239,31 @@ namespace zero::buffer_pool {
          */
         const uint_fast32_t       _wakeupCleanerAttempts = 42;
 
+    protected:
+        /*!\fn      _doEviction(bf_idx victim) noexcept
+         * \brief   Evicts a page from the buffer pool
+         * \details Evicts the page from the specified buffer pool frame by:
+         *            - Unswizzling its pointer in its parent (if needed)
+         *            - Updating its EMLSN (if needed)
+         *            - Preparing the corresponding \link bf_tree_cb_t \endlink for the eviction
+         *            - Flushing the page to the database (if needed and allowed)
+         *            - Logging the eviction (if supposed to)
+         *            - Adding the page for recovery (if NoDB is used)
+         *            - Removing the page from the \link Hashtable \endlink
+         *            - Releasing the latch of the buffer frame
+         *
+         * \post    The buffer frame at index \c victim is not used (if this is successful) and it is not latched. If
+         *          \link _flushDirty \endlink is set and if the page was dirty, the page is flushed to the database and
+         *          if \link _logEvictions \endlink is set, a log record of type \link evict_page_log \endlink is in the
+         *          log.
+         *
+         * @param victim The index of the buffer frame from which the page should be evicted.
+         * @return       Returns \c true if the page could successfully be evicted, otherwise \c false .
+         */
+        bool                _doEviction(bf_idx victim) noexcept;
+
     private:
-        /*!\fn      unswizzleAndUpdateEMLSN(bf_idx victim) noexcept
+        /*!\fn      _unswizzleAndUpdateEMLSN(bf_idx victim) noexcept
          * \brief   Unswizzles the pointer in the parent page and updates the EMLSN of that page
          * \details In case swizzling is enabled, this unswizzles the pointer in the parent page. Additionally, this
          *          updates the parent EMLSN. This two operations are kept in a single method because both require
@@ -266,9 +273,9 @@ namespace zero::buffer_pool {
          * @return       \c true if the updates to the parent page were successfully completed and not required,
          *               \c false otherwise.
          */
-        bool                unswizzleAndUpdateEMLSN(bf_idx victim) noexcept;
+        bool                _unswizzleAndUpdateEMLSN(bf_idx victim) noexcept;
 
-        /*!\fn      flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept
+        /*!\fn      _flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept
          * \brief   Flush the specified page
          * \details Writes the specified page to the database file.
          *
@@ -278,7 +285,7 @@ namespace zero::buffer_pool {
          * @param victimControlBlock The control block that corresponds to the buffer frame whose contained page gets
          *                           flushed.
          */
-        void                flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept;
+        void                _flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noexcept;
 
         /*!\fn      do_work() override
          * \brief   Function evicting pages in the eviction thread
@@ -286,7 +293,7 @@ namespace zero::buffer_pool {
          *          terminates the eviction thread) and evicts pages as long as there are not
          *          \link _evictionBatchSize \endlink free buffer frames in the \link BufferPool \endlink.
          */
-        void        do_work() override;
+        void                do_work() override;
     };
 
 } // zero::buffer_pool

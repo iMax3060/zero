@@ -20,80 +20,103 @@ PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
 
 PageEvictioner::~PageEvictioner() {}
 
-bool PageEvictioner::evictOne(bf_idx victim) {
+bool PageEvictioner::evictOne(bf_idx& victim) {
+    uint_fast64_t attempts = 0;
+
+    while (true) {
+        if (should_exit()) {
+            return false;
+        }
+
+        // Get a proposed victim from the page eviction algorithm:
+        victim = pickVictim();
+        w_assert0(victim != 0);
+
+        // Crash the program if this got stuck or start the page cleaner if needed:
+        attempts++;
+        if (attempts >= _maxAttempts) {
+            W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
+        } else if (!(_flushDirty && smlevel_0::bf->isNoDBMode() && smlevel_0::bf->usesWriteElision())
+                && attempts % _wakeupCleanerAttempts == 0) {
+            smlevel_0::bf->wakeupPageCleaner();
+        }
+
+        // Execute the actual eviction:
+        if (!_doEviction(victim)) {
+            continue;
+        }
+
+        ADD_TSTAT(bf_eviction_attempts, attempts);
+        return true;
+    }
+}
+
+bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
     bf_tree_cb_t& victimControlBlock = smlevel_0::bf->getControlBlock(victim);
 
-    if (!victimControlBlock._used) {
+    // Only evict actually evictable pages (not required to stay in the buffer pool):
+    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
+        updateOnPageBlocked(victim);
         return false;
     }
 
-    // If I already hold the latch on this page (e.g., with latch coupling), then the latch acquisition below will
+    // CS: If I already hold the latch on this page (e.g., with latch coupling), then the latch acquisition below will
     // succeed, but the page is obviously not available for eviction. This would not happen if every fix would also
     // pin the page, which I didn't want to do because it seems like a waste. Note that this is only a problem with
     // threads performing their own eviction (i.e., with the option _asyncEviction set to false in BufferPool),
     // because otherwise the evictioner thread never holds any latches other than when trying to evict a page.
     // This bug cost me 2 days of work. Anyway, it should work with the check below for now.
     if (victimControlBlock.latch().held_by_me()) {
-        // I (this thread) currently have the latch on this frame, so
-        // obviously I should not evict it
+        // I (this thread) currently have the latch on this frame, so obviously I should not evict it
         updateOnPageFixed(victim);
-        return false;
-    }
-
-    // Only evict actually evictable pages (not required to stay in the buffer pool)
-    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
-        updateOnPageBlocked(victim);
-        victimControlBlock.latch().latch_release();
         return false;
     }
 
     // If we got here, we passed all tests and have a victim!
     w_assert1(smlevel_0::bf->isActiveIndex(victim));
 
-    // Step 1: latch page in EX mode and check if eligible for eviction
-    rc_t latch_rc;
-    latch_rc = victimControlBlock.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
-    if (latch_rc.is_error()) {
+    // Acquire the latch of the buffer frame in exclusive mode:
+    w_rc_t latchStatus = victimControlBlock.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
+    if (latchStatus.is_error()) {
         updateOnPageFixed(victim);
-        DBG3(<< "Eviction failed on latch for " << idx);
+        DBG3(<< "Eviction failed on latch for " << victim);
         return false;
     }
     w_assert1(victimControlBlock.latch().is_mine());
 
-    // Try to unswizzle/update the parent of the victim.
-    // Proceeding with this victim is not possible if this fails so another victim is tried.
-    if (!unswizzleAndUpdateEMLSN(victim)) {
+    // Unswizzle and update the parent of the victim if needed:
+    if (!_unswizzleAndUpdateEMLSN(victim)) {
         updateOnPageSwizzled(victim);
         victimControlBlock.latch().latch_release();
         return false;
     }
 
-    // Try to atomically decrement the pin count of the page from 0 to -1.
-    // Proceeding with this victim is not possible if this fails so another victim is tried.
+    // Set the pin count of the buffer frame to -1:
     if (!victimControlBlock.prepare_for_eviction()) {
         updateOnPageFixed(victim);
         victimControlBlock.latch().latch_release();
         return false;
     }
+    w_assert1(victimControlBlock._pin_cnt < 0);
+    w_assert1(!victimControlBlock._used);
 
     // POINT OF NO RETURN: The eviction of the victim must happen -- no matter what!
 
-    /* Check if the victim page needs to be flushed.
-     * The function is_dirty() acquires the victim's latch in SH mode which always succeeds as this thread already holds
-     * this latch in EX mode. */
+    // Flush the page to the database if needed:
     bool wasDirty = false;
     if (_flushDirty && victimControlBlock.is_dirty()) {
-        flushDirtyPage(victimControlBlock);
+        _flushDirtyPage(victimControlBlock);
         wasDirty = true;
     }
     w_assert1(victimControlBlock.latch().is_mine());
 
-    /* If evictions should be logged, do this now. */
+    // Log the eviction if it should be done and increment the respective statistical counter:
     if (_logEvictions) {
         Logger::log_sys<evict_page_log>(victimControlBlock._pid, wasDirty, victimControlBlock.get_page_lsn());
     }
+    INC_TSTAT(bf_evict);
 
-    /* If NoDB is used, add the dirty pages  */
+    // Mark the page dirty if in NoDB mode:
     if (smlevel_0::bf->isNoDBMode()) {
         smlevel_0::recovery->add_dirty_page(victimControlBlock._pid, victimControlBlock.get_page_lsn());
         if (victimControlBlock.get_page_lsn() == lsn_t::null) {
@@ -101,16 +124,13 @@ bool PageEvictioner::evictOne(bf_idx victim) {
         }
     }
 
-    w_assert1(victimControlBlock._pin_cnt < 0);
-    w_assert1(!victimControlBlock._used);
-
-    /* Remove the page's entry from the hashtable. */
+    // Remove the page's entry from the hashtable of the buffer pool:
     smlevel_0::bf->getHashtable()->erase(victimControlBlock._pid);
 
     DBG2(<< "EVICTED page " << victimControlBlock._pid << " from bufferpool frame " << victim << ". "
-         << "Log Tail: 0" << smlevel_0::log->curr_lsn());
+                 << "Log Tail: 0" << smlevel_0::log->curr_lsn());
 
-    /* The eviction has completed and therefore the latch to the bufferpool frame can be released. */
+    // Release the latch of the buffer frame:
     victimControlBlock.latch().latch_release();
 
 //    if (smlevel_0::bf->is_no_db_mode()) {
@@ -118,11 +138,10 @@ bool PageEvictioner::evictOne(bf_idx victim) {
 //        w_assert0(!lsn.is_null());
 //    }
 
-    INC_TSTAT(bf_evict);
     return true;
 }
 
-bool PageEvictioner::unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
+bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     // If this function got nothing to do, the work is done at this place.
     if (!_maintainEMLSN && !_enabledSwizzling) {
         return true;
@@ -201,10 +220,10 @@ bool PageEvictioner::unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     /* Update the victim's EMLSN in the parent page. */
     if (_maintainEMLSN && oldVictimLSN < newVictimLSN) {
         DBG3(<< "Updated EMLSN on page " << parentPageHandle.pid()
-                     << ": slot=" << victimSlotID
-                     << ", (child pid=" << victimPID << ")"
-                     << ", OldEMLSN=" << oldVictimLSN
-                     << ", NewEMLSN=" << newVictimLSN);
+             << ": slot=" << victimSlotID
+             << ", (child pid=" << victimPID << ")"
+             << ", OldEMLSN=" << oldVictimLSN
+             << ", NewEMLSN=" << newVictimLSN);
 
         w_assert1(parentControlBlock.latch().is_mine());
 
@@ -220,7 +239,7 @@ bool PageEvictioner::unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     return true;
 }
 
-void PageEvictioner::flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept {
+void PageEvictioner::_flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noexcept {
     /* Straight-forward write -- no need to do it asynchronously or worry about any race condition. We hold the latch in
      * EX mode and the entry in the hashtable has not been removed yet. Any thread attempting to fix the victim will be
      * waiting for the latch, after which it will notice that the control block's pin count is -1, which means it must
