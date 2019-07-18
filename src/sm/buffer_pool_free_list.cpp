@@ -26,21 +26,7 @@ bool FreeListLowContention::grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept 
         if (list.dequeue(freeFrame)) {
             return true;
         } else {
-            // There're no free frames left. -> The warmup is done!
-            bufferPool->_setWarmupDone();
-
-            if (bufferPool->_asyncEviction) {
-                // Start the asynchronous eviction and block until a page was evicted:
-                bufferPool->getPageEvictioner()->wakeup(true);
-            } else {
-                freeFrame = 0;
-                while (freeFrame == 0) {
-                    freeFrame = bufferPool->getPageEvictioner()->pickVictim();
-                    w_assert0(freeFrame > 0);
-                    addFreeBufferpoolFrame(freeFrame);
-                }
-                return true;
-            }
+            return false;
         }
     }
 }
@@ -72,21 +58,7 @@ bool FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) {
             approximateListLength--;
             return true;
         } else {
-            // There're no free frames left. -> The warmup is done!
-            bufferPool->_setWarmupDone();
-
-            if (bufferPool->_asyncEviction) {
-                // Start the asynchronous eviction and block until a page was evicted:
-                bufferPool->getPageEvictioner()->wakeup(true);
-            } else {
-                freeFrame = 0;
-                while (freeFrame == 0) {
-                    freeFrame = bufferPool->getPageEvictioner()->pickVictim();
-                    w_assert0(freeFrame > 0);
-                    addFreeBufferpoolFrame(freeFrame);
-                }
-                return true;
-            }
+            return false;
         }
     }
 };

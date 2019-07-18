@@ -466,7 +466,18 @@ void BufferPool::batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept {
     for (bf_idx i = 0; i < numberOfPages; i++) {
         bf_idx freeFrameIndex;
         while (true) {
-            _freeList->grabFreeBufferpoolFrame(freeFrameIndex);
+            if (!_freeList->grabFreeBufferpoolFrame(freeFrameIndex)) {
+                // There're no free frames left. -> The warmup is done!
+                _setWarmupDone();
+
+                if (_asyncEviction) {
+                    // Start the asynchronous eviction and block until a page was evicted:
+                    _evictioner->wakeup(true);
+                } else {
+                    freeFrameIndex = _evictioner->pickVictim();
+                    w_assert0(freeFrameIndex > 0);
+                }
+            }
             w_rc_t latchStatus = getControlBlock(freeFrameIndex).latch().latch_acquire(LATCH_EX,
                                                                                        timeout_t::WAIT_IMMEDIATE);
             if (latchStatus.is_error()) {
@@ -893,7 +904,18 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 /*
                  * STEP 1: Grab a free frame to read into
                  */
-                _freeList->grabFreeBufferpoolFrame(pageIndex);
+                if (!_freeList->grabFreeBufferpoolFrame(pageIndex)) {
+                    // There're no free frames left. -> The warmup is done!
+                    _setWarmupDone();
+
+                    if (_asyncEviction) {
+                        // Start the asynchronous eviction and block until a page was evicted:
+                        _evictioner->wakeup(true);
+                    } else {
+                        pageIndex = _evictioner->pickVictim();
+                        w_assert0(pageIndex > 0);
+                    }
+                }
                 pageControlBlock = &getControlBlock(pageIndex);
 
                 /*
