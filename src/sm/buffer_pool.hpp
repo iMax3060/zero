@@ -522,6 +522,7 @@ namespace zero::buffer_pool {
         /*!\fn      isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept
          * \brief   Check if a page can be evicted
          * \details The following conditions make a page unevictable:
+         *          - There is no page in the buffer frame (\link bf_tree_cb_t::_used \endlink \c == \c false).
          *          - It is the store node page (\link generic_page_h::tag() \endlink \c ==
          *            \link page_tag_t::t_stnode_p \endlink).
          *          - It is the root page of a B-Tree (\link generic_page_h::tag() \endlink \c ==
