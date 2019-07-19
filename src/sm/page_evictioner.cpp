@@ -185,8 +185,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
      * page ID or its swizzled bufferpool frame index. */
     general_recordid_t victimSlotID;
     if (_enabledSwizzling && victimControlBlock._swizzled) {
-        PageID swizzledVictimPageID = parent | swizzledPIDBit;
-        victimSlotID = fixable_page_h::find_page_id_slot(parentPage, swizzledVictimPageID);
+        victimSlotID = fixable_page_h::find_page_id_slot(parentPage, smlevel_0::bf->addSwizzledPIDBit(victim));
     } else {
         victimSlotID = fixable_page_h::find_page_id_slot(parentPage, victimPageID);
     }
@@ -198,7 +197,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     if (_enabledSwizzling & victimControlBlock._swizzled) {
         bool successfullyUnswizzled = smlevel_0::bf->unswizzlePagePointer(parentPage, victimSlotID);
         if (!successfullyUnswizzled) {
-            // MG TODO: Throw Exception
+            return false;
         } else {
             w_assert1(!victimControlBlock._swizzled);
         }
