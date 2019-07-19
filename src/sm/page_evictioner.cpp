@@ -257,7 +257,8 @@ void PageEvictioner::_flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noe
 
 void PageEvictioner::do_work() {
     while (smlevel_0::bf->getFreeList()->getCount() < _evictionBatchSize) {
-        bf_idx victim = pickVictim();
+        bf_idx victim;
+        w_assert0(evictOne(victim));
         releaseInternalLatches();
         smlevel_0::bf->getFreeList()->addFreeBufferpoolFrame(victim);
 
