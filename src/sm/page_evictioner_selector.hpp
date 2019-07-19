@@ -319,7 +319,7 @@ namespace zero::buffer_pool {
          */
         explicit PageEvictionerSelectorLOOPPracticallyAccurate(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
-                _currentFrame(1) {};
+                _currentFrame(0) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -330,16 +330,9 @@ namespace zero::buffer_pool {
          * @return The selected buffer frame.
          */
         inline bf_idx select() noexcept final {// Not exact after 18446744073709551616 (1 per ns -> once in 585 years) incrementations!
-            w_assert1(_currentFrame > 0 && _currentFrame <= _maxBufferpoolIndex);
+            w_assert1(_currentFrame > 0);
 
-            while (true) {
-                uint_fast32_t this_frame = _currentFrame++ % (_maxBufferpoolIndex + 1);
-                if (this_frame == 0) {
-                    continue;
-                } else {
-                    return this_frame;
-                }
-            }
+            return (_currentFrame++ % _maxBufferpoolIndex) + 1;
         };
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
