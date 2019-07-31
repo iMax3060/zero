@@ -58,11 +58,38 @@
 /* Define to 1 if you have the <boost/lexical_cast.hpp> header file. */
 #undef HAVE_BOOST_LEXICAL_CAST_HPP
 
+/* Define to 1 if you have the <boost/program_options/errors.hpp> header file. */
+#undef HAVE_BOOST_PROGRAM_OPTIONS_ERRORS_HPP
+
 /* Define to 1 if you have the <boost/program_options.hpp> header file. */
 #undef HAVE_BOOST_PROGRAM_OPTIONS_HPP
 
-/* Define to 1 if you have the <boost/regex.hpp> header file. */
-#undef HAVE_BOOST_REGEX_HPP
+/* Define to 1 if you have the <boost/random/additive_combine.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_ADDITIVE_COMBINE_HPP
+
+/* Define to 1 if you have the <boost/random/inversive_congruential.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_INVERSIVE_CONGRUENTIAL_HPP
+
+/* Define to 1 if you have the <boost/random/lagged_fibonacci.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_LAGGED_FIBONACCI_HPP
+
+/* Define to 1 if you have the <boost/random/linear_congruential.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_LINEAR_CONGRUENTIAL_HPP
+
+/* Define to 1 if you have the <boost/random/mersenne_twister.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_MERSENNE_TWISTER_HPP
+
+/* Define to 1 if you have the <boost/random/ranlux.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_RANLUX_HPP
+
+/* Define to 1 if you have the <boost/random/shuffle_order.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_SHUFFLE_ORDER_HPP
+
+/* Define to 1 if you have the <boost/random/taus88.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_TAUS88_HPP
+
+/* Define to 1 if you have the <boost/random/uniform_int_distribution.hpp> header file. */
+#undef HAVE_BOOST_RANDOM_UNIFORM_INT_DISTRIBUTION_HPP
 
 /* Define to 1 if you have the <boost/scoped_array.hpp> header file. */
 #undef HAVE_BOOST_SCOPED_ARRAY_HPP
@@ -115,8 +142,17 @@
 /* Define to 1 if you have the <deque> header file. */
 #undef HAVE_DEQUE
 
+/* Define to 1 if you have the <dirent.h> header file. */
+#undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the <error.h> header file. */
+#undef HAVE_ERROR_H
+
 /* Define to 1 if you have the <exception> header file. */
 #undef HAVE_EXCEPTION
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
 
 /* Define to 1 if you have the <fstream> header file. */
 #undef HAVE_FSTREAM
@@ -139,14 +175,26 @@
 /* Define to 1 if you have the <list> header file. */
 #undef HAVE_LIST
 
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
 /* Define to 1 if you have the <map> header file. */
 #undef HAVE_MAP
 
 /* Define to 1 if you have the <memory> header file. */
 #undef HAVE_MEMORY
 
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
 /* Define to 1 if you have the <mutex> header file. */
 #undef HAVE_MUTEX
+
+/* Define to 1 if you have the <MUTrace/mutrace.h> header file. */
+#undef HAVE_MUTRACE_MUTRACE_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
 
 /* Define to 1 if you have the <new> header file. */
 #undef HAVE_NEW
@@ -157,11 +205,17 @@
 /* Define to 1 if you have the <ostream> header file. */
 #undef HAVE_OSTREAM
 
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
 /* Define to 1 if you have the <queue> header file. */
 #undef HAVE_QUEUE
 
 /* Define to 1 if you have the <random> header file. */
 #undef HAVE_RANDOM
+
+/* Define to 1 if you have the <regex> header file. */
+#undef HAVE_REGEX
 
 /* Define to 1 if you have the <set> header file. */
 #undef HAVE_SET
@@ -174,54 +228,6 @@
 
 /* Define to 1 if you have the <string> header file. */
 #undef HAVE_STRING
-
-/* Define to 1 if you have the <thread> header file. */
-#undef HAVE_THREAD
-
-/* Define to 1 if you have the <type_traits> header file. */
-#undef HAVE_TYPE_TRAITS
-
-/* Define to 1 if you have the <unordered_map> header file. */
-#undef HAVE_UNORDERED_MAP
-
-/* Define to 1 if you have the <unordered_set> header file. */
-#undef HAVE_UNORDERED_SET
-
-/* Define to 1 if you have the <utility> header file. */
-#undef HAVE_UTILITY
-
-/* Define to 1 if you have the <vector> header file. */
-#undef HAVE_VECTOR
-
-/* Define to 1 if you have the <basics.h> header file. */
-#undef HAVE_BASICS_H
-
-/* Define to 1 if you have the <dirent.h> header file. */
-#undef HAVE_DIRENT_H
-
-/* Define to 1 if you have the <errno.h> header file. */
-#undef HAVE_ERRNO_H
-
-/* Define to 1 if you have the <error.h> header file. */
-#undef HAVE_ERROR_H
-
-/* Define to 1 if you have the <fcntl.h> header file. */
-#undef HAVE_FCNTL_H
-
-/* Define to 1 if you have the <fcntl.h> header file. */
-#undef HAVE_FCNTL_H
-
-/* Define to 1 if you have the <malloc.h> header file. */
-#undef HAVE_MALLOC_H
-
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the <netinet/in.h> header file. */
-#undef HAVE_NETINET_IN_H
-
-/* Define to 1 if you have the <pthread.h> header file. */
-#undef HAVE_PTHREAD_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
@@ -241,8 +247,26 @@
 /* Define to 1 if you have the <sys/uio.h> header file. */
 #undef HAVE_SYS_UIO_H
 
+/* Define to 1 if you have the <thread> header file. */
+#undef HAVE_THREAD
+
+/* Define to 1 if you have the <type_traits> header file. */
+#undef HAVE_TYPE_TRAITS
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <unordered_map> header file. */
+#undef HAVE_UNORDERED_MAP
+
+/* Define to 1 if you have the <unordered_set> header file. */
+#undef HAVE_UNORDERED_SET
+
+/* Define to 1 if you have the <utility> header file. */
+#undef HAVE_UTILITY
+
+/* Define to 1 if you have the <vector> header file. */
+#undef HAVE_VECTOR
 
 /* Define to 1 if you have the <Wincrypt.h> header file. */
 #undef HAVE_WINCRYPT_H

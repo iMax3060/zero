@@ -39,11 +39,38 @@
 /* Defined if you have the <boost/lexical_cast.hpp> header file. */
 #cmakedefine HAVE_BOOST_LEXICAL_CAST_HPP
 
+/* Defined if you have the <boost/program_options/errors.hpp> header file. */
+#cmakedefine HAVE_BOOST_PROGRAM_OPTIONS_ERRORS_HPP
+
 /* Defined if you have the <boost/program_options.hpp> header file. */
 #cmakedefine HAVE_BOOST_PROGRAM_OPTIONS_HPP
 
-/* Defined if you have the <boost/regex.hpp> header file. */
-#cmakedefine HAVE_BOOST_REGEX_HPP
+/* Defined if you have the <boost/random/additive_combine.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_ADDITIVE_COMBINE_HPP
+
+/* Defined if you have the <boost/random/inversive_congruential.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_INVERSIVE_CONGRUENTIAL_HPP
+
+/* Defined if you have the <boost/random/lagged_fibonacci.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_LAGGED_FIBONACCI_HPP
+
+/* Defined if you have the <boost/random/linear_congruential.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_LINEAR_CONGRUENTIAL_HPP
+
+/* Defined if you have the <boost/random/mersenne_twister.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_MERSENNE_TWISTER_HPP
+
+/* Defined if you have the <boost/random/ranlux.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_RANLUX_HPP
+
+/* Defined if you have the <boost/random/shuffle_order.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_SHUFFLE_ORDER_HPP
+
+/* Defined if you have the <boost/random/taus88.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_TAUS88_HPP
+
+/* Defined if you have the <boost/random/uniform_int_distribution.hpp> header file. */
+#cmakedefine HAVE_BOOST_RANDOM_UNIFORM_INT_DISTRIBUTION_HPP
 
 /* Defined if you have the <boost/scoped_array.hpp> header file. */
 #cmakedefine HAVE_BOOST_SCOPED_ARRAY_HPP
@@ -96,8 +123,17 @@
 /* Defined if you have the <deque> header file. */
 #cmakedefine HAVE_DEQUE
 
+/* Defined if you have the <dirent.h> header file. */
+#cmakedefine HAVE_DIRENT_H
+
+/* Defined if you have the <error.h> header file. */
+#cmakedefine HAVE_ERROR_H
+
 /* Defined if you have the <exception> header file. */
 #cmakedefine HAVE_EXCEPTION
+
+/* Defined if you have the <fcntl.h> header file. */
+#cmakedefine HAVE_FCNTL_H
 
 /* Defined if you have the <fstream> header file. */
 #cmakedefine HAVE_FSTREAM
@@ -120,14 +156,26 @@
 /* Defined if you have the <list> header file. */
 #cmakedefine HAVE_LIST
 
+/* Defined if you have the <malloc.h> header file. */
+#cmakedefine HAVE_MALLOC_H
+
 /* Defined if you have the <map> header file. */
 #cmakedefine HAVE_MAP
 
 /* Defined if you have the <memory> header file. */
 #cmakedefine HAVE_MEMORY
 
+/* Defined if you have the <memory.h> header file. */
+#cmakedefine HAVE_MEMORY_H
+
 /* Defined if you have the <mutex> header file. */
 #cmakedefine HAVE_MUTEX
+
+/* Defined if you have the <MUTrace/mutrace.h> header file. */
+#cmakedefine HAVE_MUTRACE_MUTRACE_H
+
+/* Defined if you have the <netinet/in.h> header file. */
+#cmakedefine HAVE_NETINET_IN_H
 
 /* Defined if you have the <new> header file. */
 #cmakedefine HAVE_NEW
@@ -138,11 +186,17 @@
 /* Defined if you have the <ostream> header file. */
 #cmakedefine HAVE_OSTREAM
 
+/* Defined if you have the <pthread.h> header file. */
+#cmakedefine HAVE_PTHREAD_H
+
 /* Defined if you have the <queue> header file. */
 #cmakedefine HAVE_QUEUE
 
 /* Defined if you have the <random> header file. */
 #cmakedefine HAVE_RANDOM
+
+/* Defined if you have the <regex> header file. */
+#cmakedefine HAVE_REGEX
 
 /* Defined if you have the <set> header file. */
 #cmakedefine HAVE_SET
@@ -155,54 +209,6 @@
 
 /* Defined if you have the <string> header file. */
 #cmakedefine HAVE_STRING
-
-/* Defined if you have the <thread> header file. */
-#cmakedefine HAVE_THREAD
-
-/* Defined if you have the <type_traits> header file. */
-#cmakedefine HAVE_TYPE_TRAITS
-
-/* Defined if you have the <unordered_map> header file. */
-#cmakedefine HAVE_UNORDERED_MAP
-
-/* Defined if you have the <unordered_set> header file. */
-#cmakedefine HAVE_UNORDERED_SET
-
-/* Defined if you have the <utility> header file. */
-#cmakedefine HAVE_UTILITY
-
-/* Defined if you have the <vector> header file. */
-#cmakedefine HAVE_VECTOR
-
-/* Defined if you have the <basics.h> header file. */
-#cmakedefine HAVE_BASICS_H
-
-/* Defined if you have the <dirent.h> header file. */
-#cmakedefine HAVE_DIRENT_H
-
-/* Defined if you have the <errno.h> header file. */
-#cmakedefine HAVE_ERRNO_H
-
-/* Defined if you have the <error.h> header file. */
-#cmakedefine HAVE_ERROR_H
-
-/* Defined if you have the <fcntl.h> header file. */
-#cmakedefine HAVE_FCNTL_H
-
-/* Defined if you have the <fcntl.h> header file. */
-#cmakedefine HAVE_FCNTL_H
-
-/* Defined if you have the <malloc.h> header file. */
-#cmakedefine HAVE_MALLOC_H
-
-/* Defined if you have the <memory.h> header file. */
-#cmakedefine HAVE_MEMORY_H
-
-/* Defined if you have the <netinet/in.h> header file. */
-#cmakedefine HAVE_NETINET_IN_H
-
-/* Defined if you have the <pthread.h> header file. */
-#cmakedefine HAVE_PTHREAD_H
 
 /* Defined if you have the <sys/mman.h> header file. */
 #cmakedefine HAVE_SYS_MMAN_H
@@ -222,8 +228,26 @@
 /* Defined if you have the <sys/uio.h> header file. */
 #cmakedefine HAVE_SYS_UIO_H
 
+/* Defined if you have the <thread> header file. */
+#cmakedefine HAVE_THREAD
+
+/* Defined if you have the <type_traits> header file. */
+#cmakedefine HAVE_TYPE_TRAITS
+
 /* Defined if you have the <unistd.h> header file. */
 #cmakedefine HAVE_UNISTD_H
+
+/* Defined if you have the <unordered_map> header file. */
+#cmakedefine HAVE_UNORDERED_MAP
+
+/* Defined if you have the <unordered_set> header file. */
+#cmakedefine HAVE_UNORDERED_SET
+
+/* Defined if you have the <utility> header file. */
+#cmakedefine HAVE_UTILITY
+
+/* Defined if you have the <vector> header file. */
+#cmakedefine HAVE_VECTOR
 
 /* Defined if you have the <Wincrypt.h> header file. */
 #cmakedefine HAVE_WINCRYPT_H
