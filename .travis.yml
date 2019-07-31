@@ -20,13 +20,7 @@ matrix:
           packages:
             - cmake
             - g++-6
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - ubuntu-toolchain-r-test
     - name: "GCC 7"
@@ -38,13 +32,7 @@ matrix:
           packages:
             - cmake
             - g++-7
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - ubuntu-toolchain-r-test
     - name: "GCC 8"
@@ -56,13 +44,7 @@ matrix:
           packages:
             - cmake
             - g++-8
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - ubuntu-toolchain-r-test
     - name: "Clang 3.5"
@@ -76,13 +58,7 @@ matrix:
             - clang-3.5
             - llvm-3.5
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-precise-3.5
             - ubuntu-toolchain-r-test
@@ -97,13 +73,7 @@ matrix:
             - clang-3.6
             - llvm-3.6
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -118,13 +88,7 @@ matrix:
             - clang-3.7
             - llvm-3.7
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-precise-3.7
             - ubuntu-toolchain-r-test
@@ -139,13 +103,7 @@ matrix:
             - clang-3.8
             - llvm-3.8
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-precise-3.8
             - ubuntu-toolchain-r-test
@@ -160,13 +118,7 @@ matrix:
             - clang-3.9
             - llvm-3.9
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-precise-3.9
             - ubuntu-toolchain-r-test
@@ -181,13 +133,7 @@ matrix:
             - clang-4.0
             - llvm-4.0
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-trusty-4.0
             - ubuntu-toolchain-r-test
@@ -202,13 +148,7 @@ matrix:
             - clang-5.0
             - llvm-5.0
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-trusty-5.0
             - ubuntu-toolchain-r-test
@@ -223,13 +163,7 @@ matrix:
             - clang-6.0
             - llvm-6.0
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-trusty-6.0
             - ubuntu-toolchain-r-test
@@ -244,13 +178,7 @@ matrix:
             - clang-7
             - llvm-7
             - libc++-dev
-            - libboost-dev
-            - libboost-program-options-dev
-            - libboost-system-dev
-            - libboost-thread-dev
-            - libboost-atomic-dev
-            - libboost-filesystem-dev
-            - libboost-regex-dev
+            - libboost-all-dev
           sources:
             - llvm-toolchain-trusty-7
             - ubuntu-toolchain-r-test
@@ -273,5 +201,5 @@ before_script:
   - cd build
 
 script:
-  - cmake ..
+  - cmake -DINTERPROCEDURAL_OPTIMIZATION=OFF ..
   - make zapps
