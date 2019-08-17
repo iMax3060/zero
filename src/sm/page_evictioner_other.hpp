@@ -202,10 +202,10 @@ namespace zero::buffer_pool {
                 DBG5(<< "Added to T_2: " << idx << "; New size: " << _clocks.sizeOf<T_2>() << "; Free frames: " << smlevel_0::bf->getFreeList()->getCount());
                 _clocks.set(idx, false);
             }
-            w_assert1(/*0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() &&*/ _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() <= _c);
-            w_assert1(/*0 <= _clocks.sizeOf<T_1>() + _b1.length() &&*/ _clocks.sizeOf<T_1>() + _b1.length() <= _c);
-            w_assert1(/*0 <= _clocks.sizeOf<T_2>() + _b2.length() &&*/ _clocks.sizeOf<T_2>() + _b2.length() <= 2 * (_c));
-            w_assert1(/*0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1->length() + _b2->length() &&*/ _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() <= 2 * (_c));
+            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() <= _c);
+            w_assert1(0 <= _clocks.sizeOf<T_1>() + _b1.length() && _clocks.sizeOf<T_1>() + _b1.length() <= _c);
+            w_assert1(0 <= _clocks.sizeOf<T_2>() + _b2.length() && _clocks.sizeOf<T_2>() + _b2.length() <= 2 * (_c));
+            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() <= 2 * (_c));
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -255,7 +255,24 @@ namespace zero::buffer_pool {
          * @param idx The frame of the buffer pool that is freed explicitly.
          */
         void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            _clocks.remove(idx);
+            try {
+                _clocks.remove(idx);
+            } catch (const multi_clock::MultiHandedClockNotContainedException<bf_idx, bool, 2, 0>& ex) {}
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this page evictioner
+         * \details Releases the latch acquired and released in \link select() \endlink and
+         *          \link updateOnPageMiss() \endlink.
+         *
+         * \pre     The \link _latch \endlink might be acquired by this thread.
+         * \post    The \link _latch \endlink is not acquired by this thread.
+         *
+         * \warning The behavior of this method is undefined if the implementation of \c std::mutex::unlock() does not
+         *          allow too many invocations of it.
+         */
+        virtual void releaseInternalLatches() noexcept final {
+            _latch.unlock();
         };
 
     protected:
