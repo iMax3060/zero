@@ -176,12 +176,17 @@ namespace zero::multi_clock {
          * @throws MultiHandedClockInvalidIndexException     If the specified \c index is invalid.
          * @throws MultiHandedClockAlreadyContainedException If the specified \c index could not be added because it is
          *                                                   already contained in some clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         template<ClockIndex clock>
         void addTail(const key_type& index) {
             static_assert(clock < clock_count);
-            if (isValidIndex(index) && !isContainedIndex(index)) {
+            if (!isValidIndex(index)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                                                            invalid_clock_index>(this, index);
+            } else if (isContainedIndex(index)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                                                                invalid_clock_index>(this, index);
+            } else {
                 if (isEmpty<clock>()) {
                     _hands[clock] = index;
                     _clocks[index]._before = index;
@@ -194,17 +199,6 @@ namespace zero::multi_clock {
                 }
                 _sizes[clock]++;
                 _clockMembership[index] = clock;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(index))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-                if (isContainedIndex(index))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -221,12 +215,17 @@ namespace zero::multi_clock {
          * @throws MultiHandedClockInvalidIndexException     If the specified \c index is invalid.
          * @throws MultiHandedClockAlreadyContainedException If the specified \c index could not be added because it is
          *                                                   already contained in some clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         template<ClockIndex clock>
         void addTail(key_type&& index) {
             static_assert(clock < clock_count);
-            if (isValidIndex(index) && !isContainedIndex(index)) {
+            if (!isValidIndex(index)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, index);
+            } else if (isContainedIndex(index)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, index);
+            } else {
                 if (isEmpty<clock>()) {
                     _hands[clock] = index;
                     _clocks[index]._before = index;
@@ -239,17 +238,6 @@ namespace zero::multi_clock {
                 }
                 _sizes[clock]++;
                 _clockMembership[index] = clock;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(index))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-                if (isContainedIndex(index))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -263,37 +251,32 @@ namespace zero::multi_clock {
          * @param inside    This index will be the entry after the new entry.
          * @param newEntry This is the index of the new entry.
          *
-         * @throws MultiHandedClockInvalidIndexException     If the specified \c inside or \c new_entry is invalid.
-         * @throws MultiHandedClockAlreadyContainedException If the specified \c new_entry could not be added because it
+         * @throws MultiHandedClockInvalidIndexException     If the specified \c newEntry or \c inside is invalid.
+         * @throws MultiHandedClockAlreadyContainedException If the specified \c newEntry could not be added because it
          *                                                   is already contained in some clock.
          * @throws MultiHandedClockNotContainedException     If the position for the insertion is not valid because the
          *                                                   specified \c inside is not contained in any clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         void addBefore(const key_type& inside, const key_type& newEntry) {
-            if (isValidIndex(newEntry) && !isContainedIndex(newEntry) && isContainedIndex(inside)) {
+            if (isValidIndex(newEntry)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (isValidIndex(inside)) {
+            throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                    invalid_clock_index>(this, inside);
+            } else if (isContainedIndex(newEntry)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                                                                invalid_clock_index>(this, newEntry);
+            } else if (!isContainedIndex(inside)) {
+                MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
+                                                      invalid_clock_index>(this, inside);
+            } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._before = _clocks[inside]._before;
                 _clocks[newEntry]._after = inside;
                 _clocks[inside]._before = newEntry;
                 _clockMembership[newEntry] = _clockMembership[inside];
                 _sizes[_clockMembership[inside]]++;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (isContainedIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (!isValidIndex(inside))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-                else if (!isContainedIndex(inside))
-                    multiException.addException(MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -307,37 +290,32 @@ namespace zero::multi_clock {
          * @param inside   This index will be the entry after the new entry.
          * @param newEntry This is the index of the new entry.
          *
-         * @throws MultiHandedClockInvalidIndexException     If the specified \c inside or \c new_entry is invalid.
-         * @throws MultiHandedClockAlreadyContainedException If the specified \c new_entry could not be added because it
+         * @throws MultiHandedClockInvalidIndexException     If the specified \c newEntry or \c inside is invalid.
+         * @throws MultiHandedClockAlreadyContainedException If the specified \c newEntry could not be added because it
          *                                                   is already contained in some clock.
          * @throws MultiHandedClockNotContainedException     If the position for the insertion is not valid because the
          *                                                   specified \c inside is not contained in any clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         void addBefore(const key_type& inside, key_type&& newEntry) {
-            if (isValidIndex(newEntry) && !isContainedIndex(newEntry) && isContainedIndex(inside)) {
+            if (isValidIndex(newEntry)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (isValidIndex(inside)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else if (isContainedIndex(newEntry)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (!isContainedIndex(inside)) {
+                MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._before = _clocks[inside]._before;
                 _clocks[newEntry]._after = inside;
                 _clocks[inside]._before = newEntry;
                 _clockMembership[newEntry] = _clockMembership[inside];
                 _sizes[_clockMembership[inside]]++;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (isContainedIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (!isValidIndex(inside))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-                else if (!isContainedIndex(inside))
-                    multiException.addException(MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -351,37 +329,32 @@ namespace zero::multi_clock {
          * @param inside    This index will be the entry before the new entry.
          * @param newEntry This is the index of the new entry.
          *
-         * @throws MultiHandedClockInvalidIndexException     If the specified \c inside or \c new_entry is invalid.
-         * @throws MultiHandedClockAlreadyContainedException If the specified \c new_entry could not be added because it
+         * @throws MultiHandedClockInvalidIndexException     If the specified \c newEntry or \c inside is invalid.
+         * @throws MultiHandedClockAlreadyContainedException If the specified \c newEntry could not be added because it
          *                                                   is already contained in some clock.
          * @throws MultiHandedClockNotContainedException     If the position for the insertion is not valid because the
          *                                                   specified \c inside is not contained in any clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         void addAfter(const key_type& inside, const key_type& newEntry) {
-            if (isValidIndex(newEntry) && !isContainedIndex(newEntry) && isContainedIndex(inside)) {
+            if (isValidIndex(newEntry)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (isValidIndex(inside)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else if (isContainedIndex(newEntry)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (!isContainedIndex(inside)) {
+                MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._after = _clocks[inside]._after;
                 _clocks[newEntry]._before = inside;
                 _clocks[inside]._after = newEntry;
                 _clockMembership[newEntry] = _clockMembership[inside];
                 _sizes[_clockMembership[inside]]++;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (isContainedIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (!isValidIndex(inside))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-                else if (!isContainedIndex(inside))
-                    multiException.addException(MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -395,37 +368,32 @@ namespace zero::multi_clock {
          * @param inside    This index will be the entry before the new entry.
          * @param newEntry This is the index of the new entry.
          *
-         * @throws MultiHandedClockInvalidIndexException     If the specified \c inside or \c new_entry is invalid.
-         * @throws MultiHandedClockAlreadyContainedException If the specified \c new_entry could not be added because it
+         * @throws MultiHandedClockInvalidIndexException     If the specified \c newEntry or \c inside is invalid.
+         * @throws MultiHandedClockAlreadyContainedException If the specified \c newEntry could not be added because it
          *                                                   is already contained in some clock.
          * @throws MultiHandedClockNotContainedException     If the position for the insertion is not valid because the
          *                                                   specified \c inside is not contained in any clock.
-         * @throws MultiHandedClockMultiException            If multiple of those exceptions would be thrown.
          */
         void addAfter(const key_type& inside, const key_type&& newEntry) {
-            if (isValidIndex(newEntry) && !isContainedIndex(newEntry) && isContainedIndex(inside)) {
+            if (isValidIndex(newEntry)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (isValidIndex(inside)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else if (isContainedIndex(newEntry)) {
+                throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, newEntry);
+            } else if (!isContainedIndex(inside)) {
+                MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, inside);
+            } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._after = _clocks[inside]._after;
                 _clocks[newEntry]._before = inside;
                 _clocks[inside]._after = newEntry;
                 _clockMembership[newEntry] = _clockMembership[inside];
                 _sizes[_clockMembership[inside]]++;
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (isContainedIndex(newEntry))
-                    multiException.addException(
-                            MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, newEntry));
-                if (!isValidIndex(inside))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-                else if (!isContainedIndex(inside))
-                    multiException.addException(MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, inside));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -460,13 +428,19 @@ namespace zero::multi_clock {
          *
          * @param index The index of the entry that gets removed.
          *
-         * @throws MultiHandedClockInvalidIndexException If the specified \c index is invalid.
+         * @throws MultiHandedClockInvalidIndexException If the specified \c index is invalid (and therefore also not
+         *                                               contained in any clock).
          * @throws MultiHandedClockNotContainedException If the specified \c index could not be removed from some clock
          *                                               because it is not contained in one.
-         * @throws MultiHandedClockMultiException        If multiple of those exceptions would be thrown.
          */
         void remove(const key_type& index) {
-            if (isContainedIndex(index)) {
+            if (!isValidIndex(index)) {
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                        invalid_clock_index>(this, index);
+            } else if (!isContainedIndex(index)) {
+                throw MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
+                                                            invalid_clock_index>(this, index);
+            } else {
                 ClockIndex clock = _clockMembership[index];
                 if (_sizes[clock] == 1) {
                     w_assert1(_hands[clock] >= 0 && _hands[clock] <= _entryCount - 1 && _hands[clock] != invalid_index);
@@ -489,16 +463,6 @@ namespace zero::multi_clock {
 
                     w_assert1(_hands[clock] != invalid_index);
                 }
-            } else {
-                MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> multiException =
-                        MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this);
-
-                if (!isValidIndex(index))
-                    multiException.addException(MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-                else if (!isContainedIndex(index))
-                    multiException.addException(MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(this, index));
-
-                throwMultiple(multiException);
             }
         };
 
@@ -770,27 +734,6 @@ namespace zero::multi_clock {
          * \details Contains for each clock the number of elements this clock currently has.
          */
         std::array<key_type, clock_count>   _sizes;
-
-    public:
-        /*!\fn      throwMultiple(MultiHandedClockMultiException& multiException)
-         * \brief   Throws the specified \link MultiHandedClockMultiException \endlink
-         * \details Replaces the keyword \c throw for exceptions of type \link MultiHandedClockMultiException \endlink.
-         *          If the specified \link MultiHandedClockMultiException \endlink only contains one
-         *          \link MultiHandedClockException \endlink, the contained exception will be thrown without the
-         *          \link MultiHandedClockMultiException \endlink is container. If the specified
-         *          \link MultiHandedClockMultiException \endlink contains multiple exceptions of type
-         *          \link MultiHandedClockException \endlink, the specified
-         *          \link MultiHandedClockMultiException \endlink will be thrown.
-         *
-         * @param multiException The exception that should be thrown.
-         */
-        static void throwMultiple(MultiHandedClockMultiException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>& multiException) {
-            if (multiException.size() == 1) {
-                throw multiException.getExceptions()[0];
-            } else {
-                throw multiException;
-            }
-        };
 
     };
     
