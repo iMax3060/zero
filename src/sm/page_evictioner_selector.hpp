@@ -330,8 +330,6 @@ namespace zero::buffer_pool {
          * @return The selected buffer frame.
          */
         inline bf_idx select() noexcept final {// Not exact after 18446744073709551616 (1 per ns -> once in 585 years) incrementations!
-            w_assert1(_currentFrame > 0);
-
             return (_currentFrame++ % _maxBufferpoolIndex) + 1;
         };
 

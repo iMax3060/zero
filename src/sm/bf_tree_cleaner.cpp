@@ -173,7 +173,9 @@ void bf_tree_cleaner::clean_candidates()
             if (should_exit()) { break; }
         }
 
-        clusters.push_back(w_index);
+        if (w_index > 0) {
+            clusters.push_back(w_index);
+        }
 
         ADD_TSTAT(cleaner_time_copy, timer.time_us());
 
