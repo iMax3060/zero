@@ -423,6 +423,130 @@ namespace zero::buffer_pool {
 
     };
 
+    /*!\class   PageEvictionerSelectorLOOPLockFree
+     * \brief   _LOOP_ buffer frame selector
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LOOP_
+     *          policy. The _LOOP_ policy selects buffer frames by looping over the buffer frame IDs from \c 1 to
+     *          \link _maxBufferpoolIndex \endlink and afterwards restarting from \c 1 again. TODO.
+     */
+    class PageEvictionerSelectorLOOPLockFree : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorLOOPLockFree(const BufferPool* bufferPool)
+         * \brief   Constructs a _LOOP_ buffer frame selector
+         *
+         * @param bufferPool The buffer pool this _LOOP_ buffer frame selector is responsible for.
+         */
+        explicit PageEvictionerSelectorLOOPLockFree(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _currentFrame(0) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details If it selected the buffer frame \c n the last time this function was called, then it selects
+         *          \c n \c + \c 1 if \c n \c + \c 1 \c <= \link _maxBufferpoolIndex \endlink or \c 1 if \c n \c +
+         *          \c 1 \c > \link _maxBufferpoolIndex \endlink.
+         *
+         * @return The selected buffer frame.
+         */
+        inline bf_idx select() noexcept final {
+            uint32_t picked_idx = _currentFrame;
+            if (picked_idx <= _maxBufferpoolIndex) {
+                _currentFrame++;
+                return picked_idx;
+            } else {
+                return _currentFrame = 1;
+            }
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
+         */
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
+
+    private:
+        /*!\var     _currentFrame
+         * \brief   Last control block examined
+         * \details Represents the clock hand pointing to the control block that was examined last during the most
+         *          recent execution of \link select() \endlink (evicted last).
+         *
+         * \remark  Only used by __LOOP__ and __CLOCK__.
+         */
+        std::atomic<uint32_t> _currentFrame;
+
+    };
+
     /*!\class   PageEvictionerSelectorLOOPThreadLocallyAccurate
      * \brief   _LOOP_ buffer frame selector
      * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _LOOP_
