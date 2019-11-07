@@ -16,7 +16,7 @@ namespace zero::buffer_pool {
      *          this class.
      */
     class PageEvictionerFilter {
-    public:
+    protected:
         /*!\fn      PageEvictionerFilter(const BufferPool* bufferPool)
          * \brief   Constructs a buffer frame filter
          *
@@ -24,6 +24,7 @@ namespace zero::buffer_pool {
          */
         explicit PageEvictionerFilter(const BufferPool* bufferPool) {};
 
+    public:
         /*!\fn      ~PageEvictionerFilter()
          * \brief   Destructs a buffer frame filter
          */

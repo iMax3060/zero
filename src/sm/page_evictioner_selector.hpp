@@ -24,7 +24,7 @@ namespace zero::buffer_pool {
      *          this class.
      */
     class PageEvictionerSelector {
-    public:
+    protected:
         /*!\fn      PageEvictionerSelector(const BufferPool* bufferPool)
          * \brief   Constructs a buffer frame selector
          *
@@ -33,6 +33,7 @@ namespace zero::buffer_pool {
         explicit PageEvictionerSelector(const BufferPool* bufferPool) :
                 _maxBufferpoolIndex(bufferPool->getBlockCount() - 1) {};
 
+    public:
         /*!\fn      ~PageEvictionerSelector()
          * \brief   Destructs a buffer frame selector
          */
