@@ -1044,6 +1044,8 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
 
                 targetPage = getPage(pageIndex);
 
+                _evictioner->updateOnPageHit(pageIndex);
+
                 w_assert1(pageControlBlock->latch().held_by_me());
                 w_assert1(!doRecovery || !pageControlBlock->is_pinned_for_restore());
                 w_assert1(!pageControlBlock->_check_recovery || pageControlBlock->latch().is_mine());
@@ -1064,7 +1066,6 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
             // Pin the page:
             w_assert1(isActiveIndex(pageIndex));
             pageControlBlock->inc_ref_count();
-            _evictioner->updateOnPageHit(pageIndex);
             if (latchMode == LATCH_EX) {
                 pageControlBlock->inc_ref_count_ex();
             }
