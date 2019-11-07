@@ -3657,7 +3657,7 @@ namespace zero::buffer_pool {
      * @tparam aging_frequency The aging function is applied to all the page reference counters after this times the
      *                         buffer frame count many global page references.
      * @tparam aging_function  The aging function which is used to reduce the influence of old page references. It has
-     *                         to be of type \link AgingFunction \endlink
+     *                         to be of type \link AgingFunction \endlink.
      */
     template <uint64_t aging_frequency/* = 10*/, class aging_function>
     class PageEvictionerSelectorLRDV2 : public PageEvictionerSelector {

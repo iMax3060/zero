@@ -175,7 +175,7 @@ namespace zero::buffer_pool {
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
         /*!\fn      releaseInternalLatches() noexcept
-         * \brief   Releases the internal latches of
+         * \brief   Releases the internal latches
          * \details Some methods of page evictioners hold internal latches beyond the invocation of one method but
          *          expect another method to be called later to release those internal latches. This should be used to
          *          explicitly release those latches.
