@@ -484,7 +484,7 @@ namespace zero::buffer_pool {
          * \brief   Referenced bits for the buffer frames
          * \details The index of the referenced bit corresponding to buffer frame \c n is \c n .
          */
-        std::vector<bool> _refBits;
+        std::vector<std::atomic<bool>> _refBits;
 
     };
 
