@@ -691,7 +691,7 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
             ret.components.offset = 0;
             return ret;
         } else {
-            DBGOUT1("Oops, CAS failed");
+            DBGOUT1(<< "Oops, CAS failed");
             continue;
         }
     }

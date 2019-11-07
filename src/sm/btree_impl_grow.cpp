@@ -175,7 +175,7 @@ btree_impl::_sx_grow_tree(btree_page_h& rp)
     // that's it. then, we adopt keys to the new root page later
     w_assert3(rp.is_consistent(true, true));
 
-    DBG1("Btree growth -- root split on " << rp.pid() << " into " << new_pid);
+    DBG1(<< "Btree growth -- root split on " << rp.pid() << " into " << new_pid);
 
     W_DO (sxs.end_sys_xct (RCOK));
     return RCOK;

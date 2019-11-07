@@ -27,7 +27,7 @@ lock_core_m::assert_empty() const
         for (MarkablePointer<RawLock> lock = _htab[h].head.next;
              !lock.is_null(); lock = lock->next) {
             ++found_request;
-            DBGOUT1("leftover lock request(h=" << h << "):" << *lock.get_pointer());
+            DBGOUT1(<< "leftover lock request(h=" << h << "):" << *lock.get_pointer());
         }
     }
     w_assert1(found_request == 0);

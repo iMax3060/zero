@@ -220,7 +220,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     if (_maintainEMLSN && oldVictimLSN < newVictimLSN) {
         DBG3(<< "Updated EMLSN on page " << parentPageHandle.pid()
              << ": slot=" << victimSlotID
-             << ", (child pid=" << victimPID << ")"
+             << ", (child pid=" << victimPage->pid << ")"
              << ", OldEMLSN=" << oldVictimLSN
              << ", NewEMLSN=" << newVictimLSN);
 
