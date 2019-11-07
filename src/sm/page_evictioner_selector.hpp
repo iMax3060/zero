@@ -3661,6 +3661,9 @@ namespace zero::buffer_pool {
      */
     template <uint64_t aging_frequency/* = 10*/, class aging_function>
     class PageEvictionerSelectorLRDV2 : public PageEvictionerSelector {
+        static_assert(std::is_base_of<AgingFunction, aging_function>::value,
+                      "'selector_class' is not of type 'AgingFunction'!");
+
     public:
         /*!\fn      PageEvictionerSelectorLRDV2(const BufferPool* bufferPool)
          * \brief   Constructs a _Least Reference Density V2_ buffer frame selector
@@ -3674,8 +3677,6 @@ namespace zero::buffer_pool {
                 _frameAlreadySelected(bufferPool->getBlockCount()),
                 _globalReferences(0),
                 _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {
-            static_assert(std::is_base_of<AgingFunction, aging_function>::value,
-                          "'selector_class' is not of type 'AgingFunction'!");
         };
 
         /*!\fn      select() noexcept

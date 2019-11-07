@@ -51,6 +51,11 @@ namespace zero::buffer_pool {
      */
     template<class selector_class, class filter_class, bool filter_early = false>
     class PageEvictionerSelectAndFilter : public PageEvictioner {
+        static_assert(std::is_base_of<PageEvictionerSelector, selector_class>::value,
+                      "'selector_class' is not of type 'PageEvictionerSelector'!");
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
+                      "'filter_class' is not of type 'PageEvictionerFilter'!");
+
     public:
         /*!\fn      PageEvictionerSelectAndFilter(const BufferPool* bufferPool)
          * \brief   Constructs a _Select-and-Filter_ page evictioner
@@ -61,12 +66,7 @@ namespace zero::buffer_pool {
         explicit PageEvictionerSelectAndFilter(const BufferPool* bufferPool) :
                 PageEvictioner(bufferPool),
                 _selector(bufferPool),
-                _filter(bufferPool) {
-            static_assert(std::is_base_of<PageEvictionerSelector, selector_class>::value,
-                          "'selector_class' is not of type 'PageEvictionerSelector'!");
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
-                          "'filter_class' is not of type 'PageEvictionerFilter'!");
-        };
+                _filter(bufferPool) {};
 
         /*!\fn      ~PageEvictionerSelectAndFilter()
          * \brief   Destructs a _Select-and-Filter_ page evictioner

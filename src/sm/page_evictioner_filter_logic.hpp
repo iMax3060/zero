@@ -14,6 +14,9 @@ namespace zero::buffer_pool {
      */
     template <class filter_class>
     class PageEvictionerFilterLogicNOT : public PageEvictionerFilter {
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
+                      "'filter_class' is not of type 'PageEvictionerFilter'!");
+
     public:
         /*!\fn      PageEvictionerFilterLogicNOT(const BufferPool* bufferPool)
          * \brief   Constructs an invert buffer frame filter
@@ -22,7 +25,6 @@ namespace zero::buffer_pool {
          */
         explicit PageEvictionerFilterLogicNOT(const BufferPool* bufferPool) :
                 _filter(bufferPool) {
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value, "'filter_class' is not of type 'PageEvictionerFilter'!");
         };
 
         /*!\fn      filter(bf_idx idx) noexcept
@@ -162,6 +164,11 @@ namespace zero::buffer_pool {
      */
     template <class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicAND : public PageEvictionerFilter {
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value,
+                      "'filter_class0' is not of type 'PageEvictionerFilter'!");
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value,
+                      "'filter_class1' is not of type 'PageEvictionerFilter'!");
+
     public:
         /*!\fn      PageEvictionerFilterLogicAND(const BufferPool* bufferPool)
          * \brief   Constructs an ANDed buffer frame filter
@@ -170,10 +177,7 @@ namespace zero::buffer_pool {
          */
         explicit PageEvictionerFilterLogicAND(const BufferPool* bufferPool) :
                 _filter0(bufferPool),
-                _filter1(bufferPool) {
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value, "'filter_class0' is not of type 'PageEvictionerFilter'!");
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value, "'filter_class1' is not of type 'PageEvictionerFilter'!");
-        };
+                _filter1(bufferPool) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -327,6 +331,11 @@ namespace zero::buffer_pool {
      */
     template <class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicOR : public PageEvictionerFilter {
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value,
+                      "'filter_class0' is not of type 'PageEvictionerFilter'!");
+        static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value,
+                      "'filter_class1' is not of type 'PageEvictionerFilter'!");
+
     public:
         /*!\fn      PageEvictionerFilterLogicOR(const BufferPool* bufferPool)
          * \brief   Constructs an ORed buffer frame filter
@@ -335,10 +344,7 @@ namespace zero::buffer_pool {
          */
         explicit PageEvictionerFilterLogicOR(const BufferPool* bufferPool) :
                 _filter0(bufferPool),
-                _filter1(bufferPool) {
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value, "'filter_class0' is not of type 'PageEvictionerFilter'!");
-            static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value, "'filter_class1' is not of type 'PageEvictionerFilter'!");
-        };
+                _filter1(bufferPool) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
