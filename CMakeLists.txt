@@ -40,7 +40,7 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 MESSAGE(STATUS "INFO: The exact compiler calls for all translation units of ${CMAKE_PROJECT_NAME} can be found at ${PROJECT_BINARY_DIR}/compile_commands.json.")
 
 # Set the used C++-Standard:
-SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED YES)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 

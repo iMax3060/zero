@@ -63,7 +63,7 @@ public:
         (page_sz - sizeof(generic_page_header)) / sizeof(stnode_t);
 
     // Page ID used by the stnode page
-    static const PageID stpid;
+    static constexpr PageID stpid = 1;
 
     stnode_t get(size_t index) const {
         w_assert1(index < max);

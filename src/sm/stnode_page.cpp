@@ -8,8 +8,6 @@
 #include "alloc_cache.h"
 #include "xct_logger.h"
 
-constexpr PageID stnode_page::stpid = 1;
-
 stnode_cache_t::stnode_cache_t(bool create)
 {
     fixable_page_h p;
