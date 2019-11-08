@@ -44,107 +44,113 @@ namespace zero::buffer_pool {
 
     // RANDOM Page Selectors from the C++ Standard Library:
     class PageEvictionerSelectorRANDOMCRand;
-    typedef PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMMinstdRand0;
-    typedef PageEvictionerSelectorRANDOMExternal<std::minstd_rand, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMMinstdRand;
-    typedef PageEvictionerSelectorRANDOMExternal<std::mt19937, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMMT19937;
-    typedef PageEvictionerSelectorRANDOMExternal<std::mt19937_64, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMMT19937_64;
-    typedef PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMRanlux24Base;
-    typedef PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMRanlux48Base;
-    typedef PageEvictionerSelectorRANDOMExternal<std::ranlux24, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMRanlux24;
-    typedef PageEvictionerSelectorRANDOMExternal<std::ranlux48, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMRanlux48;
-    typedef PageEvictionerSelectorRANDOMExternal<std::knuth_b, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMKnuthB;
+    using PageEvictionerSelectorRANDOMMinstdRand0 =
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMinstdRand =
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMT19937 =
+            PageEvictionerSelectorRANDOMExternal<std::mt19937, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMT19937_64 =
+            PageEvictionerSelectorRANDOMExternal<std::mt19937_64, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMRanlux24Base =
+            PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMRanlux48Base =
+            PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMRanlux24 = PageEvictionerSelectorRANDOMExternal<std::ranlux24, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMRanlux48 = PageEvictionerSelectorRANDOMExternal<std::ranlux48, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMKnuthB = PageEvictionerSelectorRANDOMExternal<std::knuth_b, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from the Boost RANDOM library:
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostMinstdRand0;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostMinstdRand;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::rand48, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRand48;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ecuyer1988, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostEcuyer1988;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::knuth_b, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostKnuthB;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::kreutzer1986, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostKreutzer1986;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::taus88, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostTaus88;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::hellekalek1995, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostHellekalek1995;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::mt11213b, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostMT11213b;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::mt19937, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostMT19937;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::mt19937_64, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMBoostMT19937_64;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci607, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci607;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci1279, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci2281, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci3217, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci4423, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci9689, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci19937, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci23209, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci44497, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux3;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux4;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMBoostRanlux64_3;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMBoostRanlux64_4;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3_01, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux3_01;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4_01, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux4_01;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3_01, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux64_3_01;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4_01, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux64_4_01;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux24, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMBoostRanlux24;
-    typedef PageEvictionerSelectorRANDOMExternal<boost::random::ranlux48, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMBoostRanlux48;
+    using PageEvictionerSelectorRANDOMBoostMinstdRand0 = PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMinstdRand = PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRand48 = PageEvictionerSelectorRANDOMExternal<boost::random::rand48, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostEcuyer1988 = PageEvictionerSelectorRANDOMExternal<boost::random::ecuyer1988, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKnuthB = PageEvictionerSelectorRANDOMExternal<boost::random::knuth_b, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKreutzer1986 = PageEvictionerSelectorRANDOMExternal<boost::random::kreutzer1986, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostTaus88 = PageEvictionerSelectorRANDOMExternal<boost::random::taus88, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostHellekalek1995 = PageEvictionerSelectorRANDOMExternal<boost::random::hellekalek1995, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT11213b = PageEvictionerSelectorRANDOMExternal<boost::random::mt11213b, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937 = PageEvictionerSelectorRANDOMExternal<boost::random::mt19937, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937_64 = PageEvictionerSelectorRANDOMExternal<boost::random::mt19937_64, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci607, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci1279, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci2281, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci3217, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci4423, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci9689, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci19937, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci23209, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci44497, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3_01, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4_01, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3_01, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4_01, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux24 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux24, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux48 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux48, SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's PCG library:
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_unique, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32Unique;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_fast, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32Fast;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k2, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K2;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K2Fast;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k64, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K64;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K64Fast;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k1024, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K1024;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K1024Fast;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k16384, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K16384;
-    typedef PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMPCG32K16384Fast;
+    using PageEvictionerSelectorRANDOMPCG32 = PageEvictionerSelectorRANDOMExternal<pcg32, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32Unique = PageEvictionerSelectorRANDOMExternal<pcg32_unique, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32Fast = PageEvictionerSelectorRANDOMExternal<pcg32_fast, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2 = PageEvictionerSelectorRANDOMExternal<pcg32_k2, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64 = PageEvictionerSelectorRANDOMExternal<pcg32_k64, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024 = PageEvictionerSelectorRANDOMExternal<pcg32_k1024, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384 = PageEvictionerSelectorRANDOMExternal<pcg32_k16384, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's XorShift library:
-    typedef PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXORShift32;
-    typedef PageEvictionerSelectorRANDOMExternal<xorshift64star32a, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXORShift64Star;
+    using PageEvictionerSelectorRANDOMXORShift32 = PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXORShift64Star = PageEvictionerSelectorRANDOMExternal<xorshift64star32a, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors based on XorShift:
     class PageEvictionerSelectorRANDOMXORWow;
     class PageEvictionerSelectorRANDOMXORShift128Plus;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoshiro library:
-    typedef PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoshiro128Plus32;
-    typedef PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32 , SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoshiro128StarStar32;
+    using PageEvictionerSelectorRANDOMXoshiro128Plus32 = PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoshiro128StarStar32 = PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32 , SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoroshiro library:
-    typedef PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoroshiro128Plus32;
-    typedef PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoroshiro64Plus32;
-    typedef PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoroshiro64Star32;
-    typedef PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMXoroshiro64StarStar32;
+    using PageEvictionerSelectorRANDOMXoroshiro128Plus32 = PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Plus32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Star32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64StarStar32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Arc4 library:
-    typedef PageEvictionerSelectorRANDOMExternal<arc4_rand32, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMARC4;
+    using PageEvictionerSelectorRANDOMARC4 = PageEvictionerSelectorRANDOMExternal<arc4_rand32, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's GJrand library:
-    typedef PageEvictionerSelectorRANDOMExternal<gjrand32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMGjrand;
+    using PageEvictionerSelectorRANDOMGjrand = PageEvictionerSelectorRANDOMExternal<gjrand32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's JSF library:
-    typedef PageEvictionerSelectorRANDOMExternal<jsf32n, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMJSF32n;
-    typedef PageEvictionerSelectorRANDOMExternal<jsf32r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMJSF32r;
+    using PageEvictionerSelectorRANDOMJSF32n = PageEvictionerSelectorRANDOMExternal<jsf32n, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMJSF32r = PageEvictionerSelectorRANDOMExternal<jsf32r, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SplitMix library:
-    typedef PageEvictionerSelectorRANDOMExternal<splitmix32, SeedGeneratorRandomDevice<uint64_t>, SeedGeneratorRandomDevice<uint64_t>> PageEvictionerSelectorRANDOMSplitMix32;
+    using PageEvictionerSelectorRANDOMSplitMix32 = PageEvictionerSelectorRANDOMExternal<splitmix32, SeedGeneratorRandomDevice<uint64_t>, SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
-    typedef PageEvictionerSelectorRANDOMExternal<mcg128, SeedGeneratorRandomDevice<__uint128_t>> PageEvictionerSelectorRANDOMMCG128;
-    typedef PageEvictionerSelectorRANDOMExternal<mcg128_fast, SeedGeneratorRandomDevice<__uint128_t>> PageEvictionerSelectorRANDOMMCG128Fast;
+    using PageEvictionerSelectorRANDOMMCG128 = PageEvictionerSelectorRANDOMExternal<mcg128, SeedGeneratorRandomDevice<__uint128_t>>;
+    using PageEvictionerSelectorRANDOMMCG128Fast = PageEvictionerSelectorRANDOMExternal<mcg128_fast, SeedGeneratorRandomDevice<__uint128_t>>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Selectors from Melissa O'Neill's ChaCha library:
-    typedef PageEvictionerSelectorRANDOMExternal<chacha4r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMChaCha4;
-    typedef PageEvictionerSelectorRANDOMExternal<chacha5r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMChaCha5;
-    typedef PageEvictionerSelectorRANDOMExternal<chacha6r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMChaCha6;
-    typedef PageEvictionerSelectorRANDOMExternal<chacha8r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMChaCha8;
-    typedef PageEvictionerSelectorRANDOMExternal<chacha20r, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMChaCha20;
+    using PageEvictionerSelectorRANDOMChaCha4 = PageEvictionerSelectorRANDOMExternal<chacha4r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha5 = PageEvictionerSelectorRANDOMExternal<chacha5r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha6 = PageEvictionerSelectorRANDOMExternal<chacha6r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha8 = PageEvictionerSelectorRANDOMExternal<chacha8r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha20 = PageEvictionerSelectorRANDOMExternal<chacha20r, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SFC library:
-    typedef PageEvictionerSelectorRANDOMExternal<sfc32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>> PageEvictionerSelectorRANDOMSFC32;
+    using PageEvictionerSelectorRANDOMSFC32 = PageEvictionerSelectorRANDOMExternal<sfc32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
@@ -186,151 +192,151 @@ namespace zero::buffer_pool {
     /* END --- Forward Declarations --- END */
 
     // LOOP Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPAbsolutelyAccurate;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPPracticallyAccurate;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPLockFree, PageEvictionerFilterNone, false> PageEvictionerLOOPLockFree;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPThreadLocallyAccurate, PageEvictionerFilterNone, false> PageEvictionerLOOPThreadLocallyAccurate;
+    using PageEvictionerLOOPAbsolutelyAccurate = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPAbsolutelyAccurate, PageEvictionerFilterNone, false>;
+    using PageEvictionerLOOPPracticallyAccurate = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterNone, false>;
+    using PageEvictionerLOOPLockFree = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPLockFree, PageEvictionerFilterNone, false>;
+    using PageEvictionerLOOPThreadLocallyAccurate = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPThreadLocallyAccurate, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from the C++ Standard Library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMCRand, PageEvictionerFilterNone, false> PageEvictionerRANDOMCRand;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRand0, PageEvictionerFilterNone, false> PageEvictionerRANDOMMinstdRand0;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRand, PageEvictionerFilterNone, false> PageEvictionerRANDOMMinstdRand;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937, PageEvictionerFilterNone, false> PageEvictionerRANDOMMT19937;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937_64, PageEvictionerFilterNone, false> PageEvictionerRANDOMMT19937_64;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24Base, PageEvictionerFilterNone, false> PageEvictionerRANDOMRanlux24Base;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48Base, PageEvictionerFilterNone, false> PageEvictionerRANDOMRanlux48Base;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24, PageEvictionerFilterNone, false> PageEvictionerRANDOMRanlux24;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48, PageEvictionerFilterNone, false> PageEvictionerRANDOMRanlux48;
+    using PageEvictionerRANDOMCRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMCRand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMinstdRand0 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRand0, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMinstdRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT19937_64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937_64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux24Base = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24Base, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux48Base = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48Base, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux24 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from the Boost RANDOM library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthB, PageEvictionerFilterNone, false> PageEvictionerRANDOMKnuthB;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand0, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostMinstdRand0;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostMinstdRand;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRand48;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostEcuyer1988, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostEcuyer1988;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKnuthB, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostKnuthB;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKreutzer1986, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostKreutzer1986;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostTaus88, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostTaus88;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostHellekalek1995, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostHellekalek1995;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT11213b, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostMT11213b;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostMT19937;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937_64, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostMT19937_64;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci607, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci607;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci1279;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci2281;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci3217;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci4423;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci9689;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci19937;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci23209;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostLaggedFibonacci44497;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux3;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux4;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux64_3;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux64_4;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3_01, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux3_01;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4_01, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux4_01;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3_01, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux64_3_01;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux64_4_01;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux24, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux24;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux48, PageEvictionerFilterNone, false> PageEvictionerRANDOMBoostRanlux48;
+    using PageEvictionerRANDOMKnuthB = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthB, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMinstdRand0 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand0, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMinstdRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRand48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostEcuyer1988 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostEcuyer1988, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostKnuthB = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKnuthB, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostKreutzer1986 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKreutzer1986, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostTaus88 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostTaus88, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostHellekalek1995 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostHellekalek1995, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT11213b = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT11213b, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT19937_64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937_64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci607 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci607, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci1279 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci2281 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci3217 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci4423 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci9689 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci23209 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci44497 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux24 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux24, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux48, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's PCG library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32Unique, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32Unique;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32Fast;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K2;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K2Fast;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K64;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K64Fast;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K1024;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K1024Fast;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K16384;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMPCG32K16384Fast;
+    using PageEvictionerRANDOMPCG32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32Unique = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32Unique, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K2 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K2Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K64Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K1024 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K1024Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K16384 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K16384Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384Fast, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's XorShift library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXORShift32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift64Star, PageEvictionerFilterNone, false> PageEvictionerRANDOMXORShift64Star;
+    using PageEvictionerRANDOMXORShift32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXORShift64Star = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift64Star, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners based on XorShift:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORWow, PageEvictionerFilterNone, false> PageEvictionerRANDOMXORWow;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift128Plus, PageEvictionerFilterNone, false> PageEvictionerRANDOMXORShift128Plus;
+    using PageEvictionerRANDOMXORWow = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORWow, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXORShift128Plus = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift128Plus, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Xoshiro library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128Plus32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoshiro128Plus32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128StarStar32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoshiro128StarStar32;
+    using PageEvictionerRANDOMXoshiro128Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128Plus32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoshiro128StarStar32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128StarStar32, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Xoroshiro library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro128Plus32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoroshiro128Plus32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Plus32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoroshiro64Plus32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Star32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoroshiro64Star32;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64StarStar32, PageEvictionerFilterNone, false> PageEvictionerRANDOMXoroshiro64StarStar32;
+    using PageEvictionerRANDOMXoroshiro128Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro128Plus32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Plus32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64Star32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Star32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64StarStar32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64StarStar32, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Arc4 library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARC4, PageEvictionerFilterNone, false> PageEvictionerRANDOMARC4;
+    using PageEvictionerRANDOMARC4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARC4, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's GJrand library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMGjrand, PageEvictionerFilterNone, false> PageEvictionerRANDOMGjrand;
+    using PageEvictionerRANDOMGjrand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMGjrand, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's JSF library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32n, PageEvictionerFilterNone, false> PageEvictionerRANDOMJSF32n;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32r, PageEvictionerFilterNone, false> PageEvictionerRANDOMJSF32r;
+    using PageEvictionerRANDOMJSF32n = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32n, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMJSF32r = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32r, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's SplitMix library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSplitMix32, PageEvictionerFilterNone, false> PageEvictionerRANDOMSplitMix32;
+    using PageEvictionerRANDOMSplitMix32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSplitMix32, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128, PageEvictionerFilterNone, false> PageEvictionerRANDOMMCG128;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128Fast, PageEvictionerFilterNone, false> PageEvictionerRANDOMMCG128Fast;
+    using PageEvictionerRANDOMMCG128 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMCG128Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128Fast, PageEvictionerFilterNone, false>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Evictioners from Melissa O'Neill's ChaCha library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha4, PageEvictionerFilterNone, false> PageEvictionerRANDOMChaCha4;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha5, PageEvictionerFilterNone, false> PageEvictionerRANDOMChaCha5;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha6, PageEvictionerFilterNone, false> PageEvictionerRANDOMChaCha6;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha8, PageEvictionerFilterNone, false> PageEvictionerRANDOMChaCha8;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha20, PageEvictionerFilterNone, false> PageEvictionerRANDOMChaCha20;
+    using PageEvictionerRANDOMChaCha4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha5 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha5, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha6 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha6, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha8 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha8, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha20 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha20, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's SFC library:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32, PageEvictionerFilterNone, false> PageEvictionerRANDOMSFC32;
+    using PageEvictionerRANDOMSFC32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32, PageEvictionerFilterNone, false>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOLowContention;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOHighContention<>, PageEvictionerFilterNone, false> PageEvictionerFIFOHighContention;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFILOLowContention<>, PageEvictionerFilterNone, false> PageEvictionerFILOLowContention;
+    using PageEvictionerFIFOLowContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerFIFOHighContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOHighContention<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerFILOLowContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFILOLowContention<>, PageEvictionerFilterNone, false>;
 
     // LRU/MRU (Least/Most Recently Used) Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRU, PageEvictionerFilterNone, false> PageEvictionerLRU;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<2>, PageEvictionerFilterNone, false> PageEvictionerLRU2;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<3>, PageEvictionerFilterNone, false> PageEvictionerLRU3;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<4>, PageEvictionerFilterNone, false> PageEvictionerLRU4;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorSLRU<>, PageEvictionerFilterNone, false> PageEvictionerSLRU;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiMRU<>, PageEvictionerFilterNone, false> PageEvictionerMRU;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRU<>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<2>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU2;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<3>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU3;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<4>, PageEvictionerFilterNone, false> PageEvictionerTimestampLRU4;
+    using PageEvictionerLRU = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRU, PageEvictionerFilterNone, false>;
+    using PageEvictionerLRU2 = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<2>, PageEvictionerFilterNone, false>;
+    using PageEvictionerLRU3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<3>, PageEvictionerFilterNone, false>;
+    using PageEvictionerLRU4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRUK<4>, PageEvictionerFilterNone, false>;
+    using PageEvictionerSLRU = PageEvictionerSelectAndFilter<PageEvictionerSelectorSLRU<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerMRU = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiMRU<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerTimestampLRU = PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRU<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerTimestampLRU2 = PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<2>, PageEvictionerFilterNone, false>;
+    using PageEvictionerTimestampLRU3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<3>, PageEvictionerFilterNone, false>;
+    using PageEvictionerTimestampLRU4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorTimestampLRUK<4>, PageEvictionerFilterNone, false>;
 
     // LFU (Least Frequently Used) Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone, false> PageEvictionerLFU;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA<>, PageEvictionerFilterNone, false> PageEvictionerLFUDA;
+    using PageEvictionerLFU = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone, false>;
+    using PageEvictionerLFUDA = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA<>, PageEvictionerFilterNone, false>;
 
     // LRD (Least Reference Density) Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV1, PageEvictionerFilterNone, false> PageEvictionerLRDV1;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionSubtraction<10>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Subtraction;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionMultiplication<>>, PageEvictionerFilterNone, false> PageEvictionerLRDV2Multiplication;
+    using PageEvictionerLRDV1 = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV1, PageEvictionerFilterNone, false>;
+    using PageEvictionerLRDV2Subtraction = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionSubtraction<10>>, PageEvictionerFilterNone, false>;
+    using PageEvictionerLRDV2Multiplication = PageEvictionerSelectAndFilter<PageEvictionerSelectorLRDV2<10, AgingFunctionMultiplication<>>, PageEvictionerFilterNone, false>;
 
     // CLOCK Page Evictioners:
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<>, true> PageEvictionerCLOCKFix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<false, true>, true> PageEvictionerCLOCKUnfix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<true, true>, true> PageEvictionerCLOCKFixUnfix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<>, true> PageEvictionerGCLOCKV1Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictionerGCLOCKV2Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true>, true> PageEvictionerDGCLOCKV1Fix;
-    typedef PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true> PageEvictionerDGCLOCKV2Fix;
-    typedef PageEvictionerCAR<> PageEvictionerCARFix;
-    typedef PageEvictionerCAR<true> PageEvictionerUnfix;
+    using PageEvictionerCLOCKFix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<>, true>;
+    using PageEvictionerCLOCKUnfix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<false, true>, true>;
+    using PageEvictionerCLOCKFixUnfix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterCLOCK<true, true>, true>;
+    using PageEvictionerGCLOCKV1Fix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<>, true>;
+    using PageEvictionerGCLOCKV2Fix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, false, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true>;
+    using PageEvictionerDGCLOCKV1Fix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true>, true>;
+    using PageEvictionerDGCLOCKV2Fix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPPracticallyAccurate, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true>;
+    using PageEvictionerCARFix = PageEvictionerCAR<>;
+    using PageEvictionerUnfix = PageEvictionerCAR<true>;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
