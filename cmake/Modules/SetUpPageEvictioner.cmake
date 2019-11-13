@@ -16,6 +16,15 @@
 ## - PageEvictionerRANDOMRanlux24
 ## - PageEvictionerRANDOMRanlux48
 ## - PageEvictionerRANDOMKnuthB
+## - PageEvictionerRANDOMMinstdRand0ThreadLocal
+## - PageEvictionerRANDOMMinstdRandThreadLocal
+## - PageEvictionerRANDOMMT19937ThreadLocal
+## - PageEvictionerRANDOMMT19937_64ThreadLocal
+## - PageEvictionerRANDOMRanlux24BaseThreadLocal
+## - PageEvictionerRANDOMRanlux48BaseThreadLocal
+## - PageEvictionerRANDOMRanlux24ThreadLocal
+## - PageEvictionerRANDOMRanlux48ThreadLocal
+## - PageEvictionerRANDOMKnuthBThreadLocal
 ## - PageEvictionerRANDOMBoostMinstdRand0
 ## - PageEvictionerRANDOMBoostMinstdRand
 ## - PageEvictionerRANDOMBoostRand48
@@ -46,6 +55,36 @@
 ## - PageEvictionerRANDOMBoostRanlux64_4_01
 ## - PageEvictionerRANDOMBoostRanlux24
 ## - PageEvictionerRANDOMBoostRanlux48
+## - PageEvictionerRANDOMBoostMinstdRand0ThreadLocal
+## - PageEvictionerRANDOMBoostMinstdRandThreadLocal
+## - PageEvictionerRANDOMBoostRand48ThreadLocal
+## - PageEvictionerRANDOMBoostEcuyer1988ThreadLocal
+## - PageEvictionerRANDOMBoostKnuthBThreadLocal
+## - PageEvictionerRANDOMBoostKreutzer1986ThreadLocal
+## - PageEvictionerRANDOMBoostTaus88ThreadLocal
+## - PageEvictionerRANDOMBoostHellekalek1995ThreadLocal
+## - PageEvictionerRANDOMBoostMT11213bThreadLocal
+## - PageEvictionerRANDOMBoostMT19937ThreadLocal
+## - PageEvictionerRANDOMBoostMT19937_64ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci607ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci1279ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci2281ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci3217ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci4423ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci9689ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci19937ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci23209ThreadLocal
+## - PageEvictionerRANDOMBoostLaggedFibonacci44497ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux3ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux4ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux64_3ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux64_4ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux3_01ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux4_01ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux64_3_01ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux64_4_01ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux24ThreadLocal
+## - PageEvictionerRANDOMBoostRanlux48ThreadLocal
 ## - PageEvictionerRANDOMPCG32
 ## - PageEvictionerRANDOMPCG32Unique
 ## - PageEvictionerRANDOMPCG32Fast
@@ -57,29 +96,61 @@
 ## - PageEvictionerRANDOMPCG32K1024Fast
 ## - PageEvictionerRANDOMPCG32K16384
 ## - PageEvictionerRANDOMPCG32K16384Fast
+## - PageEvictionerRANDOMPCG32ThreadLocal
+## - PageEvictionerRANDOMPCG32UniqueThreadLocal
+## - PageEvictionerRANDOMPCG32FastThreadLocal
+## - PageEvictionerRANDOMPCG32K2ThreadLocal
+## - PageEvictionerRANDOMPCG32K2FastThreadLocal
+## - PageEvictionerRANDOMPCG32K64ThreadLocal
+## - PageEvictionerRANDOMPCG32K64FastThreadLocal
+## - PageEvictionerRANDOMPCG32K1024ThreadLocal
+## - PageEvictionerRANDOMPCG32K1024FastThreadLocal
+## - PageEvictionerRANDOMPCG32K16384ThreadLocal
+## - PageEvictionerRANDOMPCG32K16384FastThreadLocal
 ## - PageEvictionerRANDOMXORShift32
 ## - PageEvictionerRANDOMXORShift64Star
+## - PageEvictionerRANDOMXORShift32ThreadLocal
+## - PageEvictionerRANDOMXORShift64StarThreadLocal
 ## - PageEvictionerRANDOMXORWow
 ## - PageEvictionerRANDOMXORShift128Plus
 ## - PageEvictionerRANDOMXoshiro128Plus32
 ## - PageEvictionerRANDOMXoshiro128StarStar32
+## - PageEvictionerRANDOMXoshiro128Plus32ThreadLocal
+## - PageEvictionerRANDOMXoshiro128StarStar32ThreadLocal
 ## - PageEvictionerRANDOMXoroshiro128Plus32
 ## - PageEvictionerRANDOMXoroshiro64Plus32
 ## - PageEvictionerRANDOMXoroshiro64Star32
 ## - PageEvictionerRANDOMXoroshiro64StarStar32
+## - PageEvictionerRANDOMXoroshiro128Plus32ThreadLocal
+## - PageEvictionerRANDOMXoroshiro64Plus32ThreadLocal
+## - PageEvictionerRANDOMXoroshiro64Star32ThreadLocal
+## - PageEvictionerRANDOMXoroshiro64StarStar32ThreadLocal
 ## - PageEvictionerRANDOMARC4
+## - PageEvictionerRANDOMARC4ThreadLocal
 ## - PageEvictionerRANDOMGjrand
+## - PageEvictionerRANDOMGjrandThreadLocal
 ## - PageEvictionerRANDOMJSF32n
 ## - PageEvictionerRANDOMJSF32r
+## - PageEvictionerRANDOMJSF32nThreadLocal
+## - PageEvictionerRANDOMJSF32rThreadLocal
 ## - PageEvictionerRANDOMSplitMix32
+## - PageEvictionerRANDOMSplitMix32ThreadLocal
 ## - PageEvictionerRANDOMMCG128
 ## - PageEvictionerRANDOMMCG128Fast
+## - PageEvictionerRANDOMMCG128ThreadLocal
+## - PageEvictionerRANDOMMCG128FastThreadLocal
 ## - PageEvictionerRANDOMChaCha4
 ## - PageEvictionerRANDOMChaCha5
 ## - PageEvictionerRANDOMChaCha6
 ## - PageEvictionerRANDOMChaCha8
 ## - PageEvictionerRANDOMChaCha20
+## - PageEvictionerRANDOMChaCha4ThreadLocal
+## - PageEvictionerRANDOMChaCha5ThreadLocal
+## - PageEvictionerRANDOMChaCha6ThreadLocal
+## - PageEvictionerRANDOMChaCha8ThreadLocal
+## - PageEvictionerRANDOMChaCha20ThreadLocal
 ## - PageEvictionerRANDOMSFC32
+## - PageEvictionerRANDOMSFC32ThreadLocal
 ## - PageEvictionerFIFOLowContention
 ## - PageEvictionerFIFOHighContention
 ## - PageEvictionerFILOLowContention
@@ -138,6 +209,24 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanlux48")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanlux48!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMKnuthB")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMKnuthB!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMinstdRand0ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMinstdRand0ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMinstdRandThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMinstdRandThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMT19937ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMT19937ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMT19937_64ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMT19937_64ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanlux24BaseThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanlux24BaseThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanlux48BaseThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanlux48BaseThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanlux24ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanlux24ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanlux48ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanlux48ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMKnuthBThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMKnuthBThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMinstdRand0")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMinstdRand0!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMinstdRand")
@@ -198,6 +287,66 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux24")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux24!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux48")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux48!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMinstdRand0ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMinstdRand0ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMinstdRandThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMinstdRandThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRand48ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRand48ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostEcuyer1988ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostEcuyer1988ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostKnuthBThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostKnuthBThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostKreutzer1986ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostKreutzer1986ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostTaus88ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostTaus88ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostHellekalek1995ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostHellekalek1995ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMT11213bThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMT11213bThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMT19937ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMT19937ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostMT19937_64ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostMT19937_64ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci607ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci607ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci1279ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci1279ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci2281ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci2281ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci3217ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci3217ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci4423ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci4423ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci9689ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci9689ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci19937ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci19937ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci23209ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci23209ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostLaggedFibonacci44497ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostLaggedFibonacci44497ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux3ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux3ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux4ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux4ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux64_3ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux64_3ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux64_4ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux64_4ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux3_01ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux3_01ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux4_01ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux4_01ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux64_3_01ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux64_3_01ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux64_4_01ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux64_4_01ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux24ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux24ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMBoostRanlux48ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMBoostRanlux48ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32Unique")
@@ -220,10 +369,36 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K16384")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K16384!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K16384Fast")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K16384Fast!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32UniqueThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32UniqueThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32FastThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K2ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K2ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K2FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K2FastThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K64ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K64ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K64FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K64FastThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K1024ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K1024ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K1024FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K1024FastThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K16384ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K16384ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMPCG32K16384FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMPCG32K16384FastThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORShift32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXORShift32!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORShift64Star")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXORShift64Star!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORShift32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXORShift32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORShift64StarThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXORShift64StarThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORWow")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXORWow!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXORShift128Plus")
@@ -232,6 +407,10 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoshiro128Plus32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoshiro128Plus32!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoshiro128StarStar32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoshiro128StarStar32!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoshiro128Plus32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoshiro128Plus32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoshiro128StarStar32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoshiro128StarStar32ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro128Plus32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro128Plus32!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64Plus32")
@@ -240,20 +419,42 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64Star32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro64Star32!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64StarStar32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro64StarStar32!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro128Plus32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro128Plus32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64Plus32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro64Plus32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64Star32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro64Star32ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMXoroshiro64StarStar32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMXoroshiro64StarStar32ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMARC4")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMARC4!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMARC4ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMARC4ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMGjrand")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMGjrand!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMGjrandThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMGjrandThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMJSF32n")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMJSF32n!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMJSF32r")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMJSF32r!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMJSF32nThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMJSF32nThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMJSF32rThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMJSF32rThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMSplitMix32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMSplitMix32!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMSplitMix32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMSplitMix32ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMCG128")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMCG128!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMCG128Fast")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMCG128Fast!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMCG128ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMCG128ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMCG128FastThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMCG128FastThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha4")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha4!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha5")
@@ -264,8 +465,20 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha8")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha8!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha20")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha20!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha4ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha4ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha5ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha5ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha6ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha6ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha8ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha8ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMChaCha20ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMChaCha20ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMSFC32")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMSFC32!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMSFC32ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMSFC32ThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerFIFOLowContention")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerFIFOLowContention!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerFIFOHighContention")

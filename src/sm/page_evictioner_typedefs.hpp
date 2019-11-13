@@ -72,6 +72,33 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMKnuthB =
             PageEvictionerSelectorRANDOMExternal<std::knuth_b, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMinstdRand0ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand0, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMinstdRandThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMT19937ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMMT19937_64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937_64, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMRanlux24BaseThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24_base, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMRanlux48BaseThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48_base, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMRanlux24ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMRanlux48ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMKnuthBThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::knuth_b, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from the Boost RANDOM library:
     namespace brand = boost::random;
@@ -165,6 +192,96 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMBoostRanlux48 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux48, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostMinstdRand0ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::minstd_rand0, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMinstdRandThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::minstd_rand, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRand48ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::rand48, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostEcuyer1988ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ecuyer1988, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKnuthBThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::knuth_b, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKreutzer1986ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::kreutzer1986, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostTaus88ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::taus88, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostHellekalek1995ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::hellekalek1995, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT11213bThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::mt11213b, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::mt19937, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937_64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::mt19937_64, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci607, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci1279, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci2281, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci3217, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci4423, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci9689, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci19937, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci23209, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci44497, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux3, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux4, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_3, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_4, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3_01ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux3_01, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4_01ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux4_01, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_3_01, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_4_01, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux24ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux24, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux48ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux48, brand::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's PCG library:
     using PageEvictionerSelectorRANDOMPCG32 =
@@ -200,6 +317,39 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMPCG32K16384Fast =
             PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32UniqueThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_unique, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's XorShift library:
     using PageEvictionerSelectorRANDOMXORShift32 =
@@ -208,6 +358,12 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMXORShift64Star =
             PageEvictionerSelectorRANDOMExternal<xorshift64star32a, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXORShift32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift32plain32a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXORShift64StarThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift64star32a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors based on XorShift:
     class PageEvictionerSelectorRANDOMXORWow;
@@ -220,6 +376,12 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMXoshiro128StarStar32 =
             PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoshiro128Plus32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128plus32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoshiro128StarStar32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128starstar32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoroshiro library:
     using PageEvictionerSelectorRANDOMXoroshiro128Plus32 =
@@ -238,17 +400,40 @@ namespace zero::buffer_pool {
             PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro128Plus32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro128plus32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Plus32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64plus32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Star32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64star32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64StarStar32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64starstar32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Arc4 library:
     using PageEvictionerSelectorRANDOMARC4 =
             PageEvictionerSelectorRANDOMExternal<arc4_rand32, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARC4ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<arc4_rand32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's GJrand library:
     using PageEvictionerSelectorRANDOMGjrand =
             PageEvictionerSelectorRANDOMExternal<gjrand32, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMGjrandThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<gjrand32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's JSF library:
     using PageEvictionerSelectorRANDOMJSF32n =
@@ -257,12 +442,22 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMJSF32r =
             PageEvictionerSelectorRANDOMExternal<jsf32r, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMJSF32nThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32n, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMJSF32rThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SplitMix library:
     using PageEvictionerSelectorRANDOMSplitMix32 =
             PageEvictionerSelectorRANDOMExternal<splitmix32, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMSplitMix32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<splitmix32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint64_t>,
+                                                            SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
@@ -272,6 +467,12 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMMCG128Fast =
             PageEvictionerSelectorRANDOMExternal<mcg128_fast, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<__uint128_t>>;
+    using PageEvictionerSelectorRANDOMMCG128ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<__uint128_t>>;
+    using PageEvictionerSelectorRANDOMMCG128FastThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128_fast, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<__uint128_t>>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Selectors from Melissa O'Neill's ChaCha library:
@@ -290,6 +491,21 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMChaCha20 =
             PageEvictionerSelectorRANDOMExternal<chacha20r, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha4ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha4r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha5ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha5r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha6ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha6r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha8ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha8r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha20ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha20r, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SFC library:
     using PageEvictionerSelectorRANDOMSFC32 =
@@ -297,6 +513,11 @@ namespace zero::buffer_pool {
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMSFC32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<sfc32, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>,
+                                                            SeedGeneratorRandomDevice<uint32_t>>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
@@ -354,6 +575,15 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMRanlux24 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMRanlux48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMKnuthB = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthB, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMinstdRand0ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRand0ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMinstdRandThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMinstdRandThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT19937_64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT19937_64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux24BaseThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24BaseThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux48BaseThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48BaseThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux24ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMKnuthBThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthBThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from the Boost RANDOM library:
     using PageEvictionerRANDOMBoostMinstdRand0 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand0, PageEvictionerFilterNone, false>;
@@ -386,6 +616,36 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMBoostRanlux64_4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMBoostRanlux24 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux24, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMBoostRanlux48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux48, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMinstdRand0ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand0ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMinstdRandThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRandThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRand48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostEcuyer1988ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostEcuyer1988ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostKnuthBThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKnuthBThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostKreutzer1986ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKreutzer1986ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostTaus88ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostTaus88ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostHellekalek1995ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostHellekalek1995ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT11213bThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT11213bThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostMT19937_64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT19937_64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci607ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci607ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci1279ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci2281ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci3217ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci4423ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci9689ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci23209ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostLaggedFibonacci44497ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux64_4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux24ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux24ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMBoostRanlux48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux48ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's PCG library:
     using PageEvictionerRANDOMPCG32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32, PageEvictionerFilterNone, false>;
@@ -399,10 +659,23 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMPCG32K1024Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024Fast, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMPCG32K16384 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMPCG32K16384Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32UniqueThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32UniqueThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32FastThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K2ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K2FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K2FastThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K64FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K64FastThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K1024ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K1024FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K1024FastThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K16384ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPCG32K16384FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32K16384FastThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's XorShift library:
     using PageEvictionerRANDOMXORShift32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMXORShift64Star = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift64Star, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXORShift32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXORShift64StarThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORShift64StarThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners based on XorShift:
     using PageEvictionerRANDOMXORWow = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXORWow, PageEvictionerFilterNone, false>;
@@ -411,30 +684,43 @@ namespace zero::buffer_pool {
     // RANDOM Page Evictioners from Melissa O'Neill's Xoshiro library:
     using PageEvictionerRANDOMXoshiro128Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128Plus32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMXoshiro128StarStar32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128StarStar32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoshiro128Plus32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128Plus32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoshiro128StarStar32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoshiro128StarStar32ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Xoroshiro library:
     using PageEvictionerRANDOMXoroshiro128Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro128Plus32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMXoroshiro64Plus32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Plus32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMXoroshiro64Star32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Star32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMXoroshiro64StarStar32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64StarStar32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro128Plus32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro128Plus32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64Plus32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Plus32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64Star32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64Star32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMXoroshiro64StarStar32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMXoroshiro64StarStar32ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Arc4 library:
     using PageEvictionerRANDOMARC4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARC4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMARC4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARC4ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's GJrand library:
     using PageEvictionerRANDOMGjrand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMGjrand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMGjrandThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMGjrandThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's JSF library:
     using PageEvictionerRANDOMJSF32n = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32n, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMJSF32r = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32r, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMJSF32nThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32nThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMJSF32rThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMJSF32rThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's SplitMix library:
     using PageEvictionerRANDOMSplitMix32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSplitMix32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMSplitMix32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSplitMix32ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
     using PageEvictionerRANDOMMCG128 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMMCG128Fast = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128Fast, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMCG128ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMCG128FastThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMCG128FastThreadLocal, PageEvictionerFilterNone, false>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Evictioners from Melissa O'Neill's ChaCha library:
@@ -443,9 +729,15 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMChaCha6 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha6, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMChaCha8 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha8, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMChaCha20 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha20, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha4ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha5ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha5ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha6ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha6ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha8ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha8ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMChaCha20ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMChaCha20ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's SFC library:
     using PageEvictionerRANDOMSFC32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMSFC32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32ThreadLocal, PageEvictionerFilterNone, false>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Evictioners:
     using PageEvictionerFIFOLowContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false>;
