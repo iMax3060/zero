@@ -13,18 +13,18 @@
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/ranlux.hpp>
 #include "pcg-cpp/include/pcg_random.hpp"
-#include "9b769cefccac1f2bd728596da3a856dd/xorshift.hpp"
-#include "3eb1bcc5418c4ae83c4c6a86d9cbb1cd/xoshiro.hpp"
-#include "f76f4bb7b7f67ff0850199ab7c077bf7/xoroshiro.hpp"
-#include "4f2bf4b4f3a221ef051cf108d6b64d5a/arc4.hpp"
-#include "7a783e20f71259cc13e219829bcea4ac/gjrand.hpp"
-#include "85cff47d4bad8de6bdeb671f9c76c814/jsf.hpp"
-#include "6179748664e88ef3c34860f44309fc71/splitmix.hpp"
+#include "xorshift/xorshift.hpp"
+#include "xoshiro/xoshiro.hpp"
+#include "xoroshiro/xoroshiro.hpp"
+#include "arc4/arc4.hpp"
+#include "gjrand/gjrand.hpp"
+#include "jsf/jsf.hpp"
+#include "splitmix/splitmix.hpp"
 #if __SIZEOF_INT128__
-#include "aeae7628565f15fb3fef54be8533e39c/lehmer.hpp"
+#include "lehmer/lehmer.hpp"
 #endif // __SIZEOF_INT128__
-#include "f0fe8877e4deb3f6b9200a17c18bf155/chacha.hpp"
-#include "f1f7821f07cf76504a97f6537c818083/sfc.hpp"
+#include "chacha/chacha.hpp"
+#include "sfc/sfc.hpp"
 
 namespace zero::buffer_pool {
     /* BEGIN --- Forward Declarations ---BEGIN */

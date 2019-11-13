@@ -16,33 +16,33 @@
 [submodule "src/third_party/pcg-cpp"]
 	path = src/third_party/pcg-cpp
 	url = https://github.com/imneme/pcg-cpp.git
-[submodule "src/third_party/85cff47d4bad8de6bdeb671f9c76c814"]
-	path = src/third_party/85cff47d4bad8de6bdeb671f9c76c814
+[submodule "src/third_party/jsf"]
+	path = src/third_party/jsf
 	url = https://gist.github.com/imneme/85cff47d4bad8de6bdeb671f9c76c814.git
-[submodule "src/third_party/7a783e20f71259cc13e219829bcea4ac"]
-	path = src/third_party/7a783e20f71259cc13e219829bcea4ac
+[submodule "src/third_party/gjrand"]
+	path = src/third_party/gjrand
 	url = https://gist.github.com/imneme/7a783e20f71259cc13e219829bcea4ac.git
-[submodule "src/third_party/f1f7821f07cf76504a97f6537c818083"]
-	path = src/third_party/f1f7821f07cf76504a97f6537c818083
-	url = https://gist.github.com/imneme/f1f7821f07cf76504a97f6537c818083.git
-[submodule "src/third_party/aeae7628565f15fb3fef54be8533e39c"]
-	path = src/third_party/aeae7628565f15fb3fef54be8533e39c
-	url = https://gist.github.com/imneme/aeae7628565f15fb3fef54be8533e39c.git
-[submodule "src/third_party/6179748664e88ef3c34860f44309fc71"]
-	path = src/third_party/6179748664e88ef3c34860f44309fc71
+[submodule "src/third_party/splitmix"]
+	path = src/third_party/splitmix
 	url = https://gist.github.com/imneme/6179748664e88ef3c34860f44309fc71.git
-[submodule "src/third_party/4f2bf4b4f3a221ef051cf108d6b64d5a"]
-	path = src/third_party/4f2bf4b4f3a221ef051cf108d6b64d5a
+[submodule "src/third_party/lehmer"]
+	path = src/third_party/lehmer
+	url = https://gist.github.com/imneme/aeae7628565f15fb3fef54be8533e39c.git
+[submodule "src/third_party/arc4"]
+	path = src/third_party/arc4
 	url = https://gist.github.com/imneme/4f2bf4b4f3a221ef051cf108d6b64d5a.git
-[submodule "src/third_party/9b769cefccac1f2bd728596da3a856dd"]
-	path = src/third_party/9b769cefccac1f2bd728596da3a856dd
-	url = https://gist.github.com/imneme/9b769cefccac1f2bd728596da3a856dd.git
-[submodule "src/third_party/f76f4bb7b7f67ff0850199ab7c077bf7"]
-	path = src/third_party/f76f4bb7b7f67ff0850199ab7c077bf7
+[submodule "src/third_party/xoroshiro"]
+	path = src/third_party/xoroshiro
 	url = https://gist.github.com/imneme/f76f4bb7b7f67ff0850199ab7c077bf7.git
-[submodule "src/third_party/3eb1bcc5418c4ae83c4c6a86d9cbb1cd"]
-	path = src/third_party/3eb1bcc5418c4ae83c4c6a86d9cbb1cd
+[submodule "src/third_party/xoshiro"]
+	path = src/third_party/xoshiro
 	url = https://gist.github.com/imneme/3eb1bcc5418c4ae83c4c6a86d9cbb1cd.git
-[submodule "src/third_party/f0fe8877e4deb3f6b9200a17c18bf155"]
-	path = src/third_party/f0fe8877e4deb3f6b9200a17c18bf155
-	url = https://gist.github.com/f0fe8877e4deb3f6b9200a17c18bf155.git
+[submodule "src/third_party/xorshift"]
+	path = src/third_party/xorshift
+	url = https://gist.github.com/imneme/9b769cefccac1f2bd728596da3a856dd.git
+[submodule "src/third_party/chacha"]
+	path = src/third_party/chacha
+	url = https://gist.github.com/imneme/f0fe8877e4deb3f6b9200a17c18bf155.git
+[submodule "src/third_party/sfc"]
+	path = src/third_party/sfc
+	url = https://gist.github.com/imneme/f1f7821f07cf76504a97f6537c818083.git
