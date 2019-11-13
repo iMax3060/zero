@@ -26,6 +26,13 @@
 #endif // __SIZEOF_INT128__
 #include "chacha/chacha.hpp"
 #include "sfc/sfc.hpp"
+#include "well-random/well.hpp"
+#include "Random123/include/Random123/features/gccfeatures.h"
+#include "Random123/include/Random123/conventional/Engine.hpp"
+#include "Random123/include/Random123/threefry.h"
+#include "Random123/include/Random123/philox.h"
+#include "Random123/include/Random123/aes.h"
+#include "Random123/include/Random123/ars.h"
 
 namespace zero::buffer_pool {
     /* BEGIN --- Forward Declarations ---BEGIN */
@@ -519,6 +526,170 @@ namespace zero::buffer_pool {
                                                             SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
 
+    // RANDOM Page Selector from Sergiu Deitsch's random library:
+    using PageEvictionerSelectorRANDOMWELL512 =
+            PageEvictionerSelectorRANDOMExternal<Well512a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL521 =
+            PageEvictionerSelectorRANDOMExternal<Well521a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL607 =
+            PageEvictionerSelectorRANDOMExternal<Well607a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL800 =
+            PageEvictionerSelectorRANDOMExternal<Well800a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL1024 =
+            PageEvictionerSelectorRANDOMExternal<Well1024a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL19937 =
+            PageEvictionerSelectorRANDOMExternal<Well19937a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL21701 =
+            PageEvictionerSelectorRANDOMExternal<Well21701a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL23209 =
+            PageEvictionerSelectorRANDOMExternal<Well23209a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL44497 =
+            PageEvictionerSelectorRANDOMExternal<Well44497a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL800_ME =
+            PageEvictionerSelectorRANDOMExternal<Well800a_ME, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL19937_ME =
+            PageEvictionerSelectorRANDOMExternal<Well19937a_ME, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL21701_ME =
+            PageEvictionerSelectorRANDOMExternal<Well21701a_ME, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL23209_ME =
+            PageEvictionerSelectorRANDOMExternal<Well23209a_ME, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL44497_ME =
+            PageEvictionerSelectorRANDOMExternal<Well44497a_ME, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL512ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well512a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL521ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well521a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL607ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well607a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL800ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL1024ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well1024a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL19937ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL21701ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL23209ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL44497ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL800_METhreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a_ME, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL19937_METhreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a_ME, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL21701_METhreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a_ME, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL23209_METhreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a_ME, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMWELL44497_METhreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a_ME, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+
+    // RANDOM Page Selector from QuinoaComputing's Random123 library:
+    using PageEvictionerSelectorRANDOMThreefry2x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry4x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry2x64 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x64>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry4x64 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x64>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox2x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox4x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox2x64 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x64>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox4x64 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x64>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+#if R123_USE_AES_NI
+    using PageEvictionerSelectorRANDOMAESNI4x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMAESNI1xm128i =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARS4x32 =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARS1xm128i =
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+#endif // R123_USE_AES_NI
+    using PageEvictionerSelectorRANDOMThreefry2x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry4x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry2x64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x64>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMThreefry4x64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x64>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox2x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox4x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox2x64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x64>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPhilox4x64ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x64>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+#if R123_USE_AES_NI
+    using PageEvictionerSelectorRANDOMAESNI4x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARS4x32ThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARS1xm128iThreadLocal =
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+#endif // R123_USE_AES_NI
+
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOHighContention;
@@ -738,6 +909,66 @@ namespace zero::buffer_pool {
     // RANDOM Page Evictioners from Melissa O'Neill's SFC library:
     using PageEvictionerRANDOMSFC32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMSFC32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMSFC32ThreadLocal, PageEvictionerFilterNone, false>;
+
+    // RANDOM Page Evictioners from Sergiu Deitsch's random library:
+    using PageEvictionerRANDOMWELL512 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL512, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL521 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL521, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL607 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL607, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL800 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL800, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL1024 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL1024, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL19937, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL21701 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL21701, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL23209 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL23209, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL44497 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL44497, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL800_ME = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL800_ME, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL19937_ME = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL19937_ME, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL21701_ME = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL21701_ME, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL23209_ME = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL23209_ME, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL44497_ME = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL44497_ME, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL512ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL512ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL521ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL521ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL607ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL607ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL800ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL800ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL1024ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL1024ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL19937ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL21701ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL21701ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL23209ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL23209ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL44497ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL44497ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL800_METhreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL800_METhreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL19937_METhreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL19937_METhreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL21701_METhreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL21701_METhreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL23209_METhreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL23209_METhreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMWELL44497_METhreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMWELL44497_METhreadLocal, PageEvictionerFilterNone, false>;
+
+    // RANDOM Page Evictioners from QuinoaComputing's Random123 library:
+    using PageEvictionerRANDOMThreefry2x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry2x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry4x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry2x64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry2x64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry4x64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry4x64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox2x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox2x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox2x64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox2x64, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox4x64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x64, PageEvictionerFilterNone, false>;
+#if R123_USE_AES_NI
+    using PageEvictionerRANDOMAESNI4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI4x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMAESNI1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128i, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMARS4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS4x32, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMARS1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128i, PageEvictionerFilterNone, false>;
+#endif // R123_USE_AES_NI
+    using PageEvictionerRANDOMThreefry2x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry2x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry4x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry2x64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry2x64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMThreefry4x64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry4x64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox2x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox2x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox2x64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox2x64ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMPhilox4x64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x64ThreadLocal, PageEvictionerFilterNone, false>;
+#if R123_USE_AES_NI
+    using PageEvictionerRANDOMAESNI4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI4x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMAESNI1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMARS4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS4x32ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMARS1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128iThreadLocal, PageEvictionerFilterNone, false>;
+#endif // R123_USE_AES_NI
 
     // FIFO/FILO (First in, first out/First in, last out) Page Evictioners:
     using PageEvictionerFIFOLowContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false>;
