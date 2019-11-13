@@ -250,11 +250,12 @@ namespace zero::buffer_pool {
      *
      * @tparam random_number_generator The pseudorandom numbers generator offering an interface supported by this
      *                                 wrapper.
+     * @tparam random_distribution     The distribution of the generated random buffer frame indexes.
      * @tparam seed_generators         Seed generators derived from \link SeedGenerator \endlink and as supported by the
      *                                 PRNG set in the \c random_number_generator template parameter. See the class
      *                                 details for more information about this template parameter.
      */
-    template<class random_number_generator, class ... seed_generators>
+    template<class random_number_generator, class random_distribution, class ... seed_generators>
     class PageEvictionerSelectorRANDOMExternal : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorRANDOMExternal(const BufferPool* bufferPool)
@@ -364,7 +365,7 @@ namespace zero::buffer_pool {
         /*!\var     _randomDistribution
          * \brief   The uniform distribution and range for the pseudo-random number generator (post-processor)
          */
-        std::uniform_int_distribution<bf_idx> _randomDistribution;
+        random_distribution _randomDistribution;
 
     };
 
@@ -403,13 +404,14 @@ namespace zero::buffer_pool {
      *
      * @tparam random_number_generator The pseudorandom numbers generator offering an interface supported by this
      *                                 wrapper.
+     * @tparam random_distribution     The distribution of the generated random buffer frame indexes.
      * @tparam seed_explicitly         If \c true , the PRNG is seeded using the seed generators from \c seed_generators
      *                                 , otherwise the PRNG is seeded with its default seed.
      * @tparam seed_generators         Seed generators derived from \link SeedGenerator \endlink and as supported by the
      *                                 PRNG set in the \c random_number_generator template parameter. See the class
      *                                 details for more information about this template parameter.
      */
-    template<class random_number_generator, bool seed_explicitly, class ... seed_generators>
+    template<class random_number_generator, class random_distribution, bool seed_explicitly, class ... seed_generators>
     class PageEvictionerSelectorRANDOMExternalThreadLocal : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorRANDOMExternalThreadLocal(const BufferPool* bufferPool)

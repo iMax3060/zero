@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <random>
+#include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/additive_combine.hpp>
 #include <boost/random/shuffle_order.hpp>
@@ -39,118 +40,263 @@ namespace zero::buffer_pool {
     // RANDOM Page Selector Auxiliary Classes:
     template<typename seed_type> struct SeedGeneratorChrono;
     template<typename seed_type> struct SeedGeneratorRandomDevice;
-    template<class random_number_generator, class ... seed_generators> class PageEvictionerSelectorRANDOMExternal;
-    template<class random_number_generator, bool seed_explicitly, class ... seed_generators> class PageEvictionerSelectorRANDOMExternalThreadLocal;
+    template<class random_number_generator, class random_distribution, class ... seed_generators> class PageEvictionerSelectorRANDOMExternal;
+    template<class random_number_generator, class random_distribution, bool seed_explicitly, class ... seed_generators> class PageEvictionerSelectorRANDOMExternalThreadLocal;
 
     // RANDOM Page Selectors from the C++ Standard Library:
     class PageEvictionerSelectorRANDOMCRand;
     using PageEvictionerSelectorRANDOMMinstdRand0 =
-            PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMinstdRand =
-            PageEvictionerSelectorRANDOMExternal<std::minstd_rand, SeedGeneratorRandomDevice<uint32_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937 =
-            PageEvictionerSelectorRANDOMExternal<std::mt19937, SeedGeneratorRandomDevice<uint32_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::mt19937, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937_64 =
-            PageEvictionerSelectorRANDOMExternal<std::mt19937_64, SeedGeneratorRandomDevice<uint64_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::mt19937_64, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMRanlux24Base =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, SeedGeneratorRandomDevice<uint32_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMRanlux48Base =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMRanlux24 = PageEvictionerSelectorRANDOMExternal<std::ranlux24, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMRanlux48 = PageEvictionerSelectorRANDOMExternal<std::ranlux48, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMKnuthB = PageEvictionerSelectorRANDOMExternal<std::knuth_b, SeedGeneratorRandomDevice<uint32_t>>;
+            PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMRanlux24 =
+            PageEvictionerSelectorRANDOMExternal<std::ranlux24, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMRanlux48 =
+            PageEvictionerSelectorRANDOMExternal<std::ranlux48, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMKnuthB =
+            PageEvictionerSelectorRANDOMExternal<std::knuth_b, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from the Boost RANDOM library:
-    using PageEvictionerSelectorRANDOMBoostMinstdRand0 = PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand0, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMinstdRand = PageEvictionerSelectorRANDOMExternal<boost::random::minstd_rand, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRand48 = PageEvictionerSelectorRANDOMExternal<boost::random::rand48, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostEcuyer1988 = PageEvictionerSelectorRANDOMExternal<boost::random::ecuyer1988, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostKnuthB = PageEvictionerSelectorRANDOMExternal<boost::random::knuth_b, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostKreutzer1986 = PageEvictionerSelectorRANDOMExternal<boost::random::kreutzer1986, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostTaus88 = PageEvictionerSelectorRANDOMExternal<boost::random::taus88, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostHellekalek1995 = PageEvictionerSelectorRANDOMExternal<boost::random::hellekalek1995, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMT11213b = PageEvictionerSelectorRANDOMExternal<boost::random::mt11213b, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMT19937 = PageEvictionerSelectorRANDOMExternal<boost::random::mt19937, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMT19937_64 = PageEvictionerSelectorRANDOMExternal<boost::random::mt19937_64, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci607, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci1279, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci2281, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci3217, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci4423, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci9689, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci19937, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci23209, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497 = PageEvictionerSelectorRANDOMExternal<boost::random::lagged_fibonacci44497, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux3_01, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux4_01, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_3_01, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux64_4_01, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux24 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux24, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux48 = PageEvictionerSelectorRANDOMExternal<boost::random::ranlux48, SeedGeneratorRandomDevice<uint64_t>>;
+    namespace brand = boost::random;
+    using PageEvictionerSelectorRANDOMBoostMinstdRand0 =
+            PageEvictionerSelectorRANDOMExternal<brand::minstd_rand0, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMinstdRand =
+            PageEvictionerSelectorRANDOMExternal<brand::minstd_rand, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRand48 =
+            PageEvictionerSelectorRANDOMExternal<brand::rand48, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostEcuyer1988 =
+            PageEvictionerSelectorRANDOMExternal<brand::ecuyer1988, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKnuthB =
+            PageEvictionerSelectorRANDOMExternal<brand::knuth_b, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostKreutzer1986 =
+            PageEvictionerSelectorRANDOMExternal<brand::kreutzer1986, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostTaus88 =
+            PageEvictionerSelectorRANDOMExternal<brand::taus88, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostHellekalek1995 =
+            PageEvictionerSelectorRANDOMExternal<brand::hellekalek1995, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT11213b =
+            PageEvictionerSelectorRANDOMExternal<brand::mt11213b, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937 =
+            PageEvictionerSelectorRANDOMExternal<brand::mt19937, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostMT19937_64 =
+            PageEvictionerSelectorRANDOMExternal<brand::mt19937_64, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci607, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci1279, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci2281, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci3217, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci4423, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci9689, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci19937, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci23209, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497 =
+            PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci44497, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux3, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux4, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux64_3, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux64_4, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux3_01 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux3_01, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux4_01 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux4_01, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux64_3_01, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux64_4_01, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux24 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux24, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMBoostRanlux48 =
+            PageEvictionerSelectorRANDOMExternal<brand::ranlux48, brand::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's PCG library:
-    using PageEvictionerSelectorRANDOMPCG32 = PageEvictionerSelectorRANDOMExternal<pcg32, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32Unique = PageEvictionerSelectorRANDOMExternal<pcg32_unique, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32Fast = PageEvictionerSelectorRANDOMExternal<pcg32_fast, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K2 = PageEvictionerSelectorRANDOMExternal<pcg32_k2, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K2Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K64 = PageEvictionerSelectorRANDOMExternal<pcg32_k64, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K64Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K1024 = PageEvictionerSelectorRANDOMExternal<pcg32_k1024, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K1024Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K16384 = PageEvictionerSelectorRANDOMExternal<pcg32_k16384, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMPCG32K16384Fast = PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32 =
+            PageEvictionerSelectorRANDOMExternal<pcg32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32Unique =
+            PageEvictionerSelectorRANDOMExternal<pcg32_unique, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32Fast =
+            PageEvictionerSelectorRANDOMExternal<pcg32_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2 =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k2, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K2Fast =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64 =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k64, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K64Fast =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024 =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k1024, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K1024Fast =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384 =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k16384, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMPCG32K16384Fast =
+            PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's XorShift library:
-    using PageEvictionerSelectorRANDOMXORShift32 = PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMXORShift64Star = PageEvictionerSelectorRANDOMExternal<xorshift64star32a, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXORShift32 =
+            PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXORShift64Star =
+            PageEvictionerSelectorRANDOMExternal<xorshift64star32a, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors based on XorShift:
     class PageEvictionerSelectorRANDOMXORWow;
     class PageEvictionerSelectorRANDOMXORShift128Plus;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoshiro library:
-    using PageEvictionerSelectorRANDOMXoshiro128Plus32 = PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMXoshiro128StarStar32 = PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32 , SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoshiro128Plus32 =
+            PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoshiro128StarStar32 =
+            PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoroshiro library:
-    using PageEvictionerSelectorRANDOMXoroshiro128Plus32 = PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMXoroshiro64Plus32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMXoroshiro64Star32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMXoroshiro64StarStar32 = PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro128Plus32 =
+            PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Plus32 =
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64Star32 =
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMXoroshiro64StarStar32 =
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Arc4 library:
-    using PageEvictionerSelectorRANDOMARC4 = PageEvictionerSelectorRANDOMExternal<arc4_rand32, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMARC4 =
+            PageEvictionerSelectorRANDOMExternal<arc4_rand32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's GJrand library:
-    using PageEvictionerSelectorRANDOMGjrand = PageEvictionerSelectorRANDOMExternal<gjrand32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMGjrand =
+            PageEvictionerSelectorRANDOMExternal<gjrand32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's JSF library:
-    using PageEvictionerSelectorRANDOMJSF32n = PageEvictionerSelectorRANDOMExternal<jsf32n, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMJSF32r = PageEvictionerSelectorRANDOMExternal<jsf32r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMJSF32n =
+            PageEvictionerSelectorRANDOMExternal<jsf32n, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMJSF32r =
+            PageEvictionerSelectorRANDOMExternal<jsf32r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SplitMix library:
-    using PageEvictionerSelectorRANDOMSplitMix32 = PageEvictionerSelectorRANDOMExternal<splitmix32, SeedGeneratorRandomDevice<uint64_t>, SeedGeneratorRandomDevice<uint64_t>>;
+    using PageEvictionerSelectorRANDOMSplitMix32 =
+            PageEvictionerSelectorRANDOMExternal<splitmix32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint64_t>,
+                                                 SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
-    using PageEvictionerSelectorRANDOMMCG128 = PageEvictionerSelectorRANDOMExternal<mcg128, SeedGeneratorRandomDevice<__uint128_t>>;
-    using PageEvictionerSelectorRANDOMMCG128Fast = PageEvictionerSelectorRANDOMExternal<mcg128_fast, SeedGeneratorRandomDevice<__uint128_t>>;
+    using PageEvictionerSelectorRANDOMMCG128 =
+            PageEvictionerSelectorRANDOMExternal<mcg128, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<__uint128_t>>;
+    using PageEvictionerSelectorRANDOMMCG128Fast =
+            PageEvictionerSelectorRANDOMExternal<mcg128_fast, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<__uint128_t>>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Selectors from Melissa O'Neill's ChaCha library:
-    using PageEvictionerSelectorRANDOMChaCha4 = PageEvictionerSelectorRANDOMExternal<chacha4r, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMChaCha5 = PageEvictionerSelectorRANDOMExternal<chacha5r, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMChaCha6 = PageEvictionerSelectorRANDOMExternal<chacha6r, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMChaCha8 = PageEvictionerSelectorRANDOMExternal<chacha8r, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMChaCha20 = PageEvictionerSelectorRANDOMExternal<chacha20r, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha4 =
+            PageEvictionerSelectorRANDOMExternal<chacha4r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha5 =
+            PageEvictionerSelectorRANDOMExternal<chacha5r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha6 =
+            PageEvictionerSelectorRANDOMExternal<chacha6r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha8 =
+            PageEvictionerSelectorRANDOMExternal<chacha8r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMChaCha20 =
+            PageEvictionerSelectorRANDOMExternal<chacha20r, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SFC library:
-    using PageEvictionerSelectorRANDOMSFC32 = PageEvictionerSelectorRANDOMExternal<sfc32, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>, SeedGeneratorRandomDevice<uint32_t>>;
+    using PageEvictionerSelectorRANDOMSFC32 =
+            PageEvictionerSelectorRANDOMExternal<sfc32, std::uniform_int_distribution<bf_idx>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>,
+                                                 SeedGeneratorRandomDevice<uint32_t>>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
@@ -207,9 +353,9 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMRanlux48Base = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48Base, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMRanlux24 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux24, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMRanlux48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux48, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMKnuthB = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthB, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from the Boost RANDOM library:
-    using PageEvictionerRANDOMKnuthB = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthB, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMBoostMinstdRand0 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand0, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMBoostMinstdRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMinstdRand, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMBoostRand48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48, PageEvictionerFilterNone, false>;
