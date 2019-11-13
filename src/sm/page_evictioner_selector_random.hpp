@@ -442,7 +442,7 @@ namespace zero::buffer_pool {
 
             if constexpr (seed_explicitly) {
                 if (!_randomNumberGeneratorInitialized) {
-                    _randomNumberGenerator = _randomNumberGenerator(seed_generators::getSeed() ...);
+                    _randomNumberGenerator = random_number_generator(seed_generators::getSeed() ...);
                     _randomNumberGeneratorInitialized = true;
                 }
             }
