@@ -256,9 +256,6 @@ namespace zero::buffer_pool {
      */
     template<class random_number_generator, class ... seed_generators>
     class PageEvictionerSelectorRANDOMExternal : public PageEvictionerSelector {
-        static_assert(std::conjunction_v<std::is_base_of<SeedGenerator, seed_generators>...>,
-                      "'seed_generators' is not of type SeedGenerator!");
-
     public:
         /*!\fn      PageEvictionerSelectorRANDOMExternal(const BufferPool* bufferPool)
          * \brief   Constructs a _RANDOM_ buffer frame selector based on the set PRNG
@@ -415,9 +412,6 @@ namespace zero::buffer_pool {
     template<class random_number_generator, bool seed_explicitly, class ... seed_generators>
     class PageEvictionerSelectorRANDOMExternalThreadLocal : public PageEvictionerSelector {
     public:
-        static_assert(std::conjunction_v<std::is_base_of<SeedGenerator, seed_generators>...>,
-                      "'seed_generators' is not of type SeedGenerator!");
-
         /*!\fn      PageEvictionerSelectorRANDOMExternalThreadLocal(const BufferPool* bufferPool)
          * \brief   Constructs a _RANDOM_ buffer frame selector based on the set PRNG
          *
