@@ -119,142 +119,142 @@ namespace zero::buffer_pool {
 
     // RANDOM Page Selectors from the Boost RANDOM library:
     namespace brand = boost::random;
-    using PageEvictionerSelectorRANDOMBoostRand48 =
+    using PageEvictionerSelectorRANDOMRand48 =
             PageEvictionerSelectorRANDOMExternal<brand::rand48, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostEcuyer1988 =
+    using PageEvictionerSelectorRANDOMEcuyer1988 =
             PageEvictionerSelectorRANDOMExternal<brand::ecuyer1988, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostKreutzer1986 =
+    using PageEvictionerSelectorRANDOMKreutzer1986 =
             PageEvictionerSelectorRANDOMExternal<brand::kreutzer1986, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostTaus88 =
+    using PageEvictionerSelectorRANDOMTaus88 =
             PageEvictionerSelectorRANDOMExternal<brand::taus88, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostHellekalek1995 =
+    using PageEvictionerSelectorRANDOMHellekalek1995 =
             PageEvictionerSelectorRANDOMExternal<brand::hellekalek1995, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMT11213b =
+    using PageEvictionerSelectorRANDOMMT11213b =
             PageEvictionerSelectorRANDOMExternal<brand::mt11213b, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci607 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci607, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci1279 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci1279, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci2281 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci2281, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci3217 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci3217, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci4423 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci4423, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci9689 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci9689, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci19937 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci19937, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci23209 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci23209, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497 =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci44497 =
             PageEvictionerSelectorRANDOMExternal<brand::lagged_fibonacci44497, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3 =
+    using PageEvictionerSelectorRANDOMRanlux3 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux3, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4 =
+    using PageEvictionerSelectorRANDOMRanlux4 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux4, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3 =
+    using PageEvictionerSelectorRANDOMRanlux64_3 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux64_3, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4 =
+    using PageEvictionerSelectorRANDOMRanlux64_4 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux64_4, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3_01 =
+    using PageEvictionerSelectorRANDOMRanlux3_01 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux3_01, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4_01 =
+    using PageEvictionerSelectorRANDOMRanlux4_01 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux4_01, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01 =
+    using PageEvictionerSelectorRANDOMRanlux64_3_01 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux64_3_01, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01 =
+    using PageEvictionerSelectorRANDOMRanlux64_4_01 =
             PageEvictionerSelectorRANDOMExternal<brand::ranlux64_4_01, brand::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRand48ThreadLocal =
+    using PageEvictionerSelectorRANDOMRand48ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::rand48, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostEcuyer1988ThreadLocal =
+    using PageEvictionerSelectorRANDOMEcuyer1988ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ecuyer1988, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostKreutzer1986ThreadLocal =
+    using PageEvictionerSelectorRANDOMKreutzer1986ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::kreutzer1986, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostTaus88ThreadLocal =
+    using PageEvictionerSelectorRANDOMTaus88ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::taus88, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostHellekalek1995ThreadLocal =
+    using PageEvictionerSelectorRANDOMHellekalek1995ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::hellekalek1995, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostMT11213bThreadLocal =
+    using PageEvictionerSelectorRANDOMMT11213bThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::mt11213b, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci607ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci607ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci607, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci1279ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci1279, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci2281ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci2281, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci3217ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci3217, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci4423ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci4423, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci9689ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci9689, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci19937ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci19937, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci23209ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci23209, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497ThreadLocal =
+    using PageEvictionerSelectorRANDOMLaggedFibonacci44497ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::lagged_fibonacci44497, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux3ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux3, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux4ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux4, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux64_3ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_3, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux64_4ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_4, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux3_01ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux3_01ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux3_01, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux4_01ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux4_01ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux4_01, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_3_01ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux64_3_01ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_3_01, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMBoostRanlux64_4_01ThreadLocal =
+    using PageEvictionerSelectorRANDOMRanlux64_4_01ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<brand::ranlux64_4_01, brand::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
@@ -759,52 +759,52 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMKnuthBThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKnuthBThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from the Boost RANDOM library:
-    using PageEvictionerRANDOMBoostRand48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostEcuyer1988 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostEcuyer1988, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostKreutzer1986 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKreutzer1986, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostTaus88 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostTaus88, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostHellekalek1995 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostHellekalek1995, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostMT11213b = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT11213b, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci607 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci607, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci1279 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci2281 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci3217 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci4423 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci9689 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci23209 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci44497 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3_01, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4_01, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3_01, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRand48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRand48ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostEcuyer1988ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostEcuyer1988ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostKreutzer1986ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostKreutzer1986ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostTaus88ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostTaus88ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostHellekalek1995ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostHellekalek1995ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostMT11213bThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostMT11213bThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci607ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci607ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci1279ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci1279ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci2281ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci2281ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci3217ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci3217ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci4423ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci4423ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci9689ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci9689ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci19937ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci23209ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci23209ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostLaggedFibonacci44497ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostLaggedFibonacci44497ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux3_01ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux4_01ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_3_01ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMBoostRanlux64_4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMBoostRanlux64_4_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRand48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRand48, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMEcuyer1988 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMEcuyer1988, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMKreutzer1986 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKreutzer1986, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMTaus88 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMTaus88, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHellekalek1995 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHellekalek1995, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT11213b = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT11213b, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci607 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci607, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci1279 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci1279, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci2281 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci2281, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci3217 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci3217, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci4423 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci4423, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci9689 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci9689, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci19937 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci19937, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci23209 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci23209, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci44497 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci44497, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux3, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_3 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_3, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_4 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_4, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux3_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux4_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_3_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_3_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_4_01 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_4_01, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRand48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRand48ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMEcuyer1988ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMEcuyer1988ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMKreutzer1986ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMKreutzer1986ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMTaus88ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMTaus88ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHellekalek1995ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHellekalek1995ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMT11213bThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMT11213bThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci607ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci607ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci1279ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci1279ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci2281ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci2281ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci3217ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci3217ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci4423ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci4423ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci9689ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci9689ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci19937ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci19937ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci23209ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci23209ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMLaggedFibonacci44497ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMLaggedFibonacci44497ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux3ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux4ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_3ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_3ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_4ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_4ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux3_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux4_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_3_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_3_01ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanlux64_4_01ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanlux64_4_01ThreadLocal, PageEvictionerFilterNone, false>;
 
     // RANDOM Page Evictioners from Melissa O'Neill's PCG library:
     using PageEvictionerRANDOMPCG32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPCG32, PageEvictionerFilterNone, false>;
