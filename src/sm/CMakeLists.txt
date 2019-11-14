@@ -70,6 +70,7 @@ SET(sm_LIBS
     boost_atomic
     boost_filesystem
     junction
+    CLHEP::Random
    )
 
 IF(LINK_TIME_OPTIMIZATION)

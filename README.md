@@ -227,6 +227,33 @@ Currently, Zero is supported only on **Linux**.
   rm -rf libcds
   ```
   
+### CLHEP library
+- Download and compile the CLHEP library:
+  ```
+  git clone https://gitlab.cern.ch/CLHEP/CLHEP.git
+  mkdir CLHEP/build
+  cd CLHEP/build
+  cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+  cmake --build . --config RelWithDebInfo
+  ctest
+  ```
+- Install the CLHEP library
+  * Without `sudo` (isn't installed on Debian by default)
+    ```
+    su
+    cmake --build . --target install
+    exit
+    ```
+  * With `sudo`
+    ```
+    sudo cmake --build . --target install
+    ```
+- Clean up the download directory
+  ```
+  cd ../..
+  rm -rf CLHEP
+  ```
+  
 ## Compilation
 
 CMake supports out-of-source builds, which means that binaries are generated in a different directory than the source files. This not only maintains a clean source directory, but also allows multiple coexisting builds with different configurations.

@@ -203,6 +203,24 @@
 ## - (PageEvictionerRANDOMAESNI1xm128iThreadLocal)
 ## - PageEvictionerRANDOMARS4x32ThreadLocal
 ## - (PageEvictionerRANDOMARS1xm128iThreadLocal)
+## - PageEvictionerRANDOMDRand48
+## - PageEvictionerRANDOMDualRand
+## - PageEvictionerRANDOMHurd160
+## - PageEvictionerRANDOMHurd288
+## - PageEvictionerRANDOMRANMAR
+## - PageEvictionerRANDOMMixMax
+## - PageEvictionerRANDOMRANECU
+## - PageEvictionerRANDOMRanshi
+## - PageEvictionerRANDOMTripleRand
+## - PageEvictionerRANDOMDRand48ThreadLocal
+## - PageEvictionerRANDOMDualRandThreadLocal
+## - PageEvictionerRANDOMHurd160ThreadLocal
+## - PageEvictionerRANDOMHurd288ThreadLocal
+## - PageEvictionerRANDOMRANMARThreadLocal
+## - PageEvictionerRANDOMMixMaxThreadLocal
+## - PageEvictionerRANDOMRANECUThreadLocal
+## - PageEvictionerRANDOMRanshiThreadLocal
+## - PageEvictionerRANDOMTripleRandThreadLocal
 ## - PageEvictionerFIFOLowContention
 ## - PageEvictionerFIFOHighContention
 ## - PageEvictionerFILOLowContention
@@ -635,6 +653,43 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMARS4x32ThreadLocal")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMARS4x32ThreadLocal!")
 #ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMARS1xm128iThreadLocal")
 #    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMARS1xm128iThreadLocal!")
+
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMDRand48")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMDRand48!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMDualRand")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMDualRand!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMHurd160")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMHurd160!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMHurd288")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMHurd288!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRANMAR")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRANMAR!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMixMax")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMixMax!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRANECU")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRANECU!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanshi")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanshi!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMTripleRand")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMTripleRand!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMDRand48ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMDRand48ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMDualRandThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMDualRandThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMHurd160ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMHurd160ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMHurd288ThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMHurd288ThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRANMARThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRANMARThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMMixMaxThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMMixMaxThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRANECUThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRANECUThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMRanshiThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMRanshiThreadLocal!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerRANDOMTripleRandThreadLocal")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerRANDOMTripleRandThreadLocal!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerFIFOLowContention")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerFIFOLowContention!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerFIFOHighContention")

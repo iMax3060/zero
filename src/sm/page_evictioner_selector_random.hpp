@@ -537,6 +537,268 @@ namespace zero::buffer_pool {
 
     };
 
+    /*!\class   PageEvictionerSelectorRANDOMCLHEP
+     * \brief   Global _RANDOM_ buffer frame selector that wraps an CLHEP PRNG
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _RANDOM_
+     *          policy. The _RANDOM_ policy selects buffer frames randomly.
+     *
+     *          This version of the _RANDOM_ policy acts as a wrapper for pseudorandom numbers generators implemented
+     *          in the \e Class \e Library \e for \e High \e Energy \e Physics.
+     *
+     * \warning Each evicting thread uses the same instance of the PRNG without additional synchronization. If a PRNG
+     *          does not support concurrent access, the \link PageEvictionerSelectorRANDOMExternalThreadLocal \endlink
+     *          wrapper should be used.
+     *
+     * @tparam random_number_generator A pseudorandom numbers generator from the CLHEP.
+     * @tparam seed_generators         Seed generators derived from \link SeedGenerator \endlink and as supported by the
+     *                                 PRNG set in the \c random_number_generator template parameter. See the class
+     *                                 details for more information about this template parameter.
+     */
+    template<class random_number_generator, class ... seed_generators>
+    class PageEvictionerSelectorRANDOMCLHEP : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorRANDOMCLHEP(const BufferPool* bufferPool)
+         * \brief   Constructs a _RANDOM_ buffer frame selector based on the set PRNG from CLHEP
+         *
+         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         */
+        explicit PageEvictionerSelectorRANDOMCLHEP(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool),
+                _randomNumberGenerator(seed_generators::getSeed() ...) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects a buffer frame randomly using the random numbers generator defined in the template parameter
+         *          \c random_number_generator over a uniform distribution.
+         *
+         * @return The selected buffer frame.
+         */
+        inline bf_idx select() noexcept final {
+            return static_cast<uint32_t>(((uint32_t(_randomNumberGenerator)) % (_maxBufferpoolIndex - 1) + 1));
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
+         */
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
+
+    private:
+        /*!\var     _standardRandomEngine
+         * \brief   The used pseudo-random number generator
+         */
+        random_number_generator _randomNumberGenerator;
+
+    };
+
+    /*!\class   PageEvictionerSelectorRANDOMCLHEPThreadLocal
+     * \brief   _RANDOM_ buffer frame selector that wraps an CLHEP PRNG
+     * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _RANDOM_
+     *          policy. The _RANDOM_ policy selects buffer frames randomly.
+     *
+     *          This version of the _RANDOM_ policy acts as a wrapper for pseudorandom numbers generators implemented
+     *          in the \e Class \e Library \e for \e High \e Energy \e Physics.
+     *
+     * \note    This thread uses one instance of the PRNG per evicting thread. If a default seed for the PRNG is used,
+     *          the same seed is used for all instances, otherwise, all the instances are seeded differently.
+     *
+     * @tparam random_number_generator A pseudorandom numbers generator from the CLHEP.
+     * @tparam seed_explicitly         If \c true , the PRNG is seeded using the seed generators from \c seed_generators
+     *                                 , otherwise the PRNG is seeded with its default seed.
+     * @tparam seed_generators         Seed generators derived from \link SeedGenerator \endlink and as supported by the
+     *                                 PRNG set in the \c random_number_generator template parameter. See the class
+     *                                 details for more information about this template parameter.
+     */
+    template<class random_number_generator, bool seed_explicitly, class ... seed_generators>
+    class PageEvictionerSelectorRANDOMCLHEPThreadLocal : public PageEvictionerSelector {
+    public:
+        /*!\fn      PageEvictionerSelectorRANDOMCLHEPThreadLocal(const BufferPool* bufferPool)
+         * \brief   Constructs a _RANDOM_ buffer frame selector based on the set PRNG from CLHEP
+         *
+         * @param bufferPool The buffer pool this _RANDOM_ buffer frame selector is responsible for.
+         */
+        explicit PageEvictionerSelectorRANDOMCLHEPThreadLocal(const BufferPool* bufferPool) :
+                PageEvictionerSelector(bufferPool) {};
+
+        /*!\fn      select() noexcept
+         * \brief   Selects a page to be evicted from the buffer pool
+         * \details Selects a buffer frame randomly using the random numbers generator defined in the template parameter
+         *          \c random_number_generator over a uniform distribution.
+         *
+         * @return The selected buffer frame.
+         */
+        inline bf_idx select() noexcept final {
+
+            /*!\var     _randomNumberGeneratorInitialized
+             * \brief   Is the PRNG already seeded in this thread?
+             */
+            static thread_local bool _randomNumberGeneratorInitialized;
+
+            /*!\var     _standardRandomEngine
+             * \brief   The used pseudo-random number generator
+             */
+            static thread_local random_number_generator _randomNumberGenerator;
+
+            if constexpr (seed_explicitly) {
+                if (!_randomNumberGeneratorInitialized) {
+                    _randomNumberGenerator = random_number_generator(seed_generators::getSeed() ...);
+                    _randomNumberGeneratorInitialized = true;
+                }
+            }
+
+            return static_cast<uint32_t>(((uint32_t(_randomNumberGenerator)) % (_maxBufferpoolIndex - 1) + 1));
+        };
+
+        /*!\fn      updateOnPageHit(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page hit
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         */
+        inline void updateOnPageHit(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on page unfix
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
+         */
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
+         * \brief   Updates the eviction statistics on page miss
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
+         * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
+         *             frame with index \c idx .
+         */
+        inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+
+        /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame was fixed.
+         */
+        inline void updateOnPageFixed(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of dirty pages during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a dirty page.
+         */
+        inline void updateOnPageDirty(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages that cannot be evicted at all
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
+         *            that cannot be evicted at all.
+         */
+        inline void updateOnPageBlocked(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
+         *            corresponding frame contained a page with swizzled pointers.
+         */
+        inline void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics on explicit unbuffer
+         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
+         *            explicitly.
+         */
+        inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame selector
+         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         */
+        inline void releaseInternalLatches() noexcept final {};
+
+    };
+
     /*!\class   PageEvictionerSelectorRANDOMCRand
      * \brief   _RANDOM_ buffer frame selector
      * \details This is a buffer frame selector for the _Select-and-Filter_ page evictioner that implements the _RANDOM_

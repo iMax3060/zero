@@ -32,6 +32,15 @@
 #include "Random123/include/Random123/aes.h"
 #include "Random123/include/Random123/ars.h"
 #include "chacha/chacha.hpp"
+#include "CLHEP/Random/DRand48Engine.h"
+#include "CLHEP/Random/DualRand.h"
+#include "CLHEP/Random/Hurd160Engine.h"
+#include "CLHEP/Random/Hurd288Engine.h"
+#include "CLHEP/Random/JamesRandom.h"
+#include "CLHEP/Random/MixMaxRng.h"
+#include "CLHEP/Random/RanecuEngine.h"
+#include "CLHEP/Random/RanshiEngine.h"
+#include "CLHEP/Random/TripleRand.h"
 
 namespace zero::buffer_pool {
     /* BEGIN --- Forward Declarations ---BEGIN */
@@ -48,6 +57,8 @@ namespace zero::buffer_pool {
     template<typename seed_type> struct SeedGeneratorRandomDevice;
     template<class random_number_generator, class random_distribution, class ... seed_generators> class PageEvictionerSelectorRANDOMExternal;
     template<class random_number_generator, class random_distribution, bool seed_explicitly, class ... seed_generators> class PageEvictionerSelectorRANDOMExternalThreadLocal;
+    template<class random_number_generator, class ... seed_generators> class PageEvictionerSelectorRANDOMCLHEP;
+    template<class random_number_generator, bool seed_explicitly, class ... seed_generators> class PageEvictionerSelectorRANDOMCLHEPThreadLocal;
 
     // RANDOM Page Selectors from the C++ Standard Library:
     class PageEvictionerSelectorRANDOMCRand;
@@ -525,7 +536,7 @@ namespace zero::buffer_pool {
                                                             SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
 
-    // RANDOM Page Selector from Sergiu Deitsch's random library:
+    // RANDOM Page Selectors from Sergiu Deitsch's random library:
     using PageEvictionerSelectorRANDOMWELL512 =
             PageEvictionerSelectorRANDOMExternal<Well512a, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
@@ -611,7 +622,7 @@ namespace zero::buffer_pool {
             PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a_ME, std::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
-    // RANDOM Page Selector from QuinoaComputing's Random123 library:
+    // RANDOM Page Selectors from QuinoaComputing's Random123 library:
     using PageEvictionerSelectorRANDOMThreefry2x32 =
             PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
@@ -688,6 +699,44 @@ namespace zero::buffer_pool {
 //            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
 //                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 #endif // R123_USE_AES_NI
+
+    // RANDOM Page Selectors from CLHEP's Random library:
+    using PageEvictionerSelectorRANDOMDRand48 =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::DRand48Engine, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMDualRand =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::DualRand, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMHurd160 =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::Hurd160Engine, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMHurd288 =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::Hurd288Engine, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRANMAR =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::HepJamesRandom, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMMixMax =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::MixMaxRng, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRANECU =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::RanecuEngine, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRanshi =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::RanshiEngine, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMTripleRand =
+            PageEvictionerSelectorRANDOMCLHEP<CLHEP::TripleRand, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMDRand48ThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::DRand48Engine, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMDualRandThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::DualRand, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMHurd160ThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::Hurd160Engine, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMHurd288ThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::Hurd288Engine, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRANMARThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::HepJamesRandom, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMMixMaxThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::MixMaxRng, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRANECUThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::RanecuEngine, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMRanshiThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::RanshiEngine, true, SeedGeneratorRandomDevice<bf_idx>>;
+    using PageEvictionerSelectorRANDOMTripleRandThreadLocal =
+            PageEvictionerSelectorRANDOMCLHEPThreadLocal<CLHEP::TripleRand, true, SeedGeneratorRandomDevice<bf_idx>>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
     template <uint32_t retry_list_check_ppm = 1000000, uint32_t initial_list_check_ppm = 10000> class PageEvictionerSelectorQuasiFIFOLowContention;
@@ -968,6 +1017,26 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMARS4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS4x32ThreadLocal, PageEvictionerFilterNone, false>;
 //    using PageEvictionerRANDOMARS1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128iThreadLocal, PageEvictionerFilterNone, false>;
 #endif // R123_USE_AES_NI
+
+    // RANDOM Page Evictioners from CLHEP's Random library:
+    using PageEvictionerRANDOMDRand48 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMDRand48, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMDualRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMDualRand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHurd160 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHurd160, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHurd288 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHurd288, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRANMAR = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRANMAR, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMixMax = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMixMax, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRANECU = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRANECU, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanshi = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanshi, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMTripleRand = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMTripleRand, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMDRand48ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMDRand48ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMDualRandThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMDualRandThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHurd160ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHurd160ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMHurd288ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMHurd288ThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRANMARThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRANMARThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMMixMaxThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMMixMaxThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRANECUThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRANECUThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMRanshiThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMRanshiThreadLocal, PageEvictionerFilterNone, false>;
+    using PageEvictionerRANDOMTripleRandThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMTripleRandThreadLocal, PageEvictionerFilterNone, false>;
 
     // FIFO/FILO (First in, first out/First in, last out) Page Evictioners:
     using PageEvictionerFIFOLowContention = PageEvictionerSelectAndFilter<PageEvictionerSelectorQuasiFIFOLowContention<>, PageEvictionerFilterNone, false>;

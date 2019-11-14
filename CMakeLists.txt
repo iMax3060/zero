@@ -90,6 +90,8 @@ FIND_PACKAGE(LibRT REQUIRED)
 
 FIND_PACKAGE(LibCDS REQUIRED)
 
+FIND_PACKAGE(CLHEP REQUIRED)
+
 # Enable testing using CTest (run "make test"):
 ENABLE_TESTING()
 
