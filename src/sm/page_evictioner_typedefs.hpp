@@ -24,15 +24,14 @@
 #if __SIZEOF_INT128__
 #include "lehmer/lehmer.hpp"
 #endif // __SIZEOF_INT128__
-#include "chacha/chacha.hpp"
 #include "sfc/sfc.hpp"
 #include "well-random/well.hpp"
-#include "Random123/include/Random123/features/gccfeatures.h"
 #include "Random123/include/Random123/conventional/Engine.hpp"
 #include "Random123/include/Random123/threefry.h"
 #include "Random123/include/Random123/philox.h"
 #include "Random123/include/Random123/aes.h"
 #include "Random123/include/Random123/ars.h"
+#include "chacha/chacha.hpp"
 
 namespace zero::buffer_pool {
     /* BEGIN --- Forward Declarations ---BEGIN */
