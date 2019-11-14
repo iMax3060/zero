@@ -640,15 +640,15 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMAESNI4x32 =
             PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMAESNI1xm128i =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
-                                                 SeedGeneratorRandomDevice<uint32_t>>;
+//    using PageEvictionerSelectorRANDOMAESNI1xm128i =
+//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+//                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMARS4x32 =
             PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMARS1xm128i =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
-                                                 SeedGeneratorRandomDevice<uint32_t>>;
+//    using PageEvictionerSelectorRANDOMARS1xm128i =
+//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+//                                                 SeedGeneratorRandomDevice<uint32_t>>;
 #endif // R123_USE_AES_NI
     using PageEvictionerSelectorRANDOMThreefry2x32ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
@@ -678,15 +678,15 @@ namespace zero::buffer_pool {
     using PageEvictionerSelectorRANDOMAESNI4x32ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
-                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+//    using PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal =
+//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+//                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMARS4x32ThreadLocal =
             PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
-    using PageEvictionerSelectorRANDOMARS1xm128iThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
-                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
+//    using PageEvictionerSelectorRANDOMARS1xm128iThreadLocal =
+//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+//                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 #endif // R123_USE_AES_NI
 
     // FIFO/FILO (First in, first out/First in, last out) Page Selectors:
@@ -950,9 +950,9 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMPhilox4x64 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x64, PageEvictionerFilterNone, false>;
 #if R123_USE_AES_NI
     using PageEvictionerRANDOMAESNI4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI4x32, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMAESNI1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128i, PageEvictionerFilterNone, false>;
+//    using PageEvictionerRANDOMAESNI1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128i, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMARS4x32 = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS4x32, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMARS1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128i, PageEvictionerFilterNone, false>;
+//    using PageEvictionerRANDOMARS1xm128i = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128i, PageEvictionerFilterNone, false>;
 #endif // R123_USE_AES_NI
     using PageEvictionerRANDOMThreefry2x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry2x32ThreadLocal, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMThreefry4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMThreefry4x32ThreadLocal, PageEvictionerFilterNone, false>;
@@ -964,9 +964,9 @@ namespace zero::buffer_pool {
     using PageEvictionerRANDOMPhilox4x64ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMPhilox4x64ThreadLocal, PageEvictionerFilterNone, false>;
 #if R123_USE_AES_NI
     using PageEvictionerRANDOMAESNI4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI4x32ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMAESNI1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal, PageEvictionerFilterNone, false>;
+//    using PageEvictionerRANDOMAESNI1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal, PageEvictionerFilterNone, false>;
     using PageEvictionerRANDOMARS4x32ThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS4x32ThreadLocal, PageEvictionerFilterNone, false>;
-    using PageEvictionerRANDOMARS1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128iThreadLocal, PageEvictionerFilterNone, false>;
+//    using PageEvictionerRANDOMARS1xm128iThreadLocal = PageEvictionerSelectAndFilter<PageEvictionerSelectorRANDOMARS1xm128iThreadLocal, PageEvictionerFilterNone, false>;
 #endif // R123_USE_AES_NI
 
     // FIFO/FILO (First in, first out/First in, last out) Page Evictioners:
