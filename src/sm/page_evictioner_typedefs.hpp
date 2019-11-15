@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <random>
+#include "uniform_int_distribution.hpp"
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/additive_combine.hpp>
@@ -63,58 +64,58 @@ namespace zero::buffer_pool {
     // RANDOM Page Selectors from the C++ Standard Library:
     class PageEvictionerSelectorRANDOMCRand;
     using PageEvictionerSelectorRANDOMMinstdRand0 =
-            PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand0, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMinstdRand =
-            PageEvictionerSelectorRANDOMExternal<std::minstd_rand, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::minstd_rand, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937 =
-            PageEvictionerSelectorRANDOMExternal<std::mt19937, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::mt19937, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937_64 =
-            PageEvictionerSelectorRANDOMExternal<std::mt19937_64, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::mt19937_64, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMRanlux24Base =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::ranlux24_base, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMRanlux48Base =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::ranlux48_base, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMRanlux24 =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux24, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::ranlux24, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMRanlux48 =
-            PageEvictionerSelectorRANDOMExternal<std::ranlux48, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::ranlux48, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMKnuthB =
-            PageEvictionerSelectorRANDOMExternal<std::knuth_b, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<std::knuth_b, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMinstdRand0ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand0, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand0, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMinstdRandThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::minstd_rand, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMMT19937_64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937_64, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::mt19937_64, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMRanlux24BaseThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24_base, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24_base, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMRanlux48BaseThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48_base, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48_base, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMRanlux24ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux24, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMRanlux48ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::ranlux48, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMKnuthBThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<std::knuth_b, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<std::knuth_b, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from the Boost RANDOM library:
@@ -260,84 +261,84 @@ namespace zero::buffer_pool {
 
     // RANDOM Page Selectors from Melissa O'Neill's PCG library:
     using PageEvictionerSelectorRANDOMPCG32 =
-            PageEvictionerSelectorRANDOMExternal<pcg32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32Unique =
-            PageEvictionerSelectorRANDOMExternal<pcg32_unique, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_unique, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32Fast =
-            PageEvictionerSelectorRANDOMExternal<pcg32_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K2 =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k2, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k2, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K2Fast =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k2_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K64 =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k64, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k64, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K64Fast =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k64_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K1024 =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k1024, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k1024, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K1024Fast =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k1024_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K16384 =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k16384, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k16384, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K16384Fast =
-            PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<pcg32_k16384_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32UniqueThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_unique, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_unique, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K2ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K2FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k2_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K64FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k64_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K1024ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K1024FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k1024_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K16384ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPCG32K16384FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<pcg32_k16384_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's XorShift library:
     using PageEvictionerSelectorRANDOMXORShift32 =
-            PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xorshift32plain32a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXORShift64Star =
-            PageEvictionerSelectorRANDOMExternal<xorshift64star32a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xorshift64star32a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXORShift32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift32plain32a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift32plain32a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXORShift64StarThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift64star32a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xorshift64star32a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors based on XorShift:
@@ -346,315 +347,315 @@ namespace zero::buffer_pool {
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoshiro library:
     using PageEvictionerSelectorRANDOMXoshiro128Plus32 =
-            PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoshiro128plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoshiro128StarStar32 =
-            PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoshiro128starstar32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoshiro128Plus32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoshiro128StarStar32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128starstar32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoshiro128starstar32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Xoroshiro library:
     using PageEvictionerSelectorRANDOMXoroshiro128Plus32 =
-            PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoroshiro128plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64Plus32 =
-            PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64Star32 =
-            PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64star32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64StarStar32 =
-            PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<xoroshiro64starstar32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro128Plus32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro128plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro128plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64Plus32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64plus32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64plus32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64Star32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64star32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64star32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMXoroshiro64StarStar32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64starstar32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<xoroshiro64starstar32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Arc4 library:
     using PageEvictionerSelectorRANDOMARC4 =
-            PageEvictionerSelectorRANDOMExternal<arc4_rand32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<arc4_rand32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMARC4ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<arc4_rand32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<arc4_rand32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's GJrand library:
     using PageEvictionerSelectorRANDOMGjrand =
-            PageEvictionerSelectorRANDOMExternal<gjrand32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<gjrand32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMGjrandThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<gjrand32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<gjrand32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's JSF library:
     using PageEvictionerSelectorRANDOMJSF32n =
-            PageEvictionerSelectorRANDOMExternal<jsf32n, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<jsf32n, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMJSF32r =
-            PageEvictionerSelectorRANDOMExternal<jsf32r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<jsf32r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMJSF32nThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32n, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32n, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMJSF32rThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<jsf32r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SplitMix library:
     using PageEvictionerSelectorRANDOMSplitMix32 =
-            PageEvictionerSelectorRANDOMExternal<splitmix32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<splitmix32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint64_t>,
                                                  SeedGeneratorRandomDevice<uint64_t>>;
     using PageEvictionerSelectorRANDOMSplitMix32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<splitmix32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<splitmix32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint64_t>,
                                                             SeedGeneratorRandomDevice<uint64_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's Lehmer/MCG library:
 #if __SIZEOF_INT128__
     using PageEvictionerSelectorRANDOMMCG128 =
-            PageEvictionerSelectorRANDOMExternal<mcg128, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<mcg128, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<__uint128_t>>;
     using PageEvictionerSelectorRANDOMMCG128Fast =
-            PageEvictionerSelectorRANDOMExternal<mcg128_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<mcg128_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<__uint128_t>>;
     using PageEvictionerSelectorRANDOMMCG128ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<__uint128_t>>;
     using PageEvictionerSelectorRANDOMMCG128FastThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128_fast, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<mcg128_fast, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<__uint128_t>>;
 #endif // __SIZEOF_INT128__
 
     // RANDOM Page Selectors from Melissa O'Neill's ChaCha library:
     using PageEvictionerSelectorRANDOMChaCha4 =
-            PageEvictionerSelectorRANDOMExternal<chacha4r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<chacha4r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha5 =
-            PageEvictionerSelectorRANDOMExternal<chacha5r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<chacha5r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha6 =
-            PageEvictionerSelectorRANDOMExternal<chacha6r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<chacha6r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha8 =
-            PageEvictionerSelectorRANDOMExternal<chacha8r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<chacha8r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha20 =
-            PageEvictionerSelectorRANDOMExternal<chacha20r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<chacha20r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha4ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha4r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha4r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha5ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha5r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha5r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha6ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha6r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha6r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha8ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha8r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha8r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMChaCha20ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha20r, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<chacha20r, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Melissa O'Neill's SFC library:
     using PageEvictionerSelectorRANDOMSFC32 =
-            PageEvictionerSelectorRANDOMExternal<sfc32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<sfc32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMSFC32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<sfc32, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<sfc32, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>,
                                                             SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from Sergiu Deitsch's random library:
     using PageEvictionerSelectorRANDOMWELL512 =
-            PageEvictionerSelectorRANDOMExternal<Well512a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well512a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL521 =
-            PageEvictionerSelectorRANDOMExternal<Well521a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well521a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL607 =
-            PageEvictionerSelectorRANDOMExternal<Well607a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well607a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL800 =
-            PageEvictionerSelectorRANDOMExternal<Well800a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well800a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL1024 =
-            PageEvictionerSelectorRANDOMExternal<Well1024a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well1024a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL19937 =
-            PageEvictionerSelectorRANDOMExternal<Well19937a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well19937a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL21701 =
-            PageEvictionerSelectorRANDOMExternal<Well21701a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well21701a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL23209 =
-            PageEvictionerSelectorRANDOMExternal<Well23209a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well23209a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL44497 =
-            PageEvictionerSelectorRANDOMExternal<Well44497a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well44497a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL800_ME =
-            PageEvictionerSelectorRANDOMExternal<Well800a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well800a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL19937_ME =
-            PageEvictionerSelectorRANDOMExternal<Well19937a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well19937a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL21701_ME =
-            PageEvictionerSelectorRANDOMExternal<Well21701a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well21701a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL23209_ME =
-            PageEvictionerSelectorRANDOMExternal<Well23209a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well23209a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL44497_ME =
-            PageEvictionerSelectorRANDOMExternal<Well44497a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<Well44497a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL512ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well512a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well512a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL521ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well521a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well521a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL607ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well607a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well607a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL800ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL1024ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well1024a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well1024a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL19937ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL21701ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL23209ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL44497ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL800_METhreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well800a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL19937_METhreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well19937a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL21701_METhreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well21701a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL23209_METhreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well23209a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMWELL44497_METhreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a_ME, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<Well44497a_ME, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 
     // RANDOM Page Selectors from QuinoaComputing's Random123 library:
     using PageEvictionerSelectorRANDOMThreefry2x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry4x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry2x64 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry2x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry4x64 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Threefry4x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox2x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox4x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox2x64 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox2x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox4x64 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::Philox4x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
 #if R123_USE_AES_NI
     using PageEvictionerSelectorRANDOMAESNI4x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
 //    using PageEvictionerSelectorRANDOMAESNI1xm128i =
-//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::AESNI1xm128i>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
 //                                                 SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMARS4x32 =
-            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                  SeedGeneratorRandomDevice<uint32_t>>;
 //    using PageEvictionerSelectorRANDOMARS1xm128i =
-//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+//            PageEvictionerSelectorRANDOMExternal<r123::Engine<r123::ARS1xm128i>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
 //                                                 SeedGeneratorRandomDevice<uint32_t>>;
 #endif // R123_USE_AES_NI
     using PageEvictionerSelectorRANDOMThreefry2x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry4x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry2x64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry2x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMThreefry4x64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Threefry4x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox2x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox4x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox2x64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox2x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMPhilox4x64ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x64>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::Philox4x64>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 #if R123_USE_AES_NI
     using PageEvictionerSelectorRANDOMAESNI4x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 //    using PageEvictionerSelectorRANDOMAESNI1xm128iThreadLocal =
-//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI1xm128i>, std::uniform_int_distribution<bf_idx>,
+//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::AESNI1xm128i>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
 //                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
     using PageEvictionerSelectorRANDOMARS4x32ThreadLocal =
-            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS4x32>, std::uniform_int_distribution<bf_idx>,
+            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS4x32>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
                                                             true, SeedGeneratorRandomDevice<uint32_t>>;
 //    using PageEvictionerSelectorRANDOMARS1xm128iThreadLocal =
-//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, std::uniform_int_distribution<bf_idx>,
+//            PageEvictionerSelectorRANDOMExternalThreadLocal<r123::Engine<r123::ARS1xm128i>, zero::uniform_int_distribution::biased_uniform_int_distribution<bf_idx>,
 //                                                            true, SeedGeneratorRandomDevice<uint32_t>>;
 #endif // R123_USE_AES_NI
 
