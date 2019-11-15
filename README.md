@@ -45,7 +45,7 @@ The storage manager consists of the following main components:
 
 ## Dependencies
 
-Zero is developed in C++14 and uses the CMake build system (version 3.9 or later). Its dependencies are a few [Boost libraries](http://www.boost.org/) (Program Options, System, Thread, Atomic, Filesystem and Regex in version 1.48 or later), which are widely available in the major Linux distributions and the [CDS library](http://libcds.sourceforge.net/doc/cds-api/index.html) (Concurrent Data Structures library) which needs to be build from source (it's planned to integrate it as a git submodule).
+Zero is developed in C++17 and uses the CMake build system (version 3.9 or later). Its dependencies are a few [Boost libraries](http://www.boost.org/) (Program Options, System, Thread, Atomic, Filesystem and Regex in version 1.48 or later), which are widely available in the major Linux distributions, the [CDS library](http://libcds.sourceforge.net/doc/cds-api/index.html) (Concurrent Data Structures library) and the [CLHEP](https://proj-clhep.web.cern.ch/proj-clhep/) (Class Library for High Energy Physics) which both need to be build from source.
 
 Currently, Zero is supported only on **Linux**.
 
