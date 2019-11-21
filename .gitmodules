@@ -52,3 +52,9 @@
 [submodule "src/third_party/Random123"]
 	path = src/third_party/Random123
 	url = https://github.com/quinoacomputing/Random123.git
+[submodule "src/third_party/cgs"]
+	path = src/third_party/cgs
+	url = https://github.com/coryshrmn/cgs.git
+[submodule "src/third_party/gcem"]
+	path = src/third_party/gcem
+	url = https://github.com/kthohr/gcem.git

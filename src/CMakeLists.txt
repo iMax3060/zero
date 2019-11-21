@@ -18,6 +18,10 @@ INCLUDE_DIRECTORIES(
         ${CMAKE_SOURCE_DIR}/src/third_party
         ${CMAKE_SOURCE_DIR}/src/third_party/junction
         ${CMAKE_SOURCE_DIR}/src/third_party/turf
+        ${CMAKE_SOURCE_DIR}/src/third_party/pcg-cpp/include
+        ${CMAKE_SOURCE_DIR}/src/third_party/Random123/include
+        ${CMAKE_SOURCE_DIR}/src/third_party/cgs/include
+        ${CMAKE_SOURCE_DIR}/src/third_party/gcem/include
 )
 
 # Add generated headers from config and src-subdirectories to the include directories:

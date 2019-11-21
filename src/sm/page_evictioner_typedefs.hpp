@@ -14,7 +14,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/ranlux.hpp>
-#include "pcg-cpp/include/pcg_random.hpp"
+#include "pcg_random.hpp"
 #include "xorshift/xorshift.hpp"
 #include "xoshiro/xoshiro.hpp"
 #include "xoroshiro/xoroshiro.hpp"
@@ -27,11 +27,11 @@
 #endif // __SIZEOF_INT128__
 #include "sfc/sfc.hpp"
 #include "well-random/well.hpp"
-#include "Random123/include/Random123/conventional/Engine.hpp"
-#include "Random123/include/Random123/threefry.h"
-#include "Random123/include/Random123/philox.h"
-#include "Random123/include/Random123/aes.h"
-#include "Random123/include/Random123/ars.h"
+#include "Random123/conventional/Engine.hpp"
+#include "Random123/threefry.h"
+#include "Random123/philox.h"
+#include "Random123/aes.h"
+#include "Random123/ars.h"
 #include "chacha/chacha.hpp"
 #include "CLHEP/Random/DRand48Engine.h"
 #include "CLHEP/Random/DualRand.h"
