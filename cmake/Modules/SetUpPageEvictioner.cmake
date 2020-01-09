@@ -26,7 +26,7 @@
 ## - PageEvictionerRANDOMRanlux48ThreadLocal
 ## - PageEvictionerRANDOMKnuthBThreadLocal
 ## - PageEvictionerRANDOMRand48
-## - PageEvictionerRANDOMEcuyer1988
+## - PageEvictionerRANDOMRANECU
 ## - PageEvictionerRANDOMKreutzer1986
 ## - PageEvictionerRANDOMTaus88
 ## - PageEvictionerRANDOMHellekalek1995
@@ -49,7 +49,7 @@
 ## - PageEvictionerRANDOMRanlux64_3_01
 ## - PageEvictionerRANDOMRanlux64_4_01
 ## - PageEvictionerRANDOMRand48ThreadLocal
-## - PageEvictionerRANDOMEcuyer1988ThreadLocal
+## - PageEvictionerRANDOMRANECUThreadLocal
 ## - PageEvictionerRANDOMKreutzer1986ThreadLocal
 ## - PageEvictionerRANDOMTaus88ThreadLocal
 ## - PageEvictionerRANDOMHellekalek1995ThreadLocal
@@ -194,7 +194,6 @@
 ## - PageEvictionerRANDOMHurd288
 ## - PageEvictionerRANDOMRANMAR
 ## - PageEvictionerRANDOMMixMax
-## - PageEvictionerRANDOMRANECU
 ## - PageEvictionerRANDOMRanshi
 ## - PageEvictionerRANDOMTripleRand
 ## - PageEvictionerRANDOMDualRandThreadLocal
@@ -202,7 +201,6 @@
 ## - PageEvictionerRANDOMHurd288ThreadLocal
 ## - PageEvictionerRANDOMRANMARThreadLocal
 ## - PageEvictionerRANDOMMixMaxThreadLocal
-## - PageEvictionerRANDOMRANECUThreadLocal
 ## - PageEvictionerRANDOMRanshiThreadLocal
 ## - PageEvictionerRANDOMTripleRandThreadLocal
 ## - PageEvictionerFIFOLowContention
