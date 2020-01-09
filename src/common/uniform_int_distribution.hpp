@@ -21,7 +21,7 @@ namespace zero::uniform_int_distribution {
     namespace details {
 
         template <typename int_type>
-        constexpr uint8_t log2(int_type n) {
+        constexpr uint16_t log2(int_type n) {
             return ((n < 2) ? 1 : 1 + log2(n / 2));
         };
 
@@ -178,7 +178,7 @@ namespace zero::uniform_int_distribution {
                 _parameters(lowerLimit, upperLimit),
                 _offset(lowerLimit),
                 _range(upperLimit - lowerLimit),
-                _rangeBits(static_cast<uint8_t>(std::ceil(std::log2(_range + 2)))),
+                _rangeBits(static_cast<uint16_t>(std::ceil(std::log2(_range + 2)))),
                 _fallbackDistribution(lowerLimit, upperLimit) {};
 
         /*!\fn    biased_uniform_int_distribution(const param_type& parameters)
@@ -232,7 +232,7 @@ namespace zero::uniform_int_distribution {
             _parameters = parameters;
             _offset = parameters.a();
             _range = parameters.a() - parameters.b();
-            _rangeBits = static_cast<uint8_t>(std::ceil(std::log2(_range + 2)));
+            _rangeBits = static_cast<uint16_t>(std::ceil(std::log2(_range + 2)));
             _fallbackDistribution.param(parameters);
         };
 
@@ -292,19 +292,19 @@ namespace zero::uniform_int_distribution {
                                                                                            - static_cast<unsigned_generator_type>(uniform_random_number_generator::min()));
             // The effective bitwidth of the actual output range of the underlying integer PRNG if known at compile-time
             // or the bitwidth of the output data type of the underlying PRNG:
-            constexpr uint8_t generatorBits = std::is_integral<generator_type>::value
-                                           && generatorRange < std::numeric_limits<unsigned_generator_type>::max()
-                                                   ? !minMaxAvailable ? static_cast<uint8_t>(0)
-                                                                      : static_cast<uint8_t>(details::log2<unsigned_generator_type>(generatorRange + 1) - 1)
-                                                   : static_cast<uint8_t>(sizeof(generator_type) * CHAR_BIT);
+            constexpr uint16_t generatorBits = std::is_integral<generator_type>::value
+                                            && generatorRange < std::numeric_limits<unsigned_generator_type>::max()
+                                                    ? !minMaxAvailable ? static_cast<uint16_t>(0)
+                                                                       : static_cast<uint16_t>(details::log2<unsigned_generator_type>(generatorRange + 1) - 1)
+                                                    : static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT);
             // The bitwidth of the output data type of the underlying PRNG:
-            constexpr uint8_t generatorTypeBits = static_cast<uint8_t>(sizeof(generator_type) * CHAR_BIT);
+            constexpr uint16_t generatorTypeBits = static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT);
 
             // The highest possible length of the output range of this random distribution facility (based on the range
             // of the output data type):
             constexpr unsigned_result_type resultRange = std::numeric_limits<unsigned_result_type>::max();
             // The bitwidth of the output data type of this random distribution facility:
-            constexpr uint8_t resultBits = static_cast<uint8_t>(sizeof(result_type) * CHAR_BIT);
+            constexpr uint16_t resultBits = static_cast<uint16_t>(sizeof(result_type) * CHAR_BIT);
 
             // Unsigned and signed integer types with a bitwidth which is at least double the bitwidth of the one of the
             // output data type of this random distribution facility:
@@ -321,7 +321,7 @@ namespace zero::uniform_int_distribution {
                     unsigned_generator_type x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator()
                                                                                    - uniform_random_number_generator::min());
                     if constexpr (generatorBits != details::log2(generatorRange)) {
-                        constexpr unsigned_generator_type bitMask = gcem::pow(2, generatorBits) - 1;
+                        constexpr unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                         x = x & bitMask;
                     }
                     if constexpr (std::is_unsigned<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
@@ -357,7 +357,7 @@ namespace zero::uniform_int_distribution {
                         unsigned_generator_type x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator()
                                                                                        - uniform_random_number_generator::min());
                         if constexpr (generatorBits != details::log2(generatorRange)) {
-                            constexpr unsigned_generator_type bitMask = gcem::pow(2, generatorBits) - 1;
+                            constexpr unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                             x = x & bitMask;
                         }
                         if constexpr (std::is_unsigned<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
@@ -402,8 +402,8 @@ namespace zero::uniform_int_distribution {
                     generatorRange = gcem::abs(static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<uniform_random_number_generator>::max())
                                              - static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<uniform_random_number_generator>::min()));
                 }
-                uint8_t generatorBits = generatorRange == std::numeric_limits<unsigned_generator_type>::max() ? static_cast<uint8_t>(sizeof(generator_type) * CHAR_BIT)
-                                                                                                              : static_cast<uint8_t>(std::floor(std::log2(generatorRange + 1)));
+                uint16_t generatorBits = generatorRange == std::numeric_limits<unsigned_generator_type>::max() ? static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT)
+                                                                                                               : static_cast<uint16_t>(std::floor(std::log2(generatorRange + 1)));
 
                 // The effective bitwidth of the output range of the PRNG is at least as high as the effective bitwidth
                 // of the output range of this random distribution facility:
@@ -413,7 +413,7 @@ namespace zero::uniform_int_distribution {
                     if constexpr (std::is_integral<generator_type>::value) {
                         x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator() - uniform_random_number_generator::min());
                         if (generatorBits < generatorTypeBits) {
-                            unsigned_generator_type bitMask = gcem::pow(2, generatorBits) - 1;
+                            unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                             x = x & bitMask;
                         }
                     } else {
@@ -559,7 +559,7 @@ namespace zero::uniform_int_distribution {
          * \details This is equivalent to the bitwidth of the entropy required to generate one biased uniformly
          *          distributed random integer.
          */
-        uint8_t _rangeBits;
+        uint16_t _rangeBits;
 
         /*!\var     _fallbackDistribution
          * \brief   The fallback random distribution facility
