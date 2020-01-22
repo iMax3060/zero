@@ -4,6 +4,7 @@
 #include "page_evictioner.hpp"
 #include "page_evictioner_selector.hpp"
 #include "page_evictioner_selector_random.hpp"
+#include "page_evictioner_selector_loop.hpp"
 #include "page_evictioner_filter.hpp"
 #include "buffer_pool.hpp"
 
