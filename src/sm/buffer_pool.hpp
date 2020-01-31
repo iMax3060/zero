@@ -807,7 +807,7 @@ namespace zero::buffer_pool {
          * \brief   Single-page-recovery iterator used for instant restart redo
          * \details MG TODO
          *
-         * \see     bf_tree_m::recover_if_needed
+         * \see     recoverIfNeeded
          */
         static thread_local SprIterator                             _localSprIter;
 
@@ -1148,7 +1148,8 @@ namespace zero::buffer_pool {
 /**
  * Holds the buffer slot index of additionally pinned page and
  * releases the pin count when it's destructed.
- * @see bf_tree_m::pin_for_refix(), bf_tree_m::unpin_for_refix(), bf_tree_m::refix_direct().
+ * @see zero::buffer_pool::BufferPool::pinForRefix(), zero::buffer_pool::BufferPool::unpinForRefix(),
+ *      zero::buffer_pool::BufferPool::refixDirect().
  */
 class pin_for_refix_holder {
 public:

@@ -88,7 +88,9 @@ class xct_i;
 
 class vol_t;
 class BackupManager;
-class bf_tree_m;
+namespace zero::buffer_pool {
+    class BufferPool;
+} // zero::buffer_pool
 class comm_m;
 class log_core;
 class lock_m;

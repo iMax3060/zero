@@ -13,7 +13,7 @@
 
 /**
  * \brief Handle class for pages that may be fixed (i.e., paged in by the main buffer
- * manager, bf_tree_m)
+ * manager, zero::buffer_pool::BufferPool)
  *
  * \details
  * Currently, only B-tree pages are fixable.

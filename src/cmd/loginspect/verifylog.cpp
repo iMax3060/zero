@@ -24,7 +24,7 @@ void init_alloc()
     // _options.set_bool_option("sm_vol_cluster_stores", true);
 
     // smlevel_0::vol = new vol_t(options);
-    // smlevel_0::bf = new bf_tree_m(options);
+    // smlevel_0::bf = new zero::buffer_pool::BufferPool(options);
     // smlevel_0::vol->build_caches(format, chkpt_info);
 }
 

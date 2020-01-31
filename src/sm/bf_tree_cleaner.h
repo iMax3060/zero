@@ -9,8 +9,6 @@
 #include "bf_tree_cb.h"
 #include <functional>
 
-class bf_tree_m;
-
 /**
  * These classes encapsulate a single comparator function to be used
  * as a cleaner policy.

@@ -4,7 +4,6 @@
 #include "sm_options.h"
 #include "worker_thread.h"
 
-class bf_tree_m;
 struct bf_tree_cb_t;
 
 namespace zero::buffer_pool {

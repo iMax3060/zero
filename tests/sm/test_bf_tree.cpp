@@ -15,8 +15,8 @@
 
 btree_test_env *test_env;
 /**
- * Unit test for new bufferpool for B-tree pages (bf_tree_m).
- * This class (test_bf_tree) is a friend of bf_tree_m so that
+ * Unit test for new bufferpool for B-tree pages (zero::buffer_pool::BufferPool).
+ * This class (test_bf_tree) is a friend of zero::buffer_pool::BufferPool so that
  * we can test private methods in these test cases.
  */
 class test_bf_tree {
@@ -88,8 +88,8 @@ TEST (TreeBufferpoolTest, AlignmentCheck) {
 
 w_rc_t test_bf_init(ss_m* /*ssm*/, test_volume_t */*test_volume*/) {
     ::usleep(200000); // CS TODO WHY?????????
-    bf_tree_m &pool(*smlevel_0::bf);
-    pool.debug_dump(std::cout);
+    zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
+    pool.debugDump(std::cout);
     return RCOK;
 }
 TEST (TreeBufferpoolTest, Init) {
@@ -97,11 +97,11 @@ TEST (TreeBufferpoolTest, Init) {
 }
 w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume) {
     lsn_t thelsn = smlevel_0::log->curr_lsn();
-    bf_tree_m &pool(*smlevel_0::bf);
+    zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
     for (size_t i = 1; i < 4; ++i) {
         generic_page *page = nullptr;
         PageID pid = i+10;
-        W_DO(pool.fix_root(page, i, LATCH_SH, false, true));
+        W_DO(pool.fixRootOldStyleExceptions(page, i, LATCH_SH, false, true));
         EXPECT_TRUE (page != nullptr);
         if (page != nullptr) {
             ::memset(page, 0, sizeof(generic_page));
@@ -117,7 +117,7 @@ w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume) {
 
         // fix again
         page = nullptr;
-        W_DO(pool.fix_root(page, i, LATCH_SH, false, false));
+        W_DO(pool.fixRootOldStyleExceptions(page, i, LATCH_SH, false, false));
         EXPECT_TRUE (page != nullptr);
         if (page != nullptr) {
             btree_page *bp = reinterpret_cast<btree_page*>(page);
@@ -128,7 +128,7 @@ w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume) {
             pool.unfix(page);
         }
     }
-    pool.debug_dump(std::cout);
+    pool.debugDump(std::cout);
     return RCOK;
 }
 TEST (TreeBufferpoolTest, FixVirginRoot) {
@@ -136,13 +136,13 @@ TEST (TreeBufferpoolTest, FixVirginRoot) {
 }
 
 w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
-    bf_tree_m &pool(*smlevel_0::bf);
+    zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
     lsn_t thelsn = smlevel_0::log->curr_lsn();
     PageID root_pid = 11;
     StoreID stid = 1;
 
     generic_page *root_page = nullptr;
-    W_DO(pool.fix_root(root_page, stid, LATCH_EX, false, true));
+    W_DO(pool.fixRootOldStyleExceptions(root_page, stid, LATCH_EX, false, true));
     EXPECT_TRUE (root_page != nullptr);
     ::memset(root_page, 0, sizeof(generic_page));
     btree_page *rbp = reinterpret_cast<btree_page*>(root_page);
@@ -157,7 +157,7 @@ w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
         PageID pid = root_pid + 1 + i;
         test_bf_tree::_add_child_pointer (rbp, pid);
 
-        W_DO(pool.fix_nonroot(page, root_page, pid, LATCH_EX, false, true));
+        W_DO(pool.fixNonRootOldStyleExceptions(page, root_page, pid, LATCH_EX, false, true));
         EXPECT_TRUE (page != nullptr);
         if (page != nullptr) {
             ::memset(page, 0, sizeof(generic_page));
@@ -172,7 +172,7 @@ w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
 
         // fix again
         page = nullptr;
-        W_DO(pool.fix_nonroot(page, root_page, pid, LATCH_SH, false, false));
+        W_DO(pool.fixNonRootOldStyleExceptions(page, root_page, pid, LATCH_SH, false, false));
         EXPECT_TRUE (page != nullptr);
         if (page != nullptr) {
             btree_page *bp = reinterpret_cast<btree_page*>(page);
@@ -185,7 +185,7 @@ w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
     }
 
     pool.unfix(root_page);
-    pool.debug_dump(std::cout);
+    pool.debugDump(std::cout);
     return RCOK;
 }
 TEST (TreeBufferpoolTest, FixVirginChild) {
@@ -434,7 +434,7 @@ TEST (TreeBufferpoolTest, NoSwizzle) {
 #ifdef BP_MAINTAIN_PARENT_PTR
 // w_rc_t test_bf_switch_parent(ss_m* /*ssm*/, test_volume_t *test_volume) {
 
-//     bf_tree_m &pool(*smlevel_0::bf);
+//     zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
 //     PageID root_pid(test_volume->_vid, 3);
 
 //     btree_page *root_page = nullptr;
