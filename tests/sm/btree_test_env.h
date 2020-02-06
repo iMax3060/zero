@@ -33,13 +33,13 @@ const int default_locktable_size = 1 << 6;
 const bool simulated_crash = true;
 const bool normal_shutdown = false;
 
-#ifdef DEFAULT_SWIZZLING_OFF
-const bool default_enable_swizzling = false;
-#else // DEFAULT_SWIZZLING_OFF
-const bool default_enable_swizzling = true;
-#endif //DEFAULT_SWIZZLING_OFF
-
-enum test_txn_state_t {
+//#ifdef DEFAULT_SWIZZLING_OFF
+//const bool default_enable_swizzling = false;
+//#else // DEFAULT_SWIZZLING_OFF
+//const bool default_enable_swizzling = true;
+//#endif //DEFAULT_SWIZZLING_OFF
+//
+//enum test_txn_state_t {
     t_test_txn_commit,     // Commit the user transaction
     t_test_txn_abort,      // Abort the user transaction
     t_test_txn_in_flight   // Leave the user transaction as in-flight but detach from it
@@ -359,7 +359,7 @@ public:
         uint32_t cleaner_interval_millisec_max,
         uint32_t cleaner_write_buffer_pages,
         bool initially_enable_cleaners,
-        bool enable_swizzling,
+//        bool enable_swizzling,
         const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
         const std::vector<std::pair<const char*, bool> > &additional_bool_params,
         const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -371,8 +371,8 @@ public:
         uint32_t cleaner_interval_millisec_min,
         uint32_t cleaner_interval_millisec_max,
         uint32_t cleaner_write_buffer_pages,
-        bool initially_enable_cleaners,
-        bool enable_swizzling);
+        bool initially_enable_cleaners/*,
+        bool enable_swizzling*/);
 
     /**
      * Call this method to run your test on a storage-manager-thread (smthread).
@@ -388,8 +388,8 @@ public:
                       uint32_t cleaner_interval_millisec_min       =   1000,
                       uint32_t cleaner_interval_millisec_max       = 256000,
                       uint32_t cleaner_write_buffer_pages          =     64,
-                      bool initially_enable_cleaners = true,
-                      bool enable_swizzling = default_enable_swizzling
+                      bool initially_enable_cleaners = true/*,
+                      bool enable_swizzling = default_enable_swizzling*/
                      );
 
     /** This is most concise. New code should use this one. */
@@ -417,7 +417,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -437,8 +437,8 @@ public:
                       uint32_t cleaner_interval_millisec_min	   = 1000,
                       uint32_t cleaner_interval_millisec_max	   = 256000,
                       uint32_t cleaner_write_buffer_pages          = 64,
-                      bool initially_enable_cleaners = true,
-                      bool enable_swizzling = default_enable_swizzling
+                      bool initially_enable_cleaners = true/*,
+                      bool enable_swizzling = default_enable_swizzling*/
                       );
 
     /** This is most concise. New code should use this one. */
@@ -454,7 +454,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -476,9 +476,9 @@ public:
                       uint32_t cleaner_interval_millisec_min	   = 1000,
                       uint32_t cleaner_interval_millisec_max	   = 256000,
                       uint32_t cleaner_write_buffer_pages          = 64,
-                      bool initially_enable_cleaners = true,
+                      bool initially_enable_cleaners = true/*,
                       bool enable_swizzling = default_enable_swizzling
-                      );
+                      */);
 
     // Internal API to carry out the test
     int runRestartPerfTest (restart_performance_test_base *context,
@@ -496,7 +496,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -518,8 +518,8 @@ public:
                       uint32_t cleaner_interval_millisec_min	   = 1000,
                       uint32_t cleaner_interval_millisec_max	   = 256000,
                       uint32_t cleaner_write_buffer_pages          = 64,
-                      bool initially_enable_cleaners = true,
-                      bool enable_swizzling = default_enable_swizzling
+                      bool initially_enable_cleaners = true/*,
+                      bool enable_swizzling = default_enable_swizzling*/
                       );
 
     // Internal API to carry out the test
@@ -538,7 +538,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -560,8 +560,8 @@ public:
                       uint32_t cleaner_interval_millisec_min	   = 1000,
                       uint32_t cleaner_interval_millisec_max	   = 256000,
                       uint32_t cleaner_write_buffer_pages          = 64,
-                      bool initially_enable_cleaners = true,
-                      bool enable_swizzling = default_enable_swizzling
+                      bool initially_enable_cleaners = true/*,
+                      bool enable_swizzling = default_enable_swizzling*/
                       );
 
     // Internal API to carry out the test
@@ -580,7 +580,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);
@@ -599,8 +599,8 @@ public:
                       uint32_t cleaner_interval_millisec_min       =   1000,
                       uint32_t cleaner_interval_millisec_max       = 256000,
                       uint32_t cleaner_write_buffer_pages          =     64,
-                      bool initially_enable_cleaners = true,
-                      bool enable_swizzling = default_enable_swizzling
+                      bool initially_enable_cleaners = true/*,
+                      bool enable_swizzling = default_enable_swizzling*/
                      );
 
     /**
@@ -614,7 +614,7 @@ public:
                       uint32_t cleaner_interval_millisec_max,
                       uint32_t cleaner_write_buffer_pages,
                       bool initially_enable_cleaners,
-                      bool enable_swizzling,
+//                      bool enable_swizzling,
                       const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
                       const std::vector<std::pair<const char*, bool> > &additional_bool_params,
                       const std::vector<std::pair<const char*, const char*> > &additional_string_params);

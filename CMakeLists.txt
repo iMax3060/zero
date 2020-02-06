@@ -142,8 +142,8 @@ ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "sparc")
 INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
-# Set the page evictioner used by the buffer pool:
-INCLUDE(SetUpPageEvictioner)
+# Set the compile time settings of the buffer pool:
+INCLUDE(SetUpBufferPool)
 
 # Then finally call CONFIGURE_FILE to generate shore-config-env.h:
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/config/shore-config-env.h.cmake ${CMAKE_BINARY_DIR}/config/shore-config-env.h)

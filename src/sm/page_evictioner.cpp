@@ -12,7 +12,6 @@ using namespace zero::buffer_pool;
 PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
         worker_thread_t(ss_m::get_options().get_int_option("sm_evictioner_interval_millisec", 1000)),
         _evictionBatchSize(static_cast<uint_fast32_t>(bufferPool->getBlockCount() * 0.000001 * ss_m::get_options().get_int_option("sm_evictioner_batch_ratio_ppm", 10000))),
-        _enabledSwizzling(ss_m::get_options().get_bool_option("sm_bufferpool_swizzle", false)),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _flushDirty(ss_m::get_options().get_bool_option("sm_bf_evictioner_flush_dirty_pages", false)),
         _logEvictions(ss_m::get_options().get_bool_option("sm_bf_evictioner_log_evictions", false)),
@@ -185,7 +184,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
      * page ID or its swizzled bufferpool frame index. */
     general_recordid_t victimSlotID;
     if (_enabledSwizzling && victimControlBlock._swizzled) {
-        victimSlotID = fixable_page_h::find_page_id_slot(parentPage, smlevel_0::bf->addSwizzledPIDBit(victim));
+        victimSlotID = POINTER_SWIZZLER::findSwizzledPageIDSlot(parentPage, victim);
     } else {
         victimSlotID = fixable_page_h::find_page_id_slot(parentPage, victimPageID);
     }

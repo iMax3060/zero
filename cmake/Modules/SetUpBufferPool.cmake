@@ -1,5 +1,5 @@
 ## = Usage: ============================================================================================================
-## INCLUDE(SetUpPageEvictioner)    -- (after adding the location to the CMAKE_MODULE_PATH)
+## INCLUDE(SetUpBufferPool)    -- (after adding the location to the CMAKE_MODULE_PATH)
 ## =====================================================================================================================
 ## = Supported Page Evictioners: =======================================================================================
 ## - [DEFAULT] PageEvictionerLOOP
@@ -234,6 +234,12 @@
 ## - PageEvictionerDGCLOCKV2Fix
 ## - PageEvictionerCARFix
 ## - PageEvictionerUnfix
+## =====================================================================================================================
+## =====================================================================================================================
+## = Supported Pointer Swizzling Techniques: ===========================================================================
+## - [DEFAULT] NoSwizzling
+## - SimpleSwizzling
+## - LeanStoreSwizzing
 ## =====================================================================================================================
 
 SET(PAGE_EVICTIONER ON CACHE STRING "Page Evictioner used by the Buffer Pool")
@@ -710,3 +716,16 @@ ELSE(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
     MESSAGE(WARNING "The set page evictioner is unknown. Changed to the default page evictioner!")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLOOP!")
 ENDIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
+
+SET(POINTER_SWIZZLER ON CACHE STRING "Pointer Swizzling technique used by the Buffer Pool")
+IF(POINTER_SWIZZLER STREQUAL "NoSwizzling")
+    MESSAGE(STATUS "INFO: The selected pointer swizzling technique is NoSwizzling!")
+ELSEIF(POINTER_SWIZZLER STREQUAL "SimpleSwizzling")
+    MESSAGE(STATUS "INFO: The selected pointer swizzling technique is SimpleSwizzling!")
+ELSEIF(POINTER_SWIZZLER STREQUAL "LeanStoreSwizzling")
+    MESSAGE(STATUS "INFO: The selected pointer swizzling technique is LeanStoreSwizzling!")
+ELSE(POINTER_SWIZZLER STREQUAL "NoSwizzling")
+    SET(POINTER_SWIZZLER "NoSwizzling")
+    MESSAGE(WARNING "The set pointer swizzling technique is unknown. Changed to the default pointer swizzling technique!")
+    MESSAGE(STATUS "INFO: The selected pointer swizzling technique is NoSwizzling!")
+ENDIF(POINTER_SWIZZLER STREQUAL "NoSwizzling")

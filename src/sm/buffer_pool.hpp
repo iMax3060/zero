@@ -20,10 +20,9 @@
 #include <array>
 #include "buffer_pool_hashtable.hpp"
 #include "page_evictioner_typedefs.hpp"
+#include "buffer_pool_pointer_swizzling.hpp"
 
 #include "boost/align/aligned_allocator.hpp"
-
-#include "shore-config-env.h"
 
 class sm_options;
 class lsn_t;
@@ -35,17 +34,12 @@ class GenericPageIterator;
 
 namespace zero::buffer_pool {
 
-    /*!\var   swizzledPIDBit
-     * \brief Bit which is set in swizzled pointers to mark those
-     */
-    constexpr PageID swizzledPIDBit = 0x80000000;
-
     /*!\class   BufferPool
      * \brief   A buffer manager that exploits the tree structure of indexes.
      * \details This buffer manager only deals with tree-structured stores such as B-trees.
      */
     class BufferPool {
-        friend class test_bf_tree; // for testcases
+        friend class ::test_bf_tree; // for testcases
         friend class ::bf_tree_cleaner; // for page cleaning
         friend class page_cleaner_decoupled; // for log-based "decoubled" page cleaning
         friend class ::GenericPageIterator;
@@ -452,51 +446,13 @@ namespace zero::buffer_pool {
          * @param[in]     parentPage            The parent page where to unswizzle the child page.
          * @param[in]     childSlotInParentPage The slot within the parent page where to find the swizzled
          *                                      pointer to the child page.
-         * @param[in]     doUnswizzle           If \c true , pointer is actually unswizzled in parent,
-         *                                      otherwise just return what the unswizzled pointer would be
-         *                                      (i.e., the \c childPageID ).
          * @param[in,out] childPageID           If it wasn't set to the \c nullptr, the unswizzled
          *                                      \link PageID \endlink of the child page is returned.
          *
          * @return                              \c false if the unswizzling was not successful, else \c true.
          */
         bool unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
-                                  bool doUnswizzle = true, PageID* childPageID = nullptr);
-
-        /*!\fn      isSwizzledPointer(const PageID pid) const noexcept
-         * \brief   Checks whether a page ID is a swizzled buffer index
-         * \details Whether the given page ID is actually swizzled and therefore a buffer pool index marked as such.
-         *
-         * @param pid A page ID that might be swizzled.
-         * @return    Whether \c pid is a swizzled pointer.
-         */
-        bool isSwizzledPointer(const PageID pid) const noexcept {
-            return (pid & swizzledPIDBit) != 0;
-        }
-
-        /*!\fn      addSwizzledPIDBit(const PageID pid) const noexcept
-         * \brief   Transforms a buffer pool index to a swizzled page ID
-         * \details Transforms the given buffer pool index of this buffer pool to a swizzled page ID by adding the
-         *          marking as swizzled pointer.
-         *
-         * @param index A buffer pool index of this buffer pool.
-         * @return      The swizzled page ID for the parent page.
-         */
-        PageID addSwizzledPIDBit(const bf_idx index) const noexcept {
-            return index | swizzledPIDBit;
-        }
-
-        /*!\fn      removeSwizzledPIDBit(const PageID pid) const noexcept
-         * \brief   Transforms a swizzled page ID to a buffer pool index
-         * \details Transforms the given page ID which must be swizzled to a buffer pool index of this buffer pool by
-         *          removing the marking as swizzled pointer.
-         *
-         * @param pid A swizzled page ID of this buffer pool.
-         * @return    The buffer pool index of this buffer pool where the page specified in \c pid can be found.
-         */
-        bf_idx removeSwizzledPIDBit(const PageID pid) const noexcept {
-            return pid ^ swizzledPIDBit;
-        }
+                                  PageID* childPageID = nullptr);
 
         /*!\fn      normalizePID(const PageID pid) const noexcept
          * \brief   Normalize a page ID
@@ -511,12 +467,19 @@ namespace zero::buffer_pool {
          * @return    The corresponding page ID to a \link vol_t \endlink page.
          */
         PageID normalizePID(const PageID pid) const noexcept {
-            if (isSwizzledPointer(pid)) {
-                bf_idx index = removeSwizzledPIDBit(pid);
-                const generic_page* page = &_buffer[index];
-                return page->pid;
+            if constexpr (_enableSwizzling) {
+                if (POINTER_SWIZZLER::isSwizzledPointer(pid)) {
+                    bf_idx index = POINTER_SWIZZLER::makeBufferIndex(pid);
+                    w_assert1(isValidIndex(index));
+                    const bf_tree_cb_t& controlBlock = getControlBlock(index);
+                    w_assert1(!POINTER_SWIZZLER::isSwizzledPointer(controlBlock._pid));
+                    return controlBlock._pid;
+                } else {
+                    return pid;
+                }
+            } else {
+                return pid;
             }
-            return pid;
         };
 
         /*!\fn      isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept
@@ -705,17 +668,6 @@ namespace zero::buffer_pool {
          */
         void debugDumpPagePointers(std::ostream& o, generic_page* page) const;
 
-        /*!\fn      debugDumpPointer(std::ostream& o, PageID pid) const
-         * \brief   Dumps the given page ID to an output stream
-         * \details Dumps the given possibly swizzled page ID with additional information about swizzling etc. to an
-         *          output stream.
-         *
-         * \pre     The stream manipulators of \c o are set as expected.
-         *
-         * @param o   The output stream to which the pointer is printed.
-         * @param pid The pointer (page ID) to print.
-         */
-        void debugDumpPointer(std::ostream& o, PageID pid) const;
     private:
         /*!\var     _blockCount
          * \brief   Maximum number of pages in this buffer pool
@@ -858,7 +810,7 @@ namespace zero::buffer_pool {
          *          corresponding \link bf_idx \endlink (buffer frame index inside this buffer pool) inside the buffered
          *          copy (original as assumed to be on disk) of its parent page.
          */
-        bool                                                        _enableSwizzling;
+        static constexpr bool                                       _enableSwizzling = POINTER_SWIZZLER::usesPointerSwizzling;
 
         /*!\var     _logFetches
          * \brief   Log page fetches

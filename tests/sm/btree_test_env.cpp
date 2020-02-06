@@ -48,7 +48,7 @@ sm_options btree_test_env::make_sm_options(
             uint32_t cleaner_interval_millisec_max,
             uint32_t cleaner_write_buffer_pages,
             bool initially_enable_cleaners,
-            bool enable_swizzling,
+//            bool enable_swizzling,
             const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
             const std::vector<std::pair<const char*, bool> > &additional_bool_params,
             const std::vector<std::pair<const char*, const char*> > &additional_string_params) {
@@ -73,7 +73,6 @@ sm_options btree_test_env::make_sm_options(
     options.set_int_option("sm_cleaner_interval_millisec_max", cleaner_interval_millisec_max);
     options.set_int_option("sm_cleaner_write_buffer_pages", cleaner_write_buffer_pages);
     options.set_bool_option("sm_backgroundflush", initially_enable_cleaners);
-    options.set_bool_option("sm_bufferpool_swizzle", enable_swizzling);
 
     for (std::vector<std::pair<const char*, int64_t> >::const_iterator iter = additional_int_params.begin();
             iter != additional_int_params.end(); ++iter) {
@@ -99,8 +98,8 @@ sm_options btree_test_env::make_sm_options(
             uint32_t cleaner_interval_millisec_min,
             uint32_t cleaner_interval_millisec_max,
             uint32_t cleaner_write_buffer_pages,
-            bool initially_enable_cleaners,
-            bool enable_swizzling) {
+            bool initially_enable_cleaners/*,
+            bool enable_swizzling*/) {
     std::vector<std::pair<const char*, int64_t> > dummy_int;
     std::vector<std::pair<const char*, bool> > dummy_bool;
     std::vector<std::pair<const char*, const char*> > dummy_string;
@@ -111,7 +110,7 @@ sm_options btree_test_env::make_sm_options(
             cleaner_interval_millisec_max,
             cleaner_write_buffer_pages,
             initially_enable_cleaners,
-            enable_swizzling,
+//            enable_swizzling,
             dummy_int, dummy_bool, dummy_string);
 }
 
@@ -325,8 +324,8 @@ int btree_test_env::runBtreeTest (w_rc_t (*func)(ss_m*, test_volume_t*),
                     uint32_t cleaner_interval_millisec_min,
                     uint32_t cleaner_interval_millisec_max,
                     uint32_t cleaner_write_buffer_pages,
-                    bool initially_enable_cleaners,
-                    bool enable_swizzling
+                    bool initially_enable_cleaners/*,
+                    bool enable_swizzling*/
                                  )
 {
     return runBtreeTest(func, use_locks,
@@ -336,8 +335,8 @@ int btree_test_env::runBtreeTest (w_rc_t (*func)(ss_m*, test_volume_t*),
                     cleaner_interval_millisec_min,
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
-                    initially_enable_cleaners,
-                    enable_swizzling));
+                    initially_enable_cleaners/*,
+                    enable_swizzling*/));
 }
 
 int btree_test_env::runBtreeTest (w_rc_t (*func)(ss_m*, test_volume_t*),
@@ -348,7 +347,7 @@ int btree_test_env::runBtreeTest (w_rc_t (*func)(ss_m*, test_volume_t*),
         uint32_t cleaner_interval_millisec_max,
         uint32_t cleaner_write_buffer_pages,
         bool initially_enable_cleaners,
-        bool enable_swizzling,
+//        bool enable_swizzling,
         const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
         const std::vector<std::pair<const char*, bool> > &additional_bool_params,
         const std::vector<std::pair<const char*, const char*> > &additional_string_params
@@ -361,7 +360,7 @@ int btree_test_env::runBtreeTest (w_rc_t (*func)(ss_m*, test_volume_t*),
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
                     initially_enable_cleaners,
-                    enable_swizzling,
+//                    enable_swizzling,
                     additional_int_params, additional_bool_params, additional_string_params));
 }
 
@@ -401,8 +400,8 @@ int btree_test_env::runRestartTest (restart_test_base *context,
     uint32_t cleaner_interval_millisec_min,
     uint32_t cleaner_interval_millisec_max,
     uint32_t cleaner_write_buffer_pages,
-    bool initially_enable_cleaners,
-    bool enable_swizzling) {
+    bool initially_enable_cleaners/*,
+    bool enable_swizzling*/) {
     return runRestartTest(context, restart_options, use_locks,
             make_sm_options(lock_table_size,
                     bufferpool_size_in_pages,
@@ -410,8 +409,8 @@ int btree_test_env::runRestartTest (restart_test_base *context,
                     cleaner_interval_millisec_min,
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
-                    initially_enable_cleaners,
-                    enable_swizzling));
+                    initially_enable_cleaners/*,
+                    enable_swizzling*/));
 }
 
 int btree_test_env::runRestartTest (restart_test_base *context,
@@ -423,7 +422,7 @@ int btree_test_env::runRestartTest (restart_test_base *context,
     uint32_t cleaner_interval_millisec_max,
     uint32_t cleaner_write_buffer_pages,
     bool initially_enable_cleaners,
-    bool enable_swizzling,
+//    bool enable_swizzling,
     const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
     const std::vector<std::pair<const char*, bool> > &additional_bool_params,
     const std::vector<std::pair<const char*, const char*> > &additional_string_params) {
@@ -435,7 +434,7 @@ int btree_test_env::runRestartTest (restart_test_base *context,
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
                     initially_enable_cleaners,
-                    enable_swizzling,
+//                    enable_swizzling,
                     additional_int_params, additional_bool_params, additional_string_params));
 }
 int btree_test_env::runRestartTest (restart_test_base *context, restart_test_options *restart_options,
@@ -536,8 +535,8 @@ int btree_test_env::runCrashTest (crash_test_base *context,
     uint32_t cleaner_interval_millisec_min,
     uint32_t cleaner_interval_millisec_max,
     uint32_t cleaner_write_buffer_pages,
-    bool initially_enable_cleaners,
-    bool enable_swizzling) {
+    bool initially_enable_cleaners/*,
+    bool enable_swizzling*/) {
     return runCrashTest(context, use_locks,
                 make_sm_options(lock_table_size,
                     bufferpool_size_in_pages,
@@ -545,8 +544,8 @@ int btree_test_env::runCrashTest (crash_test_base *context,
                     cleaner_interval_millisec_min,
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
-                    initially_enable_cleaners,
-                    enable_swizzling));
+                    initially_enable_cleaners/*,
+                    enable_swizzling*/));
 }
 
 int btree_test_env::runCrashTest (crash_test_base *context,
@@ -557,7 +556,7 @@ int btree_test_env::runCrashTest (crash_test_base *context,
     uint32_t cleaner_interval_millisec_max,
     uint32_t cleaner_write_buffer_pages,
     bool initially_enable_cleaners,
-    bool enable_swizzling,
+//    bool enable_swizzling,
     const std::vector<std::pair<const char*, int64_t> > &additional_int_params,
     const std::vector<std::pair<const char*, bool> > &additional_bool_params,
     const std::vector<std::pair<const char*, const char*> > &additional_string_params) {
@@ -569,7 +568,7 @@ int btree_test_env::runCrashTest (crash_test_base *context,
                     cleaner_interval_millisec_max,
                     cleaner_write_buffer_pages,
                     initially_enable_cleaners,
-                    enable_swizzling,
+//                    enable_swizzling,
                     additional_int_params, additional_bool_params, additional_string_params));
 }
 
@@ -636,8 +635,8 @@ int btree_test_env::runRestartPerfTest (
     uint32_t cleaner_interval_millisec_min,             // Optional, default: 1000
     uint32_t cleaner_interval_millisec_max,             // Optional, default: 256000
     uint32_t cleaner_write_buffer_pages,                // Optional, default: 64
-    bool initially_enable_cleaners,                     // Optional, default: true
-    bool enable_swizzling)                              // Optional, default: default_enable_swizzling
+    bool initially_enable_cleaners/*,                     // Optional, default: true
+    bool enable_swizzling*/)                              // Optional, default: default_enable_swizzling
 {
     return runRestartPerfTest(context, restart_options, use_locks,
                               make_sm_options(lock_table_size,
@@ -646,8 +645,8 @@ int btree_test_env::runRestartPerfTest (
                                               cleaner_interval_millisec_min,
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
-                                              initially_enable_cleaners,
-                                              enable_swizzling));
+                                              initially_enable_cleaners/*,
+                                              enable_swizzling*/));
 }
 
 // Optional API, not used for prestart performance test currently
@@ -662,7 +661,7 @@ int btree_test_env::runRestartPerfTest (
     uint32_t cleaner_interval_millisec_max,                // Required
     uint32_t cleaner_write_buffer_pages,                   // Required
     bool initially_enable_cleaners,                        // Required
-    bool enable_swizzling,                                 // Required
+//    bool enable_swizzling,                                 // Required
     const std::vector<std::pair<const char*, int64_t> > &additional_int_params,         // Required
     const std::vector<std::pair<const char*, bool> > &additional_bool_params,           // Required
     const std::vector<std::pair<const char*, const char*> > &additional_string_params)  // Required
@@ -675,7 +674,7 @@ int btree_test_env::runRestartPerfTest (
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
                                               initially_enable_cleaners,
-                                              enable_swizzling,
+//                                              enable_swizzling,
                                               additional_int_params,
                                               additional_bool_params,
                                               additional_string_params));
@@ -966,8 +965,8 @@ int btree_test_env::runRestartPerfTestBefore (
     uint32_t cleaner_interval_millisec_min,             // Optional, default: 1000
     uint32_t cleaner_interval_millisec_max,             // Optional, default: 256000
     uint32_t cleaner_write_buffer_pages,                // Optional, default: 64
-    bool initially_enable_cleaners,                     // Optional, default: true
-    bool enable_swizzling)                              // Optional, default: default_enable_swizzling
+    bool initially_enable_cleaners/*,                     // Optional, default: true
+    bool enable_swizzling*/)                              // Optional, default: default_enable_swizzling
 {
     return runRestartPerfTestBefore(context, restart_options, use_locks,
                               make_sm_options(lock_table_size,
@@ -976,8 +975,8 @@ int btree_test_env::runRestartPerfTestBefore (
                                               cleaner_interval_millisec_min,
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
-                                              initially_enable_cleaners,
-                                              enable_swizzling));
+                                              initially_enable_cleaners/*,
+                                              enable_swizzling*/));
 }
 
 // Optional API, not used for prestart performance test currently
@@ -992,7 +991,7 @@ int btree_test_env::runRestartPerfTestBefore (
     uint32_t cleaner_interval_millisec_max,                // Required
     uint32_t cleaner_write_buffer_pages,                   // Required
     bool initially_enable_cleaners,                        // Required
-    bool enable_swizzling,                                 // Required
+//    bool enable_swizzling,                                 // Required
     const std::vector<std::pair<const char*, int64_t> > &additional_int_params,         // Required
     const std::vector<std::pair<const char*, bool> > &additional_bool_params,           // Required
     const std::vector<std::pair<const char*, const char*> > &additional_string_params)  // Required
@@ -1005,7 +1004,7 @@ int btree_test_env::runRestartPerfTestBefore (
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
                                               initially_enable_cleaners,
-                                              enable_swizzling,
+//                                              enable_swizzling,
                                               additional_int_params,
                                               additional_bool_params,
                                               additional_string_params));
@@ -1132,8 +1131,8 @@ int btree_test_env::runRestartPerfTestAfter (
     uint32_t cleaner_interval_millisec_min,             // Optional, default: 1000
     uint32_t cleaner_interval_millisec_max,             // Optional, default: 256000
     uint32_t cleaner_write_buffer_pages,                // Optional, default: 64
-    bool initially_enable_cleaners,                     // Optional, default: true
-    bool enable_swizzling)                              // Optional, default: default_enable_swizzling
+    bool initially_enable_cleaners/*,                     // Optional, default: true
+    bool enable_swizzling*/)                              // Optional, default: default_enable_swizzling
 {
     return runRestartPerfTestAfter(context, restart_options, use_locks,
                               make_sm_options(lock_table_size,
@@ -1142,8 +1141,8 @@ int btree_test_env::runRestartPerfTestAfter (
                                               cleaner_interval_millisec_min,
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
-                                              initially_enable_cleaners,
-                                              enable_swizzling));
+                                              initially_enable_cleaners/*,
+                                              enable_swizzling*/));
 }
 
 // Optional API, not used for prestart performance test currently
@@ -1158,7 +1157,7 @@ int btree_test_env::runRestartPerfTestAfter (
     uint32_t cleaner_interval_millisec_max,                // Required
     uint32_t cleaner_write_buffer_pages,                   // Required
     bool initially_enable_cleaners,                        // Required
-    bool enable_swizzling,                                 // Required
+//    bool enable_swizzling,                                 // Required
     const std::vector<std::pair<const char*, int64_t> > &additional_int_params,         // Required
     const std::vector<std::pair<const char*, bool> > &additional_bool_params,           // Required
     const std::vector<std::pair<const char*, const char*> > &additional_string_params)  // Required
@@ -1171,7 +1170,7 @@ int btree_test_env::runRestartPerfTestAfter (
                                               cleaner_interval_millisec_max,
                                               cleaner_write_buffer_pages,
                                               initially_enable_cleaners,
-                                              enable_swizzling,
+//                                              enable_swizzling,
                                               additional_int_params,
                                               additional_bool_params,
                                               additional_string_params));

@@ -3,6 +3,7 @@
 
 #include "sm_options.h"
 #include "worker_thread.h"
+#include "buffer_pool_pointer_swizzling.hpp"
 
 struct bf_tree_cb_t;
 
@@ -195,7 +196,7 @@ namespace zero::buffer_pool {
          * \brief   Pointer swizzling used in the buffer pool
          * \details Set if the \link BufferPool \endlink uses pointer swizzling for page references.
          */
-        const bool                _enabledSwizzling;
+        static constexpr bool     _enabledSwizzling = POINTER_SWIZZLER::usesPointerSwizzling;
 
         /*!\var     _maintainEMLSN
          * \brief   Maintain the page's EMLSNs on eviction

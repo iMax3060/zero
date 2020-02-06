@@ -49,7 +49,7 @@ enum test_size_t {
 };
 
 void run_bf_test(w_rc_t (*func)(ss_m*, test_volume_t*),
-    test_size_t size, bool initially_enable_cleaners, bool enable_swizzling)
+    test_size_t size, bool initially_enable_cleaners/*, bool enable_swizzling*/)
 {
     size_t npages = (size == LARGE ? 10000 : (size == NORMAL ? 1024 : 256));
     // (some of) tests in this file needs REALLY big log.
@@ -65,7 +65,6 @@ void run_bf_test(w_rc_t (*func)(ss_m*, test_volume_t*),
     options.set_int_option("sm_cleaner_interval_millisec_max", 10000);
     options.set_int_option("sm_cleaner_write_buffer_pages", 64);
     options.set_bool_option("sm_backgroundflush", initially_enable_cleaners);
-    options.set_bool_option("sm_bufferpool_swizzle", enable_swizzling);
 
     options.set_int_option("sm_rawlock_lockpool_initseg",
         (size == LARGE ? 100 : (size == NORMAL ? 50 : 20)));
@@ -92,9 +91,9 @@ w_rc_t test_bf_init(ss_m* /*ssm*/, test_volume_t */*test_volume*/) {
     pool.debugDump(std::cout);
     return RCOK;
 }
-TEST (TreeBufferpoolTest, Init) {
-    run_bf_test(test_bf_init, SMALL, true, true);
-}
+//TEST (TreeBufferpoolTest, Init) {
+//    run_bf_test(test_bf_init, SMALL, true, true);
+//}
 w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume) {
     lsn_t thelsn = smlevel_0::log->curr_lsn();
     zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
@@ -131,9 +130,9 @@ w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume) {
     pool.debugDump(std::cout);
     return RCOK;
 }
-TEST (TreeBufferpoolTest, FixVirginRoot) {
-    run_bf_test(test_bf_fix_virgin_root, SMALL, true, true);
-}
+//TEST (TreeBufferpoolTest, FixVirginRoot) {
+//    run_bf_test(test_bf_fix_virgin_root, SMALL, true, true);
+//}
 
 w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
     zero::buffer_pool::BufferPool&pool(*smlevel_0::bf);
@@ -188,9 +187,9 @@ w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume) {
     pool.debugDump(std::cout);
     return RCOK;
 }
-TEST (TreeBufferpoolTest, FixVirginChild) {
-    run_bf_test(test_bf_fix_virgin_child, SMALL, true, true);
-}
+//TEST (TreeBufferpoolTest, FixVirginChild) {
+//    run_bf_test(test_bf_fix_virgin_child, SMALL, true, true);
+//}
 
 // make big enough database for tests
 w_rc_t prepare_test(ss_m* ssm, test_volume_t *test_volume, StoreID &stid, PageID &root_pid) {
@@ -291,11 +290,11 @@ w_rc_t test_bf_evict(ss_m* ssm, test_volume_t *test_volume) {
     return RCOK;
 }
 TEST (TreeBufferpoolTest, EvictNoSwizzle) {
-    run_bf_test(test_bf_evict, NORMAL, false, false);
+    run_bf_test(test_bf_evict, NORMAL, false/*, false*/);
 }
-TEST (TreeBufferpoolTest, EvictSwizzle) {
-    run_bf_test(test_bf_evict, NORMAL, false, true);
-}
+//TEST (TreeBufferpoolTest, EvictSwizzle) {
+//    run_bf_test(test_bf_evict, NORMAL, false, true);
+//}
 
 w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_swizzle) {
     zero::buffer_pool::BufferPool &pool(*smlevel_0::bf);
@@ -417,18 +416,18 @@ w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_s
     pool.debugDump(std::cout);
     return RCOK;
 }
-w_rc_t test_bf_swizzle(ss_m* ssm, test_volume_t *test_volume) {
-    return _test_bf_swizzle(ssm, test_volume, true);
-}
+//w_rc_t test_bf_swizzle(ss_m* ssm, test_volume_t *test_volume) {
+//    return _test_bf_swizzle(ssm, test_volume, true);
+//}
 w_rc_t test_bf_noswizzle(ss_m* ssm, test_volume_t *test_volume) {
-    return _test_bf_swizzle(ssm, test_volume, false);
+    return _test_bf_swizzle(ssm, test_volume/*, false*/);
 }
-TEST (TreeBufferpoolTest, Swizzle) {
-    // disable background cleaner because we test pin_cnt
-    run_bf_test(test_bf_swizzle, LARGE, false, true);
-}
+//TEST (TreeBufferpoolTest, Swizzle) {
+//    // disable background cleaner because we test pin_cnt
+//    run_bf_test(test_bf_swizzle, LARGE, false, true);
+//}
 TEST (TreeBufferpoolTest, NoSwizzle) {
-    run_bf_test(test_bf_noswizzle, LARGE, false, false);
+    run_bf_test(test_bf_noswizzle, LARGE, false/*, false*/);
 }
 
 #ifdef BP_MAINTAIN_PARENT_PTR

@@ -44,8 +44,6 @@ thread_local unsigned BufferPool::_fixCount = 0;
 thread_local unsigned BufferPool::_hitCount = 0;
 thread_local SprIterator BufferPool::_localSprIter;
 
-using namespace zero::buffer_pool;
-
 BufferPool::BufferPool() :
         _blockCount((ss_m::get_options().get_int_option("sm_bufpoolsize", 8192) * 1024 * 1024 - 1) / sizeof(generic_page) + 1),
         _controlBlocks(_blockCount),
@@ -60,7 +58,6 @@ BufferPool::BufferPool() :
         _mediaFailurePID(0),
         _instantRestore(ss_m::get_options().get_bool_option("sm_restore_instant", true)),
         _noDBMode(ss_m::get_options().get_bool_option("sm_no_db", false)),
-        _enableSwizzling(ss_m::get_options().get_bool_option("sm_bufferpool_swizzle", false)),
         _logFetches(ss_m::get_options().get_bool_option("sm_log_page_fetches", false)),
         _batchSegmentSize(ss_m::get_options().get_int_option("sm_batch_segment_size", 1)),
         _batchWarmup(_batchSegmentSize > 0),
@@ -359,52 +356,51 @@ void BufferPool::downgradeLatch(const generic_page* page) noexcept {
 }
 
 bool BufferPool::unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
-                                      bool doUnswizzle, PageID* childPageID) {
-    const bf_tree_cb_t& parentControlBlock = getControlBlock(getIndex(parentPage));
-    // CS TODO: foster parent of a node created during a split will not have a swizzled pointer to the new node;
-    // breaking the rule for now
-    // if (!parentControlBlock._used || !parentControlBlock._swizzled) {
-    w_assert1(parentControlBlock._used);
-    w_assert1(parentControlBlock.latch().held_by_me());
+                                      PageID* childPageID) {
+    if constexpr (_enableSwizzling) {
+        const bf_tree_cb_t &parentControlBlock = getControlBlock(getIndex(parentPage));
+        // CS TODO: foster parent of a node created during a split will not have a swizzled pointer to the new node;
+        // breaking the rule for now
+        // if (!parentControlBlock._used || !parentControlBlock._swizzled) {
+        w_assert1(parentControlBlock._used);
+        w_assert1(parentControlBlock.latch().held_by_me());
 
-    fixable_page_h fixedParentPage;
-    fixedParentPage.fix_nonbufferpool_page(parentPage);
-    w_assert1(childSlotInParentPage <= fixedParentPage.max_child_slot());
+        fixable_page_h fixedParentPage;
+        fixedParentPage.fix_nonbufferpool_page(parentPage);
+        w_assert1(childSlotInParentPage <= fixedParentPage.max_child_slot());
 
-    PageID* childPIDInParent = fixedParentPage.child_slot_address(childSlotInParentPage);
+        PageID* childPIDInParent = fixedParentPage.child_slot_address(childSlotInParentPage);
+        if (!POINTER_SWIZZLER::isSwizzledPointer(*childPIDInParent)) {
+            return false;
+        }
 
-    if (!isSwizzledPointer(*childPIDInParent)) {
-        return false;
-    }
-    bf_tree_cb_t& childControlBlock = getControlBlock(removeSwizzledPIDBit(*childPIDInParent));
+        bf_tree_cb_t &childControlBlock = getControlBlock(POINTER_SWIZZLER::makeBufferIndex(*childPIDInParent));
+        w_assert1(childControlBlock._used);
+        w_assert1(childControlBlock._swizzled);
 
-    w_assert1(childControlBlock._used);
-    w_assert1(childControlBlock._swizzled);
-
-    if (doUnswizzle) {
-        // Since we have EX latch, we can just set the _swizzled flag
-        // Otherwise there would be a race between swizzlers and unswizzlers
-        // Parent is updated without requiring EX latch. This is correct as
-        // long as fix call can deal with swizzled pointers not being really
-        // swizzled.
+        // Since we have EX latch, we can just set the _swizzled flag, otherwise there would be a race between swizzlers
+        // and unswizzlers. Parent is updated without requiring EX latch. This is correct as long as fix call can deal
+        // with swizzled pointers not being really swizzled.
         w_assert1(childControlBlock.latch().held_by_me());
         w_assert1(childControlBlock.latch().mode() == LATCH_EX);
         w_assert1(parentControlBlock.latch().held_by_me());
         w_assert1(parentControlBlock.latch().mode() == LATCH_EX);
         childControlBlock._swizzled = false;
         *childPIDInParent = childControlBlock._pid;
-        w_assert1(!isSwizzledPointer(*childPIDInParent));
+        w_assert1(!POINTER_SWIZZLER::isSwizzledPointer(*childPIDInParent));
 #if W_DEBUG_LEVEL > 0
         general_recordid_t child_slotid = fixable_page_h::find_page_id_slot(parentPage, childControlBlock._pid);
         w_assert1(child_slotid != GeneralRecordIds::INVALID);
 #endif
-    }
 
-    if (childPageID) {
-        *childPageID = childControlBlock._pid;
-    }
+        if (childPageID) {
+            *childPageID = childControlBlock._pid;
+        }
 
-    return true;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept {
@@ -612,7 +608,7 @@ void BufferPool::switchParent(PageID childPID, generic_page* newParentPage) noex
 #endif
 
     childPID = normalizePID(childPID);
-    w_assert1(!isSwizzledPointer(childPID));
+    w_assert1(!POINTER_SWIZZLER::isSwizzledPointer(childPID));
 
     atomic_bf_idx_pair* childIndexPair = _hashtable->lookupPair(childPID);
     // If the page is not cached, there is nothing to be done in the buffer pool:
@@ -792,7 +788,7 @@ void BufferPool::debugDumpPagePointers(std::ostream& o, generic_page* page) cons
           << std::setw(std::numeric_limits<general_recordid_t>::digits10 + 1)
           << childSlot
           << "(";
-        debugDumpPointer(o, *fixedPage.child_slot_address(childSlot));
+        POINTER_SWIZZLER::debugDumpPointer(o, *fixedPage.child_slot_address(childSlot));
         o << ")";
         listSeparator = ", ";
     }
@@ -802,296 +798,291 @@ void BufferPool::debugDumpPagePointers(std::ostream& o, generic_page* page) cons
     o.flags(initialOFlags);
 }
 
-void BufferPool::debugDumpPointer(std::ostream& o, PageID pid) const {
-    if (isSwizzledPointer(pid)) {
-        bf_idx index = removeSwizzledPIDBit(pid);
-        o << "swizzled(bf_idx("
-          << index;
-        o << "), page("
-          << getControlBlock(index)._pid
-          << "))";
-    } else {
-        o << "normal(page("
-          << pid
-          << "))";
-    }
-}
-
 bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageID pid, latch_mode_t latchMode,
                       bool conditional, bool virgin, bool onlyIfHit, bool doRecovery, lsn_t emlsn) {
-    if (isSwizzledPointer(pid)) {                       // page hit with swizzling
-        w_assert1(!virgin);
-        // Swizzled pointer traversal only valid with latch coupling (i.e., parent must also have been fixed)
-        w_assert1(parentPage);
+    if constexpr (_enableSwizzling) {
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////// The pid is Swizzled: /////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        if (POINTER_SWIZZLER::isSwizzledPointer(pid)) {
+            w_assert1(!virgin);
+            // Swizzled pointer traversal only valid with latch coupling (i.e., parent must also have been fixed)
+            w_assert1(parentPage);
 
-        bf_idx pageIndex = removeSwizzledPIDBit(pid);
-        w_assert1(isValidIndex(pageIndex));
-        bf_tree_cb_t& pageControlBlock = getControlBlock(pageIndex);
+            bf_idx pageIndex = POINTER_SWIZZLER::makeBufferIndexForFix(parentPage, targetPage, pid);
+            w_assert1(isValidIndex(pageIndex));
+            bf_tree_cb_t& pageControlBlock = getControlBlock(pageIndex);
 
-        w_rc_t latchStatus = pageControlBlock.latch().latch_acquire(latchMode,
-                                                                    conditional ? timeout_t::WAIT_IMMEDIATE
-                                                                                : timeout_t::WAIT_FOREVER);
-        if (latchStatus.is_error()) {
-            throw BufferPoolOldStyleException(latchStatus);
-        }
-
-        // CS: Normally, we must always check if pageControlBlock is still valid after latching, because page might have
-        // been evicted while we were waiting for the latch. In the case of following a swizzled pointer, however,that
-        // is not necessary because of latch coupling: The thread calling fix here *must* have the parent latched in
-        // shared mode. Eviction, on the other hand, will only select a victim if it can acquire an exclusive latch on
-        // its parent. Thus, the mere fact that we are following a swizzled pointer already gives us the guarantee that
-        // the control block cannot be invalidated.
-
-        w_assert1(pageControlBlock.is_in_use());
-        w_assert1(pageControlBlock._swizzled);
-        w_assert1(pageControlBlock._pid == _buffer[pageIndex].pid);
-
-        pageControlBlock.inc_ref_count();
-        _evictioner->updateOnPageHit(pageIndex);
-        if (latchMode == LATCH_EX) {
-            pageControlBlock.inc_ref_count_ex();
-        }
-
-        targetPage = getPage(pageIndex);
-
-        INC_TSTAT(bf_fix_cnt);
-        INC_TSTAT(bf_hit_cnt);
-        _fixCount++;
-        _hitCount++;
-
-        return true;
-    } else {
-        // Wait for log replay before attempting to fix anything ->  noDB mode only! (for instant restore see below):
-        bool noDBUsedRestore = false;
-        if (_noDBMode && doRecovery && !virgin && _restoreCoordinator && !_warmupDone) {
-            // Copy into local variable to avoid race condition with setting member to null:
-            auto restore = _restoreCoordinator;
-            if (restore) {
-                restore->fetch(pid);
-                noDBUsedRestore = true;
+            w_rc_t latchStatus = pageControlBlock.latch().latch_acquire(latchMode,
+                                                                        conditional ? timeout_t::WAIT_IMMEDIATE
+                                                                                    : timeout_t::WAIT_FOREVER);
+            if (latchStatus.is_error()) {
+                throw BufferPoolOldStyleException(latchStatus);
             }
-        }
 
-        while (true) {
-            atomic_bf_idx_pair* pageIndexPair = _hashtable->lookupPair(pid);
-            bf_idx pageIndex = 0;
-            bf_idx parentIndex = 0;
-            if (parentPage) {
-                parentIndex = getIndex(parentPage);
+            // CS: Normally, we must always check if pageControlBlock is still valid after latching, because page might
+            // have been evicted while we were waiting for the latch. In the case of following a swizzled pointer,
+            // however,that is not necessary because of latch coupling: The thread calling fix here *must* have the
+            // parent latched in shared mode. Eviction, on the other hand, will only select a victim if it can acquire
+            // an exclusive latch on its parent. Thus, the mere fact that we are following a swizzled pointer already
+            // gives us the guarantee that the control block cannot be invalidated.
+
+            w_assert1(pageControlBlock.is_in_use());
+            w_assert1(pageControlBlock._swizzled);
+            w_assert1(pageControlBlock._pid == _buffer[pageIndex].pid);
+
+            pageControlBlock.inc_ref_count();
+            _evictioner->updateOnPageHit(pageIndex);
+            if (latchMode == LATCH_EX) {
+                pageControlBlock.inc_ref_count_ex();
             }
-            if (pageIndexPair) {
-                pageIndex = pageIndexPair->first;
-                if (pageIndexPair->second != parentIndex) {
-                    // Updating the parent pointer in the hashtable is required:
-                    pageIndexPair->second = parentIndex;
-                    INC_TSTAT(bf_fix_adjusted_parent);
-                }
-            }
-            bf_tree_cb_t* pageControlBlock = nullptr;
 
-            // The result of calling this function determines if we'll behave in normal mode or in failure mode below,
-            // and it does that in an atomic way, i.e., we can't switch from one mode to another in the middle of a fix.
-            // Note that we can operate in normal mode even if a failure occurred and we missed it here, because vol_t
-            // still operates normally even during the failure (remember, we just simulate a media failure)
-            bool mediaFailure = isMediaFailure(pid);
-
-            if (pageIndex == 0) {                       // page miss
-                if (onlyIfHit) {
-                    return false;
-                }
-
-                // Wait for instant restore to restore this segment
-                if (doRecovery && !virgin && mediaFailure) {
-                    // Copy into local variable to avoid race condition with setting member to null:
-                    auto restore = _restoreCoordinator;
-                    if (restore) {
-                        restore->fetch(pid);
-                    }
-                }
-
-                /*
-                 * STEP 1: Grab a free frame to read into
-                 */
-                if (!_freeList->grabFreeBufferpoolFrame(pageIndex)) {
-                    // There're no free frames left. -> The warmup is done!
-                    _setWarmupDone();
-
-                    if (_asyncEviction) {
-                        // Start the asynchronous eviction and block until a page was evicted:
-                        _evictioner->wakeup(true);
-                    } else {
-                        w_assert0(_evictioner->evictOne(pageIndex));
-                    }
-                }
-                pageControlBlock = &getControlBlock(pageIndex);
-
-                /*
-                 * STEP 2: Acquire EX latch before hashtable insert, to make sure nobody will access this page until we
-                 *         are done
-                 */
-                w_rc_t latchStatus = pageControlBlock->latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
-                if (latchStatus.is_error()) {
-                    _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
-                    _freeList->addFreeBufferpoolFrame(pageIndex);
-                    continue;
-                }
-
-                /*
-                 * STEP 3: Register the page on the hash table atomically to guarantee that only one thread attempts to
-                 *         read the page
-                 */
-                atomic_bf_idx_pair* pageIndexPair = new atomic_bf_idx_pair(pageIndex, parentIndex);
-                bool registered = _hashtable->tryInsert(pid, pageIndexPair);
-                if (!registered) {
-                    delete pageIndexPair;
-                    pageControlBlock->latch().latch_release();
-                    _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
-                    _freeList->addFreeBufferpoolFrame(pageIndex);
-                    continue;
-                }
-
-                w_assert1(pageIndex != parentIndex);
-
-                /*
-                 * STEP 4: Read the page from disk
-                 */
-                targetPage = getPage(pageIndex);
-
-                if (!virgin && !_noDBMode) {
-                    INC_TSTAT(bf_fix_nonroot_miss_count);
-
-                    if (parentPage && emlsn.is_null() && _maintainEMLSN) {
-                        // Get EMLSN from the parent page
-                        general_recordid_t recordID = fixable_page_h::find_page_id_slot(parentPage, pid);
-                        btree_page_h fixedParent;
-                        fixedParent.fix_nonbufferpool_page(parentPage);
-                        emlsn = fixedParent.get_emlsn_general(recordID);
-                    }
-
-                    bool fromBackup = mediaFailure && !doRecovery;
-                    _readPage(pid, targetPage, fromBackup);
-                    pageControlBlock->init(pid, targetPage->lsn);
-                    if (fromBackup) {
-                        pageControlBlock->pin_for_restore();
-                    }
-                } else {
-                    // Initialize contents of virgin page:
-                    pageControlBlock->init(pid, lsn_t::null);
-                    std::memset(targetPage, 0, sizeof(generic_page));
-                    targetPage->pid = pid;
-
-                    // Only way I could think of to destroy background restorer:
-                    static std::atomic<bool> iShallDestroy{false};
-                    if (!isMediaFailure() && !_restoreCoordinator && _backgroundRestorer) {
-                        bool expected = false;
-                        if (iShallDestroy.compare_exchange_strong(expected, true)) {
-                            _backgroundRestorer->join();
-                            _backgroundRestorer = nullptr;
-                        }
-                    }
-                }
-
-                // When a page is first fetched from storage, we always check if recovery is needed (we might not
-                // recover it right now, because doRecovery might be false, i.e., due to bulk fetch with
-                // GenericPageIterator or when prefetching pages).
-                pageControlBlock->set_check_recovery(true);
-
-                w_assert1(isActiveIndex(pageIndex));
-
-                /*
-                 * STEP 5: Register the page in the page evictioner
-                 */
-                _evictioner->updateOnPageMiss(pageIndex, pid);
-
-                w_assert1(pageControlBlock->latch().is_mine());
-                DBG(<< "Fixed page "
-                    << pid
-                    << " (miss) to frame "
-                    << pageIndex);
-            } else {                                    // page hit
-                pageControlBlock = &getControlBlock(pageIndex);
-
-                // Wait for instant restore to restore this segment:
-                if (doRecovery && pageControlBlock->is_pinned_for_restore()) {
-                    // Copy into local variable to avoid race condition with setting member to null:
-                    auto restore = _restoreCoordinator;
-                    if (restore) {
-                        restore->fetch(pid);
-                    }
-                }
-
-                /*
-                 * STEP 1: Acquire latch in mode requested (or in EX if we might have to recover this page)
-                 */
-                latch_mode_t temporaryLatchMode = pageControlBlock->_check_recovery ? LATCH_EX : latchMode;
-                w_rc_t latchStatus = pageControlBlock->latch().latch_acquire(temporaryLatchMode,
-                                                                             conditional ? timeout_t::WAIT_IMMEDIATE
-                                                                                         : timeout_t::WAIT_FOREVER);
-                if (latchStatus.is_error()) {
-                    throw BufferPoolOldStyleException(latchStatus);
-                }
-
-                /*
-                 * STEP 2: Check the control block for changes that happened while we were waiting for the latch
-                 */
-                bool checkRecoveryChanged = pageControlBlock->_check_recovery && temporaryLatchMode == LATCH_SH;
-                bool waitForRestore = doRecovery && pageControlBlock->is_pinned_for_restore();
-                bool pageWasEvicted = !pageControlBlock->is_in_use() || pageControlBlock->_pid != pid;
-                if (pageWasEvicted || checkRecoveryChanged || waitForRestore) {
-                    pageControlBlock->latch().latch_release();
-                    continue;
-                }
-
-                targetPage = getPage(pageIndex);
-
-                _evictioner->updateOnPageHit(pageIndex);
-
-                w_assert1(pageControlBlock->latch().held_by_me());
-                w_assert1(!doRecovery || !pageControlBlock->is_pinned_for_restore());
-                w_assert1(!pageControlBlock->_check_recovery || pageControlBlock->latch().is_mine());
-                DBG(<< "Fixed page "
-                    << pid
-                    << " (hit) to frame "
-                    << pageIndex);
-
-                INC_TSTAT(bf_hit_cnt);
-                _hitCount++;
-            }
+            targetPage = getPage(pageIndex);
 
             INC_TSTAT(bf_fix_cnt);
+            INC_TSTAT(bf_hit_cnt);
             _fixCount++;
+            _hitCount++;
 
-            _checkWarmupDone();
+            return true;
+        }
+    }
 
-            // Pin the page:
-            w_assert1(isActiveIndex(pageIndex));
-            pageControlBlock->inc_ref_count();
-            if (latchMode == LATCH_EX) {
-                pageControlBlock->inc_ref_count_ex();
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////// The pid is not Swizzled: /////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Wait for log replay before attempting to fix anything ->  noDB mode only! (for instant restore see below):
+    bool noDBUsedRestore = false;
+    if (_noDBMode && doRecovery && !virgin && _restoreCoordinator && !_warmupDone) {
+        // Copy into local variable to avoid race condition with setting member to null:
+        auto restore = _restoreCoordinator;
+        if (restore) {
+            restore->fetch(pid);
+            noDBUsedRestore = true;
+        }
+    }
+
+    while (true) {
+        atomic_bf_idx_pair* pageIndexPair = _hashtable->lookupPair(pid);
+        bf_idx pageIndex = 0;
+        bf_idx parentIndex = 0;
+        if (parentPage) {
+            parentIndex = getIndex(parentPage);
+        }
+        if (pageIndexPair) {
+            pageIndex = pageIndexPair->first;
+            if (pageIndexPair->second != parentIndex) {
+                // Updating the parent pointer in the hashtable is required:
+                pageIndexPair->second = parentIndex;
+                INC_TSTAT(bf_fix_adjusted_parent);
+            }
+        }
+        bf_tree_cb_t* pageControlBlock = nullptr;
+
+        // The result of calling this function determines if we'll behave in normal mode or in failure mode below, and
+        // it does that in an atomic way, i.e., we can't switch from one mode to another in the middle of a fix. Note
+        // that we can operate in normal mode even if a failure occurred and we missed it here, because vol_t still
+        // operates normally even during the failure (remember, we just simulate a media failure)
+        bool mediaFailure = isMediaFailure(pid);
+
+        if (pageIndex == 0) {                       // page miss
+            if (onlyIfHit) {
+                return false;
             }
 
-            // w_assert1(pageControlBlock->_pid == pid);
-            // w_assert1(targetPage->pid == pid);
-            // w_assert1(targetPage->lsn == pageControlBlock->get_page_lsn());
-
-            if (doRecovery) {
-                if (virgin) {
-                    pageControlBlock->set_check_recovery(false);
-                } else {
-                    recoverIfNeeded(*pageControlBlock, targetPage, !noDBUsedRestore);
+            // Wait for instant restore to restore this segment
+            if (doRecovery && !virgin && mediaFailure) {
+                // Copy into local variable to avoid race condition with setting member to null:
+                auto restore = _restoreCoordinator;
+                if (restore) {
+                    restore->fetch(pid);
                 }
             }
-            w_assert1(pageControlBlock->_pin_cnt >= 0);
 
-            // Downgrade the latch if necessary:
-            if (pageControlBlock->latch().mode() != latchMode) {
-                w_assert1(latchMode == LATCH_SH && pageControlBlock->latch().mode() == LATCH_EX);
-                pageControlBlock->latch().downgrade();
+            /*
+             * STEP 1: Grab a free frame to read into
+             */
+            if (!_freeList->grabFreeBufferpoolFrame(pageIndex)) {
+                // There're no free frames left. -> The warmup is done!
+                _setWarmupDone();
+
+                if (_asyncEviction) {
+                    // Start the asynchronous eviction and block until a page was evicted:
+                    _evictioner->wakeup(true);
+                } else {
+                    w_assert0(_evictioner->evictOne(pageIndex));
+                }
+            }
+            pageControlBlock = &getControlBlock(pageIndex);
+
+            /*
+             * STEP 2: Acquire EX latch before hashtable insert, to make sure nobody will access this page until we are
+             *         done
+             */
+            w_rc_t latchStatus = pageControlBlock->latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
+            if (latchStatus.is_error()) {
+                _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
+                _freeList->addFreeBufferpoolFrame(pageIndex);
+                continue;
             }
 
-            // Swizzle the pointer inside the parent page if necessary:
-            if (_enableSwizzling && !pageControlBlock->_swizzled && parentPage) {
-                bf_tree_cb_t& parentControlBlock = getControlBlock(parentIndex);
+            /*
+             * STEP 3: Register the page on the hash table atomically to guarantee that only one thread attempts to
+             *         read the page
+             */
+            atomic_bf_idx_pair* pageIndexPair = new atomic_bf_idx_pair(pageIndex, parentIndex);
+            bool registered = _hashtable->tryInsert(pid, pageIndexPair);
+            if (!registered) {
+                delete pageIndexPair;
+                pageControlBlock->latch().latch_release();
+                _evictioner->updateOnPageExplicitlyUnbuffered(pageIndex);
+                _freeList->addFreeBufferpoolFrame(pageIndex);
+                continue;
+            }
+
+            w_assert1(pageIndex != parentIndex);
+
+            /*
+             * STEP 4: Read the page from disk
+             */
+            targetPage = getPage(pageIndex);
+
+            if (!virgin && !_noDBMode) {
+                INC_TSTAT(bf_fix_nonroot_miss_count);
+
+                if (parentPage && emlsn.is_null() && _maintainEMLSN) {
+                    // Get EMLSN from the parent page
+                    general_recordid_t recordID = fixable_page_h::find_page_id_slot(parentPage, pid);
+                    btree_page_h fixedParent;
+                    fixedParent.fix_nonbufferpool_page(parentPage);
+                    emlsn = fixedParent.get_emlsn_general(recordID);
+                }
+
+                bool fromBackup = mediaFailure && !doRecovery;
+                _readPage(pid, targetPage, fromBackup);
+                pageControlBlock->init(pid, targetPage->lsn);
+                if (fromBackup) {
+                    pageControlBlock->pin_for_restore();
+                }
+            } else {
+                // Initialize contents of virgin page:
+                pageControlBlock->init(pid, lsn_t::null);
+                std::memset(targetPage, 0, sizeof(generic_page));
+                targetPage->pid = pid;
+
+                // Only way I could think of to destroy background restorer:
+                static std::atomic<bool> iShallDestroy{false};
+                if (!isMediaFailure() && !_restoreCoordinator && _backgroundRestorer) {
+                    bool expected = false;
+                    if (iShallDestroy.compare_exchange_strong(expected, true)) {
+                        _backgroundRestorer->join();
+                        _backgroundRestorer = nullptr;
+                    }
+                }
+            }
+
+            // When a page is first fetched from storage, we always check if recovery is needed (we might not recover it
+            // right now, because doRecovery might be false, i.e., due to bulk fetch with GenericPageIterator or when
+            // prefetching pages).
+            pageControlBlock->set_check_recovery(true);
+
+            w_assert1(isActiveIndex(pageIndex));
+
+            /*
+             * STEP 5: Register the page in the page evictioner
+             */
+            _evictioner->updateOnPageMiss(pageIndex, pid);
+
+            w_assert1(pageControlBlock->latch().is_mine());
+            DBG(<< "Fixed page "
+                << pid
+                << " (miss) to frame "
+                << pageIndex);
+        } else {                                    // page hit
+            pageControlBlock = &getControlBlock(pageIndex);
+
+            // Wait for instant restore to restore this segment:
+            if (doRecovery && pageControlBlock->is_pinned_for_restore()) {
+                // Copy into local variable to avoid race condition with setting member to null:
+                auto restore = _restoreCoordinator;
+                if (restore) {
+                    restore->fetch(pid);
+                }
+            }
+
+            /*
+             * STEP 1: Acquire latch in mode requested (or in EX if we might have to recover this page)
+             */
+            latch_mode_t temporaryLatchMode = pageControlBlock->_check_recovery ? LATCH_EX : latchMode;
+            w_rc_t latchStatus = pageControlBlock->latch().latch_acquire(temporaryLatchMode,
+                                                                         conditional ? timeout_t::WAIT_IMMEDIATE
+                                                                                     : timeout_t::WAIT_FOREVER);
+            if (latchStatus.is_error()) {
+                throw BufferPoolOldStyleException(latchStatus);
+            }
+
+            /*
+             * STEP 2: Check the control block for changes that happened while we were waiting for the latch
+             */
+            bool checkRecoveryChanged = pageControlBlock->_check_recovery && temporaryLatchMode == LATCH_SH;
+            bool waitForRestore = doRecovery && pageControlBlock->is_pinned_for_restore();
+            bool pageWasEvicted = !pageControlBlock->is_in_use() || pageControlBlock->_pid != pid;
+            if (pageWasEvicted || checkRecoveryChanged || waitForRestore) {
+                pageControlBlock->latch().latch_release();
+                continue;
+            }
+
+            targetPage = getPage(pageIndex);
+
+            _evictioner->updateOnPageHit(pageIndex);
+
+            w_assert1(pageControlBlock->latch().held_by_me());
+            w_assert1(!doRecovery || !pageControlBlock->is_pinned_for_restore());
+            w_assert1(!pageControlBlock->_check_recovery || pageControlBlock->latch().is_mine());
+            DBG(<< "Fixed page "
+                << pid
+                << " (hit) to frame "
+                << pageIndex);
+
+            INC_TSTAT(bf_hit_cnt);
+            _hitCount++;
+        }
+
+        INC_TSTAT(bf_fix_cnt);
+        _fixCount++;
+
+        _checkWarmupDone();
+
+        // Pin the page:
+        w_assert1(isActiveIndex(pageIndex));
+        pageControlBlock->inc_ref_count();
+        if (latchMode == LATCH_EX) {
+            pageControlBlock->inc_ref_count_ex();
+        }
+
+        // w_assert1(pageControlBlock->_pid == pid);
+        // w_assert1(targetPage->pid == pid);
+        // w_assert1(targetPage->lsn == pageControlBlock->get_page_lsn());
+
+        if (doRecovery) {
+            if (virgin) {
+                pageControlBlock->set_check_recovery(false);
+            } else {
+                recoverIfNeeded(*pageControlBlock, targetPage, !noDBUsedRestore);
+            }
+        }
+        w_assert1(pageControlBlock->_pin_cnt >= 0);
+
+        // Downgrade the latch if necessary:
+        if (pageControlBlock->latch().mode() != latchMode) {
+            w_assert1(latchMode == LATCH_SH && pageControlBlock->latch().mode() == LATCH_EX);
+            pageControlBlock->latch().downgrade();
+        }
+
+        // Swizzle the pointer inside the parent page if necessary:
+        if constexpr (_enableSwizzling) {
+            if (!pageControlBlock->_swizzled && parentPage) {
+                bf_tree_cb_t &parentControlBlock = getControlBlock(parentIndex);
                 if (!parentControlBlock._swizzled) {
                     return true;
                 }
@@ -1126,31 +1117,35 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 w_assert1(pageControlBlock->_swizzled);
 
                 // Replace pointer with swizzled version:
-                PageID* childPID = fixedParentPage.child_slot_address(childSlot);
-                *childPID = addSwizzledPIDBit(pageIndex);
+                PageID *childPID = fixedParentPage.child_slot_address(childSlot);
+                *childPID = POINTER_SWIZZLER::makeSwizzledPointer(pageIndex);
                 w_assert1(isActiveIndex(pageIndex));
-                w_assert1(fixable_page_h::find_page_id_slot(parentPage, addSwizzledPIDBit(pageIndex))
+                w_assert1(fixable_page_h::find_page_id_slot(parentPage,
+                                                            POINTER_SWIZZLER::makeSwizzledPointer(pageIndex))
                        != GeneralRecordIds::INVALID);
             }
-
-            return true;
         }
+
+        return true;
     }
 }
 
 void BufferPool::_convertToDiskPage(generic_page* page) const noexcept {
-    fixable_page_h fixedPage;
-    fixedPage.fix_nonbufferpool_page(page);
+    if constexpr (_enableSwizzling) {
+        fixable_page_h fixedPage;
+        fixedPage.fix_nonbufferpool_page(page);
 
-    for (general_recordid_t recordID = GeneralRecordIds::FOSTER_CHILD; recordID <= fixedPage.max_child_slot(); recordID++) {
-        PageID* pid = fixedPage.child_slot_address(recordID);
-        if (isSwizzledPointer(*pid)) {
-            // CS TODO: Slot 1 (which is actually 0 in the internal page representation) is not used sometimes (I think
-            // when a page is first created?) so we must skip it manually here to avoid getting an invalid page below.
-            if (recordID == 1 && !isActiveIndex(removeSwizzledPIDBit(*pid))) {
-                continue;
-            } else {
-                *pid = normalizePID(*pid);
+        for (general_recordid_t recordID = GeneralRecordIds::FOSTER_CHILD; recordID <= fixedPage.max_child_slot(); recordID++) {
+            PageID* pid = fixedPage.child_slot_address(recordID);
+            if (POINTER_SWIZZLER::isSwizzledPointer(*pid)) {
+                // CS TODO: Slot 1 (which is actually 0 in the internal page representation) is not used sometimes (I
+                // think when a page is first created?) so we must skip it manually here to avoid getting an invalid
+                // page below.
+                if (recordID == 1 && !isActiveIndex(POINTER_SWIZZLER::makeBufferIndex(*pid))) {
+                    continue;
+                } else {
+                    *pid = normalizePID(*pid);
+                }
             }
         }
     }

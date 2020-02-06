@@ -376,7 +376,13 @@
 /****************** Others. **************************/
 
 /* Allows specifying the preprocessor macro PAGE_EVICTIONER which allows the selection of the page evictioner used by
-* the buffer pool */
+   the buffer pool */
 #ifndef PAGE_EVICTIONER
 #cmakedefine PAGE_EVICTIONER @PAGE_EVICTIONER@
 #endif // PAGE_EVICTIONER
+
+/* Allows specifying the preprocessor macro POINTER_SWIZZLER which allows the selection of the pointer swizzling
+   technique used by the buffer pool */
+#ifndef POINTER_SWIZZLER
+#cmakedefine POINTER_SWIZZLER @POINTER_SWIZZLER@
+#endif // POINTER_SWIZZLER

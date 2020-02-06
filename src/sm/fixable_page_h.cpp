@@ -11,6 +11,7 @@
 #include "restart.h"
 #include "logrec.h"
 #include "buffer_pool.hpp"
+#include "buffer_pool_pointer_swizzling.hpp"
 #include "xct_logger.h"
 #include "alloc_cache.h"
 
@@ -50,7 +51,8 @@ w_rc_t fixable_page_h::fix_nonroot(const fixable_page_h &parent,
     unfix();
     W_DO(smlevel_0::bf->fixNonRootOldStyleExceptions(_pp, parent._pp, shpid, mode, conditional, virgin_page,
                                                      only_if_hit));
-    w_assert1(smlevel_0::bf->isSwizzledPointer(shpid) || smlevel_0::bf->getControlBlock(_pp)._pid == shpid);
+    w_assert1(zero::buffer_pool::POINTER_SWIZZLER::isSwizzledPointer(shpid)
+           || smlevel_0::bf->getControlBlock(_pp)._pid == shpid);
     if (!virgin_page) { check_page_tags(_pp); }
     _bufferpool_managed = true;
     _mode               = mode;
@@ -69,7 +71,8 @@ w_rc_t fixable_page_h::fix_direct(PageID shpid, latch_mode_t mode,
     W_DO(smlevel_0::bf->fixNonRootOldStyleExceptions(_pp, nullptr, shpid, mode, conditional, virgin_page, only_if_hit,
                                                      do_recovery));
 
-    w_assert1(smlevel_0::bf->isSwizzledPointer(shpid) || smlevel_0::bf->getControlBlock(_pp)._pid == shpid);
+    w_assert1(zero::buffer_pool::POINTER_SWIZZLER::isSwizzledPointer(shpid)
+           || smlevel_0::bf->getControlBlock(_pp)._pid == shpid);
     if (!virgin_page) { check_page_tags(_pp); }
 
     _bufferpool_managed = true;

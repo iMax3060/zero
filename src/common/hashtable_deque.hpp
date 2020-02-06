@@ -9,29 +9,29 @@
 
 namespace zero::hashtable_deque {
 
-/*!\class   HashtableDeque
- * \brief   Deque with Direct Access
- * \details Represents a deque of keys with direct access using the keys. It offers the usual deque semantics where
- *          entries are inserted either at the back or the front of the deque and where entries are removed either from
- *          the front or from the back of it. But it also offers the possibility to remove a specified element from
- *          somewhere within the deque. The data type of the entries is specified using a template parameter. Each value
- *          contained in the deque needs to be unique and inserts of duplicate keys are prevented.
- *          The computational complexity of the direct access as well as removal and insertion with deque semantics
- *          depends on the implementation of \c std::unordered_map, as this class is used for that. The space complexity
- *          also depends on the implementation of \c std::unordered_map where \c key has a size of the \c key template
- *          parameter and where \c T has double the size of the \c key template parameter.
- *
- * \note    Could also be implemented using \c Boost.MultiIndex .
- *
- * @tparam key_type    The data type of the entries stored in this data structure.
- * @tparam invalid_key This specifies an invalid \c key which can be used to mark that an element in the deque does not
- *                     have a previous or next element. It can also be used to mark that there is no back or front of
- *                     the deque when there is no deque. This should have the semantics of \c null for the specified
- *                     \c key template parameter therefore a natural choice for the case that \c key is a pointer would
- *                     be \c nullptr .
- *
- * \author Max Gilbert
- */
+    /*!\class   HashtableDeque
+     * \brief   Deque with Direct Access
+     * \details Represents a deque of keys with direct access using the keys. It offers the usual deque semantics where
+     *          entries are inserted either at the back or the front of the deque and where entries are removed either from
+     *          the front or from the back of it. But it also offers the possibility to remove a specified element from
+     *          somewhere within the deque. The data type of the entries is specified using a template parameter. Each value
+     *          contained in the deque needs to be unique and inserts of duplicate keys are prevented.
+     *          The computational complexity of the direct access as well as removal and insertion with deque semantics
+     *          depends on the implementation of \c std::unordered_map, as this class is used for that. The space complexity
+     *          also depends on the implementation of \c std::unordered_map where \c key has a size of the \c key template
+     *          parameter and where \c T has double the size of the \c key template parameter.
+     *
+     * \note    Could also be implemented using \c Boost.MultiIndex .
+     *
+     * @tparam key_type    The data type of the entries stored in this data structure.
+     * @tparam invalid_key This specifies an invalid \c key which can be used to mark that an element in the deque does not
+     *                     have a previous or next element. It can also be used to mark that there is no back or front of
+     *                     the deque when there is no deque. This should have the semantics of \c null for the specified
+     *                     \c key template parameter therefore a natural choice for the case that \c key is a pointer would
+     *                     be \c nullptr .
+     *
+     * \author Max Gilbert
+     */
     template<class key_type, key_type invalid_key>
     class HashtableDeque {
     public:

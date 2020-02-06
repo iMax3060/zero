@@ -267,11 +267,13 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
     w_assert0 (child.get_foster() != 0);
 
     PageID new_child_pid = child.get_foster();
-    if (smlevel_0::bf->isSwizzledPointer(new_child_pid)) {
-        smlevel_0::bf->unswizzlePagePointer(parent.get_generic_page(),
-                                            GeneralRecordIds::FOSTER_CHILD, true, &new_child_pid);
+    if constexpr (zero::buffer_pool::POINTER_SWIZZLER::usesPointerSwizzling) {
+        if (zero::buffer_pool::POINTER_SWIZZLER::isSwizzledPointer(new_child_pid)) {
+            smlevel_0::bf->unswizzlePagePointer(parent.get_generic_page(),
+                                                GeneralRecordIds::FOSTER_CHILD, &new_child_pid);
+        }
+        w_assert1(!zero::buffer_pool::POINTER_SWIZZLER::isSwizzledPointer(new_child_pid));
     }
-    w_assert1(!smlevel_0::bf->isSwizzledPointer(new_child_pid));
 
     lsn_t child_emlsn = child.get_foster_emlsn();
     Logger::log_p<btree_foster_adopt_log> (&parent, &child, new_child_pid, child_emlsn, new_child_key);

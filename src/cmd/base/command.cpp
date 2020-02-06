@@ -272,8 +272,6 @@ void Command::setupSMOptions(po::options_description& options)
         "Print transaction throughput on every tick to a file tput.txt")
     ("sm_restore_instant", po::value<bool>(),
         "Enable/Disable instant restore")
-    ("sm_bufferpool_swizzle", po::value<bool>(),
-        "Enable/Disable bufferpool swizzle")
     ("sm_write_elision", po::value<bool>(),
         "Enable/Disable write elision in buffer pool")
     ("sm_archiver_eager", po::value<bool>(),

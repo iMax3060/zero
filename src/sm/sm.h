@@ -146,12 +146,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *      - default: clock
  *      - required?: no
  *
- * -sm_bufferpool_swizzle
- *      - type: Boolean
- *      - description: Enables pointer swizzling in buffer pool.
- *      - default: no
- *      - required?: no
- *
  * -sm_num_page_writers
  *      - type: number
  *      - description: greater than or equal to 1; this is the number of
