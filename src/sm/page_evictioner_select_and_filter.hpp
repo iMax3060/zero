@@ -81,7 +81,7 @@ namespace zero::buffer_pool {
          *            -# If the template parameter \c filter_early is set, filter the selected buffer frame using
          *               \link PageEvictionerFilter::filterAndUpdate() \endlink of the buffer frame filter specified in
          *               the template parameter \c filter_class .
-         *            -# Further filter the selected buffer frame using \link BufferPool::isEvictable() \endlink of the
+         *            -# Further filter the selected buffer frame using \link BufferPool::checkEviction() \endlink of the
          *               buffer pool (includes the potentially expensive latching of selected buffer frame in mode
          *               \link latch_mode_t::LATCH_EX \endlink without waiting for other threads).
          *            -# Finally, if the template parameter \c filter_early is not set, filter the selected buffer frame
@@ -89,9 +89,6 @@ namespace zero::buffer_pool {
          *               specified in the template parameter \c filter_class . Otherwise filter the selected buffer
          *               frame using \link PageEvictionerFilter::filter() \endlink of the buffer frame filter specified
          *               in the template parameter \c filter_class .
-         *
-         * \post    The picked victim is latched in \link latch_mode_t::LATCH_EX \endlink mode as the buffer pool frame
-         *          will be changed during eviction (page will be removed).
          *
          * @return The buffer frame that can be freed or \c 0 if no eviction victim could be found.
          */

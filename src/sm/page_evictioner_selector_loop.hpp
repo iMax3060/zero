@@ -48,7 +48,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -56,7 +57,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -64,7 +66,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -74,7 +77,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -83,7 +87,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -92,7 +97,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -101,7 +107,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -110,7 +117,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -119,7 +127,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -134,7 +142,7 @@ namespace zero::buffer_pool {
         /*!\var     _lastFrameLock
          * \brief   Protects the buffer frame index last picked for eviction from concurrent manipulations
          * \details This lock protects the \link _lastFrame \endlink from hazards caused by multiple threads
-         *          concurrently evicting pages from the \link BufferPool \endlink and therefore concurrently
+         *          concurrently evicting pages from the \link BufferPool \endlink and therefore, concurrently
          *          manipulating the \link _lastFrame \endlink.
          */
         std::mutex _lastFrameLock;
@@ -185,7 +193,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -193,7 +202,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -201,7 +211,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -211,7 +222,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -220,7 +232,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -229,7 +242,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -238,7 +252,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -247,7 +262,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -256,7 +272,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -271,7 +287,7 @@ namespace zero::buffer_pool {
         /*!\var     _lastFrameLock
          * \brief   Protects the buffer frame index last picked for eviction from concurrent manipulations
          * \details This lock protects the \link _lastFrame \endlink from hazards caused by multiple threads
-         *          concurrently evicting pages from the \link BufferPool \endlink and therefore concurrently
+         *          concurrently evicting pages from the \link BufferPool \endlink and therefore, concurrently
          *          manipulating the \link _lastFrame \endlink.
          */
         std::atomic_flag _lastFrameLock;
@@ -311,7 +327,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -319,7 +336,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -327,7 +345,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -337,7 +356,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -346,7 +366,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -355,7 +376,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -364,7 +386,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -373,7 +396,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -382,7 +406,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -436,7 +460,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -444,7 +469,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -452,7 +478,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -462,7 +489,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -471,7 +499,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -480,7 +509,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -489,7 +519,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -498,7 +529,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -507,7 +539,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -572,7 +604,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -580,7 +613,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -588,7 +622,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -598,7 +633,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -607,7 +643,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -616,7 +653,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -625,7 +663,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -634,7 +673,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -643,7 +683,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -692,7 +732,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -700,7 +741,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
@@ -708,7 +750,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page miss occurred.
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
@@ -718,7 +761,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -727,7 +771,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -736,7 +781,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
@@ -745,7 +791,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -754,7 +801,8 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
-         * \details This buffer frame selector does not require any statistics and therefore this function does nothing.
+         * \details This buffer frame selector does not require any statistics and therefore, this function does
+         *          nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
@@ -763,7 +811,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 

@@ -265,7 +265,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -274,7 +274,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -355,7 +355,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -521,7 +521,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -530,7 +530,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -616,7 +616,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -770,7 +770,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -779,7 +779,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details This buffer frame selector does not require any statistics about page references and therefore this
+         * \details This buffer frame selector does not require any statistics about page references and therefore, this
          *          function does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -860,7 +860,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -1486,7 +1486,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _lruListLock.lock();
             _frameReferences[idx] = 0;
-            for (size_t i; i < k; i++) {    // select() does not remove all the tracked references therefore this is
+            for (size_t i; i < k; i++) {    // select() does not remove all the tracked references therefore, this is
                 try {       // done here to prevent influence of the old reference history on the new page.
                     _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
@@ -1700,7 +1700,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageHit(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page hit
-         * \details Recently fixed buffer frames are usually not evictable and therefore the respective buffer frame
+         * \details Recently fixed buffer frames are usually not evictable and therefore, the respective buffer frame
          *          index is only moved to the top of the \link _mruList \endlink when it is unfixed.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -2095,7 +2095,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -2406,7 +2406,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -2618,7 +2618,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -2638,7 +2638,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -2647,7 +2647,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -2668,7 +2668,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -2689,7 +2689,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -2773,7 +2773,7 @@ namespace zero::buffer_pool {
      *          _LFU with dynamic aging_ policy. The _LFUDA_ policy selects the buffer frame that was least frequently
      *          used according to an age factor. This is implemented using reference counters and (cached) sorting.
      *
-     * \warning The reference counter grows very fast and therefore it will overflow and therefore corrupt the page
+     * \warning The reference counter grows very fast and therefore, it will overflow and therefore, corrupt the page
      *          evictioner.
      *
      * @tparam resort_threshold_ppm The fraction (in PPM) of buffer frames checked in the currently used sorted list of
@@ -2896,7 +2896,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
@@ -2916,7 +2916,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
@@ -2925,7 +2925,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
@@ -2946,7 +2946,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
-         * \details Reference frequencies are only incremented on buffer frame fixes and therefore this does nothing.
+         * \details Reference frequencies are only incremented on buffer frame fixes and therefore, this does nothing.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
@@ -2967,7 +2967,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -3125,7 +3125,7 @@ namespace zero::buffer_pool {
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
          * \details Each page reference consists of a page fix and a page unfix. Only the page fix should be counted as
-         *          page reference and therefore this only sets the page as active as the eviction of this might have
+         *          page reference and therefore, this only sets the page as active as the eviction of this might have
          *          been blocked by this fix previously.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -3215,7 +3215,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 
@@ -3357,7 +3357,7 @@ namespace zero::buffer_pool {
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
          * \details Each page reference consists of a page fix and a page unfix. Only the page fix should be counted as
-         *          page reference and therefore this only sets the page as active as the eviction of this might have
+         *          page reference and therefore, this only sets the page as active as the eviction of this might have
          *          been blocked by this fix previously.
          *
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
@@ -3452,7 +3452,7 @@ namespace zero::buffer_pool {
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
-         * \details This buffer frame selector does not use locking and therefore this function does nothing.
+         * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
 

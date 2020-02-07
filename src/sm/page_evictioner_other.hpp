@@ -10,7 +10,6 @@
 
 namespace zero::buffer_pool {
 
-
     /*!\class   PageEvictionerCAR
      * \brief   Page Eviction Algorithm CAR
      * \details Page replacement algorithm CAR as presented in
