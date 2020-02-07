@@ -259,6 +259,16 @@ namespace zero::buffer_pool {
             } catch (const multi_clock::MultiHandedClockNotContainedException<bf_idx, bool, 2, 0>& ex) {}
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This page evictioner does not interact with pointer swizzling and therefore, this function does
+         *          nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this page evictioner
          * \details Releases the latch acquired and released in \link select() \endlink and

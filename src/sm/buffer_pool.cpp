@@ -1119,6 +1119,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 // Replace pointer with swizzled version:
                 PageID *childPID = fixedParentPage.child_slot_address(childSlot);
                 *childPID = POINTER_SWIZZLER::makeSwizzledPointer(pageIndex);
+                _evictioner->updateOnPointerSwizzling(pageIndex);
                 w_assert1(isActiveIndex(pageIndex));
                 w_assert1(fixable_page_h::find_page_id_slot(parentPage,
                                                             POINTER_SWIZZLER::makeSwizzledPointer(pageIndex))

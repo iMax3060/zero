@@ -151,6 +151,18 @@ namespace zero::buffer_pool {
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics according to the selected buffer frame selection policy when the pointer of a
+         *          page got swizzled in its parent page.
+         *
+         * \note    This member function must be implemented by every specific buffer frame selection policy.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept = 0;
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of the buffer frame selector
          * \details Some methods of buffer frame selectors hold internal latches beyond the invocation of one method but
@@ -352,6 +364,16 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _notExplicitlyEvictedList[idx].clear();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
@@ -614,6 +636,16 @@ namespace zero::buffer_pool {
             _notExplicitlyEvictedList[idx].clear();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -858,6 +890,16 @@ namespace zero::buffer_pool {
             _notExplicitlyEvictedList[idx].clear();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -1083,6 +1125,16 @@ namespace zero::buffer_pool {
             _lruListLock.unlock();
             _lruListLock.unlock();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
@@ -1350,6 +1402,16 @@ namespace zero::buffer_pool {
             _lruListLock.unlock();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
@@ -1577,6 +1639,16 @@ namespace zero::buffer_pool {
             _lruListLock.unlock();
             _lruListLock.unlock();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
@@ -1851,6 +1923,16 @@ namespace zero::buffer_pool {
             _mruListLock.unlock();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details Releases the latch acquired by \link select() \endlink which is otherwise expected to be released by
@@ -2092,6 +2174,16 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _timestampsLive[idx] = std::chrono::high_resolution_clock::duration::max().count();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
@@ -2404,6 +2496,16 @@ namespace zero::buffer_pool {
             }
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -2687,6 +2789,16 @@ namespace zero::buffer_pool {
             _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
         }
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -2965,6 +3077,16 @@ namespace zero::buffer_pool {
             _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -3213,6 +3335,16 @@ namespace zero::buffer_pool {
             _frameAlreadySelected[idx].test_and_set();
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
@@ -3449,6 +3581,16 @@ namespace zero::buffer_pool {
             _frameReferences[idx] = 0;
             _frameAlreadySelected[idx].test_and_set();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame selector does not interact with pointer swizzling and therefore, this function
+         *          does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame selector

@@ -146,6 +146,26 @@ namespace zero::buffer_pool {
             _filter.updateOnPageExplicitlyUnbuffered(idx);
         };
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics of the underlying buffer frame filter when the pointer of a page got swizzled
+         *          in its parent page.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+            _filter.updateOnPointerSwizzling(idx);
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details Releases the internal latches of the underlying buffer frame filter.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _filter.releaseInternalLatches();
+        };
+
     private:
         /*!\var     _filter
          * \brief   The underlying buffer frame filter
@@ -306,6 +326,28 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _filter0.updateOnPageExplicitlyUnbuffered(idx);
             _filter1.updateOnPageExplicitlyUnbuffered(idx);
+        };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics of the underlying buffer frame filters when the pointer of a page got
+         *          swizzled in its parent page.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+            _filter0.updateOnPointerSwizzling(idx);
+            _filter1.updateOnPointerSwizzling(idx);
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details Releases the internal latches of the underlying buffer frame filters.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _filter0.releaseInternalLatches();
+            _filter1.releaseInternalLatches();
         };
 
     private:
@@ -471,6 +513,28 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _filter0.updateOnPageExplicitlyUnbuffered(idx);
             _filter1.updateOnPageExplicitlyUnbuffered(idx);
+        };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics of the underlying buffer frame filters when the pointer of a page got
+         *          swizzled in its parent page.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+            _filter0.updateOnPointerSwizzling(idx);
+            _filter1.updateOnPointerSwizzling(idx);
+        };
+
+        /*!\fn      releaseInternalLatches() noexcept
+         * \brief   Releases the internal latches of this buffer frame filter
+         * \details Releases the internal latches of the underlying buffer frame filters.
+         */
+        inline void releaseInternalLatches() noexcept final {
+            _filter0.releaseInternalLatches();
+            _filter1.releaseInternalLatches();
         };
 
     private:

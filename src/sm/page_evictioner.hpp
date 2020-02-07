@@ -174,6 +174,19 @@ namespace zero::buffer_pool {
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics according to the selected page eviction strategy when the pointer of a page
+         *          got swizzled in its parent page.
+         *
+         * \note    This member function must be implemented by every specific page evictioner which inherits from this
+         *          abstract page evictioner.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept = 0;
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches
          * \details Some methods of page evictioners hold internal latches beyond the invocation of one method but

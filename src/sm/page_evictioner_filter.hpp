@@ -169,6 +169,18 @@ namespace zero::buffer_pool {
          */
         virtual void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept = 0;
 
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details Updates the statistics according to the selected buffer frame filter policy when the pointer of a
+         *          page got swizzled in its parent page.
+         *
+         * \note    This member function must be implemented by every specific buffer frame filter policy.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept = 0;
+
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of the buffer frame filter
          * \details Some methods of buffer frame filters hold internal latches beyond the invocation of one method but
@@ -288,6 +300,15 @@ namespace zero::buffer_pool {
          *            explicitly.
          */
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame filter does not require any statistics and therefore,  this function does nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter
@@ -472,6 +493,16 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _refBits[idx] = true;
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame filter does not interact with pointer swizzling and therefore, this function does
+         *          nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter
@@ -993,6 +1024,16 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             _refInts[idx] = std::numeric_limits<uint16_t>::max();
         };
+
+        /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
+         * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
+         * \details This buffer frame filter does not interact with pointer swizzling and therefore, this function does
+         *          nothing.
+         *
+         * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
+         *            corresponding parent page.
+         */
+        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter
