@@ -441,7 +441,7 @@ namespace zero::buffer_pool {
          *          returns \c false .
          *
          * @pre The parent page is latched in any mode and the child page is latched in mode
-         *      \link latch_mode_t::LATCH_EX \endlink (if \c doUnswizzle \c == \c true ).
+         *      \link latch_mode_t::LATCH_EX \endlink.
          *
          * @param[in]     parentPage            The parent page where to unswizzle the child page.
          * @param[in]     childSlotInParentPage The slot within the parent page where to find the swizzled
@@ -467,7 +467,7 @@ namespace zero::buffer_pool {
          * @return    The corresponding page ID to a \link vol_t \endlink page.
          */
         PageID normalizePID(const PageID pid) const noexcept {
-            if constexpr (_enableSwizzling) {
+            if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
                 if (POINTER_SWIZZLER::isSwizzledPointer(pid)) {
                     bf_idx index = POINTER_SWIZZLER::makeBufferIndex(pid);
                     w_assert1(isValidIndex(index));
@@ -491,13 +491,13 @@ namespace zero::buffer_pool {
          *          - It is the root page of a B-Tree (\link generic_page_h::tag() \endlink \c ==
          *            \link page_tag_t::t_btree_p \endlink \c && \link generic_page_h::pid() \endlink \c ==
          *            \link btree_page_h::root() \endlink).
-         *          - It is an inner page of a B-Tree and swizzling is enabled (\link _enableSwizzling \endlink \c &&
-         *            \link generic_page_h::tag() \endlink \c == \link page_tag_t::t_btree_p \endlink \c && \c !
-         *            \link btree_page_h::is_leaf() \endlink).\n
+         *          - It is an inner page of a B-Tree and swizzling is enabled
+         *            (\link POINTER_SWIZZLER::usesPointerSwizzling \endlink \c && \link generic_page_h::tag() \endlink
+         *            \c == \link page_tag_t::t_btree_p \endlink \c && \c !\link btree_page_h::is_leaf() \endlink).\n
          *            We exclude those as we do not support unswizzling and as we do not know if inner pages of a B-Tree
          *            might contain swizzled pointers.
-         *          - It is a page of a B-Tree with a foster child (\link _enableSwizzling \endlink \c &&
-         *            \link generic_page_h::tag() \endlink \c == \link page_tag_t::t_btree_p \endlink \c &&
+         *          - It is a page of a B-Tree with foster child (\link POINTER_SWIZZLER::usesPointerSwizzling \endlink
+         *            \c && \link generic_page_h::tag() \endlink \c == \link page_tag_t::t_btree_p \endlink \c &&
          *            \link btree_page_h::get_foster() \endlink) \c != \c 0).\n
          *            We exclude those as we do not support unswizzling.
          *          - It is a dirty page that needs to be cleaned by the page cleaner (\c ( \c doFlushIfDirty \c ||
@@ -802,15 +802,6 @@ namespace zero::buffer_pool {
          * \details Set if this buffer pool should be used for NoDB. MG TODO
          */
         bool                                                        _noDBMode;
-
-        /*!\var     _enableSwizzling
-         * \brief   Use pointer swizzling between B-Tree pages
-         * \details Set if pointer swizzling should be used between B-Tree pages buffered in this buffer pool. With
-         *          pointer swizzling, the \link PageID \endlink of a buffered child page is replaced with its
-         *          corresponding \link bf_idx \endlink (buffer frame index inside this buffer pool) inside the buffered
-         *          copy (original as assumed to be on disk) of its parent page.
-         */
-        static constexpr bool                                       _enableSwizzling = POINTER_SWIZZLER::usesPointerSwizzling;
 
         /*!\var     _logFetches
          * \brief   Log page fetches

@@ -357,7 +357,7 @@ void BufferPool::downgradeLatch(const generic_page* page) noexcept {
 
 bool BufferPool::unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
                                       PageID* childPageID) {
-    if constexpr (_enableSwizzling) {
+    if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
         const bf_tree_cb_t &parentControlBlock = getControlBlock(getIndex(parentPage));
         // CS TODO: foster parent of a node created during a split will not have a swizzled pointer to the new node;
         // breaking the rule for now
@@ -374,7 +374,7 @@ bool BufferPool::unswizzlePagePointer(generic_page* parentPage, general_recordid
             return false;
         }
 
-        bf_tree_cb_t &childControlBlock = getControlBlock(POINTER_SWIZZLER::makeBufferIndex(*childPIDInParent));
+        bf_tree_cb_t& childControlBlock = getControlBlock(POINTER_SWIZZLER::makeBufferIndex(*childPIDInParent));
         w_assert1(childControlBlock._used);
         w_assert1(childControlBlock._swizzled);
 
@@ -407,6 +407,8 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     bool ignore_dirty = doFlushIfDirty || _noDBMode || _useWriteElision;
 
     bf_tree_cb_t& controlBlockToCheck = getControlBlock(indexToCheck);
+    w_assert1(controlBlockToCheck.latch().held_by_me());
+    w_assert1(controlBlockToCheck.latch().mode() == LATCH_EX);
 
     // We do not consider for eviction ...
     if (// ... unused buffer frames.
@@ -422,16 +424,15 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     if (// ... the stnode page
            p.tag() == t_stnode_p
         // ... B-tree root pages (note, single-node B-tree is both root and leaf)
-        || (p.tag() == t_btree_p && p.pid() == p.root())
-       ) {
+        || (p.tag() == t_btree_p && p.pid() == p.root())) {
         _evictioner->updateOnPageBlocked(indexToCheck);
         DBG5(<< "Eviction failed on node type for " << indexToCheck);
         return false;
     }
     if (// ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
-           (_enableSwizzling && p.tag() == t_btree_p && !p.is_leaf())
+           (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
         // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
-        || (_enableSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
+        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
        ) {
         _evictioner->updateOnPageSwizzled(indexToCheck);
         DBG5(<< "Eviction failed on swizzled for " << indexToCheck);
@@ -439,8 +440,7 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     }
 
     if (// ... dirty pages, unless we're told to ignore them
-           (!ignore_dirty && controlBlockToCheck.is_dirty())
-       ) {
+           (!ignore_dirty && controlBlockToCheck.is_dirty())) {
         _evictioner->updateOnPageDirty(indexToCheck);
         DBG5(<< "Eviction failed on dirty for " << indexToCheck);
         return false;
@@ -448,14 +448,12 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     if (// ... unused frames, which don't hold a valid page
            !controlBlockToCheck._used
         // ... frames prefetched by restore but not yet restored
-        || controlBlockToCheck.is_pinned_for_restore()
-       ) {
+        || controlBlockToCheck.is_pinned_for_restore()) {
         DBG5(<< "Eviction failed on unused for " << indexToCheck);
         return false;
     }
     if (// ... pinned frames, i.e., someone required it not be evicted
-           controlBlockToCheck._pin_cnt != 0
-       ) {
+           controlBlockToCheck._pin_cnt != 0) {
         _evictioner->updateOnPageBlocked(indexToCheck);
         DBG5(<< "Eviction failed on pinned for " << indexToCheck);
         return false;
@@ -800,7 +798,7 @@ void BufferPool::debugDumpPagePointers(std::ostream& o, generic_page* page) cons
 
 bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageID pid, latch_mode_t latchMode,
                       bool conditional, bool virgin, bool onlyIfHit, bool doRecovery, lsn_t emlsn) {
-    if constexpr (_enableSwizzling) {
+    if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////////////////////// The pid is Swizzled: /////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -809,7 +807,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
             // Swizzled pointer traversal only valid with latch coupling (i.e., parent must also have been fixed)
             w_assert1(parentPage);
 
-            bf_idx pageIndex = POINTER_SWIZZLER::makeBufferIndexForFix(parentPage, targetPage, pid);
+            bf_idx pageIndex = POINTER_SWIZZLER::makeBufferIndex(pid);
             w_assert1(isValidIndex(pageIndex));
             bf_tree_cb_t& pageControlBlock = getControlBlock(pageIndex);
 
@@ -1080,7 +1078,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
         }
 
         // Swizzle the pointer inside the parent page if necessary:
-        if constexpr (_enableSwizzling) {
+        if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
             if (!pageControlBlock->_swizzled && parentPage) {
                 bf_tree_cb_t &parentControlBlock = getControlBlock(parentIndex);
                 if (!parentControlBlock._swizzled) {
@@ -1132,7 +1130,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
 }
 
 void BufferPool::_convertToDiskPage(generic_page* page) const noexcept {
-    if constexpr (_enableSwizzling) {
+    if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
         fixable_page_h fixedPage;
         fixedPage.fix_nonbufferpool_page(page);
 

@@ -54,7 +54,7 @@ bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
     bf_tree_cb_t& victimControlBlock = smlevel_0::bf->getControlBlock(victim);
 
     // Only evict actually evictable pages (not required to stay in the buffer pool):
-    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
+    if (!smlevel_0::bf->checkEviction(victim, _flushDirty)) {
         updateOnPageBlocked(victim);
         return false;
     }
@@ -183,8 +183,12 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     /* Get the slot of the record slot ID of the victim page within its parent page which either contains the victim's
      * page ID or its swizzled bufferpool frame index. */
     general_recordid_t victimSlotID;
-    if (_enabledSwizzling && victimControlBlock._swizzled) {
-        victimSlotID = POINTER_SWIZZLER::findSwizzledPageIDSlot(parentPage, victim);
+    if constexpr () {
+        if (victimControlBlock._swizzled) {
+            victimSlotID = fixable_page_h::find_page_id_slot(parentPage, POINTER_SWIZZLER::makeSwizzledPointer(victim));
+        } else {
+            victimSlotID = fixable_page_h::find_page_id_slot(parentPage, victimPageID);
+        }
     } else {
         victimSlotID = fixable_page_h::find_page_id_slot(parentPage, victimPageID);
     }
@@ -193,12 +197,14 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     //==================================================================================================================
     // STEP 2: Unswizzle pointer on parent before evicting.
     //==================================================================================================================
-    if (_enabledSwizzling & victimControlBlock._swizzled) {
-        bool successfullyUnswizzled = smlevel_0::bf->unswizzlePagePointer(parentPage, victimSlotID);
-        if (!successfullyUnswizzled) {
-            return false;
-        } else {
-            w_assert1(!victimControlBlock._swizzled);
+    if constexpr (_enabledSwizzling) {
+        if (victimControlBlock._swizzled) {
+            bool successfullyUnswizzled = smlevel_0::bf->unswizzlePagePointer(parentPage, victimSlotID);
+            if (!successfullyUnswizzled) {
+                return false;
+            } else {
+                w_assert1(!victimControlBlock._swizzled);
+            }
         }
     }
 
