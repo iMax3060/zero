@@ -9,6 +9,7 @@
 #include <cmath>
 #include "cgs/meta.hpp"
 #include "gcem.hpp"
+#include "w_debug.h"
 #include <boost/integer.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/detail/uniform_int_float.hpp>

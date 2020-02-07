@@ -14,7 +14,7 @@ namespace zero::buffer_pool {
      */
     template <class filter_class>
     class PageEvictionerFilterLogicNOT : public PageEvictionerFilter {
-        static_assert(std::is_base_of<PageEvictionerFilter, filter_class>::value,
+        static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class>,
                       "'filter_class' is not of type 'PageEvictionerFilter'!");
 
     public:
@@ -184,9 +184,9 @@ namespace zero::buffer_pool {
      */
     template <class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicAND : public PageEvictionerFilter {
-        static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value,
+        static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class0>,
                       "'filter_class0' is not of type 'PageEvictionerFilter'!");
-        static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value,
+        static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class1>,
                       "'filter_class1' is not of type 'PageEvictionerFilter'!");
 
     public:
@@ -373,9 +373,9 @@ namespace zero::buffer_pool {
      */
     template <class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicOR : public PageEvictionerFilter {
-        static_assert(std::is_base_of<PageEvictionerFilter, filter_class0>::value,
+        static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class0>,
                       "'filter_class0' is not of type 'PageEvictionerFilter'!");
-        static_assert(std::is_base_of<PageEvictionerFilter, filter_class1>::value,
+        static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class1>,
                       "'filter_class1' is not of type 'PageEvictionerFilter'!");
 
     public:
