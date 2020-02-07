@@ -183,7 +183,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     /* Get the slot of the record slot ID of the victim page within its parent page which either contains the victim's
      * page ID or its swizzled bufferpool frame index. */
     general_recordid_t victimSlotID;
-    if constexpr () {
+    if constexpr (_enabledSwizzling) {
         if (victimControlBlock._swizzled) {
             victimSlotID = fixable_page_h::find_page_id_slot(parentPage, POINTER_SWIZZLER::makeSwizzledPointer(victim));
         } else {

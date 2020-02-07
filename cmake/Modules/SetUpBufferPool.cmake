@@ -233,16 +233,18 @@
 ## - PageEvictionerDGCLOCKV1Fix
 ## - PageEvictionerDGCLOCKV2Fix
 ## - PageEvictionerCARFix
-## - PageEvictionerUnfix
+## - PageEvictionerCARUnfix
+## - PageEvictionerLeanStore5
 ## =====================================================================================================================
 ## =====================================================================================================================
 ## = Supported Pointer Swizzling Techniques: ===========================================================================
 ## - [DEFAULT] NoSwizzling
 ## - SimpleSwizzling
-## - LeanStoreSwizzing
 ## =====================================================================================================================
 
 SET(PAGE_EVICTIONER ON CACHE STRING "Page Evictioner used by the Buffer Pool")
+SET(POINTER_SWIZZLER ON CACHE STRING "Pointer Swizzling technique used by the Buffer Pool")
+
 IF(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLOOP!")
 #ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOPMutex")
@@ -709,15 +711,20 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerDGCLOCKV2Fix")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerDGCLOCKV2Fix!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerCARFix")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerCARFix!")
-ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerUnfix")
-    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerUnfix!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerCARUnfix")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerCARUnfix!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLeanStore5")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLeanStore5!")
+    IF(NOT POINTER_SWIZZLER STREQUAL "SimpleSwizzling")
+        SET(POINTER_SWIZZLER "SimpleSwizzling")
+        MESSAGE(NOTICE "The selected page evictioner PageEvictionerLeanStore5 requires the pointer swizzling technique SimpleSwizzling!")
+    ENDIF(NOT POINTER_SWIZZLER STREQUAL "SimpleSwizzling")
 ELSE(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
     SET(PAGE_EVICTIONER "PageEvictionerLOOP")
     MESSAGE(NOTICE "The set page evictioner is unknown. Changed to the default page evictioner!")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLOOP!")
 ENDIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
 
-SET(POINTER_SWIZZLER ON CACHE STRING "Pointer Swizzling technique used by the Buffer Pool")
 IF(POINTER_SWIZZLER STREQUAL "NoSwizzling")
     MESSAGE(STATUS "INFO: The selected pointer swizzling technique is NoSwizzling!")
 ELSEIF(POINTER_SWIZZLER STREQUAL "SimpleSwizzling")

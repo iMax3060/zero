@@ -3,6 +3,7 @@
 #include "buffer_pool.hpp"
 #include "page_evictioner.hpp"
 #include "page_evictioner_select_and_filter.hpp"
+#include "page_evictioner_lean_store.hpp"
 #include "page_evictioner_other.hpp"
 
 using namespace zero::buffer_pool;
