@@ -234,7 +234,7 @@
 ## - PageEvictionerDGCLOCKV2Fix
 ## - PageEvictionerCARFix
 ## - PageEvictionerCARUnfix
-## - PageEvictionerLeanStore5
+## - PageEvictionerLeanStore2500
 ## =====================================================================================================================
 ## =====================================================================================================================
 ## = Supported Pointer Swizzling Techniques: ===========================================================================
@@ -713,11 +713,11 @@ ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerCARFix")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerCARFix!")
 ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerCARUnfix")
     MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerCARUnfix!")
-ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLeanStore5")
-    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLeanStore5!")
+ELSEIF(PAGE_EVICTIONER STREQUAL "PageEvictionerLeanStore2500")
+    MESSAGE(STATUS "INFO: The selected page evictioner is PageEvictionerLeanStore2500!")
     IF(NOT POINTER_SWIZZLER STREQUAL "SimpleSwizzling")
         SET(POINTER_SWIZZLER "SimpleSwizzling")
-        MESSAGE(NOTICE "The selected page evictioner PageEvictionerLeanStore5 requires the pointer swizzling technique SimpleSwizzling!")
+        MESSAGE(NOTICE "The selected page evictioner PageEvictionerLeanStore2500 requires the pointer swizzling technique SimpleSwizzling!")
     ENDIF(NOT POINTER_SWIZZLER STREQUAL "SimpleSwizzling")
 ELSE(PAGE_EVICTIONER STREQUAL "PageEvictionerLOOP")
     SET(PAGE_EVICTIONER "PageEvictionerLOOP")

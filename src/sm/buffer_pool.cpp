@@ -483,19 +483,30 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     if (// ... the stnode page
            p.tag() == t_stnode_p
         // ... B-tree root pages (note, single-node B-tree is both root and leaf)
-        || (p.tag() == t_btree_p && p.pid() == p.root())
-        // ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
-        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
+        || (p.tag() == t_btree_p && p.pid() == p.root())) {
+        _evictioner->updateOnPageBlocked(indexToCheck);
+        return false;
+    }
+    if (// ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
+           (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
         // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
-        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
-        // ... dirty pages, unless we're told to ignore them
-        || (!ignore_dirty && controlBlockToCheck.is_dirty())
-        // ... unused frames, which don't hold a valid page
-        || !controlBlockToCheck._used
+        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)) {
+        _evictioner->updateOnPageSwizzled(indexToCheck);
+        return false;
+    }
+    if (// ... dirty pages, unless we're told to ignore them
+           (!ignore_dirty && controlBlockToCheck.is_dirty())) {
+        _evictioner->updateOnPageDirty(indexToCheck);
+        return false;
+    }
+    if (// ... unused frames, which don't hold a valid page
+           !controlBlockToCheck._used
         // ... frames prefetched by restore but not yet restored
-        || controlBlockToCheck.is_pinned_for_restore()
-        // ... pinned frames, i.e., someone required it not be evicted
-        || controlBlockToCheck._pin_cnt != 0) {
+        || controlBlockToCheck.is_pinned_for_restore()) {
+        return false;
+    }
+    if (// ... pinned frames, i.e., someone required it not be evicted
+           controlBlockToCheck._pin_cnt != 0) {
         return false;
     }
 

@@ -14,26 +14,27 @@ namespace zero::buffer_pool {
      * \brief   TODO
      * \details TODO
      *
-     * @tparam cooling_stage_size_ppm
+     * @tparam cooling_stage_size TODO
      */
-    template<uint32_t cooling_stage_size_ppm/* = 50000*/>
+    template<uint32_t cooling_stage_size/* = 2500*/>
     class PageEvictionerLeanStore : public PageEvictioner {
     public:
         /*!\fn      PageEvictionerLeanStore(const BufferPool* bufferPool)
          * \brief   TODO
          * \details TODO
          *
-         * @param bufferPool
+         * @param bufferPool TODO
          */
         PageEvictionerLeanStore(const BufferPool* bufferPool) :
                 PageEvictioner(bufferPool),
                 _maxBufferpoolIndex(bufferPool->getBlockCount() - 1),
-                _coolingStageSize(std::ceil(bufferPool->getBlockCount() * cooling_stage_size_ppm * 0.000001)),
+                _coolingStageSize(std::min<bf_idx>(cooling_stage_size, bufferPool->getBlockCount() - 1)),
                 _coolingStage(_coolingStageSize),
                 _randomNumberGenerator(std::random_device {}()),
-                _randomDistribution(1, _maxBufferpoolIndex) {
+                _randomDistribution(1, _maxBufferpoolIndex),
+                _notEvictable(bufferPool->getBlockCount()) {
             static_assert(std::is_same_v<POINTER_SWIZZLER, SimpleSwizzling>,
-                                         "PageEvictionerLeanStore requires pointer swizzling in the buffer pool!");
+                          "PageEvictionerLeanStore requires pointer swizzling in the buffer pool!");
         };
 
         /*!\fn      ~PageEvictionerLeanStore()
@@ -52,12 +53,15 @@ namespace zero::buffer_pool {
                 if (should_exit()) return 0; // the buffer index 0 has the semantics of null
 
                 bf_idx victimIndex = 0;
+                if (_coolingStage.length() * 2 < _coolingStageSize) {
+                    fillCoolingStage();
+                }
                 try {
                     _coolingStageLock.lock();
                     _coolingStage.popFromFront(victimIndex);
                     _coolingStageLock.unlock();
                     return victimIndex;
-                } catch (const hashtable_deque::HashtableDequeEmptyException<bf_idx, 1 | 0x80000000>& ex) {
+                } catch (const hashtable_deque::HashtableDequeEmptyException<bf_idx, 0x80000001u>& ex) {
                     _coolingStageLock.unlock();
                     fillCoolingStage();
                     continue;
@@ -107,7 +111,17 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a dirty page.
          */
-        void updateOnPageDirty(bf_idx idx) noexcept final {};
+        void updateOnPageDirty(bf_idx idx) noexcept final {
+            /*!\var     _dirtyCount
+             * \brief   TODO
+             * \details TODO
+             */
+            static thread_local bf_idx _dirtyCount;
+
+            if (_dirtyCount % _coolingStageSize == 0) {
+                smlevel_0::bf->wakeupPageCleaner();
+            }
+        };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages that cannot be evicted at all
@@ -116,7 +130,9 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink which corresponding frame contains a page
          *            that cannot be evicted at all.
          */
-        void updateOnPageBlocked(bf_idx idx) noexcept final {};
+        void updateOnPageBlocked(bf_idx idx) noexcept final {
+            _notEvictable[idx] = true;
+        };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages containing swizzled pointers during eviction
@@ -147,7 +163,7 @@ namespace zero::buffer_pool {
             _coolingStageLock.lock();
             try {
                 _coolingStage.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {}
+            } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u>& ex) {}
             _coolingStageLock.unlock();
         };
 
@@ -175,8 +191,8 @@ namespace zero::buffer_pool {
                     _coolingStageLock.unlock();
                     return;
                 }
-                // The selected buffer frame is already in the cooling stage:
-                if (_coolingStage.contains(coolingCandidate)) {
+                // The selected buffer frame is already in the cooling stage or permanently not evictable:
+                if (_coolingStage.contains(coolingCandidate) || _notEvictable[coolingCandidate]) {
                     _coolingStageLock.unlock();
                     continue;
                     // The selected buffer frame is not already in the cooling stage (it is hot):
@@ -254,7 +270,7 @@ namespace zero::buffer_pool {
          * \brief   TODO
          * \details TODO
          */
-        hashtable_deque::HashtableDeque<bf_idx, 1 | 0x80000000>             _coolingStage;
+        hashtable_deque::HashtableDeque<bf_idx, 0x80000001u>             _coolingStage;
 
         /*!\var     _coolingStageSize
          * \brief   TODO
@@ -264,7 +280,13 @@ namespace zero::buffer_pool {
         /*!\var     _coolingStageLock
          * \brief   TODO
          */
-        std::mutex                                                          _coolingStageLock;
+        std::recursive_mutex                                                _coolingStageLock;
+
+        /*!\var     _notEvictable
+         * \brief   TODO
+         * \details TODO
+         */
+        std::vector<std::atomic<bool>>                                      _notEvictable;
 
         /*!\var     _maxBufferpoolIndex
          * \brief   TODO

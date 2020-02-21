@@ -734,7 +734,7 @@ namespace zero::buffer_pool {
             bool on_blocked = false, bool set_on_blocked = false, uint16_t level0_on_blocked = 5, uint16_t level1_on_blocked = 2, uint16_t level2_on_blocked = 1,
             bool on_swizzled = false, bool set_on_swizzled = false, uint16_t level0_on_swizzled = 5, uint16_t level1_on_swizzled = 2, uint16_t level2_on_swizzled = 1> class PageEvictionerFilterGCLOCK;
     template <bool on_page_unfix = false> class PageEvictionerCAR;
-    template<uint32_t cooling_stage_size_ppm = 50000> class PageEvictionerLeanStore;
+    template<uint32_t cooling_stage_size = 2500> class PageEvictionerLeanStore;
     /* END --- Forward Declarations --- END */
 
     // The fastest LOOP Page Evictioner:
@@ -1024,7 +1024,7 @@ namespace zero::buffer_pool {
     using PageEvictionerDGCLOCKV2Fix = PageEvictionerSelectAndFilter<PageEvictionerSelectorLOOPModulo, PageEvictionerFilterGCLOCK<1, true, true, true, 5, 2, 1, false, true, 5, 2, 1, true, true, 25, 10, 5, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1, false, true, 5, 2, 1>, true>;
     using PageEvictionerCARFix = PageEvictionerCAR<>;
     using PageEvictionerCARUnfix = PageEvictionerCAR<true>;
-    using PageEvictionerLeanStore5 = PageEvictionerLeanStore<>;
+    using PageEvictionerLeanStore2500 = PageEvictionerLeanStore<>;
 }
 
 #endif // __ZERO_PAGE_EVICTIONER_TYPEDEFS_HPP
