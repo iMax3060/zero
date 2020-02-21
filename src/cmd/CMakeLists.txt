@@ -24,7 +24,7 @@ ADD_SUBDIRECTORY(webserver)
 ADD_SUBDIRECTORY(loginspect)
 
 # Add the zapps executable:
-ADD_EXECUTABLE(zapps main.cpp)
+ADD_EXECUTABLE(zapps main.cpp ${BACKWARD_ENABLE})
 
 # Set the shared libraries used by the executable zapps:
 SET(zapps_LIBS
