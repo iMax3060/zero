@@ -2624,6 +2624,8 @@ namespace zero::buffer_pool {
                 _useLFUList0(false),
                 _useLFUList1(false) {
             _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+            _frequenciesLive[0] = std::numeric_limits<uint64_t>::max(); // The buffer index 0 cannot be used and is not
+                                                                        // allowed to selected for eviction!
         };
 
         /*!\fn      select() noexcept
@@ -2910,6 +2912,8 @@ namespace zero::buffer_pool {
                 _useLFUList0(false),
                 _useLFUList1(false) {
             _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
+            _frequenciesLive[0] = std::numeric_limits<uint64_t>::max(); // The buffer index 0 cannot be used and is not
+                                                                        // allowed to selected for eviction!
         };
 
         /*!\fn      select() noexcept
