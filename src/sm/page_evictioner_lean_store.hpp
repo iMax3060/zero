@@ -14,9 +14,9 @@ namespace zero::buffer_pool {
      * \brief   TODO
      * \details TODO
      *
-     * @tparam cooling_stage_size TODO
+     * @tparam cooling_stage_size_ppm TODO
      */
-    template<uint32_t cooling_stage_size/* = 2500*/>
+    template<uint32_t cooling_stage_size_ppm/* = 75000*/>
     class PageEvictionerLeanStore : public PageEvictioner {
     public:
         /*!\fn      PageEvictionerLeanStore(const BufferPool* bufferPool)
@@ -28,7 +28,7 @@ namespace zero::buffer_pool {
         PageEvictionerLeanStore(const BufferPool* bufferPool) :
                 PageEvictioner(bufferPool),
                 _maxBufferpoolIndex(bufferPool->getBlockCount() - 1),
-                _coolingStageSize(std::min<bf_idx>(cooling_stage_size, bufferPool->getBlockCount() - 1)),
+                _coolingStageSize(std::ceil(bufferPool->getBlockCount() * cooling_stage_size_ppm * 0.000001)),
                 _coolingStage(_coolingStageSize),
                 _randomNumberGenerator(std::random_device {}()),
                 _randomDistribution(1, _maxBufferpoolIndex),
@@ -160,11 +160,13 @@ namespace zero::buffer_pool {
          *            corresponding parent page.
          */
         void updateOnPointerSwizzling(bf_idx idx) noexcept final {
-            _coolingStageLock.lock();
-            try {
-                _coolingStage.remove(idx);
-            } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u>& ex) {}
-            _coolingStageLock.unlock();
+            if (_coolingStage.length() > 0) {
+                _coolingStageLock.lock();
+                try {
+                    _coolingStage.remove(idx);
+                } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u> &ex) {}
+                _coolingStageLock.unlock();
+            }
         };
 
         /*!\fn      releaseInternalLatches() noexcept
