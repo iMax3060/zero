@@ -55,7 +55,6 @@ bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
 
     // Only evict actually evictable pages (not required to stay in the buffer pool):
     if (!smlevel_0::bf->checkEviction(victim, _flushDirty)) {
-        updateOnPageBlocked(victim);
         return false;
     }
 
