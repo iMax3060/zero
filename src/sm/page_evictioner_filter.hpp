@@ -308,7 +308,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter
@@ -502,7 +502,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter
@@ -1033,7 +1033,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {};
 
         /*!\fn      releaseInternalLatches() noexcept
          * \brief   Releases the internal latches of this buffer frame filter

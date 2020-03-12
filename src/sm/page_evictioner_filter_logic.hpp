@@ -154,7 +154,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {
             _filter.updateOnPointerSwizzling(idx);
         };
 
@@ -336,7 +336,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {
             _filter0.updateOnPointerSwizzling(idx);
             _filter1.updateOnPointerSwizzling(idx);
         };
@@ -523,7 +523,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose pointer got swizzled in its
          *            corresponding parent page.
          */
-        virtual void updateOnPointerSwizzling(bf_idx idx) noexcept final {
+        inline void updateOnPointerSwizzling(bf_idx idx) noexcept final {
             _filter0.updateOnPointerSwizzling(idx);
             _filter1.updateOnPointerSwizzling(idx);
         };
