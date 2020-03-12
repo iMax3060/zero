@@ -482,7 +482,7 @@ namespace zero::buffer_pool {
             }
         };
 
-        /*!\fn      checkEviction(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept
+        /*!\fn      isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept
          * \brief   Check if a page can be evicted
          * \details The following conditions make a page unevictable:
          *          - There is no page in the buffer frame (\link bf_tree_cb_t::_used \endlink \c == \c false).
@@ -509,8 +509,8 @@ namespace zero::buffer_pool {
          *          - It is pinned (\c !\link bf_tree_cb_t::_pin_cnt \endlink \c != \c 0).\n
          *            The page is either pinned or it gets currently evicted by another thread.
          *
-         * \pre     The buffer frame with index \c indexToCheck is latched in \link latch_mode_t::LATCH_EX \endlink mode
-         *          by this thread.
+         * \pre     The buffer frame with index \c indexToCheck is latched in \link latch_mode_t::LATCH_SH \endlink or
+         *          \link latch_mode_t::LATCH_EX \endlink mode by this thread.
          *
          * \remark  The example implementations for the conditions are given in the documentation because it is hard to
          *          figure out which pages cannot be evicted.
@@ -520,8 +520,6 @@ namespace zero::buffer_pool {
          * @param doFlushIfDirty \c true if the page gets flushed during the eviction, \c false else.
          * @return               \c true if the page could be evicted, \c false else.
          */
-        bool checkEviction(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept;
-
         bool isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept;
 
         /*!\fn      batchPrefetch(PageID startPID, bf_idx numberOfPages) noexcept

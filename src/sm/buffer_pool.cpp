@@ -404,65 +404,6 @@ bool BufferPool::unswizzlePagePointer(generic_page* parentPage, general_recordid
     }
 }
 
-bool BufferPool::checkEviction(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept {
-    bool ignore_dirty = doFlushIfDirty || _noDBMode || _useWriteElision;
-
-    bf_tree_cb_t& controlBlockToCheck = getControlBlock(indexToCheck);
-    w_assert1(controlBlockToCheck.latch().held_by_me());
-    w_assert1(controlBlockToCheck.latch().mode() == LATCH_EX);
-
-    // We do not consider for eviction ...
-    if (// ... unused buffer frames.
-            !controlBlockToCheck._used) {
-        DBG5(<< "Eviction failed on unused buffer frame " << indexToCheck);
-        return false;
-    }
-
-    btree_page_h p;
-    p.fix_nonbufferpool_page(&_buffer[indexToCheck]);
-
-    // We do not consider for eviction ...
-    if (// ... the stnode page
-           p.tag() == t_stnode_p
-        // ... B-tree root pages (note, single-node B-tree is both root and leaf)
-        || (p.tag() == t_btree_p && p.pid() == p.root())) {
-        _evictioner->updateOnPageBlocked(indexToCheck);
-        DBG5(<< "Eviction failed on node type for " << indexToCheck);
-        return false;
-    }
-    if (// ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
-           (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
-        // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
-        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)
-       ) {
-        _evictioner->updateOnPageSwizzled(indexToCheck);
-        DBG5(<< "Eviction failed on swizzled for " << indexToCheck);
-        return false;
-    }
-
-    if (// ... dirty pages, unless we're told to ignore them
-           (!ignore_dirty && controlBlockToCheck.is_dirty())) {
-        _evictioner->updateOnPageDirty(indexToCheck);
-        DBG5(<< "Eviction failed on dirty for " << indexToCheck);
-        return false;
-    }
-    if (// ... unused frames, which don't hold a valid page
-           !controlBlockToCheck._used
-        // ... frames prefetched by restore but not yet restored
-        || controlBlockToCheck.is_pinned_for_restore()) {
-        DBG5(<< "Eviction failed on unused for " << indexToCheck);
-        return false;
-    }
-    if (// ... pinned frames, i.e., someone required it not be evicted
-           controlBlockToCheck._pin_cnt != 0) {
-        _evictioner->updateOnPageBlocked(indexToCheck);
-        DBG5(<< "Eviction failed on pinned for " << indexToCheck);
-        return false;
-    }
-
-    return true;
-}
-
 bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirty) noexcept {
     bool ignore_dirty = doFlushIfDirty || _noDBMode || _useWriteElision;
 

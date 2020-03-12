@@ -54,7 +54,7 @@ bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
     bf_tree_cb_t& victimControlBlock = smlevel_0::bf->getControlBlock(victim);
 
     // Only evict actually evictable pages (not required to stay in the buffer pool):
-    if (!smlevel_0::bf->checkEviction(victim, _flushDirty)) {
+    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
         return false;
     }
 
