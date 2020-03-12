@@ -647,14 +647,14 @@ namespace zero::buffer_pool {
      *                            corresponding buffer frame is a b-tree page but neither a root, nor the child of a
      *                            root b-tree page.
      */
-    template <uint16_t decrement, bool discriminate_pages,
-            bool on_hit, bool set_on_hit, uint16_t level0_on_hit, uint16_t level1_on_hit, uint16_t level2_on_hit,
-            bool on_unfix, bool set_on_unfix, uint16_t level0_on_unfix, uint16_t level1_on_unfix, uint16_t level2_on_unfix,
-            bool on_miss, bool set_on_miss, uint16_t level0_on_miss, uint16_t level1_on_miss, uint16_t level2_on_miss,
-            bool on_fixed, bool set_on_fixed, uint16_t level0_on_fixed, uint16_t level1_on_fixed, uint16_t level2_on_fixed,
-            bool on_dirty, bool set_on_dirty, uint16_t level0_on_dirty, uint16_t level1_on_dirty, uint16_t level2_on_dirty,
-            bool on_blocked, bool set_on_blocked, uint16_t level0_on_blocked, uint16_t level1_on_blocked, uint16_t level2_on_blocked,
-            bool on_swizzled, bool set_on_swizzled, uint16_t level0_on_swizzled, uint16_t level1_on_swizzled, uint16_t level2_on_swizzled>
+    template <uint16_t decrement/* = 1*/, bool discriminate_pages/* = false*/,
+            bool on_hit/* = true*/, bool set_on_hit/* = false*/, uint16_t level0_on_hit/* = 5*/, uint16_t level1_on_hit/* = 2*/, uint16_t level2_on_hit/* = 1*/,
+            bool on_unfix/* = false*/, bool set_on_unfix/* = false*/, uint16_t level0_on_unfix/* = 5*/, uint16_t level1_on_unfix/* = 2*/, uint16_t level2_on_unfix/* = 1*/,
+            bool on_miss/* = true*/, bool set_on_miss/* = true*/, uint16_t level0_on_miss/* = 25*/, uint16_t level1_on_miss/* = 10*/, uint16_t level2_on_miss/* = 5*/,
+            bool on_fixed/* = false*/, bool set_on_fixed/* = false*/, uint16_t level0_on_fixed/* = 5*/, uint16_t level1_on_fixed/* = 2*/, uint16_t level2_on_fixed/* = 1*/,
+            bool on_dirty/* = false*/, bool set_on_dirty/* = false*/, uint16_t level0_on_dirty/* = 5*/, uint16_t level1_on_dirty/* = 2*/, uint16_t level2_on_dirty/* = 1*/,
+            bool on_blocked/* = false*/, bool set_on_blocked/* = false*/, uint16_t level0_on_blocked/* = 5*/, uint16_t level1_on_blocked/* = 2*/, uint16_t level2_on_blocked/* = 1*/,
+            bool on_swizzled/* = false*/, bool set_on_swizzled/* = false*/, uint16_t level0_on_swizzled/* = 5*/, uint16_t level1_on_swizzled/* = 2*/, uint16_t level2_on_swizzled/* = 1*/>
     class PageEvictionerFilterGCLOCK : PageEvictionerFilter {
     public:
         /*!\fn      PageEvictionerFilterGCLOCK(const BufferPool* bufferPool)
