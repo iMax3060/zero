@@ -39,9 +39,9 @@ const int MIN_TUPLES_FOR_SORT = 250;
 // Required for every table_man_t instance
 DECLARE_TLS(row_cache_t<asc_sort_buffer_t>, asc_sort_buffer_cache);
 
-template<> row_cache_t<asc_sort_buffer_t>*
-table_man_t<asc_sort_buffer_t>::pcache_link::tls_get()
-{
+template<>
+row_cache_t<asc_sort_buffer_t> *
+table_man_t<asc_sort_buffer_t>::pcache_link::tls_get() {
     return asc_sort_buffer_cache;
 }
 
@@ -57,62 +57,56 @@ table_man_t<asc_sort_buffer_t>::pcache_link::tls_get()
  **********************************************************************/
 
 
-int compare_smallint_asc(const void* d1, const void* d2)
-{
-    short data1 = *((short*)d1);
-    short data2 = *((short*)d2);
+int compare_smallint_asc(const void *d1, const void *d2) {
+    short data1 = *((short *) d1);
+    short data2 = *((short *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
 }
 
 
-int compare_int_asc(const void* d1, const void* d2)
-{
-    int data1 = *((int*)d1);
-    int data2 = *((int*)d2);
+int compare_int_asc(const void *d1, const void *d2) {
+    int data1 = *((int *) d1);
+    int data2 = *((int *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
 }
 
 
-int compare_bit_asc(const void* d1, const void* d2)
-{
-    int data1 = *((bool*)d1);
-    int data2 = *((bool*)d2);
+int compare_bit_asc(const void *d1, const void *d2) {
+    int data1 = *((bool *) d1);
+    int data2 = *((bool *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
 }
 
-int compare_long_asc(const void* d1, const void* d2)
-{
-    long data1 = *((long long*)d1);
-    long data2 = *((long long*)d2);
+int compare_long_asc(const void *d1, const void *d2) {
+    long data1 = *((long long *) d1);
+    long data2 = *((long long *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
 }
 
-int compare_double_asc(const void* d1, const void* d2)
-{
-    double data1 = *((double*)d1);
-    double data2 = *((double*)d2);
+int compare_double_asc(const void *d1, const void *d2) {
+    double data1 = *((double *) d1);
+    double data2 = *((double *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
 }
 
-int compare_fixchar_asc(const void* d1, const void* d2){
-    return (strcmp((char*)d1, (char*)d2));
+int compare_fixchar_asc(const void *d1, const void *d2) {
+    return (strcmp((char *) d1, (char *) d2));
 }
 
-template <typename T>
-int compare_asc(const void* d1, const void* d2)
-{
-    T data1 = *((T*)d1);
-    T data2 = *((T*)d2);
+template<typename T>
+int compare_asc(const void *d1, const void *d2) {
+    T data1 = *((T *) d1);
+    T data2 = *((T *) d2);
     if (data1 > data2) return (1);
     if (data1 == data2) return (0);
     return (-1);
@@ -134,32 +128,30 @@ int compare_asc(const void* d1, const void* d2)
  *
  *********************************************************************/
 
-void asc_sort_man_impl::init()
-{
+void asc_sort_man_impl::init() {
     assert (_ptable);
 
     /* calculate tuple size */
     _tuple_size = 0;
 
     //for (int i=0; i<_tuple_count; i++)
-    for (size_t i=0; i<_ptable->field_count(); i++)
+    for (size_t i = 0; i < _ptable->field_count(); i++)
         _tuple_size += _ptable->desc(i)->fieldmaxsize();
 
     // @note: PIN: for alignment
-    if((_tuple_size % _ptable->desc(0)->fieldmaxsize()) != 0) {
-	_tuple_size = ((_tuple_size / _ptable->desc(0)->fieldmaxsize()) + 1) * _ptable->desc(0)->fieldmaxsize();
+    if ((_tuple_size % _ptable->desc(0)->fieldmaxsize()) != 0) {
+        _tuple_size = ((_tuple_size / _ptable->desc(0)->fieldmaxsize()) + 1) * _ptable->desc(0)->fieldmaxsize();
     }
 
     /* allocate size for MIN_TUPLES_FOR_SORT tuples */
     assert (!_sort_buf); // ensure that it will be init only once
-    assert (_tuple_count==0);
-    assert (_buf_size==0);
-    _sort_buf = new char[MIN_TUPLES_FOR_SORT*_tuple_size];
+    assert (_tuple_count == 0);
+    assert (_buf_size == 0);
+    _sort_buf = new char[MIN_TUPLES_FOR_SORT * _tuple_size];
     _buf_size = MIN_TUPLES_FOR_SORT;
 
     _is_sorted = false;
 }
-
 
 
 /*********************************************************************
@@ -170,8 +162,7 @@ void asc_sort_man_impl::init()
  *
  *********************************************************************/
 
-void asc_sort_man_impl::reset()
-{
+void asc_sort_man_impl::reset() {
     assert (_ptable);
     // the soft_buf should be set
     assert (_sort_buf);
@@ -195,8 +186,7 @@ void asc_sort_man_impl::reset()
  *
  *********************************************************************/
 
-void asc_sort_man_impl::add_tuple(table_row_t& atuple)
-{
+void asc_sort_man_impl::add_tuple(table_row_t &atuple) {
     CRITICAL_SECTION(cs, _sorted_lock);
 
     /* setup the tuple size */
@@ -205,9 +195,9 @@ void asc_sort_man_impl::add_tuple(table_row_t& atuple)
     /* check if more space is needed */
     if (_buf_size == _tuple_count) {
         /* double the buffer size if needed */
-        char* tmp = new char[(2*_buf_size)*_tuple_size];
-        memcpy(tmp, _sort_buf, _buf_size*_tuple_size);
-        delete [] _sort_buf;
+        char *tmp = new char[(2 * _buf_size) * _tuple_size];
+        memcpy(tmp, _sort_buf, _buf_size * _tuple_size);
+        delete[] _sort_buf;
 
         _sort_buf = tmp;
         _buf_size *= 2;
@@ -218,7 +208,7 @@ void asc_sort_man_impl::add_tuple(table_row_t& atuple)
     /* add the current tuple to the end of the buffer */
     size_t ksz = _preprow->_bufsz;
     atuple.store_key(_preprow->_dest, ksz);
-    memcpy(_sort_buf+(_tuple_count*_tuple_size), _preprow->_dest, _tuple_size);
+    memcpy(_sort_buf + (_tuple_count * _tuple_size), _preprow->_dest, _tuple_size);
     _tuple_count++;
     _is_sorted = false;
 }
@@ -232,8 +222,7 @@ void asc_sort_man_impl::add_tuple(table_row_t& atuple)
  *
  *********************************************************************/
 
-void asc_sort_man_impl::sort()
-{
+void asc_sort_man_impl::sort() {
     CRITICAL_SECTION(cs, _sorted_lock);
 
     /* compute the number of bytes used in sorting */
@@ -273,21 +262,27 @@ void asc_sort_man_impl::sort()
 
     // does the sorting
     switch (_ptable->desc(0)->type()) {
-    case SQL_BIT:
-        qsort(_sort_buf, _tuple_count, _tuple_size, compare_bit_asc); break;
-    case SQL_SMALLINT:
-        qsort(_sort_buf, _tuple_count, _tuple_size, compare_smallint_asc); break;
-    case SQL_INT:
-        qsort(_sort_buf, _tuple_count, _tuple_size, compare_int_asc); break;
-    case SQL_LONG:
-            qsort(_sort_buf, _tuple_count, _tuple_size, compare_long_asc); break;
-    case SQL_FLOAT:
-            qsort(_sort_buf, _tuple_count, _tuple_size, compare_double_asc); break;
-    case SQL_FIXCHAR:
-            qsort(_sort_buf, _tuple_count, _tuple_size, compare_fixchar_asc); break;
-    default:
-        /* not implemented yet */
-        assert(0);
+        case SQL_BIT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_bit_asc);
+            break;
+        case SQL_SMALLINT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_smallint_asc);
+            break;
+        case SQL_INT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_int_asc);
+            break;
+        case SQL_LONG:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_long_asc);
+            break;
+        case SQL_FLOAT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_double_asc);
+            break;
+        case SQL_FIXCHAR:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_fixchar_asc);
+            break;
+        default:
+            /* not implemented yet */
+            assert(0);
     }
     _is_sorted = true;
 
@@ -335,12 +330,10 @@ void asc_sort_man_impl::sort()
  *
  *********************************************************************/
 
-w_rc_t asc_sort_man_impl::get_sort_iter(asc_sort_iter_impl* &sort_iter)
-{
+w_rc_t asc_sort_man_impl::get_sort_iter(asc_sort_iter_impl *&sort_iter) {
     sort_iter = new asc_sort_iter_impl(table(), this);
     return (RCOK);
 }
-
 
 
 /*********************************************************************
@@ -353,19 +346,344 @@ w_rc_t asc_sort_man_impl::get_sort_iter(asc_sort_iter_impl* &sort_iter)
  *
  *********************************************************************/
 
-bool asc_sort_man_impl::get_sorted(const int index, table_row_t* ptuple)
-{
+bool asc_sort_man_impl::get_sorted(const int index, table_row_t *ptuple) {
     CRITICAL_SECTION(cs, _sorted_lock);
 
     if (_is_sorted) {
-        if (index >=0 && index < _tuple_count) {
+        if (index >= 0 && index < _tuple_count) {
             ptuple->load_key(_sort_buf + (index * _tuple_size));
             return true;
         }
         //TRACE( TRACE_DEBUG, "out of bounds index...\n");
         return (false);
     }
-    TRACE( TRACE_DEBUG, "buffer not sorted yet...\n");
+    TRACE(TRACE_DEBUG, "buffer not sorted yet...\n");
     return (false);
 }
 
+// Copied from macro DEFINE_ROW_CACHE_TLS
+// Required for every table_man_t instance
+DECLARE_TLS(row_cache_t<desc_sort_buffer_t>, desc_sort_buffer_cache);
+
+template<>
+row_cache_t<desc_sort_buffer_t> *
+table_man_t<desc_sort_buffer_t>::pcache_link::tls_get() {
+    return desc_sort_buffer_cache;
+}
+
+/**********************************************************************
+ *
+ * Implementation of Comparison functions (DESCENDING ORDER)
+ *
+ * @input:  obj1, obj2 of the same type, casted to (const void*)
+ *
+ * @return: -1 iff obj1>obj2, 0 iff obj1==obj2, 1 iff obj1<obj2
+ *
+ *
+ **********************************************************************/
+
+
+int compare_smallint_desc(const void *d1, const void *d2) {
+    short data1 = *((short *) d1);
+    short data2 = *((short *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+
+int compare_int_desc(const void *d1, const void *d2) {
+    int data1 = *((int *) d1);
+    int data2 = *((int *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+
+int compare_bit_desc(const void *d1, const void *d2) {
+    int data1 = *((bool *) d1);
+    int data2 = *((bool *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+int compare_long_desc(const void *d1, const void *d2) {
+    long data1 = *((long long *) d1);
+    long data2 = *((long long *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+int compare_double_desc(const void *d1, const void *d2) {
+    double data1 = *((double *) d1);
+    double data2 = *((double *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+int compare_fixchar_desc(const void *d1, const void *d2) {
+    return -(strcmp((char *) d1, (char *) d2));
+}
+
+template<typename T>
+int compare_desc(const void *d1, const void *d2) {
+    T data1 = *((T *) d1);
+    T data2 = *((T *) d2);
+    if (data1 > data2) return (-1);
+    if (data1 == data2) return (0);
+    return (1);
+}
+
+/**********************************************************************
+ *
+ * desc_sort_buffer_t methods
+ *
+ **********************************************************************/
+
+
+/*********************************************************************
+ *
+ *  @fn:    init
+ *
+ *  @brief: Calculate the tuple size and allocate the initial memory
+ *          buffer for the tuples.
+ *
+ *********************************************************************/
+
+void desc_sort_man_impl::init() {
+    assert (_ptable);
+
+    /* calculate tuple size */
+    _tuple_size = 0;
+
+    //for (int i=0; i<_tuple_count; i++)
+    for (size_t i = 0; i < _ptable->field_count(); i++)
+        _tuple_size += _ptable->desc(i)->fieldmaxsize();
+
+    // @note: PIN: for alignment
+    if ((_tuple_size % _ptable->desc(0)->fieldmaxsize()) != 0) {
+        _tuple_size = ((_tuple_size / _ptable->desc(0)->fieldmaxsize()) + 1) * _ptable->desc(0)->fieldmaxsize();
+    }
+
+    /* allocate size for MIN_TUPLES_FOR_SORT tuples */
+    assert (!_sort_buf); // ensure that it will be init only once
+    assert (_tuple_count == 0);
+    assert (_buf_size == 0);
+    _sort_buf = new char[MIN_TUPLES_FOR_SORT * _tuple_size];
+    _buf_size = MIN_TUPLES_FOR_SORT;
+
+    _is_sorted = false;
+}
+
+
+/*********************************************************************
+ *
+ *  @fn:    reset
+ *
+ *  @brief: Clear the buffer and wait for new tuples
+ *
+ *********************************************************************/
+
+void desc_sort_man_impl::reset() {
+    assert (_ptable);
+    // the soft_buf should be set
+    assert (_sort_buf);
+    // if buf_size>0 means that the manager has already been set
+    assert (_buf_size);
+    // no need to calculate tuple size
+    assert (_tuple_size);
+
+    // memset the buffer
+    memset(_sort_buf, 0, _buf_size);
+    _is_sorted = false;
+}
+
+
+/*********************************************************************
+ *
+ *  @fn:    add_tuple
+ *
+ *  @brief: Inserts a new tuple in the buffer. If there is not enough
+ *          space, it doubles the allocated space.
+ *
+ *********************************************************************/
+
+void desc_sort_man_impl::add_tuple(sorter_tuple &atuple) {
+    CRITICAL_SECTION(cs, _sorted_lock);
+
+    /* setup the tuple size */
+    if (!_tuple_size) init();
+
+    /* check if more space is needed */
+    if (_buf_size == _tuple_count) {
+        /* double the buffer size if needed */
+        char *tmp = new char[(2 * _buf_size) * _tuple_size];
+        memcpy(tmp, _sort_buf, _buf_size * _tuple_size);
+        delete[] _sort_buf;
+
+        _sort_buf = tmp;
+        _buf_size *= 2;
+
+        //fprintf(stderr,"+\n");
+    }
+
+    /* add the current tuple to the end of the buffer */
+    size_t ksz = _preprow->_bufsz;
+    atuple.store_key(_preprow->_dest, ksz);
+    assert (_preprow->_dest);
+    memcpy(_sort_buf + (_tuple_count * _tuple_size), _preprow->_dest, _tuple_size);
+    _tuple_count++;
+    _is_sorted = false;
+}
+
+
+/*********************************************************************
+ *
+ *  @fn:   sort
+ *
+ *  @note: Uses the old qsort // TODO: use sort()
+ *
+ *********************************************************************/
+
+void desc_sort_man_impl::sort() {
+    CRITICAL_SECTION(cs, _sorted_lock);
+
+    /* compute the number of bytes used in sorting */
+#if 0
+    // displays buffer before/after sorting
+    cout << "Before sorting: " << endl;
+    switch (_ptable->desc(0)->type()) {
+    case SQL_BIT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((bool*)(_sort_buf+i*_tuple_size))[0] << " ";
+        }
+        break;
+    case SQL_SMALLINT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((short*)(_sort_buf+i*_tuple_size))[0] << " ";
+        }
+        break;
+    case SQL_INT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((int*)(_sort_buf+i*_tuple_size))[0] << " ";
+        }
+        break;
+    case SQL_LONG:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((long long*)(_sort_buf+i*_tuple_size))[0] << " ";
+        }
+        break;
+    case SQL_FLOAT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((double*)(_sort_buf+i*_tuple_size))[0] << " ";
+        }
+        break;
+    }
+    cout << endl;
+
+#endif
+
+    // does the sorting
+    switch (_ptable->desc(0)->type()) {
+        case SQL_BIT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_bit_desc);
+            break;
+        case SQL_SMALLINT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_smallint_desc);
+            break;
+        case SQL_INT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_int_desc);
+            break;
+        case SQL_LONG:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_long_desc);
+            break;
+        case SQL_FLOAT:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_double_desc);
+            break;
+        case SQL_FIXCHAR:
+            qsort(_sort_buf, _tuple_count, _tuple_size, compare_fixchar_desc);
+            break;
+        default:
+            /* not implemented yet */
+            assert(0);
+    }
+    _is_sorted = true;
+
+#if 0
+    cout << "After sorting: " << endl;
+    switch (_ptable->desc(0)->type()) {
+    case SQL_BIT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((bool*)(_sort_buf+i*_tuple_size))[0] << " ";
+        };
+        break;
+    case SQL_SMALLINT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((short*)(_sort_buf+i*_tuple_size))[0] << " ";
+        };
+        break;
+    case SQL_INT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((int*)(_sort_buf+i*_tuple_size))[0] << " ";
+        };
+        break;
+    case SQL_LONG:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((long long*)(_sort_buf+i*_tuple_size))[0] << " ";
+        };
+        break;
+    case SQL_FLOAT:
+        for (int i=0; i<_tuple_count; i++) {
+            cout << ((double*)(_sort_buf+i*_tuple_size))[0] << " ";
+        };
+        break;
+    }
+    cout << endl;
+#endif
+}
+
+
+/*********************************************************************
+ *
+ *  @fn:    get_sort_iter
+ *
+ *  @brief: Initializes a sort_scan_impl for the particular sorter buffer
+ *
+ *  @note:  It is responsibility of the caller to de-allocate
+ *
+ *********************************************************************/
+
+w_rc_t desc_sort_man_impl::get_sort_iter(desc_sort_iter_impl *&sort_iter) {
+    sort_iter = new desc_sort_iter_impl(table(), this);
+    return (RCOK);
+}
+
+
+/*********************************************************************
+ *
+ *  @fn:    get_sorted
+ *
+ *  @brief: Returns the tuple in the buffer pointed by the index
+ *
+ *  @note:  It asserts if the buffer is not sorted
+ *
+ *********************************************************************/
+
+bool desc_sort_man_impl::get_sorted(const int index, sorter_tuple *ptuple) {
+    CRITICAL_SECTION(cs, _sorted_lock);
+
+    if (_is_sorted) {
+        if (index >= 0 && index < _tuple_count) {
+            ptuple->load_key(_sort_buf + (index * _tuple_size));
+            return true;
+        }
+        //TRACE( TRACE_DEBUG, "out of bounds index...\n");
+        return (false);
+    }
+    TRACE(TRACE_DEBUG, "buffer not sorted yet...\n");
+    return (false);
+}

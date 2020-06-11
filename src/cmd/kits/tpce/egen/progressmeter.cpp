@@ -34,62 +34,53 @@
  * - Christopher Chan-Nui
  */
 
-#include "workload/tpce/egen/threading.h"
+#include "threading.h"
 
 #include <iostream>
 
-#include "workload/tpce/egen/progressmeter.h"
-#include "workload/tpce/egen/strutil.h"
+#include "progressmeter.h"
+#include "strutil.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 // total - The total number of tasks to complete before the job is done.
-ProgressMeter::ProgressMeter(int total_in, int verbosity, std::ostream* output)
-    : m_total(total_in)
-    , m_current(0)
-    , m_display_interval(10)
-    , m_start_time()
-    , m_last_time(m_start_time)
-    , m_output(output)
-    , m_verbosity(verbosity)
-    , m_mutex()
-{
-}
+    ProgressMeter::ProgressMeter(int total_in, int verbosity, std::ostream *output)
+            : m_total(total_in), m_current(0), m_display_interval(10), m_start_time(), m_last_time(m_start_time),
+              m_output(output), m_verbosity(verbosity), m_mutex() {
+    }
 
 // val - minimum number of seconds between automatic display updates
 //       set to -1 to disable automatic displays
-void ProgressMeter::set_display_interval(int val) {
-    TPCE::Locker<ProgressMeter> locker(*this);
-    m_display_interval = val;
-}
+    void ProgressMeter::set_display_interval(int val) {
+        tpce::Locker<ProgressMeter> locker(*this);
+        m_display_interval = val;
+    }
 
-int ProgressMeter::display_interval() const {
-    TPCE::Locker<const ProgressMeter> locker(*this);
-    return m_display_interval;
-}
+    int ProgressMeter::display_interval() const {
+        tpce::Locker<const ProgressMeter> locker(*this);
+        return m_display_interval;
+    }
 
 // Displays the current progress and an estimated time to finish
-void ProgressMeter::display() const {
-    TPCE::Locker<const ProgressMeter> locker(*this);
-    display_message(*m_output);
-    (*m_output) << std::endl;
-}
+    void ProgressMeter::display() const {
+        tpce::Locker<const ProgressMeter> locker(*this);
+        display_message(*m_output);
+        (*m_output) << std::endl;
+    }
 
 // Displays a progress message to the specified output stream
 // Lock progress meter before calling this function!
 //
 // output - output stream to display progress to
-void ProgressMeter::display_message(std::ostream& out) const {
-    CDateTime now;
-    INT32 elapsed_in_ms = now.DiffInMilliSeconds(m_start_time);
-    double rate = static_cast<double>(elapsed_in_ms)/static_cast<double>(m_current)/1000.0;
-    out << m_current << "/" << m_total
-                << " (" << m_current*100/m_total << "%)"
-                << " [Remain: " << int64totimestr((int)(rate*(double)(m_total-m_current))) << ", "
-                << "Elapsed: " << int64totimestr(elapsed_in_ms/1000) << "]"
-                ;
-}
+    void ProgressMeter::display_message(std::ostream &out) const {
+        CDateTime now;
+        INT32 elapsed_in_ms = now.DiffInMilliSeconds(m_start_time);
+        double rate = static_cast<double>(elapsed_in_ms) / static_cast<double>(m_current) / 1000.0;
+        out << m_current << "/" << m_total
+            << " (" << m_current * 100 / m_total << "%)"
+            << " [Remain: " << int64totimestr((int) (rate * (double) (m_total - m_current))) << ", "
+            << "Elapsed: " << int64totimestr(elapsed_in_ms / 1000) << "]";
+    }
 
 // Notifies the progress meter that some tasks have been completed.  If there
 // hasn't been a display update within display_interval seconds then an update
@@ -97,53 +88,50 @@ void ProgressMeter::display_message(std::ostream& out) const {
 //
 // count  - number of tasks completed
 // output - output stream to display progress to
-void ProgressMeter::inc(int count) {
-    CDateTime now;
-    {
-        TPCE::Locker<ProgressMeter> locker(*this);
-        m_current += count;
-        if (m_verbosity <= 0 || m_display_interval < 0 || now.DiffInMilliSeconds(m_last_time) <= m_display_interval*1000) {
-            return;
+    void ProgressMeter::inc(int count) {
+        CDateTime now;
+        {
+            tpce::Locker<ProgressMeter> locker(*this);
+            m_current += count;
+            if (m_verbosity <= 0 || m_display_interval < 0 ||
+                now.DiffInMilliSeconds(m_last_time) <= m_display_interval * 1000) {
+                return;
+            }
+            m_last_time.SetToCurrent();
         }
-        m_last_time.SetToCurrent();
+        display();
     }
-    display();
-}
 
 // Return current count
-int ProgressMeter::current() const
-{
-    TPCE::Locker<const ProgressMeter> locker(*this);
-    return m_current;
-}
+    int ProgressMeter::current() const {
+        tpce::Locker<const ProgressMeter> locker(*this);
+        return m_current;
+    }
 
 // Return total count
-int ProgressMeter::total() const
-{
-    TPCE::Locker<const ProgressMeter> locker(*this);
-    return m_total;
-}
+    int ProgressMeter::total() const {
+        tpce::Locker<const ProgressMeter> locker(*this);
+        return m_total;
+    }
 
 // Display a message if the verbosity level is greater than message level
 //
 // mesg   - message to display
 // level  - verbosity level to display at
-void ProgressMeter::message(const std::string& mesg, int level) {
-    TPCE::Locker<ProgressMeter> locker(*this);
-    if (level >= m_verbosity) {
-        return;
+    void ProgressMeter::message(const std::string &mesg, int level) {
+        tpce::Locker<ProgressMeter> locker(*this);
+        if (level >= m_verbosity) {
+            return;
+        }
+        (*m_output) << mesg << std::endl;
     }
-    (*m_output) << mesg << std::endl;
-}
 
-void ProgressMeter::lock() const
-{
-    m_mutex.lock();
-}
+    void ProgressMeter::lock() const {
+        m_mutex.lock();
+    }
 
-void ProgressMeter::unlock() const
-{
-    m_mutex.unlock();
-}
+    void ProgressMeter::unlock() const {
+        m_mutex.unlock();
+    }
 
 }

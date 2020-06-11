@@ -42,29 +42,27 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatCompanyCompetitorLoad : public CFlatFileLoader <COMPANY_COMPETITOR_ROW>
-{
-public:
-    CFlatCompanyCompetitorLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<COMPANY_COMPETITOR_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatCompanyCompetitorLoad : public CFlatFileLoader<COMPANY_COMPETITOR_ROW> {
+    public:
+        CFlatCompanyCompetitorLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<COMPANY_COMPETITOR_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, CompanyCompetitorRowFmt,
-                  next_record->CP_CO_ID,
-                  next_record->CP_COMP_CO_ID,
-                  next_record->CP_IN_ID
-                );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatCompanyCompetitorLoad::WriteNextRecord");
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, CompanyCompetitorRowFmt,
+                             next_record->CP_CO_ID,
+                             next_record->CP_COMP_CO_ID,
+                             next_record->CP_IN_ID
+            );
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatCompanyCompetitorLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

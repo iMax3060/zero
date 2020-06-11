@@ -41,20 +41,18 @@
 #ifndef DRIVER_TYPES_H
 #define DRIVER_TYPES_H
 
-namespace TPCE
-{
+namespace tpce {
 
-enum eDriverType
-{
-  eDriverEGenLoader,
-  eDriverAll,
-  eDriverCE,
-  eDriverMEE,
-  eDriverDM,
-  eDriverMax
-};
+    enum eDriverType {
+        eDriverEGenLoader,
+        eDriverAll,
+        eDriverCE,
+        eDriverMEE,
+        eDriverDM,
+        eDriverMax
+    };
 
-extern char szDriverTypeNames[eDriverMax][14];
+    extern char szDriverTypeNames[eDriverMax][14];
 }   // namespace TPCE
 
 

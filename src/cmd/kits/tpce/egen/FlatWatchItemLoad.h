@@ -42,28 +42,26 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatWatchItemLoad : public CFlatFileLoader <WATCH_ITEM_ROW>
-{
-public:
-    CFlatWatchItemLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<WATCH_ITEM_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatWatchItemLoad : public CFlatFileLoader<WATCH_ITEM_ROW> {
+    public:
+        CFlatWatchItemLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<WATCH_ITEM_ROW>(
+                szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, WatchItemRowFmt,
-                  next_record->WI_WL_ID,
-                  next_record->WI_S_SYMB
-                );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatWatchItemLoad::WriteNextRecord");
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, WatchItemRowFmt,
+                             next_record->WI_WL_ID,
+                             next_record->WI_S_SYMB
+            );
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatWatchItemLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

@@ -42,45 +42,39 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CZipCodeTable : public TableTemplate<ZIP_CODE_ROW>
-{
-private:
-    TZipCodeFile*       m_ZipCode;
-    TZipCodeInputRow*   m_NextRow;
-    UINT32              m_NextUniqueRecordID;
+    class CZipCodeTable : public TableTemplate<ZIP_CODE_ROW> {
+    private:
+        TZipCodeFile *m_ZipCode;
+        TZipCodeInputRow *m_NextRow;
+        UINT32 m_NextUniqueRecordID;
 
-public:
-    CZipCodeTable( CInputFiles inputFiles )
-        : TableTemplate<ZIP_CODE_ROW>()
-        , m_ZipCode( inputFiles.ZipCode )
-        , m_NextUniqueRecordID( 0 )
-    {
-        // No body for constructor.
+    public:
+        CZipCodeTable(CInputFiles inputFiles)
+                : TableTemplate<ZIP_CODE_ROW>(), m_ZipCode(inputFiles.ZipCode), m_NextUniqueRecordID(0) {
+            // No body for constructor.
+        };
+
+
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (m_NextUniqueRecordID < m_ZipCode->RecordCount()) {
+                strncpy(m_row.ZC_CODE, (m_ZipCode->GetRecordByPassKey(m_NextUniqueRecordID))->ZC_CODE,
+                        sizeof(m_row.ZC_CODE));
+                strncpy(m_row.ZC_TOWN, (m_ZipCode->GetRecordByPassKey(m_NextUniqueRecordID))->ZC_TOWN,
+                        sizeof(m_row.ZC_TOWN));
+                strncpy(m_row.ZC_DIV, (m_ZipCode->GetRecordByPassKey(m_NextUniqueRecordID))->ZC_DIV,
+                        sizeof(m_row.ZC_DIV));
+                m_NextUniqueRecordID++;
+                return (true);
+            } else {
+                return (false);
+            }
+        }
     };
-
-
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( m_NextUniqueRecordID < m_ZipCode->RecordCount( ))
-        {
-            strncpy( m_row.ZC_CODE, (m_ZipCode->GetRecordByPassKey( m_NextUniqueRecordID ))->ZC_CODE, sizeof( m_row.ZC_CODE ) );
-            strncpy( m_row.ZC_TOWN, (m_ZipCode->GetRecordByPassKey( m_NextUniqueRecordID ))->ZC_TOWN, sizeof( m_row.ZC_TOWN ) );
-            strncpy( m_row.ZC_DIV, (m_ZipCode->GetRecordByPassKey( m_NextUniqueRecordID ))->ZC_DIV, sizeof( m_row.ZC_DIV ) );
-            m_NextUniqueRecordID++;
-            return( true );
-        }
-        else
-        {
-            return ( false );
-        }
-    }
-};
 
 }   // namespace TPCE
 

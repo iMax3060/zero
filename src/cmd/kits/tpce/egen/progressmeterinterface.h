@@ -39,13 +39,11 @@
 
 #include <string>
 
-namespace TPCE
-{
+namespace tpce {
 
 // Interface to provide a simple progress indicator
 // Also an interface to display messages through.
-class ProgressMeterInterface
-{
+    class ProgressMeterInterface {
     public:
         virtual ~ProgressMeterInterface();
 
@@ -54,13 +52,13 @@ class ProgressMeterInterface
 
         // Mark some work done
         //     count - amount of "work" completed
-        virtual void inc(int count=1);
+        virtual void inc(int count = 1);
 
         // Print out an arbitrary message
         //     mesg  - message to display
         //     level - level of message for verbosity filtering
-        virtual void message(const std::string& mesg, int level=0);
-};
+        virtual void message(const std::string &mesg, int level = 0);
+    };
 
 }
 

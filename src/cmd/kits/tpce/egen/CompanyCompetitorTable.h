@@ -43,72 +43,67 @@
 #include "EGenTables_common.h"
 #include "CompanyCompetitorFile.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CCompanyCompetitorTable : public TableTemplate<COMPANY_COMPETITOR_ROW>
-{
-    CCompanyCompetitorFile*     m_pCompanyCompetitorFile;
-    TIdent                      m_iCompanyCompetitorCount;
-    TIdent                      m_iStartFromCompanyCompetitor;
-    TIdent                      m_iCompanyCompetitorCountForOneLoadUnit;
+    class CCompanyCompetitorTable : public TableTemplate<COMPANY_COMPETITOR_ROW> {
+        CCompanyCompetitorFile *m_pCompanyCompetitorFile;
+        TIdent m_iCompanyCompetitorCount;
+        TIdent m_iStartFromCompanyCompetitor;
+        TIdent m_iCompanyCompetitorCountForOneLoadUnit;
 
-    /*
-    *   Reset the state for the next load unit.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void InitNextLoadUnit()
-    {
-        //  No RNG calls in this class, so don't need to reset the RNG.
+        /*
+        *   Reset the state for the next load unit.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void InitNextLoadUnit() {
+            //  No RNG calls in this class, so don't need to reset the RNG.
 
-        ClearRecord();  // this is needed for EGenTest to work
-    }
-
-public:
-    CCompanyCompetitorTable(CInputFiles inputFiles,
-                            TIdent      iCustomerCount,
-                            TIdent      iStartFromCustomer)
-    : TableTemplate<COMPANY_COMPETITOR_ROW>()
-    , m_pCompanyCompetitorFile(inputFiles.CompanyCompetitor)
-    {
-        m_iCompanyCompetitorCount = m_pCompanyCompetitorFile->CalculateCompanyCompetitorCount(iCustomerCount);
-        m_iStartFromCompanyCompetitor = m_pCompanyCompetitorFile->CalculateStartFromCompanyCompetitor(iStartFromCustomer);
-
-        m_iLastRowNumber = m_iStartFromCompanyCompetitor;
-
-        m_iCompanyCompetitorCountForOneLoadUnit = m_pCompanyCompetitorFile->CalculateCompanyCompetitorCount(iDefaultLoadUnitSize);
-    };
-
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if (m_iLastRowNumber % m_iCompanyCompetitorCountForOneLoadUnit == 0)
-        {
-            InitNextLoadUnit();
+            ClearRecord();  // this is needed for EGenTest to work
         }
 
-        m_row.CP_CO_ID = m_pCompanyCompetitorFile->GetCompanyId(m_iLastRowNumber);
+    public:
+        CCompanyCompetitorTable(CInputFiles inputFiles,
+                                TIdent iCustomerCount,
+                                TIdent iStartFromCustomer)
+                : TableTemplate<COMPANY_COMPETITOR_ROW>(), m_pCompanyCompetitorFile(inputFiles.CompanyCompetitor) {
+            m_iCompanyCompetitorCount = m_pCompanyCompetitorFile->CalculateCompanyCompetitorCount(iCustomerCount);
+            m_iStartFromCompanyCompetitor = m_pCompanyCompetitorFile->CalculateStartFromCompanyCompetitor(
+                    iStartFromCustomer);
 
-        m_row.CP_COMP_CO_ID = m_pCompanyCompetitorFile->GetCompanyCompetitorId(m_iLastRowNumber);
+            m_iLastRowNumber = m_iStartFromCompanyCompetitor;
 
-        strncpy(m_row.CP_IN_ID,
-                m_pCompanyCompetitorFile->GetIndustryId(m_iLastRowNumber),
-                sizeof(m_row.CP_IN_ID));
+            m_iCompanyCompetitorCountForOneLoadUnit = m_pCompanyCompetitorFile->CalculateCompanyCompetitorCount(
+                    iDefaultLoadUnitSize);
+        };
 
-        ++m_iLastRowNumber;
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (m_iLastRowNumber % m_iCompanyCompetitorCountForOneLoadUnit == 0) {
+                InitNextLoadUnit();
+            }
 
-        m_bMoreRecords = m_iLastRowNumber < m_iStartFromCompanyCompetitor + m_iCompanyCompetitorCount;
+            m_row.CP_CO_ID = m_pCompanyCompetitorFile->GetCompanyId(m_iLastRowNumber);
 
-        return (MoreRecords());
-    }
-};
+            m_row.CP_COMP_CO_ID = m_pCompanyCompetitorFile->GetCompanyCompetitorId(m_iLastRowNumber);
+
+            strncpy(m_row.CP_IN_ID,
+                    m_pCompanyCompetitorFile->GetIndustryId(m_iLastRowNumber),
+                    sizeof(m_row.CP_IN_ID));
+
+            ++m_iLastRowNumber;
+
+            m_bMoreRecords = m_iLastRowNumber < m_iStartFromCompanyCompetitor + m_iCompanyCompetitorCount;
+
+            return (MoreRecords());
+        }
+    };
 
 }   // namespace TPCE
 

@@ -49,23 +49,22 @@
 
 #include <stdexcept>
 #include <sstream>
-#include "workload/tpce/egen/EGenTables_stdafx.h"
-#include "workload/tpce/egen/InputFlatFilesDeclarations.h"
+#include "EGenTables_stdafx.h"
+#include "InputFlatFilesDeclarations.h"
 
-using namespace TPCE;
+using namespace tpce;
 
 /*
 *   Function to read customer account names from the input stream.
 */
-void TAccountNameInputRow::Load(istream &file)
-{
+void TAccountNameInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            NAME);
+                    NAME);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TAccountNameInputRow::Load only loaded " << rc << " values from line";
@@ -82,15 +81,14 @@ void TAccountNameInputRow::Load(istream &file)
  *   Function to read phone row from the input stream.
  *   Needed to construct phones list.
  */
-void TAreaCodeInputRow::Load(istream &file)
-{
+void TAreaCodeInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            AREA_CODE);
+                    AREA_CODE);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TAreaCodeInputRow::Load only loaded " << rc << " values from line";
@@ -101,15 +99,14 @@ void TAreaCodeInputRow::Load(istream &file)
 #endif
 }
 
-void TCompanyInputRow::Load(istream &file)
-{
+void TCompanyInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%"PRId64"\t%s\t%[^\t]\t%s\t%[^\n]",
-            &CO_ID, CO_ST_ID, CO_NAME, CO_IN_ID, CO_DESC);
+                    &CO_ID, CO_ST_ID, CO_NAME, CO_IN_ID, CO_DESC);
     if (rc != 5) {
         std::ostringstream strm;
         strm << "TCompanyInputRow::Load only loaded " << rc << " values from line";
@@ -127,15 +124,14 @@ void TCompanyInputRow::Load(istream &file)
 /*
  *   Function to read CompanyCompetitor row from the input stream.
  */
-void TCompanyCompetitorInputRow::Load(istream &file)
-{
+void TCompanyCompetitorInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%"PRId64"\t%"PRId64"\t%[^\n]",
-            &CP_CO_ID, &CP_COMP_CO_ID, CP_IN_ID);
+                    &CP_CO_ID, &CP_COMP_CO_ID, CP_IN_ID);
     if (rc != 3) {
         std::ostringstream strm;
         strm << "TCompanyCompetitorInputRow::Load only loaded " << rc << " values from line";
@@ -154,15 +150,14 @@ void TCompanyCompetitorInputRow::Load(istream &file)
 /*
  *   Function to read Company SP Rate row from the input stream.
  */
-void TCompanySPRateInputRow::Load(istream &file)
-{
+void TCompanySPRateInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            CO_SP_RATE);
+                    CO_SP_RATE);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TCompanySPRateInputRow::Load only loaded " << rc << " values from line";
@@ -178,15 +173,14 @@ void TCompanySPRateInputRow::Load(istream &file)
  *   Function to read first/last name row from the input stream.
  *   Needed to construct phones list.
  */
-void TFirstNameInputRow::Load(istream &file)
-{
+void TFirstNameInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            FIRST_NAME);
+                    FIRST_NAME);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TFirstNameInputRow::Load only loaded " << rc << " values from line";
@@ -197,15 +191,14 @@ void TFirstNameInputRow::Load(istream &file)
 #endif
 }
 
-void TLastNameInputRow::Load(istream &file)
-{
+void TLastNameInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            LAST_NAME);
+                    LAST_NAME);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TLastNameInputRow::Load only loaded " << rc << " values from line";
@@ -216,15 +209,14 @@ void TLastNameInputRow::Load(istream &file)
 #endif
 }
 
-void TNewsInputRow::Load(istream &file)
-{
+void TNewsInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            WORD);
+                    WORD);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TNewsInputRow::Load only loaded " << rc << " values from line";
@@ -235,15 +227,14 @@ void TNewsInputRow::Load(istream &file)
 #endif
 }
 
-void TSecurityInputRow::Load(istream &file)
-{
+void TSecurityInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%"PRId64"\t%s\t%s\t%s\t%s\t%"PRId64,
-            &S_ID, S_ST_ID, S_SYMB, S_ISSUE, S_EX_ID, &S_CO_ID);
+                    &S_ID, S_ST_ID, S_SYMB, S_ISSUE, S_EX_ID, &S_CO_ID);
     if (rc != 6) {
         std::ostringstream strm;
         strm << "TSecurityInputRow::Load only loaded " << rc << " values from line";
@@ -262,15 +253,14 @@ void TSecurityInputRow::Load(istream &file)
 /*
  *   Function to read one row from the input stream.
  */
-void TStreetNameInputRow::Load(istream &file)
-{
+void TStreetNameInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            STREET);
+                    STREET);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TStreetNameInputRow::Load only loaded " << rc << " values from line";
@@ -285,15 +275,14 @@ void TStreetNameInputRow::Load(istream &file)
 /*
  *   Function to read one row from the input stream.
  */
-void TStreetSuffixInputRow::Load(istream &file)
-{
+void TStreetSuffixInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\n]",
-            SUFFIX);
+                    SUFFIX);
     if (rc != 1) {
         std::ostringstream strm;
         strm << "TStreetSuffixInputRow::Load only loaded " << rc << " values from line";
@@ -308,15 +297,14 @@ void TStreetSuffixInputRow::Load(istream &file)
 /*
  *   Function to read row from the input stream.
  */
-void TTaxRateInputRow::Load(istream &file)
-{
+void TTaxRateInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\t]\t%[^\t]\t%lf",
-            TAX_ID, TAX_NAME, &TAX_RATE);
+                    TAX_ID, TAX_NAME, &TAX_RATE);
     if (rc != 3) {
         std::ostringstream strm;
         strm << "TTaxRateInputRow::Load only loaded " << rc << " values from line";
@@ -334,15 +322,14 @@ void TTaxRateInputRow::Load(istream &file)
 /*
  *   Function to read one row from the input stream.
  */
-void TZipCodeInputRow::Load(istream &file)
-{
+void TZipCodeInputRow::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%d\t%[^\t]\t%[^\t]\t%[^\n]",
-            &iDivisionTaxKey, ZC_CODE, ZC_TOWN, ZC_DIV);
+                    &iDivisionTaxKey, ZC_CODE, ZC_TOWN, ZC_DIV);
     if (rc != 4) {
         std::ostringstream strm;
         strm << "TZipCodeInputRow::Load only loaded " << rc << " values from line";
@@ -369,15 +356,14 @@ void TZipCodeInputRow::Load(istream &file)
 /*
  *   CHARGE
  */
-void CHARGE_ROW::Load(istream &file)
-{
+void CHARGE_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\t]\t%d\t%lf",
-            CH_TT_ID, &CH_C_TIER, &CH_CHRG);
+                    CH_TT_ID, &CH_C_TIER, &CH_CHRG);
     if (rc != 3) {
         std::ostringstream strm;
         strm << "CHARGE_ROW::Load only loaded " << rc << " values from line";
@@ -393,15 +379,14 @@ void CHARGE_ROW::Load(istream &file)
 /*
  *   COMMISSION_RATE
  */
-void COMMISSION_RATE_ROW::Load(istream &file)
-{
+void COMMISSION_RATE_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%d\t%[^\t]\t%[^\t]\t%lf\t%lf\t%lf",
-            &CR_C_TIER, CR_TT_ID, CR_EX_ID, &CR_FROM_QTY, &CR_TO_QTY, &CR_RATE);
+                    &CR_C_TIER, CR_TT_ID, CR_EX_ID, &CR_FROM_QTY, &CR_TO_QTY, &CR_RATE);
     if (rc != 6) {
         std::ostringstream strm;
         strm << "COMMISSION_RATE_ROW::Load only loaded " << rc << " values from line";
@@ -420,15 +405,14 @@ void COMMISSION_RATE_ROW::Load(istream &file)
 /*
  *   EXCHANGE
  */
-void EXCHANGE_ROW::Load(istream &file)
-{
+void EXCHANGE_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%[^\t]\t%[^\t]\t%d\t%d\t%[^\t]%"PRId64,
-            EX_ID, EX_NAME, &EX_OPEN, &EX_CLOSE, EX_DESC, &EX_AD_ID);
+                    EX_ID, EX_NAME, &EX_OPEN, &EX_CLOSE, EX_DESC, &EX_AD_ID);
     if (rc != 6) {
         std::ostringstream strm;
         strm << "EXCHANGE_ROW::Load only loaded " << rc << " values from line";
@@ -453,15 +437,14 @@ void EXCHANGE_ROW::Load(istream &file)
 /*
  *   INDUSTRY
  */
-void INDUSTRY_ROW::Load(istream &file)
-{
+void INDUSTRY_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%[^\t]\t%[^\t]\t%[^\n]",
-            IN_ID, IN_NAME, IN_SC_ID);
+                    IN_ID, IN_NAME, IN_SC_ID);
     if (rc != 3) {
         std::ostringstream strm;
         strm << "INDUSTRY_ROW::Load only loaded " << rc << " values from line";
@@ -478,15 +461,14 @@ void INDUSTRY_ROW::Load(istream &file)
 /*
  *   SECTOR
  */
-void SECTOR_ROW::Load(istream &file)
-{
+void SECTOR_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%[^\t]\t%[^\n]",
-            SC_ID, SC_NAME);
+                    SC_ID, SC_NAME);
     if (rc != 2) {
         std::ostringstream strm;
         strm << "SECTOR_ROW::Load only loaded " << rc << " values from line";
@@ -501,15 +483,14 @@ void SECTOR_ROW::Load(istream &file)
 /*
  *   STATUS_TYPE
  */
-void STATUS_TYPE_ROW::Load(istream &file)
-{
+void STATUS_TYPE_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "%[^\t]\t%[^\n]",
-            ST_ID, ST_NAME);
+                    ST_ID, ST_NAME);
     if (rc != 2) {
         std::ostringstream strm;
         strm << "STATUS_TYPE_ROW::Load only loaded " << rc << " values from line";
@@ -526,8 +507,7 @@ void STATUS_TYPE_ROW::Load(istream &file)
 /*
  *   TRADE_TYPE
  */
-void TRADE_TYPE_ROW::Load(istream &file)
-{
+void TRADE_TYPE_ROW::Load(istream &file) {
     char buf[1024];
     UINT is_market;
     UINT is_sell;
@@ -536,7 +516,7 @@ void TRADE_TYPE_ROW::Load(istream &file)
         return;
     }
     int rc = sscanf(buf, "%[^\t]\t%[^\t]\t%d\t%d",
-            TT_ID, TT_NAME, &is_sell, &is_market);
+                    TT_ID, TT_NAME, &is_sell, &is_market);
     /* handle integer to boolean conversion.  We can't use TT_* directly */
     /* in the sscanf above since sscanf doesn't know how to deal with    */
     /* boolean variables for storage.                                    */
@@ -559,15 +539,14 @@ void TRADE_TYPE_ROW::Load(istream &file)
 /*
  *   ZIP_CODE
  */
-void ZIP_CODE_ROW::Load(istream &file)
-{
+void ZIP_CODE_ROW::Load(istream &file) {
     char buf[1024];
     file.getline(buf, sizeof(buf));
     if (file.eof()) {
         return;
     }
     int rc = sscanf(buf, "\t%[^\t]\t%[^\t]\t%[^\n]",
-            ZC_TOWN, ZC_DIV, ZC_CODE);
+                    ZC_TOWN, ZC_DIV, ZC_CODE);
     if (rc != 3) {
         std::ostringstream strm;
         strm << "ZIP_CODE_ROW::Load only loaded " << rc << " values from line";

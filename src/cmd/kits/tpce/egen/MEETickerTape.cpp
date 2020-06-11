@@ -39,26 +39,23 @@
 *                       See MEETickerTape.h for a description.
 ******************************************************************************/
 
-#include "workload/tpce/egen/MEETickerTape.h"
+#include "MEETickerTape.h"
 
-using namespace TPCE;
+using namespace tpce;
 
 const int CMEETickerTape::LIMIT_TRIGGER_TRADE_QTY = 375;
 const int CMEETickerTape::RANDOM_TRADE_QTY_1 = 325;
 const int CMEETickerTape::RANDOM_TRADE_QTY_2 = 425;
 
-RNGSEED CMEETickerTape::GetRNGSeed( void )
-{
-    return( m_rnd.GetSeed() );
+RNGSEED CMEETickerTape::GetRNGSeed(void) {
+    return (m_rnd.GetSeed());
 }
 
-void CMEETickerTape::SetRNGSeed( RNGSEED RNGSeed )
-{
-    m_rnd.SetSeed( RNGSeed );
+void CMEETickerTape::SetRNGSeed(RNGSEED RNGSeed) {
+    m_rnd.SetSeed(RNGSeed);
 }
 
-void CMEETickerTape::Initialize( void )
-{
+void CMEETickerTape::Initialize(void) {
     // Set up status and trade types for Market-Feed input
     //
     // Submitted
@@ -80,91 +77,68 @@ void CMEETickerTape::Initialize( void )
 }
 
 // Constructor - use default RNG seed
-CMEETickerTape::CMEETickerTape( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CDateTime* pBaseTime, CDateTime* pCurrentTime, const CInputFiles &inputFiles )
-    : m_pSUT( pSUT )
-    , m_pPriceBoard( pPriceBoard )
-    , m_BatchIndex( 0 )
-    , m_BatchDuplicates( 0 )
-    , m_rnd( RNGSeedBaseMEETickerTape )
-    , m_Enabled( true )
-    , m_pBaseTime( pBaseTime )
-    , m_pCurrentTime( pCurrentTime )
-    , m_pStatusType( inputFiles.StatusType )
-    , m_pTradeType( inputFiles.TradeType )
-{
+CMEETickerTape::CMEETickerTape(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CDateTime *pBaseTime,
+                               CDateTime *pCurrentTime, const CInputFiles &inputFiles)
+        : m_pSUT(pSUT), m_pPriceBoard(pPriceBoard), m_BatchIndex(0), m_BatchDuplicates(0),
+          m_rnd(RNGSeedBaseMEETickerTape), m_Enabled(true), m_pBaseTime(pBaseTime), m_pCurrentTime(pCurrentTime),
+          m_pStatusType(inputFiles.StatusType), m_pTradeType(inputFiles.TradeType) {
     Initialize();
 }
 
 // Constructor - RNG seed provided
-CMEETickerTape::CMEETickerTape( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CDateTime* pBaseTime, CDateTime* pCurrentTime, RNGSEED RNGSeed, const CInputFiles &inputFiles )
-    : m_pSUT( pSUT )
-    , m_pPriceBoard( pPriceBoard )
-    , m_BatchIndex( 0 )
-    , m_BatchDuplicates( 0 )
-    , m_rnd( RNGSeed )
-    , m_Enabled( true )
-    , m_pBaseTime( pBaseTime )
-    , m_pCurrentTime( pCurrentTime )
-    , m_pStatusType( inputFiles.StatusType )
-    , m_pTradeType( inputFiles.TradeType )
-{
+CMEETickerTape::CMEETickerTape(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CDateTime *pBaseTime,
+                               CDateTime *pCurrentTime, RNGSEED RNGSeed, const CInputFiles &inputFiles)
+        : m_pSUT(pSUT), m_pPriceBoard(pPriceBoard), m_BatchIndex(0), m_BatchDuplicates(0), m_rnd(RNGSeed),
+          m_Enabled(true), m_pBaseTime(pBaseTime), m_pCurrentTime(pCurrentTime), m_pStatusType(inputFiles.StatusType),
+          m_pTradeType(inputFiles.TradeType) {
     Initialize();
 }
 
-CMEETickerTape::~CMEETickerTape( void )
-{
+CMEETickerTape::~CMEETickerTape(void) {
 }
 
-bool CMEETickerTape::DisableTicker( void )
-{
+bool CMEETickerTape::DisableTicker(void) {
     m_Enabled = false;
-    return( ! m_Enabled );
+    return (!m_Enabled);
 }
 
-bool CMEETickerTape::EnableTicker( void )
-{
+bool CMEETickerTape::EnableTicker(void) {
     m_Enabled = true;
-    return( m_Enabled );
+    return (m_Enabled);
 }
 
-void CMEETickerTape::AddEntry( PTickerEntry pTickerEntry )
-{
-    if( m_Enabled )
-    {
-        AddToBatch( pTickerEntry );
-        AddArtificialEntries( );
+void CMEETickerTape::AddEntry(PTickerEntry pTickerEntry) {
+    if (m_Enabled) {
+        AddToBatch(pTickerEntry);
+        AddArtificialEntries();
     }
 }
 
-void CMEETickerTape::PostLimitOrder( PTradeRequest pTradeRequest )
-{
-    eTradeTypeID    eTradeType;
-    double      CurrentPrice = -1.0;
-    PTickerEntry    pNewEntry = new TTickerEntry;
+void CMEETickerTape::PostLimitOrder(PTradeRequest pTradeRequest) {
+    eTradeTypeID eTradeType;
+    double CurrentPrice = -1.0;
+    PTickerEntry pNewEntry = new TTickerEntry;
 
-    eTradeType = ConvertTradeTypeIdToEnum( pTradeRequest->trade_type_id );
+    eTradeType = ConvertTradeTypeIdToEnum(pTradeRequest->trade_type_id);
 
     pNewEntry->price_quote = pTradeRequest->price_quote;
-    strncpy( pNewEntry->symbol, pTradeRequest->symbol, sizeof( pNewEntry->symbol ));
+    strncpy(pNewEntry->symbol, pTradeRequest->symbol, sizeof(pNewEntry->symbol));
     pNewEntry->trade_qty = LIMIT_TRIGGER_TRADE_QTY;
 
-    CurrentPrice = m_pPriceBoard->GetCurrentPrice( pTradeRequest->symbol ).DollarAmount();
+    CurrentPrice = m_pPriceBoard->GetCurrentPrice(pTradeRequest->symbol).DollarAmount();
 
-    if((( eTradeType == eLimitBuy || eTradeType == eStopLoss ) &&
-            CurrentPrice <= pTradeRequest->price_quote )
+    if (((eTradeType == eLimitBuy || eTradeType == eStopLoss) &&
+         CurrentPrice <= pTradeRequest->price_quote)
         ||
-            (( eTradeType == eLimitSell ) &&
-            CurrentPrice >= pTradeRequest->price_quote ))
-    {
+        ((eTradeType == eLimitSell) &&
+         CurrentPrice >= pTradeRequest->price_quote)) {
         // Limit Order is in-the-money.
         pNewEntry->price_quote = CurrentPrice;
         // Make sure everything is up to date.
         m_LimitOrderTimers.ProcessExpiredTimers();
         // Now post the incoming entry.
-        m_InTheMoneyLimitOrderQ.push( pNewEntry );
-    }
-    else
-    {
+        m_InTheMoneyLimitOrderQ.push(pNewEntry);
+    } else {
         // Limit Order is not in-the-money.
         pNewEntry->price_quote = pTradeRequest->price_quote;
         double TriggerTimeDelay;
@@ -177,55 +151,49 @@ void CMEETickerTape::PostLimitOrder( PTradeRequest pTradeRequest )
                                                             fCurrentTime,
                                                             pNewEntry->price_quote,
                                                             eTradeType)
-                            - fCurrentTime;
-        m_LimitOrderTimers.StartTimer( TriggerTimeDelay,
-            this, &CMEETickerTape::AddLimitTrigger, pNewEntry );
+                           - fCurrentTime;
+        m_LimitOrderTimers.StartTimer(TriggerTimeDelay,
+                                      this, &CMEETickerTape::AddLimitTrigger, pNewEntry);
     }
 }
 
-void CMEETickerTape::AddLimitTrigger( PTickerEntry pTickerEntry )
-{
-    m_InTheMoneyLimitOrderQ.push( pTickerEntry );
+void CMEETickerTape::AddLimitTrigger(PTickerEntry pTickerEntry) {
+    m_InTheMoneyLimitOrderQ.push(pTickerEntry);
 }
 
-void CMEETickerTape::AddArtificialEntries( void )
-{
-    TIdent              SecurityIndex;
-    TTickerEntry        TickerEntry;
-    int                 TotalEntryCount = 0;
-    static const int    PaddingLimit = (max_feed_len / 10) - 1; // NOTE: 10 here represents the ratio of TR to MF transactions
-    static const int    PaddingLimitForAll = PaddingLimit;      // MAX (trigger+artificial) entries
-    static const int    PaddingLimitForTriggers = PaddingLimit; // MAX (triggered) entries
+void CMEETickerTape::AddArtificialEntries(void) {
+    TIdent SecurityIndex;
+    TTickerEntry TickerEntry;
+    int TotalEntryCount = 0;
+    static const int PaddingLimit =
+            (max_feed_len / 10) - 1; // NOTE: 10 here represents the ratio of TR to MF transactions
+    static const int PaddingLimitForAll = PaddingLimit;      // MAX (trigger+artificial) entries
+    static const int PaddingLimitForTriggers = PaddingLimit; // MAX (triggered) entries
 
-    while ( TotalEntryCount < PaddingLimitForTriggers && !m_InTheMoneyLimitOrderQ.empty() )
-    {
+    while (TotalEntryCount < PaddingLimitForTriggers && !m_InTheMoneyLimitOrderQ.empty()) {
         PTickerEntry pEntry = m_InTheMoneyLimitOrderQ.front();
-        AddToBatch( pEntry );
+        AddToBatch(pEntry);
         delete pEntry;
         m_InTheMoneyLimitOrderQ.pop();
         TotalEntryCount++;
     }
 
-    while ( TotalEntryCount < PaddingLimitForAll )
-    {
-        TickerEntry.trade_qty = ( m_rnd.RndPercent( 50 )) ? RANDOM_TRADE_QTY_1 : RANDOM_TRADE_QTY_2;
+    while (TotalEntryCount < PaddingLimitForAll) {
+        TickerEntry.trade_qty = (m_rnd.RndPercent(50)) ? RANDOM_TRADE_QTY_1 : RANDOM_TRADE_QTY_2;
 
-        SecurityIndex = m_rnd.RndInt64Range( 0, m_pPriceBoard->m_iNumberOfSecurities - 1 );
-        TickerEntry.price_quote = (m_pPriceBoard->GetCurrentPrice( SecurityIndex )).DollarAmount();
-        m_pPriceBoard->GetSymbol( SecurityIndex, TickerEntry.symbol, static_cast<INT32>(sizeof(TickerEntry.symbol)) );
+        SecurityIndex = m_rnd.RndInt64Range(0, m_pPriceBoard->m_iNumberOfSecurities - 1);
+        TickerEntry.price_quote = (m_pPriceBoard->GetCurrentPrice(SecurityIndex)).DollarAmount();
+        m_pPriceBoard->GetSymbol(SecurityIndex, TickerEntry.symbol, static_cast<INT32>(sizeof(TickerEntry.symbol)));
 
-        AddToBatch( &TickerEntry );
+        AddToBatch(&TickerEntry);
         TotalEntryCount++;
     }
 }
 
-void CMEETickerTape::AddToBatch( PTickerEntry pTickerEntry )
-{
+void CMEETickerTape::AddToBatch(PTickerEntry pTickerEntry) {
     // Check to see if this symbol already exists in the batch
-    for (int i=0; i<m_BatchIndex; i++)
-    {
-        if (strncmp(pTickerEntry->symbol, m_TxnInput.Entries[i].symbol, cSYMBOL_len) == 0)
-        {
+    for (int i = 0; i < m_BatchIndex; i++) {
+        if (strncmp(pTickerEntry->symbol, m_TxnInput.Entries[i].symbol, cSYMBOL_len) == 0) {
             m_BatchDuplicates++;
             break;
         }
@@ -235,60 +203,53 @@ void CMEETickerTape::AddToBatch( PTickerEntry pTickerEntry )
     m_TxnInput.Entries[m_BatchIndex++] = *pTickerEntry;
 
     // Buffer is full, time for Market-Feed.
-    if( max_feed_len == m_BatchIndex )
-    {
+    if (max_feed_len == m_BatchIndex) {
         m_TxnInput.unique_symbols = (max_feed_len - m_BatchDuplicates);
-        m_pSUT->MarketFeed( &m_TxnInput );
+        m_pSUT->MarketFeed(&m_TxnInput);
         m_BatchIndex = 0;
         m_BatchDuplicates = 0;
     }
 }
 
-eTradeTypeID CMEETickerTape::ConvertTradeTypeIdToEnum( char* pTradeType )
-{
+eTradeTypeID CMEETickerTape::ConvertTradeTypeIdToEnum(char *pTradeType) {
     // Convert character trade type to enumeration
-    switch( pTradeType[0] )
-    {
-    case 'T':
-        switch( pTradeType[1] )
-        {
-        case 'L':
-            switch( pTradeType[2] )
-            {
-            case 'B':
-                return( eLimitBuy );
-            case 'S':
-                return( eLimitSell );
-            default:
-                break;
-            }
-            break;
-        case 'M':
-            switch( pTradeType[2] )
-            {
-            case 'B':
-                return( eMarketBuy );
-            case 'S':
-                return( eMarketSell );
-            default:
-                break;
-            }
-            break;
-        case 'S':
-            switch( pTradeType[2] )
-            {
-            case 'L':
-                return( eStopLoss );
-            default:
-                break;
+    switch (pTradeType[0]) {
+        case 'T':
+            switch (pTradeType[1]) {
+                case 'L':
+                    switch (pTradeType[2]) {
+                        case 'B':
+                            return (eLimitBuy);
+                        case 'S':
+                            return (eLimitSell);
+                        default:
+                            break;
+                    }
+                    break;
+                case 'M':
+                    switch (pTradeType[2]) {
+                        case 'B':
+                            return (eMarketBuy);
+                        case 'S':
+                            return (eMarketSell);
+                        default:
+                            break;
+                    }
+                    break;
+                case 'S':
+                    switch (pTradeType[2]) {
+                        case 'L':
+                            return (eStopLoss);
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
             }
             break;
         default:
             break;
-        }
-        break;
-    default:
-        break;
     }
 
     // Throw exception - should never get here

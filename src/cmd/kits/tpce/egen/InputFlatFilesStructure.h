@@ -49,72 +49,52 @@
 #include "CompanyCompetitorFile.h"
 #include "SecurityFile.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-enum eOutputVerbosity
-{
-  eOutputQuiet,
-  eOutputVerbose
-};
+    enum eOutputVerbosity {
+        eOutputQuiet,
+        eOutputVerbose
+    };
 
 //Pointers to all the input files structure
-class CInputFiles
-{
-  public:
-    TAreaCodeFile               *AreaCodes;
-    TChargeFile                 *Charge;
-    TCommissionRateFile         *CommissionRate;
-    CCompanyFile                *Company;
-    CCompanyCompetitorFile      *CompanyCompetitor;
-    TCompanySPRateFile          *CompanySPRate;
-    TExchangeFile               *Exchange;
-    TFemaleFirstNamesFile       *FemaleFirstNames;
-    TIndustryFile               *Industry;
-    TLastNamesFile              *LastNames;
-    TMaleFirstNamesFile         *MaleFirstNames;
-    TNewsFile                   *News;
-    TSectorFile                 *Sectors;
-    CSecurityFile               *Securities;
-    TStatusTypeFile             *StatusType;
-    TStreetNamesFile            *Street;
-    TStreetSuffixFile           *StreetSuffix;
-    TTaxableAccountNameFile     *TaxableAccountName;
-    TNonTaxableAccountNameFile  *NonTaxableAccountName;
-    TTaxRatesCountryFile        *TaxRatesCountry;
-    TTaxRatesDivisionFile       *TaxRatesDivision;
-    TTradeTypeFile              *TradeType;
-    TZipCodeFile                *ZipCode;
+    class CInputFiles {
+    public:
+        TAreaCodeFile *AreaCodes;
+        TChargeFile *Charge;
+        TCommissionRateFile *CommissionRate;
+        CCompanyFile *Company;
+        CCompanyCompetitorFile *CompanyCompetitor;
+        TCompanySPRateFile *CompanySPRate;
+        TExchangeFile *Exchange;
+        TFemaleFirstNamesFile *FemaleFirstNames;
+        TIndustryFile *Industry;
+        TLastNamesFile *LastNames;
+        TMaleFirstNamesFile *MaleFirstNames;
+        TNewsFile *News;
+        TSectorFile *Sectors;
+        CSecurityFile *Securities;
+        TStatusTypeFile *StatusType;
+        TStreetNamesFile *Street;
+        TStreetSuffixFile *StreetSuffix;
+        TTaxableAccountNameFile *TaxableAccountName;
+        TNonTaxableAccountNameFile *NonTaxableAccountName;
+        TTaxRatesCountryFile *TaxRatesCountry;
+        TTaxRatesDivisionFile *TaxRatesDivision;
+        TTradeTypeFile *TradeType;
+        TZipCodeFile *ZipCode;
 
-    CInputFiles() 
-        : AreaCodes(NULL)
-        , Charge(NULL)
-        , CommissionRate(NULL)
-        , Company(NULL)
-        , CompanyCompetitor(NULL)
-        , CompanySPRate(NULL)
-        , Exchange(NULL)
-        , FemaleFirstNames(NULL)
-        , Industry(NULL)
-        , LastNames(NULL)
-        , MaleFirstNames(NULL)
-        , News(NULL)
-        , Sectors(NULL)
-        , Securities(NULL)
-        , StatusType(NULL)
-        , Street(NULL)
-        , StreetSuffix(NULL)
-        , TaxableAccountName(NULL)
-        , NonTaxableAccountName(NULL)
-        , TaxRatesCountry(NULL)
-        , TaxRatesDivision(NULL)
-        , TradeType(NULL)
-        , ZipCode(NULL)
-    {};
-    ~CInputFiles() {};
+        CInputFiles()
+                : AreaCodes(NULL), Charge(NULL), CommissionRate(NULL), Company(NULL), CompanyCompetitor(NULL),
+                  CompanySPRate(NULL), Exchange(NULL), FemaleFirstNames(NULL), Industry(NULL), LastNames(NULL),
+                  MaleFirstNames(NULL), News(NULL), Sectors(NULL), Securities(NULL), StatusType(NULL), Street(NULL),
+                  StreetSuffix(NULL), TaxableAccountName(NULL), NonTaxableAccountName(NULL), TaxRatesCountry(NULL),
+                  TaxRatesDivision(NULL), TradeType(NULL), ZipCode(NULL) {};
 
-        bool Initialize(eDriverType eType, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount, const char *szPathName);
-};
+        ~CInputFiles() {};
+
+        bool Initialize(eDriverType eType, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+                        const char *szPathName);
+    };
 
 }   // namespace TPCE
 

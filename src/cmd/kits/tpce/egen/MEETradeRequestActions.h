@@ -42,14 +42,12 @@
 #ifndef MEE_TRADE_REQUEST_ACTIONS_H
 #define MEE_TRADE_REQUEST_ACTIONS_H
 
-namespace TPCE
-{
+namespace tpce {
 
-enum eMEETradeRequestAction
-{
-    eMEEProcessOrder = 0,
-    eMEESetLimitOrderTrigger
-};
+    enum eMEETradeRequestAction {
+        eMEEProcessOrder = 0,
+        eMEESetLimitOrderTrigger
+    };
 
 } //namespace TPCE
 

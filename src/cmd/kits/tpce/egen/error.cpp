@@ -34,14 +34,12 @@
  * - Sergey Vasilevskiy
  */
 
-#include "workload/tpce/egen/EGenUtilities_stdafx.h"    // Windows-specific error file
+#include "EGenUtilities_stdafx.h"    // Windows-specific error file
 
-using namespace TPCE;
+using namespace tpce;
 
-CSystemErr::CSystemErr(Action eAction, char const * szLocation) 
-    : CBaseErr(szLocation)
-    , m_eAction(eAction)
-{
+CSystemErr::CSystemErr(Action eAction, char const *szLocation)
+        : CBaseErr(szLocation), m_eAction(eAction) {
 #ifdef WIN32
     m_idMsg = GetLastError();   //for Windows
 #elif (__unix) || (_AIX)
@@ -51,16 +49,13 @@ CSystemErr::CSystemErr(Action eAction, char const * szLocation)
 #endif
 }
 
-CSystemErr::CSystemErr(int iError, Action eAction, char const * szLocation) 
-    : CBaseErr(szLocation)
-    , m_eAction(eAction)
-{
+CSystemErr::CSystemErr(int iError, Action eAction, char const *szLocation)
+        : CBaseErr(szLocation), m_eAction(eAction) {
     // This constructor is provided for registry functions where the function return code
     // is the error code.
     m_idMsg = iError;
 }
 
-const char * CSystemErr::ErrorText() const
-{
+const char *CSystemErr::ErrorText() const {
     return strerror(m_idMsg);
 }

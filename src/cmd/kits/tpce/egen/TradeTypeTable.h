@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CTradeTypeTable : public TableTemplate<TRADE_TYPE_ROW>
-{
-    ifstream    InFile;
+    class CTradeTypeTable : public TableTemplate<TRADE_TYPE_ROW> {
+        ifstream InFile;
 
-public:
-    CTradeTypeTable( char *szDirName )
-        : TableTemplate<TRADE_TYPE_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CTradeTypeTable(char *szDirName)
+                : TableTemplate<TRADE_TYPE_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "TradeType.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "TradeType.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CTradeTypeTable( )
-    {
-        InFile.close();
-    };
+        ~CTradeTypeTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

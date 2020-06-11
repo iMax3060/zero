@@ -39,94 +39,78 @@
 *                       See WheelTime.h for a high level description.
 ******************************************************************************/
 
-#include "workload/tpce/egen/WheelTime.h"
+#include "WheelTime.h"
 
-using namespace TPCE;
+using namespace tpce;
 
-CWheelTime::CWheelTime( PWheelConfig pWheelConfig )
-    : m_pWheelConfig( pWheelConfig )
-    , m_Cycles( 0 )
-    , m_Index( 0 )
-{
+CWheelTime::CWheelTime(PWheelConfig pWheelConfig)
+        : m_pWheelConfig(pWheelConfig), m_Cycles(0), m_Index(0) {
 }
 
-CWheelTime::CWheelTime( PWheelConfig pWheelConfig, INT32 cycles, INT32 index )
-    : m_pWheelConfig( pWheelConfig )
-    , m_Cycles( cycles )
-    , m_Index( index )
-{
+CWheelTime::CWheelTime(PWheelConfig pWheelConfig, INT32 cycles, INT32 index)
+        : m_pWheelConfig(pWheelConfig), m_Cycles(cycles), m_Index(index) {
 }
 
-CWheelTime::CWheelTime( PWheelConfig pWheelConfig, CDateTime& Base, CDateTime& Now, INT32 offset )
-    : m_pWheelConfig( pWheelConfig )
-{
-    Set( Base , Now );
-    Add( offset );
+CWheelTime::CWheelTime(PWheelConfig pWheelConfig, CDateTime &Base, CDateTime &Now, INT32 offset)
+        : m_pWheelConfig(pWheelConfig) {
+    Set(Base, Now);
+    Add(offset);
 }
 
-CWheelTime::~CWheelTime( void )
-{
+CWheelTime::~CWheelTime(void) {
 }
 
-void CWheelTime::Add( INT32 Interval )
-{
+void CWheelTime::Add(INT32 Interval) {
     //DJ - should throw error if Interval >= m_pWheelConfig->WheelSize?
     m_Cycles += Interval / m_pWheelConfig->WheelSize;
     m_Index += Interval % m_pWheelConfig->WheelSize;
-    if( m_Index >= m_pWheelConfig->WheelSize )
-    {
+    if (m_Index >= m_pWheelConfig->WheelSize) {
         //Handle wrapping in the wheel - assume we don't allow multi-cycle intervals
         m_Cycles++;
         m_Index -= m_pWheelConfig->WheelSize;
     }
 }
 
-INT32 CWheelTime::Offset( const CWheelTime& Time )
-{
-    INT32   Interval;
+INT32 CWheelTime::Offset(const CWheelTime &Time) {
+    INT32 Interval;
 
-    Interval = ( m_Cycles - Time.m_Cycles ) * m_pWheelConfig->WheelSize;
-    Interval += ( m_Index - Time.m_Index );
-    return( Interval );
+    Interval = (m_Cycles - Time.m_Cycles) * m_pWheelConfig->WheelSize;
+    Interval += (m_Index - Time.m_Index);
+    return (Interval);
 }
 
-void CWheelTime::Set( INT32 cycles, INT32 index )
-{
+void CWheelTime::Set(INT32 cycles, INT32 index) {
     m_Cycles = cycles;
     m_Index = index;    //DJ - should throw error if Index >= m_pWheelConfig->WheelSize
 }
 
 // Set is overloaded. This version is used by the timer wheel.
-void CWheelTime::Set( CDateTime& Base, CDateTime& Now )
-{
-    INT32       offset; //offset from BaseTime in milliseconds
+void CWheelTime::Set(CDateTime &Base, CDateTime &Now) {
+    INT32 offset; //offset from BaseTime in milliseconds
 
     //DJ - If Now < Base, then we should probably throw an exception
 
-    offset = Now.DiffInMilliSeconds( Base ) / m_pWheelConfig->WheelResolution; // convert based on wheel resolution
+    offset = Now.DiffInMilliSeconds(Base) / m_pWheelConfig->WheelResolution; // convert based on wheel resolution
     m_Cycles = offset / m_pWheelConfig->WheelSize;
     m_Index = offset % m_pWheelConfig->WheelSize;
 }
 
 // Set is overloaded. This version is used by the event wheel.
-void CWheelTime::Set( CDateTime* pBase, CDateTime* pNow )
-{
-    INT32       offset; //offset from BaseTime in milliseconds
+void CWheelTime::Set(CDateTime *pBase, CDateTime *pNow) {
+    INT32 offset; //offset from BaseTime in milliseconds
 
     //DJ - If Now < Base, then we should probably throw an exception
 
-    offset = pNow->DiffInMilliSeconds( pBase ) / m_pWheelConfig->WheelResolution; // convert based on wheel resolution
+    offset = pNow->DiffInMilliSeconds(pBase) / m_pWheelConfig->WheelResolution; // convert based on wheel resolution
     m_Cycles = offset / m_pWheelConfig->WheelSize;
     m_Index = offset % m_pWheelConfig->WheelSize;
 }
 
-bool CWheelTime::operator <(const CWheelTime& Time)
-{
-    return ( m_Cycles == Time.m_Cycles ) ? ( m_Index < Time.m_Index ) : ( m_Cycles < Time.m_Cycles );
+bool CWheelTime::operator<(const CWheelTime &Time) {
+    return (m_Cycles == Time.m_Cycles) ? (m_Index < Time.m_Index) : (m_Cycles < Time.m_Cycles);
 }
 
-CWheelTime& CWheelTime::operator = (const CWheelTime& Time)
-{
+CWheelTime &CWheelTime::operator=(const CWheelTime &Time) {
     m_pWheelConfig = Time.m_pWheelConfig;
     m_Cycles = Time.m_Cycles;
     m_Index = Time.m_Index;
@@ -134,14 +118,12 @@ CWheelTime& CWheelTime::operator = (const CWheelTime& Time)
     return *this;
 }
 
-CWheelTime& CWheelTime::operator += ( const INT32& Interval )
-{
-    Add( Interval );
+CWheelTime &CWheelTime::operator+=(const INT32 &Interval) {
+    Add(Interval);
     return *this;
 }
 
-CWheelTime CWheelTime::operator ++ ( INT32 )
-{
-    Add( 1 );
+CWheelTime CWheelTime::operator++(INT32) {
+    Add(1);
     return *this;
 }

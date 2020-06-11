@@ -46,8 +46,7 @@
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::load_and_register_fid(ss_m* db)
-{
+w_rc_t table_man_t<T>::load_and_register_fid(ss_m *db) {
     assert (_ptable);
     assert (db);
     _ptable->set_db(db);
@@ -57,7 +56,6 @@ w_rc_t table_man_t<T>::load_and_register_fid(ss_m* db)
 
     return (RCOK);
 }
-
 
 
 /*********************************************************************
@@ -71,18 +69,17 @@ w_rc_t table_man_t<T>::load_and_register_fid(ss_m* db)
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::index_probe(ss_m* db,
-                                index_desc_t* pindex,
-                                table_row_t*  ptuple,
-                                lock_mode_t   /* lock_mode */,
-                                const PageID& /* root */)
-{
+w_rc_t table_man_t<T>::index_probe(ss_m *db,
+                                   index_desc_t *pindex,
+                                   table_row_t *ptuple,
+                                   lock_mode_t   /* lock_mode */,
+                                   const PageID & /* root */) {
     assert (_ptable);
     assert (pindex);
     assert (ptuple);
     assert (ptuple->_rep);
 
-    bool     found = false;
+    bool found = false;
     // smsize_t len = sizeof(rid_t);
 
     // if index created with NO-LOCK option (e.g., DORA) then:
@@ -107,13 +104,12 @@ w_rc_t table_man_t<T>::index_probe(ss_m* db,
 
         smsize_t len = ptuple->_rep->_bufsz;
         W_DO(db->find_assoc(pindex->stid(), kstr, ptuple->_rep->_dest, len,
-                    found));
+                            found));
         if (!found) return RC(se_TUPLE_NOT_FOUND);
 
         // load the non-key fields into the tuple
         ptuple->load_value(ptuple->_rep->_dest, pindex);
-    }
-    else {
+    } else {
         // get (max) length of the reference key
         // place ref key into tuple buffer, overwriting previous key
         // CS TODO -- here we assume that there is enough space in the buffer
@@ -125,14 +121,14 @@ w_rc_t table_man_t<T>::index_probe(ss_m* db,
         // int ref_sz = key_size(ptuple->_ptable->primary_idx());
         // ptuple->_rep_key->set(ref_sz);
         W_DO(db->find_assoc(pindex->stid(), kstr, ptuple->_rep_key->_dest, len,
-                    found));
+                            found));
 
         if (!found) return RC(se_TUPLE_NOT_FOUND);
 
         // read the tuple from the primary index
         kstr.construct_regularkey(ptuple->_rep_key->_dest, len);
         W_DO(db->find_assoc(pindex->table()->get_primary_stid(), kstr,
-                    ptuple->_rep->_dest, len, found));
+                            ptuple->_rep->_dest, len, found));
 
         if (!found) return RC(se_TUPLE_NOT_FOUND);
     }
@@ -162,11 +158,10 @@ w_rc_t table_man_t<T>::index_probe(ss_m* db,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::add_tuple(ss_m* db,
-                              table_row_t* ptuple,
-                              const lock_mode_t /* lock_mode */,
-                              const PageID& /* primary_root */)
-{
+w_rc_t table_man_t<T>::add_tuple(ss_m *db,
+                                 table_row_t *ptuple,
+                                 const lock_mode_t /* lock_mode */,
+                                 const PageID & /* primary_root */) {
     assert (_ptable);
     assert (ptuple);
     assert (ptuple->_rep);
@@ -177,7 +172,7 @@ w_rc_t table_man_t<T>::add_tuple(ss_m* db,
     // bool bIgnoreLocks = false;
     // if (lock_mode==NL) bIgnoreLocks = true;
 
-    index_desc_t* pindex = _ptable->primary_idx();
+    index_desc_t *pindex = _ptable->primary_idx();
 
     // build tuple data without index fields
     size_t tsz = ptuple->_rep->_bufsz;
@@ -193,7 +188,7 @@ w_rc_t table_man_t<T>::add_tuple(ss_m* db,
     W_DO(db->create_assoc(pindex->stid(), kstr, vec_t(ptuple->_rep->_dest, tsz)));
 
     // update the indexes
-    const std::vector<index_desc_t*>& indexes = _ptable->get_indexes();
+    const std::vector<index_desc_t *> &indexes = _ptable->get_indexes();
     for (size_t i = 0; i < indexes.size(); i++) {
         size_t sec_ksz = ptuple->_rep->_bufsz;
         ptuple->store_key(ptuple->_rep->_dest, sec_ksz, indexes[i]);
@@ -202,14 +197,12 @@ w_rc_t table_man_t<T>::add_tuple(ss_m* db,
 
         // primary key value (i.e., pointer) is stored in _rep_key
         W_DO(db->create_assoc(indexes[i]->stid(),
-                    sec_kstr,
-                    vec_t(ptuple->_rep_key->_dest, ksz)
-                    ));
+                              sec_kstr,
+                              vec_t(ptuple->_rep_key->_dest, ksz)
+        ));
     }
     return (RCOK);
 }
-
-
 
 
 /*********************************************************************
@@ -223,18 +216,17 @@ w_rc_t table_man_t<T>::add_tuple(ss_m* db,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::add_index_entry(ss_m* db,
-				    const char* idx_name,
-				    table_row_t* ptuple,
-				    const lock_mode_t /* lock_mode */,
-				    const PageID& /* primary_root */)
-{
+w_rc_t table_man_t<T>::add_index_entry(ss_m *db,
+                                       const char *idx_name,
+                                       table_row_t *ptuple,
+                                       const lock_mode_t /* lock_mode */,
+                                       const PageID & /* primary_root */) {
     assert (_ptable);
     assert (ptuple);
     assert (ptuple->_rep);
 
     // get the index
-    index_desc_t* pindex = _ptable->find_index(idx_name);
+    index_desc_t *pindex = _ptable->find_index(idx_name);
     assert (pindex);
 
     // if (!ptuple->is_rid_valid()) return RC(se_NO_CURRENT_TUPLE);
@@ -248,7 +240,7 @@ w_rc_t table_man_t<T>::add_index_entry(ss_m* db,
     // build primary key value (i.e., pointer)
     size_t ksz = ptuple->_rep_key->_bufsz;
     ptuple->store_key(ptuple->_rep_key->_dest, ksz,
-            ptuple->_ptable->primary_idx());
+                      ptuple->_ptable->primary_idx());
 
     // update the index
     size_t sec_ksz = ptuple->_rep->_bufsz;
@@ -256,9 +248,9 @@ w_rc_t table_man_t<T>::add_index_entry(ss_m* db,
     w_keystr_t sec_kstr;
     sec_kstr.construct_regularkey(ptuple->_rep->_dest, sec_ksz);
     W_DO(db->create_assoc(pindex->stid(),
-                sec_kstr,
-                vec_t(ptuple->_rep_key->_dest, ksz)
-                ));
+                          sec_kstr,
+                          vec_t(ptuple->_rep_key->_dest, ksz)
+    ));
 
     return (RCOK);
 }
@@ -276,11 +268,10 @@ w_rc_t table_man_t<T>::add_index_entry(ss_m* db,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::delete_tuple(ss_m* db,
-                                 table_row_t* ptuple,
-                                 const lock_mode_t /* lock_mode */,
-                                 const PageID& /* primary_root */)
-{
+w_rc_t table_man_t<T>::delete_tuple(ss_m *db,
+                                    table_row_t *ptuple,
+                                    const lock_mode_t /* lock_mode */,
+                                    const PageID & /* primary_root */) {
     assert (_ptable);
     assert (ptuple);
     assert (ptuple->_rep);
@@ -294,7 +285,7 @@ w_rc_t table_man_t<T>::delete_tuple(ss_m* db,
     // if (lock_mode==NL) bIgnoreLocks = true;
 
     // delete all the corresponding index entries
-    std::vector<index_desc_t*>& indexes = _ptable->get_indexes();
+    std::vector<index_desc_t *> &indexes = _ptable->get_indexes();
     for (size_t i = 0; i < indexes.size(); i++) {
         size_t ksz = ptuple->_rep->_bufsz;
         ptuple->store_key(ptuple->_rep->_dest, ksz, indexes[i]);
@@ -321,8 +312,6 @@ w_rc_t table_man_t<T>::delete_tuple(ss_m* db,
 }
 
 
-
-
 /*********************************************************************
  *
  *  @fn:    delete_index_entry
@@ -335,17 +324,16 @@ w_rc_t table_man_t<T>::delete_tuple(ss_m* db,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::delete_index_entry(ss_m* db,
-				       const char* idx_name,
-				       table_row_t* ptuple,
-				       const lock_mode_t /* lock_mode */,
-				       const PageID& /* primary_root */)
-{
+w_rc_t table_man_t<T>::delete_index_entry(ss_m *db,
+                                          const char *idx_name,
+                                          table_row_t *ptuple,
+                                          const lock_mode_t /* lock_mode */,
+                                          const PageID & /* primary_root */) {
     assert (_ptable);
     assert (ptuple);
     assert (ptuple->_rep);
 
-    index_desc_t* pindex = _ptable->find_index(idx_name);
+    index_desc_t *pindex = _ptable->find_index(idx_name);
     assert (pindex);
 
     // if (!ptuple->is_rid_valid()) return RC(se_NO_CURRENT_TUPLE);
@@ -370,8 +358,6 @@ w_rc_t table_man_t<T>::delete_index_entry(ss_m* db,
 }
 
 
-
-
 /*********************************************************************
  *
  *  @fn:    update_tuple
@@ -390,9 +376,9 @@ w_rc_t table_man_t<T>::delete_index_entry(ss_m* db,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::update_tuple(ss_m* db,
-                                 table_row_t* ptuple,
-                                 const lock_mode_t  /* lock_mode */) // physical_design_t
+w_rc_t table_man_t<T>::update_tuple(ss_m *db,
+                                    table_row_t *ptuple,
+                                    const lock_mode_t  /* lock_mode */) // physical_design_t
 {
     // CS TODO -- calling overwrite directly, which only works if updated
     // tuple did not grow (shrinking should be ok).
@@ -412,7 +398,7 @@ w_rc_t table_man_t<T>::update_tuple(ss_m* db,
     w_keystr_t kstr;
     kstr.construct_regularkey(ptuple->_rep_key->_dest, ksz);
     W_DO(db->overwrite_assoc(table()->primary_idx()->stid(),
-                kstr, ptuple->_rep->_dest, 0, elen));
+                             kstr, ptuple->_rep->_dest, 0, elen));
 
     return RCOK;
 
@@ -478,9 +464,8 @@ w_rc_t table_man_t<T>::update_tuple(ss_m* db,
 }
 
 template<class T>
-w_rc_t table_man_t<T>::print_table(ostream& os, unsigned int num_lines)
-{
-    table_row_t* row = get_tuple();
+w_rc_t table_man_t<T>::print_table(ostream &os, unsigned int num_lines) {
+    table_row_t *row = get_tuple();
     rep_row_t rep(ts());
     rep_row_t repkey(ts());
     rep.set(table()->maxsize());
@@ -506,10 +491,9 @@ w_rc_t table_man_t<T>::print_table(ostream& os, unsigned int num_lines)
 }
 
 template<class T>
-w_rc_t table_man_t<T>::print_index(unsigned ind, ostream& os,
-        unsigned int num_lines, bool need_tuple)
-{
-    table_row_t* row = get_tuple();
+w_rc_t table_man_t<T>::print_index(unsigned ind, ostream &os,
+                                   unsigned int num_lines, bool need_tuple) {
+    table_row_t *row = get_tuple();
     rep_row_t rep(ts());
     rep_row_t repkey(ts());
     rep.set(table()->maxsize());
@@ -517,7 +501,7 @@ w_rc_t table_man_t<T>::print_index(unsigned ind, ostream& os,
     row->_rep = &rep;
     row->_rep_key = &repkey;
 
-    index_desc_t* pindex = table()->get_indexes()[ind];
+    index_desc_t *pindex = table()->get_indexes()[ind];
     w_assert0(pindex);
     index_scan_iter_impl<T> scanner(pindex, this, need_tuple);
     scanner.open_scan();
@@ -553,15 +537,14 @@ w_rc_t table_man_t<T>::print_index(unsigned ind, ostream& os,
  *********************************************************************/
 
 template<class T>
-w_rc_t table_man_t<T>::fetch_table(ss_m* db, lock_mode_t /* alm */)
-{
+w_rc_t table_man_t<T>::fetch_table(ss_m *db, lock_mode_t /* alm */) {
     assert (db);
     assert (_ptable);
 
     bool eof = false;
     int counter = -1;
 
-    table_row_t* tuple = get_tuple();
+    table_row_t *tuple = get_tuple();
     rep_row_t areprow(ts());
     rep_row_t areprow_key(ts());
     areprow.set(_ptable->maxsize());
@@ -573,22 +556,22 @@ w_rc_t table_man_t<T>::fetch_table(ss_m* db, lock_mode_t /* alm */)
 
     // 1. scan the table
     table_scan_iter_impl<T> t_scan(this);
-    while(!eof) {
-	W_DO(t_scan.next(eof, *tuple));
-	counter++;
+    while (!eof) {
+        W_DO(t_scan.next(eof, *tuple));
+        counter++;
     }
-    TRACE( TRACE_ALWAYS, "%s:%d pages\n", _ptable->name(), counter);
+    TRACE(TRACE_ALWAYS, "%s:%d pages\n", _ptable->name(), counter);
 
     // 2. scan the indexes
     for (auto index : _ptable->get_indexes()) {
         index_scan_iter_impl<T> i_scan(index, this);
         eof = false;
         counter = -1;
-        while(!eof) {
+        while (!eof) {
             W_DO(i_scan.next(eof, *tuple));
             counter++;
         }
-        TRACE( TRACE_ALWAYS, "\t%s:%d pages\n", index->name().c_str(), counter);
+        TRACE(TRACE_ALWAYS, "\t%s:%d pages\n", index->name().c_str(), counter);
     }
 
     W_DO(db->commit_xct());
@@ -618,7 +601,7 @@ void table_fetcher_t::work()
     assert(_env);
     w_rc_t e = _env->db_fetch();
     if(e.is_error()) {
-	cerr << "Error while fetching db!" << endl << e << endl;
+    cerr << "Error while fetching db!" << endl << e << endl;
     }
 }
 

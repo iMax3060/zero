@@ -39,44 +39,38 @@
 
 #include "TxnHarnessDBInterface.h"
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CTradeStatus
-{
-    CTradeStatusDBInterface* m_db;
+    class CTradeStatus {
+        CTradeStatusDBInterface *m_db;
 
-public:
-    CTradeStatus(CTradeStatusDBInterface *pDB)
-        : m_db(pDB)
-    {
-    }
-
-    void DoTxn( PTradeStatusTxnInput pTxnInput, PTradeStatusTxnOutput pTxnOutput)
-    {
-        // Initialization 
-        TTradeStatusFrame1Output    Frame1Output;
-        memset(&Frame1Output, 0, sizeof( Frame1Output ));
-
-        TXN_HARNESS_SET_STATUS_SUCCESS;
-
-        // Execute Frame 1
-        m_db->DoTradeStatusFrame1(pTxnInput, &Frame1Output);
-
-        // Validate Frame 1 Output
-        if (Frame1Output.num_found != max_trade_status_len)
-        {
-            TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TSF1_ERROR1);
+    public:
+        CTradeStatus(CTradeStatusDBInterface *pDB)
+                : m_db(pDB) {
         }
 
-        // Copy Frame 1 Output 
-        for (int i=0; i < Frame1Output.num_found && i < max_trade_status_len; i++)
-        {
-            strncpy( pTxnOutput->status_name[i], Frame1Output.status_name[i], sizeof( pTxnOutput->status_name[i] ));
-            pTxnOutput->trade_id[i] = Frame1Output.trade_id[i];
+        void DoTxn(PTradeStatusTxnInput pTxnInput, PTradeStatusTxnOutput pTxnOutput) {
+            // Initialization
+            TTradeStatusFrame1Output Frame1Output;
+            memset(&Frame1Output, 0, sizeof(Frame1Output));
+
+            TXN_HARNESS_SET_STATUS_SUCCESS;
+
+            // Execute Frame 1
+            m_db->DoTradeStatusFrame1(pTxnInput, &Frame1Output);
+
+            // Validate Frame 1 Output
+            if (Frame1Output.num_found != max_trade_status_len) {
+                TXN_HARNESS_PROPAGATE_STATUS(CBaseTxnErr::TSF1_ERROR1);
+            }
+
+            // Copy Frame 1 Output
+            for (int i = 0; i < Frame1Output.num_found && i < max_trade_status_len; i++) {
+                strncpy(pTxnOutput->status_name[i], Frame1Output.status_name[i], sizeof(pTxnOutput->status_name[i]));
+                pTxnOutput->trade_id[i] = Frame1Output.trade_id[i];
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

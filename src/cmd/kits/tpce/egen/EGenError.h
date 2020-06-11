@@ -45,40 +45,33 @@
 
 using namespace std;
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CEGenErrorMessages
-{
-private:
-public:
-};
+    class CEGenErrorMessages {
+    private:
+    public:
+    };
 
-class CEGenErrorException
-{
-private:
-    string  m_Msg;
+    class CEGenErrorException {
+    private:
+        string m_Msg;
 
-public:
-    CEGenErrorException( string Msg )
-    {
-        m_Msg = Msg;
-    }
+    public:
+        CEGenErrorException(string Msg) {
+            m_Msg = Msg;
+        }
 
-    ~CEGenErrorException( void )
-    {
-    }
+        ~CEGenErrorException(void) {
+        }
 
-    void AddMsg( string Msg )
-    {
-        m_Msg += Msg;
-    }
+        void AddMsg(string Msg) {
+            m_Msg += Msg;
+        }
 
-    string Msg( void )
-    {
-        return( m_Msg );
-    }
-};
+        string Msg(void) {
+            return (m_Msg);
+        }
+    };
 
 } // namespace TPCE
 

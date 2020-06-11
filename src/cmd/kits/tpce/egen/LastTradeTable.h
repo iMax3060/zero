@@ -44,101 +44,93 @@
 #include "SecurityFile.h"
 #include "MEESecurity.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CLastTradeTable : public TableTemplate<LAST_TRADE_ROW>
-{
-    TIdent              m_iSecurityCount;
-    TIdent              m_iStartFromSecurity;
-    CSecurityFile*      m_SecurityFile;
-    CDateTime           m_date;
-    CMEESecurity        m_MEESecurity;
-    int                 m_iHoursOfInitialTrades;
-    TIdent              m_iSecurityCountForOneLoadUnit;
+    class CLastTradeTable : public TableTemplate<LAST_TRADE_ROW> {
+        TIdent m_iSecurityCount;
+        TIdent m_iStartFromSecurity;
+        CSecurityFile *m_SecurityFile;
+        CDateTime m_date;
+        CMEESecurity m_MEESecurity;
+        int m_iHoursOfInitialTrades;
+        TIdent m_iSecurityCountForOneLoadUnit;
 
-    /*
-    *   LAST_TRADE table row generation
-    */
-    void GenerateLastTradeRow()
-    {
-        m_SecurityFile->CreateSymbol(m_iLastRowNumber, m_row.LT_S_SYMB, static_cast<int>(sizeof(m_row.LT_S_SYMB)));
+        /*
+        *   LAST_TRADE table row generation
+        */
+        void GenerateLastTradeRow() {
+            m_SecurityFile->CreateSymbol(m_iLastRowNumber, m_row.LT_S_SYMB, static_cast<int>(sizeof(m_row.LT_S_SYMB)));
 
-        m_row.LT_DTS = m_date;
+            m_row.LT_DTS = m_date;
 
-        m_MEESecurity.Init(m_iHoursOfInitialTrades * SecondsPerHour, NULL, NULL, 0);
+            m_MEESecurity.Init(m_iHoursOfInitialTrades * SecondsPerHour, NULL, NULL, 0);
 
-        m_row.LT_PRICE = m_MEESecurity.CalculatePrice(m_iLastRowNumber, 0).DollarAmount();
+            m_row.LT_PRICE = m_MEESecurity.CalculatePrice(m_iLastRowNumber, 0).DollarAmount();
 
-        m_row.LT_OPEN_PRICE = m_MEESecurity.CalculatePrice(m_iLastRowNumber, 0).DollarAmount();
+            m_row.LT_OPEN_PRICE = m_MEESecurity.CalculatePrice(m_iLastRowNumber, 0).DollarAmount();
 
-        // LT_VOL tracks the trading volume for the current day. Initial population
-        // ends on a day boundary, so set LT_VOL to 0 for the start of the next day.
-        m_row.LT_VOL = 0;
-    }
-
-    /*
-    *   Reset the state for the next load unit.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void InitNextLoadUnit()
-    {
-        //  No RNG calls in this class, so don't need to reset the RNG.
-
-        ClearRecord();  // this is needed for EGenTest to work
-    }
-
-public:
-    /*
-    *   Constructor.
-    */
-    CLastTradeTable(CInputFiles inputFiles,
-                    TIdent      iCustomerCount,
-                    TIdent      iStartFromCustomer,
-                    INT32       iHoursOfInitialTrades)
-        : TableTemplate<LAST_TRADE_ROW>()
-        , m_SecurityFile(inputFiles.Securities)
-        , m_iHoursOfInitialTrades( iHoursOfInitialTrades )
-    {
-        m_iSecurityCount = m_SecurityFile->CalculateSecurityCount(iCustomerCount);
-        m_iStartFromSecurity = m_SecurityFile->CalculateStartFromSecurity(iStartFromCustomer);
-
-        m_iLastRowNumber = m_iStartFromSecurity;
-
-        //  Go to the last day of initial trades. 
-        //
-        m_date.Set( InitialTradePopulationBaseYear, InitialTradePopulationBaseMonth,
-                    InitialTradePopulationBaseDay, InitialTradePopulationBaseHour,
-                    InitialTradePopulationBaseMinute, InitialTradePopulationBaseSecond,
-                    InitialTradePopulationBaseFraction);
-        m_date.Add(m_iHoursOfInitialTrades / HoursPerWorkDay, 0, true);
-
-        m_iSecurityCountForOneLoadUnit = m_SecurityFile->CalculateSecurityCount(iDefaultLoadUnitSize);
-    };
-
-
-    bool GenerateNextRecord()
-    {
-        if (m_iLastRowNumber % m_iSecurityCountForOneLoadUnit == 0)
-        {
-            InitNextLoadUnit();
+            // LT_VOL tracks the trading volume for the current day. Initial population
+            // ends on a day boundary, so set LT_VOL to 0 for the start of the next day.
+            m_row.LT_VOL = 0;
         }
 
-        GenerateLastTradeRow();
+        /*
+        *   Reset the state for the next load unit.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void InitNextLoadUnit() {
+            //  No RNG calls in this class, so don't need to reset the RNG.
 
-        ++m_iLastRowNumber;
+            ClearRecord();  // this is needed for EGenTest to work
+        }
 
-        //Update state info
-        m_bMoreRecords = m_iLastRowNumber < (m_iStartFromSecurity + m_iSecurityCount);
+    public:
+        /*
+        *   Constructor.
+        */
+        CLastTradeTable(CInputFiles inputFiles,
+                        TIdent iCustomerCount,
+                        TIdent iStartFromCustomer,
+                        INT32 iHoursOfInitialTrades)
+                : TableTemplate<LAST_TRADE_ROW>(), m_SecurityFile(inputFiles.Securities),
+                  m_iHoursOfInitialTrades(iHoursOfInitialTrades) {
+            m_iSecurityCount = m_SecurityFile->CalculateSecurityCount(iCustomerCount);
+            m_iStartFromSecurity = m_SecurityFile->CalculateStartFromSecurity(iStartFromCustomer);
 
-        return (MoreRecords());
-    }
-};
+            m_iLastRowNumber = m_iStartFromSecurity;
+
+            //  Go to the last day of initial trades.
+            //
+            m_date.Set(InitialTradePopulationBaseYear, InitialTradePopulationBaseMonth,
+                       InitialTradePopulationBaseDay, InitialTradePopulationBaseHour,
+                       InitialTradePopulationBaseMinute, InitialTradePopulationBaseSecond,
+                       InitialTradePopulationBaseFraction);
+            m_date.Add(m_iHoursOfInitialTrades / HoursPerWorkDay, 0, true);
+
+            m_iSecurityCountForOneLoadUnit = m_SecurityFile->CalculateSecurityCount(iDefaultLoadUnitSize);
+        };
+
+
+        bool GenerateNextRecord() {
+            if (m_iLastRowNumber % m_iSecurityCountForOneLoadUnit == 0) {
+                InitNextLoadUnit();
+            }
+
+            GenerateLastTradeRow();
+
+            ++m_iLastRowNumber;
+
+            //Update state info
+            m_bMoreRecords = m_iLastRowNumber < (m_iStartFromSecurity + m_iSecurityCount);
+
+            return (MoreRecords());
+        }
+    };
 
 }   // namespace TPCE
 

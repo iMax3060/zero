@@ -39,27 +39,23 @@
 
 #include "TxnHarnessDBInterface.h"
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CDataMaintenance
-{
-    CDataMaintenanceDBInterface* m_db;
+    class CDataMaintenance {
+        CDataMaintenanceDBInterface *m_db;
 
-public:
-    CDataMaintenance(CDataMaintenanceDBInterface *pDB)
-        : m_db(pDB)
-    {
+    public:
+        CDataMaintenance(CDataMaintenanceDBInterface *pDB)
+                : m_db(pDB) {
+        };
+
+        void DoTxn(PDataMaintenanceTxnInput pTxnInput, PDataMaintenanceTxnOutput pTxnOutput) {
+            TXN_HARNESS_SET_STATUS_SUCCESS;
+
+            // Execute Frame 1
+            m_db->DoDataMaintenanceFrame1(pTxnInput);
+        }
     };
-
-    void DoTxn( PDataMaintenanceTxnInput pTxnInput, PDataMaintenanceTxnOutput pTxnOutput )
-    {
-        TXN_HARNESS_SET_STATUS_SUCCESS;
-
-        // Execute Frame 1
-        m_db->DoDataMaintenanceFrame1(pTxnInput);
-    }
-};
 
 }   // namespace TPCE
 

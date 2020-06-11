@@ -46,8 +46,7 @@
 
 using namespace std;
 
-namespace TPCE
-{
+namespace tpce {
 
 // EGen Formatting Defaults
 #ifndef DATETIME_FORMAT
@@ -75,86 +74,79 @@ namespace TPCE
 #endif
 
 // EGen Formatting
-const int           FlatFileDateTimeFormat  = DATETIME_FORMAT;
-const int           FlatFileTimeFormat      = TIME_FORMAT;
-const int           FlatFileDateFormat      = DATE_FORMAT;
-const char* const   FlatFileBoolTrue        = BOOLEAN_TRUE;
-const char* const   FlatFileBoolFalse       = BOOLEAN_FALSE;
+    const int FlatFileDateTimeFormat = DATETIME_FORMAT;
+    const int FlatFileTimeFormat = TIME_FORMAT;
+    const int FlatFileDateFormat = DATE_FORMAT;
+    const char *const FlatFileBoolTrue = BOOLEAN_TRUE;
+    const char *const FlatFileBoolFalse = BOOLEAN_FALSE;
 
 // EGen Buffering
-const int           FlatFileBufferSize      = BUFFER_SIZE;
+    const int FlatFileBufferSize = BUFFER_SIZE;
 
 // Overwrite vs. append functionality for output flat files.
-enum FlatFileOutputModes {
-    FLAT_FILE_OUTPUT_APPEND = 0,
-    FLAT_FILE_OUTPUT_OVERWRITE
-};
+    enum FlatFileOutputModes {
+        FLAT_FILE_OUTPUT_APPEND = 0,
+        FLAT_FILE_OUTPUT_OVERWRITE
+    };
 
 /*
 *   FlatLoader class.
 */
-template <typename T> class CFlatFileLoader : public CBaseLoader<T>
-{
-protected:
-    FILE            *hOutFile;
+    template<typename T>
+    class CFlatFileLoader : public CBaseLoader<T> {
+    protected:
+        FILE *hOutFile;
 
-public:
+    public:
 
-    CFlatFileLoader(char *szFileName, FlatFileOutputModes FlatFileOutputMode);
-    ~CFlatFileLoader(void);
+        CFlatFileLoader(char *szFileName, FlatFileOutputModes FlatFileOutputMode);
 
-    virtual void WriteNextRecord(const T* next_record UNUSED) = 0;
-    void FinishLoad();  //finish load
+        ~CFlatFileLoader(void);
 
-};
+        virtual void WriteNextRecord(const T *next_record UNUSED) = 0;
+
+        void FinishLoad();  //finish load
+
+    };
 
 /*
 *       The constructor.
 */
-template <typename T>
-CFlatFileLoader<T>::CFlatFileLoader(char *szFileName, FlatFileOutputModes flatFileOutputMode)
-{
-        if( FLAT_FILE_OUTPUT_APPEND == flatFileOutputMode )
-        {
-                hOutFile = fopen( szFileName, "a" );
-        }
-        else if( FLAT_FILE_OUTPUT_OVERWRITE == flatFileOutputMode )
-        {
-                hOutFile = fopen( szFileName, "w" );
+    template<typename T>
+    CFlatFileLoader<T>::CFlatFileLoader(char *szFileName, FlatFileOutputModes flatFileOutputMode) {
+        if (FLAT_FILE_OUTPUT_APPEND == flatFileOutputMode) {
+            hOutFile = fopen(szFileName, "a");
+        } else if (FLAT_FILE_OUTPUT_OVERWRITE == flatFileOutputMode) {
+            hOutFile = fopen(szFileName, "w");
         }
 
-        if (!hOutFile)
-        {
+        if (!hOutFile) {
+            throw CSystemErr(CSystemErr::eCreateFile, "CFlatFileLoader<T>::CFlatFileLoader");
+        }
+
+        if (FlatFileBufferSize > 0) {
+            if (setvbuf(hOutFile, NULL, _IOFBF, FlatFileBufferSize)) {
                 throw CSystemErr(CSystemErr::eCreateFile, "CFlatFileLoader<T>::CFlatFileLoader");
+            }
         }
-
-        if (FlatFileBufferSize > 0)
-        {
-                if (setvbuf(hOutFile, NULL, _IOFBF, FlatFileBufferSize))
-                {
-                        throw CSystemErr(CSystemErr::eCreateFile, "CFlatFileLoader<T>::CFlatFileLoader");
-                }
-        }
-}
+    }
 
 /*
 *       Destructor.
 */
-template <typename T>
-CFlatFileLoader<T>::~CFlatFileLoader()
-{
+    template<typename T>
+    CFlatFileLoader<T>::~CFlatFileLoader() {
         fclose(hOutFile);
-}
+    }
 
 /*
 *       Commit sent rows. This needs to be called after the last row has been sent
 *       and before the object is destructed. Otherwise all rows will be discarded.
 */
-template <typename T>
-void CFlatFileLoader<T>::FinishLoad()
-{
+    template<typename T>
+    void CFlatFileLoader<T>::FinishLoad() {
         fflush(hOutFile);
-}
+    }
 
 }   // namespace TPCE
 

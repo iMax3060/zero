@@ -35,17 +35,11 @@
 #include <math.h>
 
 #include "sm_vas.h"
-#include "util.h"
 
-#include "sm/shore/shore_table_man.h"
-#include "workload/tpce/tpce_const.h"
+#include "table_man.h"
+#include "tpce_const.h"
 
-using namespace shore;
-
-
-ENTER_NAMESPACE(tpce);
-
-
+namespace tpce {
 
 /*********************************************************************
  *
@@ -61,48 +55,77 @@ ENTER_NAMESPACE(tpce);
 /* -------------------------------------------------- */
 
 // Fixed tables
-DECLARE_TABLE_SCHEMA_PD(sector_t);
+    DECLARE_TABLE_SCHEMA(sector_t);
 
-DECLARE_TABLE_SCHEMA_PD(charge_t);
-DECLARE_TABLE_SCHEMA_PD(commission_rate_t);
-DECLARE_TABLE_SCHEMA_PD(exchange_t);
-DECLARE_TABLE_SCHEMA_PD(industry_t);
-DECLARE_TABLE_SCHEMA_PD(status_type_t);
-DECLARE_TABLE_SCHEMA_PD(taxrate_t);
-DECLARE_TABLE_SCHEMA_PD(trade_type_t);
-DECLARE_TABLE_SCHEMA_PD(zip_code_t);
+    DECLARE_TABLE_SCHEMA(charge_t);
+
+    DECLARE_TABLE_SCHEMA(commission_rate_t);
+
+    DECLARE_TABLE_SCHEMA(exchange_t);
+
+    DECLARE_TABLE_SCHEMA(industry_t);
+
+    DECLARE_TABLE_SCHEMA(status_type_t);
+
+    DECLARE_TABLE_SCHEMA(taxrate_t);
+
+    DECLARE_TABLE_SCHEMA(trade_type_t);
+
+    DECLARE_TABLE_SCHEMA(zip_code_t);
 
 // Growing tables
-DECLARE_TABLE_SCHEMA_PD(cash_transaction_t);
-DECLARE_TABLE_SCHEMA_PD(settlement_t);
-DECLARE_TABLE_SCHEMA_PD(trade_t);
-DECLARE_TABLE_SCHEMA_PD(trade_history_t);
-DECLARE_TABLE_SCHEMA_PD(trade_request_t);
+    DECLARE_TABLE_SCHEMA(cash_transaction_t);
+
+    DECLARE_TABLE_SCHEMA(settlement_t);
+
+    DECLARE_TABLE_SCHEMA(trade_t);
+
+    DECLARE_TABLE_SCHEMA(trade_history_t);
+
+    DECLARE_TABLE_SCHEMA(trade_request_t);
 
 // Scaling tables
-DECLARE_TABLE_SCHEMA_PD(account_permission_t);
-DECLARE_TABLE_SCHEMA_PD(broker_t);
-DECLARE_TABLE_SCHEMA_PD(company_t);
-DECLARE_TABLE_SCHEMA_PD(customer_t);
-DECLARE_TABLE_SCHEMA_PD(company_competitor_t);
-DECLARE_TABLE_SCHEMA_PD(security_t);
-DECLARE_TABLE_SCHEMA_PD(customer_account_t);
-DECLARE_TABLE_SCHEMA_PD(daily_market_t);
-DECLARE_TABLE_SCHEMA_PD(customer_taxrate_t);
-DECLARE_TABLE_SCHEMA_PD(holding_t);
-DECLARE_TABLE_SCHEMA_PD(financial_t);
-DECLARE_TABLE_SCHEMA_PD(holding_history_t);
-DECLARE_TABLE_SCHEMA_PD(address_t);
-DECLARE_TABLE_SCHEMA_PD(holding_summary_t);
-DECLARE_TABLE_SCHEMA_PD(last_trade_t);
-DECLARE_TABLE_SCHEMA_PD(watch_item_t);
-DECLARE_TABLE_SCHEMA_PD(news_item_t);
-DECLARE_TABLE_SCHEMA_PD(watch_list_t);
-DECLARE_TABLE_SCHEMA_PD(news_xref_t);
+    DECLARE_TABLE_SCHEMA(account_permission_t);
+
+    DECLARE_TABLE_SCHEMA(broker_t);
+
+    DECLARE_TABLE_SCHEMA(company_t);
+
+    DECLARE_TABLE_SCHEMA(customer_t);
+
+    DECLARE_TABLE_SCHEMA(company_competitor_t);
+
+    DECLARE_TABLE_SCHEMA(security_t);
+
+    DECLARE_TABLE_SCHEMA(customer_account_t);
+
+    DECLARE_TABLE_SCHEMA(daily_market_t);
+
+    DECLARE_TABLE_SCHEMA(customer_taxrate_t);
+
+    DECLARE_TABLE_SCHEMA(holding_t);
+
+    DECLARE_TABLE_SCHEMA(financial_t);
+
+    DECLARE_TABLE_SCHEMA(holding_history_t);
+
+    DECLARE_TABLE_SCHEMA(address_t);
+
+    DECLARE_TABLE_SCHEMA(holding_summary_t);
+
+    DECLARE_TABLE_SCHEMA(last_trade_t);
+
+    DECLARE_TABLE_SCHEMA(watch_item_t);
+
+    DECLARE_TABLE_SCHEMA(news_item_t);
+
+    DECLARE_TABLE_SCHEMA(watch_list_t);
+
+    DECLARE_TABLE_SCHEMA(news_xref_t);
 
 // Unknown
-DECLARE_TABLE_SCHEMA_PD(dimension_t);
+    DECLARE_TABLE_SCHEMA(dimension_t);
 
-EXIT_NAMESPACE(tpce);
+}
 
 #endif /* __SHORE_TPCE_SCHEMA_H */

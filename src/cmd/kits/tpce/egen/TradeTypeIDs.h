@@ -44,19 +44,17 @@
 #ifndef TRADE_TYPE_IDS_H
 #define TRADE_TYPE_IDS_H
 
-namespace TPCE
-{
+namespace tpce {
 
-enum eTradeTypeID
-{
-    eMarketBuy = 0,
-    eMarketSell,
-    eStopLoss,
-    eLimitSell,
-    eLimitBuy,
+    enum eTradeTypeID {
+        eMarketBuy = 0,
+        eMarketSell,
+        eStopLoss,
+        eLimitSell,
+        eLimitBuy,
 
-    eMaxTradeTypeID // should be the last - contains the number of items in the enumeration
-};
+        eMaxTradeTypeID // should be the last - contains the number of items in the enumeration
+    };
 
 } //namespace TPCE
 

@@ -28,12 +28,10 @@
  *  @author Ippokratis Pandis (ipandis)
  */
 
-#include "sm/shore/shore_helper_loader.h"
-#include "sm/shore/shore_env.h"
+#include "shore_helper_loader.h"
 
-
-using namespace shore;
-
+#include "shore_env.h"
+#include <thread>
 
 /****************************************************************** 
  *
@@ -43,38 +41,34 @@ using namespace shore;
  *          the Shore environment
  *
  ******************************************************************/
-    
-db_init_smt_t::db_init_smt_t(c_str tname, ShoreEnv* db) 
-    : thread_t(tname), _env(db)
-{
+
+db_init_smt_t::db_init_smt_t(ShoreEnv *db)
+        : std::thread(), _env(db) {
     assert (_env);
 }
 
 
-db_init_smt_t::~db_init_smt_t() 
-{ 
+db_init_smt_t::~db_init_smt_t() {
 }
 
-void db_init_smt_t::work()
-{
+void db_init_smt_t::work() {
     if (!_env->is_initialized()) {
         _rv = _env->init();
         if (_rv) {
             // Couldn't initialize the Shore environment
             // cannot proceed
-            TRACE( TRACE_ALWAYS, "Couldn't initialize Shore...\n");
+            TRACE(TRACE_ALWAYS, "Couldn't initialize Shore...\n");
             return;
         }
     }
 
     // if reached this point everything went ok
-    TRACE( TRACE_DEBUG, "Shore initialized...\n");
+    TRACE(TRACE_DEBUG, "Shore initialized...\n");
     _rv = 0;
 }
 
 
-
-/****************************************************************** 
+/******************************************************************
  *
  *  @class: db_log_smt_t
  *
@@ -83,52 +77,42 @@ void db_init_smt_t::work()
  *
  ******************************************************************/
 
-int db_init_smt_t::rv() 
-{ 
-    return (_rv); 
+int db_init_smt_t::rv() {
+    return (_rv);
 }
 
 
-void db_log_smt_t::work() 
-{
-    assert (_env);
+void db_log_smt_t::work() {
+    assert(_env);
     _rv = 0;
 }
 
 
-void db_load_smt_t::work() 
-{
+void db_load_smt_t::work() {
     _rc = _env->loaddata();
     _rv = 0;
 }
 
 
-
-void close_smt_t::work() 
-{
-    TRACE( TRACE_ALWAYS, "Closing Shore...\n");
-    if (_env != NULL) 
-    {
+void close_smt_t::work() {
+    TRACE(TRACE_ALWAYS, "Closing Shore...\n");
+    if (_env != NULL) {
         _env->close();
         delete (_env);
         _env = NULL;
-    }        
+    }
 }
 
 
-
-
-void dump_smt_t::work() 
-{
+void dump_smt_t::work() {
     assert (_env);
-    TRACE( TRACE_DEBUG, "Dumping...\n");
+    TRACE(TRACE_DEBUG, "Dumping...\n");
     _env->dump();
     _rv = 0;
 }
 
 
-
-/****************************************************************** 
+/******************************************************************
  *
  *  @class: abort_smt_t
  *
@@ -136,26 +120,22 @@ void dump_smt_t::work()
  *          aborting a list of transactions
  *
  ******************************************************************/
-    
-abort_smt_t::abort_smt_t(c_str tname, 
-                         ShoreEnv* env, 
-                         vector<xct_t*>& toabort)
-    : thread_t(tname), _env(env)
-{
+
+abort_smt_t::abort_smt_t(ShoreEnv *env,
+                         vector<xct_t *> &toabort)
+        : std::thread(), _env(env) {
     assert(env);
     _toabort = &toabort;
 }
- 
-abort_smt_t::~abort_smt_t()
-{
+
+abort_smt_t::~abort_smt_t() {
 }
 
-void abort_smt_t::work()
-{
+void abort_smt_t::work() {
     w_rc_t r = RCOK;
-    xct_t* victim = NULL;
+    xct_t *victim = NULL;
     me()->alloc_sdesc_cache();
-    for (vector<xct_t*>::iterator it = _toabort->begin();
+    for (vector<xct_t *>::iterator it = _toabort->begin();
          it != _toabort->end(); ++it) {
 
         victim = *it;
@@ -163,9 +143,8 @@ void abort_smt_t::work()
         _env->db()->attach_xct(victim);
         r = _env->db()->abort_xct();
         if (r.is_error()) {
-            TRACE( TRACE_ALWAYS, "Problem aborting (%x)\n", *it);
-        }
-        else {
+            TRACE(TRACE_ALWAYS, "Problem aborting (%x)\n", *it);
+        } else {
             _aborted++;
         }
     }

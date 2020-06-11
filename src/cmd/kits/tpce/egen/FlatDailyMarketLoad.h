@@ -42,36 +42,34 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatDailyMarketLoad : public CFlatFileLoader <DAILY_MARKET_ROW>
-{
-private:
-    CDateTime   Flat_DM_DATE;
-public:
-    CFlatDailyMarketLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<DAILY_MARKET_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatDailyMarketLoad : public CFlatFileLoader<DAILY_MARKET_ROW> {
+    private:
+        CDateTime Flat_DM_DATE;
+    public:
+        CFlatDailyMarketLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<DAILY_MARKET_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        Flat_DM_DATE = next_record->DM_DATE;
-        int rc = fprintf( hOutFile, DailyMarketRowFmt,
-                  Flat_DM_DATE.ToStr(FlatFileDateFormat),
-                  next_record->DM_S_SYMB,
-                  next_record->DM_CLOSE,
-                  next_record->DM_HIGH,
-                  next_record->DM_LOW,
-                  next_record->DM_VOL
-                );
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            Flat_DM_DATE = next_record->DM_DATE;
+            int rc = fprintf(hOutFile, DailyMarketRowFmt,
+                             Flat_DM_DATE.ToStr(FlatFileDateFormat),
+                             next_record->DM_S_SYMB,
+                             next_record->DM_CLOSE,
+                             next_record->DM_HIGH,
+                             next_record->DM_LOW,
+                             next_record->DM_VOL
+            );
 
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatDailyMarketLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatDailyMarketLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

@@ -42,29 +42,27 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatHoldingSummaryLoad : public CFlatFileLoader <HOLDING_SUMMARY_ROW>
-{
-public:
-    CFlatHoldingSummaryLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<HOLDING_SUMMARY_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatHoldingSummaryLoad : public CFlatFileLoader<HOLDING_SUMMARY_ROW> {
+    public:
+        CFlatHoldingSummaryLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<HOLDING_SUMMARY_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, HoldingSummaryRowFmt,
-                  next_record->HS_CA_ID,
-                  next_record->HS_S_SYMB,
-                  next_record->HS_QTY
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, HoldingSummaryRowFmt,
+                             next_record->HS_CA_ID,
+                             next_record->HS_S_SYMB,
+                             next_record->HS_QTY
             );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatHoldingSummaryLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatHoldingSummaryLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

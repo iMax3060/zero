@@ -45,44 +45,46 @@
 #include "InputFlatFilesDeclarations.h"
 #include "InputFlatFilesStructure.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 // Used for generating tax ID strings.
-const int   TaxIDFmt_len = 14;
-const char  TaxIDFmt[TaxIDFmt_len+1] = "nnnaannnnaannn";
+    const int TaxIDFmt_len = 14;
+    const char TaxIDFmt[TaxIDFmt_len + 1] = "nnnaannnnaannn";
 
-class CPerson
-{
-private:
+    class CPerson {
+    private:
 
-    TLastNamesFile          *m_LastNames;
-    TMaleFirstNamesFile     *m_MaleFirstNames;
-    TFemaleFirstNamesFile   *m_FemaleFirstNames;
+        TLastNamesFile *m_LastNames;
+        TMaleFirstNamesFile *m_MaleFirstNames;
+        TFemaleFirstNamesFile *m_FemaleFirstNames;
 
-    CRandom                 m_rnd;
-    bool                    m_bCacheEnabled;
-    int                     m_iCacheSize;
-    TIdent                  m_iCacheOffset;
-    char**                  m_CacheFirstName;
-    char**                  m_CacheLastName;
+        CRandom m_rnd;
+        bool m_bCacheEnabled;
+        int m_iCacheSize;
+        TIdent m_iCacheOffset;
+        char **m_CacheFirstName;
+        char **m_CacheLastName;
 
-public:
-    CPerson(CInputFiles inputFiles, TIdent iStartFromCustomer, bool bCacheEnabled = false);
+    public:
+        CPerson(CInputFiles inputFiles, TIdent iStartFromCustomer, bool bCacheEnabled = false);
 
-    ~CPerson();
-    void InitNextLoadUnit(TIdent iCacheOffsetIncrement = iDefaultLoadUnitSize);
+        ~CPerson();
 
-    char* GetLastName(TIdent CID);
-    char* GetFirstName(TIdent CID);
-    char GetMiddleName(TIdent CID);
-    char GetGender(TIdent CID); //'M' or 'F'
-    bool IsMaleGender(TIdent CID);  //TRUE if male, FALSE if female
-    void GetTaxID(TIdent CID, char *buf);
+        void InitNextLoadUnit(TIdent iCacheOffsetIncrement = iDefaultLoadUnitSize);
 
-    //get first name, last name, and tax id
-    void GetFirstLastAndTaxID(TIdent C_ID, char *szFirstName, char *szLastName, char *szTaxID);
-};
+        char *GetLastName(TIdent CID);
+
+        char *GetFirstName(TIdent CID);
+
+        char GetMiddleName(TIdent CID);
+
+        char GetGender(TIdent CID); //'M' or 'F'
+        bool IsMaleGender(TIdent CID);  //TRUE if male, FALSE if female
+        void GetTaxID(TIdent CID, char *buf);
+
+        //get first name, last name, and tax id
+        void GetFirstLastAndTaxID(TIdent C_ID, char *szFirstName, char *szLastName, char *szTaxID);
+    };
 
 }   // namespace TPCE
 

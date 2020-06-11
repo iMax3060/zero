@@ -45,39 +45,38 @@
 #include "BaseLoader.h"
 #include "unusedflag.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-template <typename T> class CNullLoader : public CBaseLoader<T>
-{
+    template<typename T>
+    class CNullLoader : public CBaseLoader<T> {
 
-public:
-    typedef const T*    PT;     //pointer to the table row
+    public:
+        typedef const T *PT;     //pointer to the table row
 
-    /*
-    *  Routine to write a new record into the database.
-    *  Since this is a NULL loader, it does nothing.
-    *
-    *  PARAMETERS:
-    *           IN  next_record     - ignored
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void WriteNextRecord(PT next_record UNUSED) {}; //do not load
+        /*
+        *  Routine to write a new record into the database.
+        *  Since this is a NULL loader, it does nothing.
+        *
+        *  PARAMETERS:
+        *           IN  next_record     - ignored
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void WriteNextRecord(PT next_record UNUSED) {}; //do not load
 
-    /*
-    *  Routine called when the table has been loaded.
-    *  Since this is a NULL loader, it does nothing.
-    *
-    *  PARAMETERS:
-    *           none.
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void FinishLoad() {};   //do nothing
-};
+        /*
+        *  Routine called when the table has been loaded.
+        *  Since this is a NULL loader, it does nothing.
+        *
+        *  PARAMETERS:
+        *           none.
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void FinishLoad() {};   //do nothing
+    };
 
 }   // namespace TPCE
 

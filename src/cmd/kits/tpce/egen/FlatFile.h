@@ -42,86 +42,73 @@
 
 #include "EGenUtilities_stdafx.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-template <typename T, typename TKeyAndElementsLimits> class CFlatFile
-{
-protected:
-    //Type of in-memory representation of input files
-    typedef CFixedArray<T, TKeyAndElementsLimits>   CFileInMemoryList;  //array of arrays
+    template<typename T, typename TKeyAndElementsLimits>
+    class CFlatFile {
+    protected:
+        //Type of in-memory representation of input files
+        typedef CFixedArray <T, TKeyAndElementsLimits> CFileInMemoryList;  //array of arrays
 
-    CFileInMemoryList       m_list;
+        CFileInMemoryList m_list;
 
-    void ReadList(const char *szListFile)
-    {
-        ifstream    tmpFile;
+        void ReadList(const char *szListFile) {
+            ifstream tmpFile;
 
-        if (szListFile)
-        {
-            tmpFile.open(szListFile, ios_base::in);
-            if (tmpFile)
-            {
-                ReadList(tmpFile);
-                tmpFile.close();
-            }
-            else
-            {   //Open failed
-                tmpFile.close();
+            if (szListFile) {
+                tmpFile.open(szListFile, ios_base::in);
+                if (tmpFile) {
+                    ReadList(tmpFile);
+                    tmpFile.close();
+                } else {   //Open failed
+                    tmpFile.close();
+                    throw CSystemErr(CSystemErr::eCreateFile, "CFlatFile::ReadList");
+                }
+            } else {
                 throw CSystemErr(CSystemErr::eCreateFile, "CFlatFile::ReadList");
             }
         }
-        else
-        {
-            throw CSystemErr(CSystemErr::eCreateFile, "CFlatFile::ReadList");
-        }
-    }
 
-    void ReadList(const string &str)
-    {
-        istringstream tmpFile(str);
-        ReadList(tmpFile);
-    }
-
-    void ReadList(istream &tmpFile)
-    {
-        T   row;
-        memset(&row, 0, sizeof(row));
-
-        while(tmpFile.good())
-        {
-        row.Load(tmpFile);  //read the row
-        // We don't know if we've hit the end of the file
-        // until after trying the read.
-        if( ! tmpFile.eof() )
-        {
-            m_list.Add(&row);   //insert into the container
+        void ReadList(const string &str) {
+            istringstream tmpFile(str);
+            ReadList(tmpFile);
         }
 
+        void ReadList(istream &tmpFile) {
+            T row;
+            memset(&row, 0, sizeof(row));
+
+            while (tmpFile.good()) {
+                row.Load(tmpFile);  //read the row
+                // We don't know if we've hit the end of the file
+                // until after trying the read.
+                if (!tmpFile.eof()) {
+                    m_list.Add(&row);   //insert into the container
+                }
+
+            }
         }
-    }
 
 
-public:
+    public:
 
-    //Constructor.
-    CFlatFile(const char *szListFile)
-    {
-        ReadList(szListFile);
-    }
+        //Constructor.
+        CFlatFile(const char *szListFile) {
+            ReadList(szListFile);
+        }
 
-    CFlatFile(const string &str)
-    {
-        ReadList(str);
-    }
-    virtual ~CFlatFile() {}
+        CFlatFile(const string &str) {
+            ReadList(str);
+        }
 
-    //Returns the element at a specific index
-    T*  GetRecord(int index) { return &m_list[index]; };
+        virtual ~CFlatFile() {}
 
-    //Returns the size of the file (number of rows)
-    UINT    GetSize()   {return (UINT)m_list.size();}
-};
+        //Returns the element at a specific index
+        T *GetRecord(int index) { return &m_list[index]; };
+
+        //Returns the size of the file (number of rows)
+        UINT GetSize() { return (UINT) m_list.size(); }
+    };
 
 }   // namespace TPCE
 

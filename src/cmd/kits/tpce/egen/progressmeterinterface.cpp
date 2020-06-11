@@ -34,27 +34,22 @@
  * - Christopher Chan-Nui
  */
 
-#include "workload/tpce/egen/progressmeterinterface.h"
-#include "workload/tpce/egen/unusedflag.h"
+#include "progressmeterinterface.h"
+#include "unusedflag.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 // Dummy implementation in case someone wants to have a null progress meter
-ProgressMeterInterface::~ProgressMeterInterface()
-{
-}
+    ProgressMeterInterface::~ProgressMeterInterface() {
+    }
 
-void ProgressMeterInterface::display() const
-{
-}
+    void ProgressMeterInterface::display() const {
+    }
 
-void ProgressMeterInterface::inc(int count UNUSED)
-{
-}
+    void ProgressMeterInterface::inc(int count UNUSED) {
+    }
 
-void ProgressMeterInterface::message(const std::string& mesg UNUSED, int level UNUSED)
-{
-}
+    void ProgressMeterInterface::message(const std::string &mesg UNUSED, int level UNUSED) {
+    }
 
 }

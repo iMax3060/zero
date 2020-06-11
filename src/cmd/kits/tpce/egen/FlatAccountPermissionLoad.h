@@ -43,32 +43,30 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatAccountPermissionLoad : public CFlatFileLoader <ACCOUNT_PERMISSION_ROW>
-{
-public:
-    CFlatAccountPermissionLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<ACCOUNT_PERMISSION_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatAccountPermissionLoad : public CFlatFileLoader<ACCOUNT_PERMISSION_ROW> {
+    public:
+        CFlatAccountPermissionLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<ACCOUNT_PERMISSION_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, AccountPermissionRowFmt,
-                  next_record->AP_CA_ID,
-                  next_record->AP_ACL,
-                  next_record->AP_TAX_ID,
-                  next_record->AP_L_NAME,
-                  next_record->AP_F_NAME
-                );
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, AccountPermissionRowFmt,
+                             next_record->AP_CA_ID,
+                             next_record->AP_ACL,
+                             next_record->AP_TAX_ID,
+                             next_record->AP_L_NAME,
+                             next_record->AP_F_NAME
+            );
 
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatAccountPermissionLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatAccountPermissionLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

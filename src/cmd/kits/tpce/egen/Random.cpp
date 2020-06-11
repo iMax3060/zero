@@ -34,11 +34,11 @@
  * - Charles Levine, Philip Durr, Doug Johnson, Cecil Reames, Matt Emmerton
  */
 
-#include "workload/tpce/egen/EGenUtilities_stdafx.h"
+#include "EGenUtilities_stdafx.h"
 
-using namespace TPCE;
+using namespace tpce;
 
-inline RNGSEED CRandom::UInt64Rand(void){
+inline RNGSEED CRandom::UInt64Rand(void) {
 
     UINT64 a = (UINT64) UInt64Rand_A_MULTIPLIER;
     UINT64 c = (UINT64) UInt64Rand_C_INCREMENT;
@@ -47,62 +47,59 @@ inline RNGSEED CRandom::UInt64Rand(void){
     return (m_seed);
 }
 
-RNGSEED CRandom::RndNthElement( RNGSEED nSeed, RNGSEED nCount) {
-  UINT64    a = UInt64Rand_A_MULTIPLIER;
-  UINT64    c = UInt64Rand_C_INCREMENT;
-  int       nBit;
-  UINT64    Apow = a;
-  UINT64    Dsum = UInt64Rand_ONE;
+RNGSEED CRandom::RndNthElement(RNGSEED nSeed, RNGSEED nCount) {
+    UINT64 a = UInt64Rand_A_MULTIPLIER;
+    UINT64 c = UInt64Rand_C_INCREMENT;
+    int nBit;
+    UINT64 Apow = a;
+    UINT64 Dsum = UInt64Rand_ONE;
 
-  // if nothing to do, do nothing !
-  if( nCount == 0 ) {
-      return nSeed;
-  }
-
-  // Recursively compute X(n) = A * X(n-1) + C
-  //
-  // explicitly:
-  // X(n) = A^n * X(0) + { A^(n-1) + A^(n-2) + ... A + 1 } * C
-  //
-  // we write this as:
-  // X(n) = Apow(n) * X(0) + Dsum(n) * C
-  //
-  // we use the following relations:
-  // Apow(n) = A^(n%2)*Apow(n/2)*Apow(n/2)
-  // Dsum(n) =   (n%2)*Apow(n/2)*Apow(n/2) + (Apow(n/2) + 1) * Dsum(n/2)
-  //
-
-  // first get the highest non-zero bit
-  for( nBit = 0; (nCount >> nBit) != UInt64Rand_ONE ; nBit ++){}
-
-  // go 1 bit at the time
-  while( --nBit >= 0 ) {
-    Dsum *= (Apow + 1);
-    Apow = Apow * Apow;
-    if( ((nCount >> nBit) % 2) == 1 ) { // odd value
-      Dsum += Apow;
-      Apow *= a;
+    // if nothing to do, do nothing !
+    if (nCount == 0) {
+        return nSeed;
     }
-  }
-  nSeed = nSeed * Apow + Dsum * c;
-  return nSeed;
+
+    // Recursively compute X(n) = A * X(n-1) + C
+    //
+    // explicitly:
+    // X(n) = A^n * X(0) + { A^(n-1) + A^(n-2) + ... A + 1 } * C
+    //
+    // we write this as:
+    // X(n) = Apow(n) * X(0) + Dsum(n) * C
+    //
+    // we use the following relations:
+    // Apow(n) = A^(n%2)*Apow(n/2)*Apow(n/2)
+    // Dsum(n) =   (n%2)*Apow(n/2)*Apow(n/2) + (Apow(n/2) + 1) * Dsum(n/2)
+    //
+
+    // first get the highest non-zero bit
+    for (nBit = 0; (nCount >> nBit) != UInt64Rand_ONE; nBit++) {}
+
+    // go 1 bit at the time
+    while (--nBit >= 0) {
+        Dsum *= (Apow + 1);
+        Apow = Apow * Apow;
+        if (((nCount >> nBit) % 2) == 1) { // odd value
+            Dsum += Apow;
+            Apow *= a;
+        }
+    }
+    nSeed = nSeed * Apow + Dsum * c;
+    return nSeed;
 }
 
-CRandom::CRandom(void)
-{
+CRandom::CRandom(void) {
     do {
         //use portable way to get the seed
         m_seed = (RNGSEED) time(NULL);
     } while (m_seed == 0);
 }
 
-CRandom::CRandom(RNGSEED seed)
-{
+CRandom::CRandom(RNGSEED seed) {
     SetSeed(seed);
 }
 
-void CRandom::SetSeed(RNGSEED seed)
-{
+void CRandom::SetSeed(RNGSEED seed) {
     m_seed = seed;
 }
 
@@ -118,83 +115,77 @@ double CRandom::RndDouble(void)
 
 #endif // EGEN_USE_DEPRECATED_CODE
 
-int CRandom::RndIntRange(int min, int max)
-{
-    if ( max <= min )
+int CRandom::RndIntRange(int min, int max) {
+    if (max <= min)
         return min;        // max <= min
 
     UINT range = (max - min + 1);
 
-    if ( range <= 1 )
+    if (range <= 1)
         return min;        // overflow happened
 
     UInt64Rand();          // generate next seed value
 
-    return (min + (int)Mul6432WithShiftRight64(m_seed,range));
+    return (min + (int) Mul6432WithShiftRight64(m_seed, range));
 }
 
-INT64 CRandom::RndInt64Range(INT64 min, INT64 max)
-{
-    if ( max <= min )
+INT64 CRandom::RndInt64Range(INT64 min, INT64 max) {
+    if (max <= min)
         return min;
 
     UINT64 range = (max - min + 1);
 
-    if ( range <= 1 )
+    if (range <= 1)
         return min;        // overflow happened
 
     UInt64Rand();          // generate next seed value
 
-    return (min + (INT64)Mul6464WithShiftRight64(m_seed,range));
+    return (min + (INT64) Mul6464WithShiftRight64(m_seed, range));
 }
 
-int CRandom::RndNthIntRange(RNGSEED Seed, RNGSEED N, int min, int max)
-{
-    if ( max <= min )
+int CRandom::RndNthIntRange(RNGSEED Seed, RNGSEED N, int min, int max) {
+    if (max <= min)
         return min;        // max <= min
 
     UINT range = (max - min + 1);
 
-    if ( range <= 1 )
+    if (range <= 1)
         return min;        // overflow happened
 
     RNGSEED nseed = RndNthElement(Seed, N);    // generate next seed value
 
-    return (min + (int)Mul6432WithShiftRight64(nseed, range));
+    return (min + (int) Mul6432WithShiftRight64(nseed, range));
 }
 
 //return Nth element in the sequence over the integer range
-INT64 CRandom::RndNthInt64Range(RNGSEED Seed, RNGSEED N, INT64 min, INT64 max)
-{
-    if ( max <= min )
+INT64 CRandom::RndNthInt64Range(RNGSEED Seed, RNGSEED N, INT64 min, INT64 max) {
+    if (max <= min)
         return min;
 
     UINT64 range = (max - min + 1);
 
-    if ( range <= 1 )
+    if (range <= 1)
         return min;        // overflow happened
 
     RNGSEED nseed = RndNthElement(Seed, N);    // generate next seed value
 
-    return (min + (INT64)Mul6464WithShiftRight64(nseed,range));
+    return (min + (INT64) Mul6464WithShiftRight64(nseed, range));
 }
 
-int CRandom::RndIntRangeExclude(int low, int high, int exclude)
-{
-    int     temp;
+int CRandom::RndIntRangeExclude(int low, int high, int exclude) {
+    int temp;
 
-    temp = RndIntRange( low, high-1 );
+    temp = RndIntRange(low, high - 1);
     if (temp >= exclude)
         temp += 1;
 
     return temp;
 }
 
-INT64 CRandom::RndInt64RangeExclude(INT64 low, INT64 high, INT64 exclude)
-{
-    INT64       temp;
+INT64 CRandom::RndInt64RangeExclude(INT64 low, INT64 high, INT64 exclude) {
+    INT64 temp;
 
-    temp = RndInt64Range( low, high-1 );
+    temp = RndInt64Range(low, high - 1);
     if (temp >= exclude)
         temp += 1;
 
@@ -210,15 +201,13 @@ double CRandom::RndDoubleRange(double min, double max)
 
 #endif // EGEN_USE_DEPRECATED_CODE
 
-double CRandom::RndDoubleIncrRange(double min, double max, double incr)
-{
-    INT64 width = (INT64)((max - min) / incr);  // need [0..width], so no +1
-    return min + ((double)RndInt64Range(0, width) * incr);
+double CRandom::RndDoubleIncrRange(double min, double max, double incr) {
+    INT64 width = (INT64) ((max - min) / incr);  // need [0..width], so no +1
+    return min + ((double) RndInt64Range(0, width) * incr);
 }
 
 // returns a random double value from a negative exponential distribution with the given mean
-double CRandom::RndDoubleNegExp(double mean)
-{
+double CRandom::RndDoubleNegExp(double mean) {
     return ((-1.0 * log(RndDoubleIncrRange(0.0, 1.0, 0.000000000001))) * mean);
 }
 
@@ -243,10 +232,9 @@ double CRandom::RndDoubleNegExp(double mean)
 *  just over 1 minute (65.536 seconds).  A smaller A value can then give
 *  the desired amount of skew at effectively one-minute resolution.
 */
-INT64 CRandom::NURnd( INT64 P, INT64 Q, INT32 A, INT32 s )
-{
-  //assert(Q - P + 1 !=0);
-    return ((( RndInt64Range( P, Q ) | (RndInt64Range( 0, A ) << s )) % (Q - P + 1) ) + P );
+INT64 CRandom::NURnd(INT64 P, INT64 Q, INT32 A, INT32 s) {
+    //assert(Q - P + 1 !=0);
+    return (((RndInt64Range(P, Q) | (RndInt64Range(0, A) << s)) % (Q - P + 1)) + P);
 }
 
 
@@ -254,18 +242,17 @@ INT64 CRandom::NURnd( INT64 P, INT64 Q, INT32 A, INT32 s )
 *   Returns an alphanumeric string in a specified format;
 */
 
-void CRandom::RndAlphaNumFormatted(char *szReturnString, const char *szFormat)
-{
-    while (szFormat && *szFormat)
-    {
-        switch (*szFormat)
-        {
-        case 'a': *szReturnString = UpperCaseLetters[ RndIntRange( 0, 25 ) ];   //only uppercase
-            break;
-        case 'n': *szReturnString = Numerals[ RndIntRange( 0, 9 ) ];
-            break;
-        default:
-            *szReturnString = *szFormat;
+void CRandom::RndAlphaNumFormatted(char *szReturnString, const char *szFormat) {
+    while (szFormat && *szFormat) {
+        switch (*szFormat) {
+            case 'a':
+                *szReturnString = UpperCaseLetters[RndIntRange(0, 25)];   //only uppercase
+                break;
+            case 'n':
+                *szReturnString = Numerals[RndIntRange(0, 9)];
+                break;
+            default:
+                *szReturnString = *szFormat;
         }
 
         ++szFormat;

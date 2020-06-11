@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CSectorTable : public TableTemplate<SECTOR_ROW>
-{
-    ifstream    InFile;
+    class CSectorTable : public TableTemplate<SECTOR_ROW> {
+        ifstream InFile;
 
-public:
-    CSectorTable( char *szDirName )
-        : TableTemplate<SECTOR_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CSectorTable(char *szDirName)
+                : TableTemplate<SECTOR_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "Sector.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "Sector.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CSectorTable( )
-    {
-        InFile.close();
-    };
+        ~CSectorTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

@@ -47,83 +47,77 @@
 
 using namespace std;
 
-namespace TPCE
-{
+namespace tpce {
 
-char * appendZero(string &s);
+    char *appendZero(string &s);
 
-class CGenerateAndLoadStandardOutput : public CGenerateAndLoadBaseOutput
-{
-public:
+    class CGenerateAndLoadStandardOutput : public CGenerateAndLoadBaseOutput {
+    public:
 
-    /*
-    *  Output beginning of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void OutputStart(string szMsg)
-    {
-	char* c= new char[szMsg.size()+1];
-	memcpy(c,&szMsg,szMsg.size());
-	c[szMsg.size()]=0;	    
-	cout<<c;
-        fflush(stdout); // in case there is no newline character in szMsg
-    }
+        /*
+        *  Output beginning of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void OutputStart(string szMsg) {
+            char *c = new char[szMsg.size() + 1];
+            memcpy(c, &szMsg, szMsg.size());
+            c[szMsg.size()] = 0;
+            cout << c;
+            fflush(stdout); // in case there is no newline character in szMsg
+        }
 
-    /*
-    *  Output progress of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void OutputProgress(string szMsg)
-    {
-	char* c= new char[szMsg.size()+1];
-	memcpy(c,&szMsg,szMsg.size());
-	c[szMsg.size()]=0;	    
-	cout<<c; 
-        fflush(stdout); // in case there is no newline character in szMsg
-    }
+        /*
+        *  Output progress of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void OutputProgress(string szMsg) {
+            char *c = new char[szMsg.size() + 1];
+            memcpy(c, &szMsg, szMsg.size());
+            c[szMsg.size()] = 0;
+            cout << c;
+            fflush(stdout); // in case there is no newline character in szMsg
+        }
 
-    /*
-    *  Output completion of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void OutputComplete(string szMsg)
-    {
-	char* c= new char[szMsg.size()+1];
-	memcpy(c,&szMsg,szMsg.size());
-	c[szMsg.size()]=0;	    
-	cout<<c; 
-	fflush(stdout); // in case there is no newline character in szMsg
-    }
+        /*
+        *  Output completion of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void OutputComplete(string szMsg) {
+            char *c = new char[szMsg.size() + 1];
+            memcpy(c, &szMsg, szMsg.size());
+            c[szMsg.size()] = 0;
+            cout << c;
+            fflush(stdout); // in case there is no newline character in szMsg
+        }
 
-    /*
-    *  Output end-of-line.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void OutputNewline()
-    {
-        printf("\n");
-    }
-};
+        /*
+        *  Output end-of-line.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void OutputNewline() {
+            printf("\n");
+        }
+    };
 
 }   // namespace TPCE
 

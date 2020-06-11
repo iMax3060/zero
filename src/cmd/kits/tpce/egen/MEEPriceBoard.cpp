@@ -39,20 +39,17 @@
 *                       See MEEPriceBoad.h for a description.
 ******************************************************************************/
 
-#include "workload/tpce/egen/MEEPriceBoard.h"
+#include "MEEPriceBoard.h"
 
-using namespace TPCE;
+using namespace tpce;
 
-CMEEPriceBoard::CMEEPriceBoard( INT32           TradingTimeSoFar,
-                                CDateTime*      pBaseTime,
-                                CDateTime*      pCurrentTime,
-                                const CInputFiles&    inputFiles
-                                )
-: m_fMeanInTheMoneySubmissionDelay( 1.0 )
-, m_Security()
-, m_pSecurityFile( inputFiles.Securities )
-, m_iNumberOfSecurities( 0 )
-{
+CMEEPriceBoard::CMEEPriceBoard(INT32 TradingTimeSoFar,
+                               CDateTime *pBaseTime,
+                               CDateTime *pCurrentTime,
+                               const CInputFiles &inputFiles
+)
+        : m_fMeanInTheMoneySubmissionDelay(1.0), m_Security(), m_pSecurityFile(inputFiles.Securities),
+          m_iNumberOfSecurities(0) {
     // Number of securities is based on "active" customers, as per sub-committee
     // decision to have a scaled-down database look as much as possible as the
     // smaller database.
@@ -66,74 +63,65 @@ CMEEPriceBoard::CMEEPriceBoard( INT32           TradingTimeSoFar,
     // the MEE to run using "configured" securities.
 
     m_iNumberOfSecurities = m_pSecurityFile->GetActiveSecurityCount();
-    m_Security.Init( TradingTimeSoFar, pBaseTime, pCurrentTime, m_fMeanInTheMoneySubmissionDelay );
+    m_Security.Init(TradingTimeSoFar, pBaseTime, pCurrentTime, m_fMeanInTheMoneySubmissionDelay);
     m_pSecurityFile->LoadSymbolToIdMap();
 }
 
-CMEEPriceBoard::~CMEEPriceBoard(void)
-{
+CMEEPriceBoard::~CMEEPriceBoard(void) {
 }
 
-void    CMEEPriceBoard::GetSymbol(  TIdent  SecurityIndex,
-                                    char*   szOutput,   // output buffer
-                                    size_t  iOutputLen) // size of the output buffer (including null));
+void CMEEPriceBoard::GetSymbol(TIdent SecurityIndex,
+                               char *szOutput,   // output buffer
+                               size_t iOutputLen) // size of the output buffer (including null));
 {
-    return( m_pSecurityFile->CreateSymbol( SecurityIndex, szOutput, iOutputLen ) );
+    return (m_pSecurityFile->CreateSymbol(SecurityIndex, szOutput, iOutputLen));
 }
 
-CMoney  CMEEPriceBoard::GetMinPrice()
-{
-    return( m_Security.GetMinPrice( ));
+CMoney CMEEPriceBoard::GetMinPrice() {
+    return (m_Security.GetMinPrice());
 }
 
-CMoney  CMEEPriceBoard::GetMaxPrice()
-{
-    return( m_Security.GetMaxPrice( ));
+CMoney CMEEPriceBoard::GetMaxPrice() {
+    return (m_Security.GetMaxPrice());
 }
 
-CMoney  CMEEPriceBoard::GetCurrentPrice( TIdent SecurityIndex )
-{
-    return( m_Security.GetCurrentPrice( SecurityIndex ));
+CMoney CMEEPriceBoard::GetCurrentPrice(TIdent SecurityIndex) {
+    return (m_Security.GetCurrentPrice(SecurityIndex));
 }
 
-CMoney  CMEEPriceBoard::GetCurrentPrice( char* pSecuritySymbol )
-{
-    return( m_Security.GetCurrentPrice( m_pSecurityFile->GetIndex( pSecuritySymbol )));
+CMoney CMEEPriceBoard::GetCurrentPrice(char *pSecuritySymbol) {
+    return (m_Security.GetCurrentPrice(m_pSecurityFile->GetIndex(pSecuritySymbol)));
 }
 
-CMoney  CMEEPriceBoard::CalculatePrice( char* pSecuritySymbol, double fTime )
-{
-    return( m_Security.CalculatePrice( m_pSecurityFile->GetIndex( pSecuritySymbol ), fTime ));
+CMoney CMEEPriceBoard::CalculatePrice(char *pSecuritySymbol, double fTime) {
+    return (m_Security.CalculatePrice(m_pSecurityFile->GetIndex(pSecuritySymbol), fTime));
 }
 
-double  CMEEPriceBoard::GetSubmissionTime(
-                            char*           pSecuritySymbol,
-                            double          fPendingTime,
-                            CMoney          fLimitPrice,
-                            eTradeTypeID    TradeType
-                            )
-{
-    return( m_Security.GetSubmissionTime( m_pSecurityFile->GetIndex( pSecuritySymbol ), fPendingTime,
-        fLimitPrice, TradeType ));
+double CMEEPriceBoard::GetSubmissionTime(
+        char *pSecuritySymbol,
+        double fPendingTime,
+        CMoney fLimitPrice,
+        eTradeTypeID TradeType
+) {
+    return (m_Security.GetSubmissionTime(m_pSecurityFile->GetIndex(pSecuritySymbol), fPendingTime,
+                                         fLimitPrice, TradeType));
 }
 
-double  CMEEPriceBoard::GetSubmissionTime(
-                            TIdent          SecurityIndex,
-                            double          fPendingTime,
-                            CMoney          fLimitPrice,
-                            eTradeTypeID    TradeType
-                            )
-{
-    return( m_Security.GetSubmissionTime( SecurityIndex, fPendingTime,
-        fLimitPrice, TradeType ));
+double CMEEPriceBoard::GetSubmissionTime(
+        TIdent SecurityIndex,
+        double fPendingTime,
+        CMoney fLimitPrice,
+        eTradeTypeID TradeType
+) {
+    return (m_Security.GetSubmissionTime(SecurityIndex, fPendingTime,
+                                         fLimitPrice, TradeType));
 }
 
-double  CMEEPriceBoard::GetCompletionTime(
-                            TIdent      SecurityIndex,
-                            double      fSubmissionTime,
-                            CMoney*     pCompletionPrice    // output parameter
-                        )
-{
-    return( m_Security.GetCompletionTime( SecurityIndex, fSubmissionTime,
-        pCompletionPrice ));
+double CMEEPriceBoard::GetCompletionTime(
+        TIdent SecurityIndex,
+        double fSubmissionTime,
+        CMoney *pCompletionPrice    // output parameter
+) {
+    return (m_Security.GetCompletionTime(SecurityIndex, fSubmissionTime,
+                                         pCompletionPrice));
 }

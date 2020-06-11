@@ -42,29 +42,27 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatTaxrateLoad : public CFlatFileLoader <TAXRATE_ROW>
-{
-public:
-    CFlatTaxrateLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<TAXRATE_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatTaxrateLoad : public CFlatFileLoader<TAXRATE_ROW> {
+    public:
+        CFlatTaxrateLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<TAXRATE_ROW>(
+                szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, TaxrateRowFmt,
-                  next_record->TX_ID,
-                  next_record->TX_NAME,
-                  next_record->TX_RATE
-                );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatTaxrateLoad::WriteNextRecord");
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, TaxrateRowFmt,
+                             next_record->TX_ID,
+                             next_record->TX_NAME,
+                             next_record->TX_RATE
+            );
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatTaxrateLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

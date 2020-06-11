@@ -97,50 +97,53 @@
 #include "BaseLogger.h"
 #include "DriverParamSettings.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CMEE
-{
-private:
+    class CMEE {
+    private:
 
-    CDriverMEESettings  m_DriverMEESettings;
+        CDriverMEESettings m_DriverMEESettings;
 
-    CMEESUTInterface*   m_pSUT;
-    CBaseLogger*        m_pLogger;
-    CMEEPriceBoard      m_PriceBoard;
-    CMEETickerTape      m_TickerTape;
-    CMEETradingFloor    m_TradingFloor;
-    CDateTime           m_BaseTime;
-    CDateTime           m_CurrentTime;
+        CMEESUTInterface *m_pSUT;
+        CBaseLogger *m_pLogger;
+        CMEEPriceBoard m_PriceBoard;
+        CMEETickerTape m_TickerTape;
+        CMEETradingFloor m_TradingFloor;
+        CDateTime m_BaseTime;
+        CDateTime m_CurrentTime;
 
-    CMutex              m_MEELock;
+        CMutex m_MEELock;
 
-    // Automatically generate unique RNG seeds
-    void AutoSetRNGSeeds( UINT32 UniqueId );
+        // Automatically generate unique RNG seeds
+        void AutoSetRNGSeeds(UINT32 UniqueId);
 
-public:
-    static const INT32  NO_OUTSTANDING_TRADES = CMEETradingFloor::NO_OUTSTANDING_TRADES;
+    public:
+        static const INT32 NO_OUTSTANDING_TRADES = CMEETradingFloor::NO_OUTSTANDING_TRADES;
 
-    // Constructor - automatic RNG seed generation
-    CMEE( INT32 TradingTimeSoFar, CMEESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles, UINT32 UniqueId );
+        // Constructor - automatic RNG seed generation
+        CMEE(INT32 TradingTimeSoFar, CMEESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+             UINT32 UniqueId);
 
-    // Constructor - RNG seed provided
-    CMEE( INT32 TradingTimeSoFar, CMEESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles, UINT32 UniqueId, RNGSEED TickerTapeRNGSeed, RNGSEED TradingFloorRNGSeed );
+        // Constructor - RNG seed provided
+        CMEE(INT32 TradingTimeSoFar, CMEESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+             UINT32 UniqueId, RNGSEED TickerTapeRNGSeed, RNGSEED TradingFloorRNGSeed);
 
-    ~CMEE(void);
+        ~CMEE(void);
 
-    RNGSEED GetTickerTapeRNGSeed( void );
-    RNGSEED GetTradingFloorRNGSeed( void );
+        RNGSEED GetTickerTapeRNGSeed(void);
 
-    void    SetBaseTime( void );
+        RNGSEED GetTradingFloorRNGSeed(void);
 
-    INT32   SubmitTradeRequest( PTradeRequest pTradeRequest );
-    INT32   GenerateTradeResult( void );
+        void SetBaseTime(void);
 
-    bool    EnableTickerTape( void );
-    bool    DisableTickerTape( void );
-};
+        INT32 SubmitTradeRequest(PTradeRequest pTradeRequest);
+
+        INT32 GenerateTradeResult(void);
+
+        bool EnableTickerTape(void);
+
+        bool DisableTickerTape(void);
+    };
 
 }   // namespace TPCE
 

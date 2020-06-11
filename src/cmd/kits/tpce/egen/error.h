@@ -39,8 +39,7 @@
 
 #include <string>
 
-namespace TPCE
-{
+namespace tpce {
 
 #define ERR_TYPE_LOGIC                          -1      //logic error in program; internal error
 #define ERR_SUCCESS                             0       //success (a non-error error)
@@ -55,210 +54,193 @@ namespace TPCE
 #define ERR_MSG_BUF_SIZE        512
 #define INV_ERROR_CODE          -1
 
-class CBaseErr : public std::exception
-{
-protected:
+    class CBaseErr : public std::exception {
+    protected:
         std::string m_location;
-        int     m_idMsg;
+        int m_idMsg;
 
-public:
-    CBaseErr()
-        : m_location()
-        , m_idMsg(INV_ERROR_CODE)
-    {
-    }
+    public:
+        CBaseErr()
+                : m_location(), m_idMsg(INV_ERROR_CODE) {
+        }
 
-    CBaseErr(char const * szLoc)
-        : m_location(szLoc)
-        , m_idMsg(INV_ERROR_CODE)
-    {
-    }
+        CBaseErr(char const *szLoc)
+                : m_location(szLoc), m_idMsg(INV_ERROR_CODE) {
+        }
 
-    CBaseErr(int idMsg)
-        : m_location()
-        , m_idMsg(idMsg)
-    {
-    }
+        CBaseErr(int idMsg)
+                : m_location(), m_idMsg(idMsg) {
+        }
 
-    CBaseErr(int idMsg, char const * szLoc)
-        : m_location(szLoc)
-        , m_idMsg(idMsg)
-    {
-    }
+        CBaseErr(int idMsg, char const *szLoc)
+                : m_location(szLoc), m_idMsg(idMsg) {
+        }
 
-    ~CBaseErr() throw()
-    {
-    }
+        ~CBaseErr() throw() {
+        }
 
-    virtual const char* what() const throw() {
-        return ErrorText();
-    }
+        virtual const char *what() const throw() {
+            return ErrorText();
+        }
 
-    virtual int ErrorNum() { return m_idMsg; }
-    virtual int ErrorType() = 0;    // a value which distinguishes the kind of error that occurred
+        virtual int ErrorNum() { return m_idMsg; }
 
-    virtual const char *ErrorText() const = 0;    // a string (i.e., human readable) representation of the error
-    virtual const char *ErrorLoc() { return m_location.c_str(); }
-};
+        virtual int ErrorType() = 0;    // a value which distinguishes the kind of error that occurred
 
-class CMemoryErr : public CBaseErr
-{
-public:
-    CMemoryErr()
-        : CBaseErr()
-    {
-    }
-
-    CMemoryErr(char const * szLoc)
-        : CBaseErr(szLoc)
-    {
-    }
-
-    int ErrorType() {return ERR_TYPE_MEMORY;}
-    const char *ErrorText() const {return ERR_INS_MEMORY;}
-};
-
-class CSystemErr : public CBaseErr
-{
-public:
-    enum Action
-    {
-        eNone = 0,
-        eTransactNamedPipe,
-        eWaitNamedPipe,
-        eSetNamedPipeHandleState,
-        eCreateFile,
-        eCreateProcess,
-        eCallNamedPipe,
-        eCreateEvent,
-        eCreateThread,
-        eVirtualAlloc,
-        eReadFile = 10,
-        eWriteFile,
-        eMapViewOfFile,
-        eCreateFileMapping,
-        eInitializeSecurityDescriptor,
-        eSetSecurityDescriptorDacl,
-        eCreateNamedPipe,
-        eConnectNamedPipe,
-        eWaitForSingleObject,
-        eRegOpenKeyEx,
-        eRegQueryValueEx = 20,
-        ebeginthread,
-        eRegEnumValue,
-        eRegSetValueEx,
-        eRegCreateKeyEx,
-        eWaitForMultipleObjects,
-        eRegisterClassEx,
-        eCreateWindow,
-        eCreateSemaphore,
-        eReleaseSemaphore,
-        eFSeek,
-        eFRead,
-        eFWrite,
-        eTmpFile,
-        eSetFilePointer,
-        eNew,
-        eCloseHandle,
-        eCreateMutex,
-        eReleaseMutex
+        virtual const char *ErrorText() const = 0;    // a string (i.e., human readable) representation of the error
+        virtual const char *ErrorLoc() { return m_location.c_str(); }
     };
 
-            CSystemErr(Action eAction, char const * szLocation);
-            CSystemErr(int iError, Action eAction, char const * szLocation);
-    int     ErrorType() { return ERR_TYPE_OS;};
-    const char  *ErrorText(void) const;
+    class CMemoryErr : public CBaseErr {
+    public:
+        CMemoryErr()
+                : CBaseErr() {
+        }
 
-    Action  m_eAction;
+        CMemoryErr(char const *szLoc)
+                : CBaseErr(szLoc) {
+        }
 
-    ~CSystemErr() throw()
-    {
-    }
+        int ErrorType() { return ERR_TYPE_MEMORY; }
 
-};
+        const char *ErrorText() const { return ERR_INS_MEMORY; }
+    };
 
-class CBaseTxnErr
-{
-public:
-    enum
-    {
-        // Expected Transaction Status Values
-        SUCCESS = 0,
-        EXPECTED_ROLLBACK = 1,	// returned from Trade-Order Frame 5 to indicate transaction rollback
+    class CSystemErr : public CBaseErr {
+    public:
+        enum Action {
+            eNone = 0,
+            eTransactNamedPipe,
+            eWaitNamedPipe,
+            eSetNamedPipeHandleState,
+            eCreateFile,
+            eCreateProcess,
+            eCallNamedPipe,
+            eCreateEvent,
+            eCreateThread,
+            eVirtualAlloc,
+            eReadFile = 10,
+            eWriteFile,
+            eMapViewOfFile,
+            eCreateFileMapping,
+            eInitializeSecurityDescriptor,
+            eSetSecurityDescriptorDacl,
+            eCreateNamedPipe,
+            eConnectNamedPipe,
+            eWaitForSingleObject,
+            eRegOpenKeyEx,
+            eRegQueryValueEx = 20,
+            ebeginthread,
+            eRegEnumValue,
+            eRegSetValueEx,
+            eRegCreateKeyEx,
+            eWaitForMultipleObjects,
+            eRegisterClassEx,
+            eCreateWindow,
+            eCreateSemaphore,
+            eReleaseSemaphore,
+            eFSeek,
+            eFRead,
+            eFWrite,
+            eTmpFile,
+            eSetFilePointer,
+            eNew,
+            eCloseHandle,
+            eCreateMutex,
+            eReleaseMutex
+        };
 
-        // Unexpected Transaction Status Values
-        // Negative values are errors
-        // Positive values are warnings
+        CSystemErr(Action eAction, char const *szLocation);
 
-        BVF1_ERROR1 = -111,	// list_len not in [0..max_broker_list_len]
+        CSystemErr(int iError, Action eAction, char const *szLocation);
 
-        CPF1_ERROR1 = -211,	// acct_len not in [1..max_acct_len]
-        CPF2_ERROR1 = -221,	// hist_len not in [min_hist_len..max_hist_len]
+        int ErrorType() { return ERR_TYPE_OS; };
 
-        MFF1_ERROR1 = -311,     // num_updated < unique symbols
+        const char *ErrorText(void) const;
 
-        MWF1_ERROR1 = -411,     // invalid input
+        Action m_eAction;
 
-        SDF1_ERROR1 = -511,     // day_len not in [min_day_len..max_day_len]
-        SDF1_ERROR2 = -512,     // fin_len <> max_fin_len
-        SDF1_ERROR3 = -513,     // news_len <> max_news_len
+        ~CSystemErr() throw() {
+        }
 
-        TLF1_ERROR1 = -611,     // num_found <> max_trades
-        TLF2_ERROR1 = -621,     // num_found not in [0..max_trades]
-        TLF2_WARN1  = +621,     // num_found == 0
-        TLF3_ERROR1 = -631,     // num_found not in [0..max_trades]
-        TLF3_WARN1  = +631,     // num_found == 0 
-        TLF4_ERROR1 = -641,     // num_trades_found not in [0..1]
-        TLF4_WARN1  = +641,     // num_trades_found == 0
-        TLF4_ERROR2 = -642,     // num_found not in [1..20]
+    };
 
-        TOF1_ERROR1 = -711,     // num_found <> 1
-        TOF2_ERROR1 = -721,     // ap_acl[0] == '\0'
-        TOF3_ERROR1 = -731,     // tax_amount == 0 (for profitable, taxable trade)
-        TOF3_ERROR2 = -732,     // comm_rate == 0
-        TOF3_ERROR3 = -733,     // charge_amount == 0
+    class CBaseTxnErr {
+    public:
+        enum {
+            // Expected Transaction Status Values
+            SUCCESS = 0,
+            EXPECTED_ROLLBACK = 1,    // returned from Trade-Order Frame 5 to indicate transaction rollback
 
-        TRF1_ERROR1 = -811,     // num_found <> 1
-        TRF3_ERROR1 = -831,     // tax_amount < 0
-        TRF4_ERROR1 = -841,     // comm_rate <= 0
+            // Unexpected Transaction Status Values
+            // Negative values are errors
+            // Positive values are warnings
 
-        TSF1_ERROR1 = -911,     // num_found <> max_trade_status_len
+            BVF1_ERROR1 = -111,    // list_len not in [0..max_broker_list_len]
 
-        TUF1_ERROR1 = -1011,    // num_found <> max_trades || num_updated <> max_updates
-        TUF2_ERROR1 = -1021,    // num_updated <> num_found || num_found not in [0..max_trades]
-        TUF2_WARN1  = +1021,    // num_updated == 0
-        TUF3_ERROR1 = -1031,    // num_updated <> num_found || num_found not in [0..max_trades]
-        TUF3_WARN1  = +1031,    // num_updated == 0
+            CPF1_ERROR1 = -211,    // acct_len not in [1..max_acct_len]
+            CPF2_ERROR1 = -221,    // hist_len not in [min_hist_len..max_hist_len]
 
-    }   mErrCode;
-};
+            MFF1_ERROR1 = -311,     // num_updated < unique symbols
 
-class CCheckErr : public CBaseErr
-{
-private:
-    std::string name_;
-    std::string msg_;
-public:
-    CCheckErr()
-        : CBaseErr()
-    {
-    }
+            MWF1_ERROR1 = -411,     // invalid input
 
-    ~CCheckErr() throw()
-    {
-    }
+            SDF1_ERROR1 = -511,     // day_len not in [min_day_len..max_day_len]
+            SDF1_ERROR2 = -512,     // fin_len <> max_fin_len
+            SDF1_ERROR3 = -513,     // news_len <> max_news_len
 
-    CCheckErr(const char *name, const std::string& msg)
-        : CBaseErr(name)
-        , msg_(msg)
-    {
-    }
+            TLF1_ERROR1 = -611,     // num_found <> max_trades
+            TLF2_ERROR1 = -621,     // num_found not in [0..max_trades]
+            TLF2_WARN1 = +621,     // num_found == 0
+            TLF3_ERROR1 = -631,     // num_found not in [0..max_trades]
+            TLF3_WARN1 = +631,     // num_found == 0
+            TLF4_ERROR1 = -641,     // num_trades_found not in [0..1]
+            TLF4_WARN1 = +641,     // num_trades_found == 0
+            TLF4_ERROR2 = -642,     // num_found not in [1..20]
 
-    int ErrorType() {return ERR_TYPE_CHECK;}
-    const char *ErrorText() const {
-        return msg_.c_str();
-    }
-};
+            TOF1_ERROR1 = -711,     // num_found <> 1
+            TOF2_ERROR1 = -721,     // ap_acl[0] == '\0'
+            TOF3_ERROR1 = -731,     // tax_amount == 0 (for profitable, taxable trade)
+            TOF3_ERROR2 = -732,     // comm_rate == 0
+            TOF3_ERROR3 = -733,     // charge_amount == 0
+
+            TRF1_ERROR1 = -811,     // num_found <> 1
+            TRF3_ERROR1 = -831,     // tax_amount < 0
+            TRF4_ERROR1 = -841,     // comm_rate <= 0
+
+            TSF1_ERROR1 = -911,     // num_found <> max_trade_status_len
+
+            TUF1_ERROR1 = -1011,    // num_found <> max_trades || num_updated <> max_updates
+            TUF2_ERROR1 = -1021,    // num_updated <> num_found || num_found not in [0..max_trades]
+            TUF2_WARN1 = +1021,    // num_updated == 0
+            TUF3_ERROR1 = -1031,    // num_updated <> num_found || num_found not in [0..max_trades]
+            TUF3_WARN1 = +1031,    // num_updated == 0
+
+        } mErrCode;
+    };
+
+    class CCheckErr : public CBaseErr {
+    private:
+        std::string name_;
+        std::string msg_;
+    public:
+        CCheckErr()
+                : CBaseErr() {
+        }
+
+        ~CCheckErr() throw() {
+        }
+
+        CCheckErr(const char *name, const std::string &msg)
+                : CBaseErr(name), msg_(msg) {
+        }
+
+        int ErrorType() { return ERR_TYPE_CHECK; }
+
+        const char *ErrorText() const {
+            return msg_.c_str();
+        }
+    };
 
 }   // namespace TPCE
 

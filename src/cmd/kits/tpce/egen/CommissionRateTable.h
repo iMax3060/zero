@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CCommissionRateTable : public TableTemplate<COMMISSION_RATE_ROW>
-{
-    ifstream    InFile;
+    class CCommissionRateTable : public TableTemplate<COMMISSION_RATE_ROW> {
+        ifstream InFile;
 
-public:
-    CCommissionRateTable( char *szDirName )
-        : TableTemplate<COMMISSION_RATE_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CCommissionRateTable(char *szDirName)
+                : TableTemplate<COMMISSION_RATE_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "CommissionRate.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "CommissionRate.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CCommissionRateTable( )
-    {
-        InFile.close();
-    };
+        ~CCommissionRateTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

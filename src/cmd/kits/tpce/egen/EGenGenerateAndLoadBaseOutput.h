@@ -46,68 +46,66 @@
 
 using namespace std;
 
-namespace TPCE
-{
+namespace tpce {
 
-class CGenerateAndLoadBaseOutput
-{
-public:
-    /*
-    *  Virtual destructor. Provided so that a sponsor-specific
-    *  destructor can be called on destruction from the base-class pointer.
-    *
-    *  PARAMETERS:
-    *           none.
-    *
-    *  RETURNS:
-    *           not applicable.
-    */
-    virtual ~CGenerateAndLoadBaseOutput() {};
+    class CGenerateAndLoadBaseOutput {
+    public:
+        /*
+        *  Virtual destructor. Provided so that a sponsor-specific
+        *  destructor can be called on destruction from the base-class pointer.
+        *
+        *  PARAMETERS:
+        *           none.
+        *
+        *  RETURNS:
+        *           not applicable.
+        */
+        virtual ~CGenerateAndLoadBaseOutput() {};
 
-    /*
-    *  Output beginning of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void OutputStart(string szMsg) = 0;
+        /*
+        *  Output beginning of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void OutputStart(string szMsg) = 0;
 
-    /*
-    *  Output progress of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void OutputProgress(string szMsg) = 0;
+        /*
+        *  Output progress of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void OutputProgress(string szMsg) = 0;
 
-    /*
-    *  Output completion of table generation.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void OutputComplete(string szMsg) = 0;
+        /*
+        *  Output completion of table generation.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void OutputComplete(string szMsg) = 0;
 
-    /*
-    *  Output end-of-line.
-    *
-    *  PARAMETERS:
-    *           IN  szMsg       - string to output to the user
-    *
-    *  RETURNS:
-    *           none.
-    */
-    virtual void OutputNewline() = 0;
-};
+        /*
+        *  Output end-of-line.
+        *
+        *  PARAMETERS:
+        *           IN  szMsg       - string to output to the user
+        *
+        *  RETURNS:
+        *           none.
+        */
+        virtual void OutputNewline() = 0;
+    };
 
 }   // namespace TPCE
 

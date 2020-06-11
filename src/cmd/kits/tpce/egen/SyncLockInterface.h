@@ -43,30 +43,29 @@
 *   Syncronization lock that lets only one thread acquire it.
 */
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CSyncLock
-{
-    pthread_mutex_t mutex;
-public:
-    CSyncLock() {
-    pthread_mutex_init(&mutex, NULL);
-    }
-    ~CSyncLock() {
-    pthread_mutex_destroy(&mutex);
-    }
+    class CSyncLock {
+        pthread_mutex_t mutex;
+    public:
+        CSyncLock() {
+            pthread_mutex_init(&mutex, NULL);
+        }
 
-    // Acquire lock or block until it is available
-    void ClaimLock() {
-        pthread_mutex_lock(&mutex);
-    }
+        ~CSyncLock() {
+            pthread_mutex_destroy(&mutex);
+        }
 
-    // Release lock so that it can be acquired again
-    void ReleaseLock() {
-        pthread_mutex_unlock(&mutex);
-    }
-};
+        // Acquire lock or block until it is available
+        void ClaimLock() {
+            pthread_mutex_lock(&mutex);
+        }
+
+        // Release lock so that it can be acquired again
+        void ReleaseLock() {
+            pthread_mutex_unlock(&mutex);
+        }
+    };
 
 }   // namespace TPCE
 

@@ -47,62 +47,64 @@
 #include "EGenTables_stdafx.h"
 #include "MEESecurity.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CMEEPriceBoard
-{
+    class CMEEPriceBoard {
 
-private:
+    private:
 
-    // Mean delay between Pending and Submission times
-    // for an immediatelly triggered (in-the-money) limit order.
-    //
-    double              m_fMeanInTheMoneySubmissionDelay;
-    CMEESecurity        m_Security;
-    CSecurityFile*      m_pSecurityFile;
+        // Mean delay between Pending and Submission times
+        // for an immediatelly triggered (in-the-money) limit order.
+        //
+        double m_fMeanInTheMoneySubmissionDelay;
+        CMEESecurity m_Security;
+        CSecurityFile *m_pSecurityFile;
 
-public:
-    TIdent              m_iNumberOfSecurities;
+    public:
+        TIdent m_iNumberOfSecurities;
 
-    CMEEPriceBoard( INT32           TradingTimeSoFar,
-                    CDateTime*      pBaseTime,
-                    CDateTime*      pCurrentTime,
-                    const CInputFiles& inputFiles
-                    );
-    ~CMEEPriceBoard( void );
+        CMEEPriceBoard(INT32 TradingTimeSoFar,
+                       CDateTime *pBaseTime,
+                       CDateTime *pCurrentTime,
+                       const CInputFiles &inputFiles
+        );
 
-    void    GetSymbol(  TIdent  SecurityIndex,
-                        char*   szOutput,       // output buffer
-                        size_t  iOutputLen);    // size of the output buffer (including null));
+        ~CMEEPriceBoard(void);
 
-    CMoney  GetMinPrice();
+        void GetSymbol(TIdent SecurityIndex,
+                       char *szOutput,       // output buffer
+                       size_t iOutputLen);    // size of the output buffer (including null));
 
-    CMoney  GetMaxPrice();
+        CMoney GetMinPrice();
 
-    CMoney  GetCurrentPrice( TIdent SecurityIndex );
-    CMoney  GetCurrentPrice( char* pSecuritySymbol );
+        CMoney GetMaxPrice();
 
-    CMoney  CalculatePrice( char* pSecuritySymbol, double fTime );
+        CMoney GetCurrentPrice(TIdent SecurityIndex);
 
-    double  GetSubmissionTime(
-                                char*           pSecuritySymbol,
-                                double          fPendingTime,
-                                CMoney          fLimitPrice,
-                                eTradeTypeID    TradeType
-                                );
-    double  GetSubmissionTime(
-                                TIdent          SecurityIndex,
-                                double          fPendingTime,
-                                CMoney          fLimitPrice,
-                                eTradeTypeID    TradeType
-                                );
-    double  GetCompletionTime(
-                                TIdent      SecurityIndex,
-                                double      fSubmissionTime,
-                                CMoney*     pCompletionPrice    // output param
-                            );
-};
+        CMoney GetCurrentPrice(char *pSecuritySymbol);
+
+        CMoney CalculatePrice(char *pSecuritySymbol, double fTime);
+
+        double GetSubmissionTime(
+                char *pSecuritySymbol,
+                double fPendingTime,
+                CMoney fLimitPrice,
+                eTradeTypeID TradeType
+        );
+
+        double GetSubmissionTime(
+                TIdent SecurityIndex,
+                double fPendingTime,
+                CMoney fLimitPrice,
+                eTradeTypeID TradeType
+        );
+
+        double GetCompletionTime(
+                TIdent SecurityIndex,
+                double fSubmissionTime,
+                CMoney *pCompletionPrice    // output param
+        );
+    };
 
 }   // namespace TPCE
 

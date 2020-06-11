@@ -43,101 +43,85 @@
 
 #include "EGenUtilities_stdafx.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-template <typename T> class CInputFileNoWeight
-{
-    typedef vector<T>*  PVectorT;
-    //Type of in-memory representation of input files
-    typedef vector<PVectorT>    CFileInMemoryList;  //array of arrays
+    template<typename T>
+    class CInputFileNoWeight {
+        typedef vector<T> *PVectorT;
+        //Type of in-memory representation of input files
+        typedef vector<PVectorT> CFileInMemoryList;  //array of arrays
 
-    CFileInMemoryList       m_list;
+        CFileInMemoryList m_list;
 
-    void ReadList(const char *szListFile)
-    {
-        ifstream    tmpFile;
+        void ReadList(const char *szListFile) {
+            ifstream tmpFile;
 
-        if (szListFile)
-        {
-            tmpFile.open(szListFile, ios_base::in);
-            if (tmpFile)
-            {
-                ReadList(tmpFile);
-                tmpFile.close();
-            }
-            else
-            {   //Open failed
-                tmpFile.close();
+            if (szListFile) {
+                tmpFile.open(szListFile, ios_base::in);
+                if (tmpFile) {
+                    ReadList(tmpFile);
+                    tmpFile.close();
+                } else {   //Open failed
+                    tmpFile.close();
+                    throw CSystemErr(CSystemErr::eCreateFile, "CInputFileNoWeight::ReadList");
+                }
+            } else {
                 throw CSystemErr(CSystemErr::eCreateFile, "CInputFileNoWeight::ReadList");
             }
         }
-        else
-        {
-            throw CSystemErr(CSystemErr::eCreateFile, "CInputFileNoWeight::ReadList");
+
+        void ReadList(const string &str) {
+            istringstream tmpFile(str);
+            ReadList(tmpFile);
         }
-    }
 
-    void ReadList(const string &str)
-    {
-        istringstream tmpFile(str);
-        ReadList(tmpFile);
-    }
+        void ReadList(istream &tmpFile) {
+            T row;
+            memset(&row, 0, sizeof(row));
+            int iIndex;
+            int iLastIndex = -1; /* must be different from the 1st index in the input file */
 
-    void ReadList(istream &tmpFile)
-    {
-        T   row;
-        memset(&row, 0, sizeof(row));
-        int iIndex;
-        int iLastIndex = -1; /* must be different from the 1st index in the input file */
-
-                while(tmpFile.good())
-                {
-                    tmpFile>>iIndex;    //read the first column, which is the index
-                    if( ! tmpFile.eof() )
-                    {
-                        row.Load(tmpFile);  //read the row
-                        if (iIndex!=iLastIndex)
-                        {
-                            PVectorT parray_row = new vector<T>;
-                            if (parray_row!=NULL)
-                                m_list.push_back(parray_row);   //new array
-                            else
-                                throw CMemoryErr("CInputFileNoWeight::ReadFile");
-                            iLastIndex = iIndex;
-                        }
-                        //Indices in the file start with 1 => substract 1.
-                        m_list[(UINT)(iIndex-1)]->push_back(row);   //insert into the container
+            while (tmpFile.good()) {
+                tmpFile >> iIndex;    //read the first column, which is the index
+                if (!tmpFile.eof()) {
+                    row.Load(tmpFile);  //read the row
+                    if (iIndex != iLastIndex) {
+                        PVectorT parray_row = new vector<T>;
+                        if (parray_row != NULL)
+                            m_list.push_back(parray_row);   //new array
+                        else
+                            throw CMemoryErr("CInputFileNoWeight::ReadFile");
+                        iLastIndex = iIndex;
                     }
+                    //Indices in the file start with 1 => substract 1.
+                    m_list[(UINT) (iIndex - 1)]->push_back(row);   //insert into the container
                 }
-    }
+            }
+        }
 
-public:
+    public:
 
-    //Constructor.
-    CInputFileNoWeight(const char *szListFile)
-    {
-        ReadList(szListFile);
-    }
+        //Constructor.
+        CInputFileNoWeight(const char *szListFile) {
+            ReadList(szListFile);
+        }
 
-    CInputFileNoWeight(const string &str)
-    {
-        ReadList(str);
-    }
+        CInputFileNoWeight(const string &str) {
+            ReadList(str);
+        }
 
-    //Destructor
-    ~CInputFileNoWeight()
-    {
-        for(size_t i=0; i<m_list.size(); ++i)
-            delete m_list[i];
-    }
+        //Destructor
+        ~CInputFileNoWeight() {
+            for (size_t i = 0; i < m_list.size(); ++i)
+                delete m_list[i];
+        }
 
-    //Returns the element at a specific index
-    PVectorT    GetRecord(UINT index) { return m_list[index]; };
+        //Returns the element at a specific index
+        PVectorT GetRecord(UINT index) { return m_list[index]; };
 
-    //Returns the number of records in the file (needed for TaxRates table
-    UINT        GetSize() { return (UINT)m_list.size(); }
-};
+        //Returns the number of records in the file (needed for TaxRates table
+        UINT GetSize() { return (UINT) m_list.size(); }
+    };
 
 }   // namespace TPCE
 

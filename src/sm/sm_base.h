@@ -97,7 +97,7 @@ class lock_m;
 class LogArchiver;
 
 class option_t;
-class rid_t;
+// class rid_t;
 class lsn_t;
 
 class sm_naive_allocator;

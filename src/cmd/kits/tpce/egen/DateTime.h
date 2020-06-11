@@ -46,106 +46,119 @@
 
 #include "EGenStandardTypes.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 // Common datetime structure.
 // Identical to ODBC's TIMESTAMP_STRUCT
 //
-typedef struct tagTIMESTAMP_STRUCT
-{
-        INT16    year;
-        UINT16   month;
-        UINT16   day;
-        UINT16   hour;
-        UINT16   minute;
-        UINT16   second;
-        UINT32   fraction;
-} TIMESTAMP_STRUCT;
+    typedef struct tagTIMESTAMP_STRUCT {
+        INT16 year;
+        UINT16 month;
+        UINT16 day;
+        UINT16 hour;
+        UINT16 minute;
+        UINT16 second;
+        UINT32 fraction;
+    } TIMESTAMP_STRUCT;
 
 // Date/Time constants
-const double    NsPerSecondDivisor      = 1000000000.0;
-const INT32     NsPerSecond             = 1000000000;
-const double    MsPerSecondDivisor      = 1000.000;
-const INT32     MsPerSecond             = 1000;
-const INT32     SecondsPerMinute        = 60;
-const INT32     MinutesPerHour          = 60;
-const INT32     HoursPerDay             = 24;
-const INT32     HoursPerWorkDay         = 8;
-const INT32     DaysPerWorkWeek         = 5;
-const INT32     DaysPerWeek             = 7;
+    const double NsPerSecondDivisor = 1000000000.0;
+    const INT32 NsPerSecond = 1000000000;
+    const double MsPerSecondDivisor = 1000.000;
+    const INT32 MsPerSecond = 1000;
+    const INT32 SecondsPerMinute = 60;
+    const INT32 MinutesPerHour = 60;
+    const INT32 HoursPerDay = 24;
+    const INT32 HoursPerWorkDay = 8;
+    const INT32 DaysPerWorkWeek = 5;
+    const INT32 DaysPerWeek = 7;
 
-const INT32     SecondsPerHour      = SecondsPerMinute * MinutesPerHour;
-const INT32     SecondsPerDay       = SecondsPerMinute * MinutesPerHour * HoursPerDay;
-const INT32     SecondsPerWorkDay   = SecondsPerMinute * MinutesPerHour * HoursPerWorkDay;
-const INT32     MsPerDay            = SecondsPerDay * MsPerSecond;
-const INT32     MsPerWorkDay        = SecondsPerWorkDay * MsPerSecond;
+    const INT32 SecondsPerHour = SecondsPerMinute * MinutesPerHour;
+    const INT32 SecondsPerDay = SecondsPerMinute * MinutesPerHour * HoursPerDay;
+    const INT32 SecondsPerWorkDay = SecondsPerMinute * MinutesPerHour * HoursPerWorkDay;
+    const INT32 MsPerDay = SecondsPerDay * MsPerSecond;
+    const INT32 MsPerWorkDay = SecondsPerWorkDay * MsPerSecond;
 
 #define RoundToNearestNsec(d_Seconds)     (( (INT64)( ( (d_Seconds) * NsPerSecond) + 0.5)) / NsPerSecondDivisor)
 
-class CDateTime
-{
-private:
-    INT32       m_dayno;    // absolute day number since 1-Jan-0001, starting from zero
-    INT32       m_msec;     // milliseconds from the beginning of the day
-    char*       m_szText;  // text representation; only allocated if needed
+    class CDateTime {
+    private:
+        INT32 m_dayno;    // absolute day number since 1-Jan-0001, starting from zero
+        INT32 m_msec;     // milliseconds from the beginning of the day
+        char *m_szText;  // text representation; only allocated if needed
 
-    friend bool operator >(const CDateTime& l_dt, const CDateTime& r_dt);
+        friend bool operator>(const CDateTime &l_dt, const CDateTime &r_dt);
 
-public:
-    CDateTime(void);        // current local date/time
-    CDateTime(INT32 dayno); // date as specified; time set to 0:00:00 (midnight)
-    CDateTime(INT32 year, INT32 month, INT32 day);  // date as specified; time set to 0:00:00 (midnight)
-    CDateTime(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec);
+    public:
+        CDateTime(void);        // current local date/time
+        CDateTime(INT32 dayno); // date as specified; time set to 0:00:00 (midnight)
+        CDateTime(INT32 year, INT32 month, INT32 day);  // date as specified; time set to 0:00:00 (midnight)
+        CDateTime(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec);
 
-    CDateTime(TIMESTAMP_STRUCT *ts); //date specified in the TIMESTAMP struct
+        CDateTime(TIMESTAMP_STRUCT *ts); //date specified in the TIMESTAMP struct
 
-    CDateTime(const CDateTime& dt); //proper copy constructor - does not copy m_szText
-    ~CDateTime(void);
+        CDateTime(const CDateTime &dt); //proper copy constructor - does not copy m_szText
+        ~CDateTime(void);
 
-    void SetToCurrent(void);    // set to current local date/time
-    void Set(INT32 dayno);
-    void Set(INT32 year, INT32 month, INT32 day);   // date as specified; time set to 0:00:00 (midnight)
-    void Set(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec);
-    void SetHMS(INT32 hour, INT32 minute, INT32 second, INT32 msec);
+        void SetToCurrent(void);    // set to current local date/time
+        void Set(INT32 dayno);
 
-    inline UINT32 DayNo(void) { return (UINT32)m_dayno; };
-    inline UINT32 MSec(void) { return (UINT32)m_msec; };
-    void GetYMD(INT32* year, INT32* month, INT32* day);
-    void GetYMDHMS(INT32* year, INT32* month, INT32* day, INT32* hour, INT32* minute, INT32* second, INT32* msec);
-    void GetHMS(INT32* hour, INT32* minute, INT32* second, INT32* msec);
+        void Set(INT32 year, INT32 month, INT32 day);   // date as specified; time set to 0:00:00 (midnight)
+        void Set(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec);
 
-    void GetTimeStamp(TIMESTAMP_STRUCT* ts);
+        void SetHMS(INT32 hour, INT32 minute, INT32 second, INT32 msec);
+
+        inline UINT32 DayNo(void) { return (UINT32) m_dayno; };
+
+        inline UINT32 MSec(void) { return (UINT32) m_msec; };
+
+        void GetYMD(INT32 *year, INT32 *month, INT32 *day);
+
+        void GetYMDHMS(INT32 *year, INT32 *month, INT32 *day, INT32 *hour, INT32 *minute, INT32 *second, INT32 *msec);
+
+        void GetHMS(INT32 *hour, INT32 *minute, INT32 *second, INT32 *msec);
+
+        void GetTimeStamp(TIMESTAMP_STRUCT *ts);
 
 #ifdef COMPILE_ODBC_LOAD
-    void GetDBDATETIME(DBDATETIME* dt);
+        void GetDBDATETIME(DBDATETIME* dt);
 #endif //COMPILE_ODBC_LOAD
 
-    static INT32 YMDtoDayno( INT32 yr, INT32 mm, INT32 dd );
-    char* ToStr( INT32 style );
+        static INT32 YMDtoDayno(INT32 yr, INT32 mm, INT32 dd);
 
-    void Add(INT32 days, INT32 msec, bool adjust_weekend = false);
-    void AddMinutes(INT32 Minutes);
-    void AddWorkMs(INT64 WorkMs);
+        char *ToStr(INT32 style);
 
-    bool operator <(const CDateTime&);
-    bool operator <=(const CDateTime&);
-    // operator > is defined as an external (not in-class) operator in CDateTime.cpp
-    bool operator >=(const CDateTime&);
-    bool operator ==(const CDateTime&);
+        void Add(INT32 days, INT32 msec, bool adjust_weekend = false);
 
-    // compute the difference between two DateTimes;
-    // result in seconds
-    double operator -(const CDateTime& dt);
-    INT32 DiffInMilliSeconds( const CDateTime& BaseTime );
-    INT32 DiffInMilliSeconds( CDateTime* pBaseTime );
-    // add another DateTime to this one
-    CDateTime& operator += (const CDateTime& dt);
-    //Proper assignment operator - does not copy szText
-    CDateTime& operator = (const CDateTime& dt);
+        void AddMinutes(INT32 Minutes);
 
-    bool IsValid( INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec );
-};
+        void AddWorkMs(INT64 WorkMs);
+
+        bool operator<(const CDateTime &);
+
+        bool operator<=(const CDateTime &);
+
+        // operator > is defined as an external (not in-class) operator in CDateTime.cpp
+        bool operator>=(const CDateTime &);
+
+        bool operator==(const CDateTime &);
+
+        // compute the difference between two DateTimes;
+        // result in seconds
+        double operator-(const CDateTime &dt);
+
+        INT32 DiffInMilliSeconds(const CDateTime &BaseTime);
+
+        INT32 DiffInMilliSeconds(CDateTime *pBaseTime);
+
+        // add another DateTime to this one
+        CDateTime &operator+=(const CDateTime &dt);
+
+        //Proper assignment operator - does not copy szText
+        CDateTime &operator=(const CDateTime &dt);
+
+        bool IsValid(INT32 year, INT32 month, INT32 day, INT32 hour, INT32 minute, INT32 second, INT32 msec);
+    };
 
 }   // namespace TPCE
 

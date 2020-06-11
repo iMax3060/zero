@@ -50,62 +50,60 @@
 #include "DriverParamSettings.h"
 #include "BaseLogFormatter.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CLogFormatTab : public CBaseLogFormatter
-{
-    friend class EGenLogger;
+    class CLogFormatTab : public CBaseLogFormatter {
+        friend class EGenLogger;
 
-private:
-    ostringstream logmsg;
+    private:
+        ostringstream logmsg;
 
-public:
+    public:
 
-    ////////////////////////////////////////////////////////////////
-    // CE Transaction Settings
-    ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        // CE Transaction Settings
+        ////////////////////////////////////////////////////////////////
 
-    string GetLogOutput(CBrokerVolumeSettings& parms);
+        string GetLogOutput(CBrokerVolumeSettings &parms);
 
-    string GetLogOutput(CCustomerPositionSettings& parms);
+        string GetLogOutput(CCustomerPositionSettings &parms);
 
-    string GetLogOutput(CMarketWatchSettings& parms);
+        string GetLogOutput(CMarketWatchSettings &parms);
 
-    string GetLogOutput(CSecurityDetailSettings& parms);
+        string GetLogOutput(CSecurityDetailSettings &parms);
 
-    string GetLogOutput(CTradeLookupSettings& parms);
+        string GetLogOutput(CTradeLookupSettings &parms);
 
-    string GetLogOutput(CTradeOrderSettings& parms);
+        string GetLogOutput(CTradeOrderSettings &parms);
 
-    string GetLogOutput(CTradeUpdateSettings& parms);
+        string GetLogOutput(CTradeUpdateSettings &parms);
 
-    ////////////////////////////////////////////////////////////////
-    // CE Transaction Mix Settings
-    ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        // CE Transaction Mix Settings
+        ////////////////////////////////////////////////////////////////
 
-    string GetLogOutput(CTxnMixGeneratorSettings& parms);
+        string GetLogOutput(CTxnMixGeneratorSettings &parms);
 
-    ////////////////////////////////////////////////////////////////
-    // Loader Settings
-    ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        // Loader Settings
+        ////////////////////////////////////////////////////////////////
 
-    string GetLogOutput(CLoaderSettings& parms);
+        string GetLogOutput(CLoaderSettings &parms);
 
-    ////////////////////////////////////////////////////////////////
-    // Driver Settings
-    ////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        // Driver Settings
+        ////////////////////////////////////////////////////////////////
 
-    string GetLogOutput(CDriverGlobalSettings& parms);
+        string GetLogOutput(CDriverGlobalSettings &parms);
 
-    string GetLogOutput(CDriverCESettings& parms);
+        string GetLogOutput(CDriverCESettings &parms);
 
-    string GetLogOutput(CDriverCEPartitionSettings& parms);
+        string GetLogOutput(CDriverCEPartitionSettings &parms);
 
-    string GetLogOutput(CDriverMEESettings& parms);
+        string GetLogOutput(CDriverMEESettings &parms);
 
-    string GetLogOutput(CDriverDMSettings& parms);
-};
+        string GetLogOutput(CDriverDMSettings &parms);
+    };
 
 }   // namespace TPCE
 

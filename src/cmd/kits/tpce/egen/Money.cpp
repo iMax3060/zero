@@ -40,38 +40,34 @@
 *                       database population.
 ******************************************************************************/
 
-#include "workload/tpce/egen/EGenUtilities_stdafx.h"
+#include "EGenUtilities_stdafx.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 // Define * operator to make possible integer operand on the left
 //
-CMoney operator *(int l_i, CMoney r_m)
-{
-    CMoney ret;
+    CMoney operator*(int l_i, CMoney r_m) {
+        CMoney ret;
 
-    ret = r_m * l_i;
+        ret = r_m * l_i;
 
-    return ret;
-}
+        return ret;
+    }
 
 // Define * operator to make possible double operand on the left
 //
-CMoney operator *(double l_f, CMoney r_m)
-{
-    CMoney ret;
+    CMoney operator*(double l_f, CMoney r_m) {
+        CMoney ret;
 
-    ret = r_m * l_f;
+        ret = r_m * l_f;
 
-    return ret;
-}
+        return ret;
+    }
 
 // Define / operator to make possible double operand on the left
 //
-double operator /(double l_f, CMoney r_m)
-{
-    return l_f / r_m.DollarAmount();
-}
+    double operator/(double l_f, CMoney r_m) {
+        return l_f / r_m.DollarAmount();
+    }
 
 }

@@ -31,14 +31,12 @@
 #ifndef __SHORE_TPCE_CLIENT_H
 #define __SHORE_TPCE_CLIENT_H
 
-#include "sm/shore/shore_client.h"
+#include "shore_client.h"
 
-#include "workload/tpce/shore_tpce_env.h"
+#include "shore_tpce_env.h"
+#include "util/c_str.h"
 
-using namespace shore;
-
-ENTER_NAMESPACE(tpce);
-
+namespace tpce {
 
 /******************************************************************** 
  *
@@ -48,37 +46,33 @@ ENTER_NAMESPACE(tpce);
  *
  ********************************************************************/
 
-class baseline_tpce_client_t : public base_client_t 
-{
-private:
-    // workload parameters
-    int _selid;
-    trx_worker_t* _worker;
-    double _qf;
-    
-
-public:
-
-    baseline_tpce_client_t() { }     
-
-    baseline_tpce_client_t(c_str tname, const int id, ShoreTPCEEnv* env, 
-                           const MeasurementType aType, const int trxid, 
-                           const int numOfTrxs, 
-                           processorid_t aprsid, const int selID, const double qf);
-
-    ~baseline_tpce_client_t() { }
-
-    // every client class should implement this function
-    static const int load_sup_xct(mapSupTrxs& map);
-
-    // INTERFACE 
-
-    w_rc_t submit_one(int xct_type, int xctid);    
-
-}; // EOF: baseline_tpce_client_t
+    class baseline_tpce_client_t : public base_client_t {
+    private:
+        // workload parameters
+        int _selid;
+        trx_worker_t *_worker;
+        double _qf;
 
 
-EXIT_NAMESPACE(tpce);
+    public:
 
+        baseline_tpce_client_t() {}
+
+        baseline_tpce_client_t(std::string tname, const int id, ShoreTPCEEnv *env,
+                               const MeasurementType aType, const int trxid,
+                               const int numOfTrxs, const int selID, const double qf);
+
+        ~baseline_tpce_client_t() {}
+
+        // every client class should implement this function
+        static const int load_sup_xct(mapSupTrxs &map);
+
+        // INTERFACE
+
+        w_rc_t submit_one(int xct_type, int xctid);
+
+    }; // EOF: baseline_tpce_client_t
+
+}
 
 #endif /** __SHORE_TPCE_CLIENT_H */

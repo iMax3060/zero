@@ -42,28 +42,26 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatNewsXRefLoad : public CFlatFileLoader <NEWS_XREF_ROW>
-{
-public:
-    CFlatNewsXRefLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<NEWS_XREF_ROW>(szFileName, FlatFileOutputMode) {};
+    class CFlatNewsXRefLoad : public CFlatFileLoader<NEWS_XREF_ROW> {
+    public:
+        CFlatNewsXRefLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<NEWS_XREF_ROW>(
+                szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, NewsXRefRowFmt,
-                  next_record->NX_NI_ID,
-                  next_record->NX_CO_ID
-                );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatNewsXRefLoad::WriteNextRecord");
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, NewsXRefRowFmt,
+                             next_record->NX_NI_ID,
+                             next_record->NX_CO_ID
+            );
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatNewsXRefLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

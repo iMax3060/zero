@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CIndustryTable : public TableTemplate<INDUSTRY_ROW>
-{
-    ifstream    InFile;
+    class CIndustryTable : public TableTemplate<INDUSTRY_ROW> {
+        ifstream InFile;
 
-public:
-    CIndustryTable( char *szDirName )
-        : TableTemplate<INDUSTRY_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CIndustryTable(char *szDirName)
+                : TableTemplate<INDUSTRY_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "Industry.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "Industry.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CIndustryTable( )
-    {
-        InFile.close();
-    };
+        ~CIndustryTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

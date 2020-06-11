@@ -41,27 +41,26 @@
 #include <iostream>
 #include <sstream>
 
-#include "workload/tpce/egen/EGenStandardTypes.h"
-#include "workload/tpce/egen/DriverTypes.h"
-#include "workload/tpce/egen/DriverParamSettings.h"
-#include "workload/tpce/egen/BaseLogger.h"
-#include "workload/tpce/egen/BaseLogFormatter.h"
+#include "EGenStandardTypes.h"
+#include "DriverTypes.h"
+#include "DriverParamSettings.h"
+#include "BaseLogger.h"
+#include "BaseLogFormatter.h"
 
-using namespace TPCE;
+using namespace tpce;
 
-char TPCE::szDriverTypeNames[eDriverMax][14] =
-{
-  "EGenLoader",
-  "EGenDriverAll",
-  "EGenDriverCE",
-  "EGenDriverMEE",
-  "EGenDriverDM"
-};
+char tpce::szDriverTypeNames[eDriverMax][14] =
+        {
+                "EGenLoader",
+                "EGenDriverAll",
+                "EGenDriverCE",
+                "EGenDriverMEE",
+                "EGenDriverDM"
+        };
 
 /* Constructor */
-CBaseLogger::CBaseLogger(eDriverType drvType, INT32 UniqueId, CBaseLogFormatter* pFormatter)
-    : m_pLogFormatter( pFormatter )
-{
+CBaseLogger::CBaseLogger(eDriverType drvType, INT32 UniqueId, CBaseLogFormatter *pFormatter)
+        : m_pLogFormatter(pFormatter) {
     char m_Version[32];
 
     // Get EGen Version
@@ -73,94 +72,78 @@ CBaseLogger::CBaseLogger(eDriverType drvType, INT32 UniqueId, CBaseLogFormatter*
 }
 
 /* Methods */
-bool CBaseLogger::SendToLogger(const char *szPrefix, const char *szMsg)
-{
+bool CBaseLogger::SendToLogger(const char *szPrefix, const char *szMsg) {
     CDateTime curTime;
     return SendToLoggerImpl(szPrefix, curTime.ToStr(12), szMsg);
 }
 
 // Strings
-bool CBaseLogger::SendToLogger(const char *str)
-{
+bool CBaseLogger::SendToLogger(const char *str) {
     return SendToLogger(m_Prefix, str);
 }
-bool CBaseLogger::SendToLogger(string str)
-{
+
+bool CBaseLogger::SendToLogger(string str) {
     return SendToLogger(str.c_str());
 }
 
 // Parameter Structures
-bool CBaseLogger::SendToLogger(CLoaderSettings& parms)
-{
-    return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
-}
-bool CBaseLogger::SendToLogger(CDriverGlobalSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CLoaderSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CDriverCESettings& parms)
-{
+bool CBaseLogger::SendToLogger(CDriverGlobalSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CDriverCEPartitionSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CDriverCESettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CDriverMEESettings& parms)
-{
+bool CBaseLogger::SendToLogger(CDriverCEPartitionSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CDriverDMSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CDriverMEESettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CBrokerVolumeSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CDriverDMSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CCustomerPositionSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CBrokerVolumeSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CMarketWatchSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CCustomerPositionSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CSecurityDetailSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CMarketWatchSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CTradeLookupSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CSecurityDetailSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CTradeOrderSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CTradeLookupSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CTradeUpdateSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CTradeOrderSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(CTxnMixGeneratorSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CTradeUpdateSettings &parms) {
     return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
 }
 
-bool CBaseLogger::SendToLogger(TDriverCETxnSettings& parms)
-{
+bool CBaseLogger::SendToLogger(CTxnMixGeneratorSettings &parms) {
+    return SendToLogger(m_pLogFormatter->GetLogOutput(parms));
+}
+
+bool CBaseLogger::SendToLogger(TDriverCETxnSettings &parms) {
     bool result = false;
 
     result |= SendToLogger(m_pLogFormatter->GetLogOutput(parms.BV_settings));

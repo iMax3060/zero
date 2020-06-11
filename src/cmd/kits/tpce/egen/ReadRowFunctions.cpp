@@ -42,5 +42,7 @@
 #ifdef READROW_SSCANF
 #include "ReadRowFunctions_sscanf.cpp"
 #else
+
 #include "ReadRowFunctions_istream.cpp"
+
 #endif

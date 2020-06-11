@@ -41,11 +41,10 @@
 #ifndef SECURITY_PRICE_RANGE_H
 #define SECURITY_PRICE_RANGE_H
 
-namespace TPCE
-{
+namespace tpce {
 
-const double fMinSecPrice = 20.00;
-const double fMaxSecPrice = 30.00;
+    const double fMinSecPrice = 20.00;
+    const double fMaxSecPrice = 30.00;
 
 } //namespace TPCE
 

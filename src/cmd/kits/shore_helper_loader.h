@@ -32,17 +32,14 @@
 #define __SHORE_HELPER_LOADER_H
 
 #include "sm_vas.h"
-#include "util.h"
 
-#include "sm/shore/shore_table_man.h"
-
-
-ENTER_NAMESPACE(shore);
-    
+#include "table_man.h"
+#include "util/c_str.h"
+#include "critical_section.h"
+#include "mcs_lock.h"
 
 class ShoreEnv;
 
-    
 /****************************************************************** 
  *
  *  @class: db_init_smt_t
@@ -52,17 +49,19 @@ class ShoreEnv;
  *
  ******************************************************************/
 
-class db_init_smt_t : public thread_t 
-{
+class db_init_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;
-    int       _rv;
+    ShoreEnv *_env;
+    int _rv;
 
 public:
-    
-    db_init_smt_t(c_str tname, ShoreEnv* db);
+
+    db_init_smt_t(ShoreEnv *db);
+
     ~db_init_smt_t();
+
     void work();
+
     int rv();
 
 }; // EOF: db_init_smt_t
@@ -77,21 +76,19 @@ public:
  *
  ******************************************************************/
 
-class db_log_smt_t : public thread_t 
-{
+class db_log_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;
-    int       _rv;
+    ShoreEnv *_env;
+    int _rv;
 
 public:
-    
-    db_log_smt_t(c_str tname, ShoreEnv* db) 
-	: thread_t(tname), _env(db)
-    {
+
+    db_log_smt_t(ShoreEnv *db)
+            : std::thread(), _env(db) {
         assert (_env);
     }
 
-    ~db_log_smt_t() { }
+    ~db_log_smt_t() {}
 
     // thread entrance
     void work();
@@ -101,7 +98,7 @@ public:
 }; // EOF: db_init_smt_t
 
 
-    
+
 /****************************************************************** 
  *
  *  @class: db_load_smt_t
@@ -111,31 +108,31 @@ public:
  *
  ******************************************************************/
 
-class db_load_smt_t : public thread_t 
-{
+class db_load_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;
-    int       _rv;
+    ShoreEnv *_env;
+    int _rv;
 
 public:
-    
-    db_load_smt_t(c_str tname, ShoreEnv* db) 
-	: thread_t(tname), _env(db)
-    {
+
+    db_load_smt_t(ShoreEnv *db)
+            : std::thread(), _env(db) {
         assert (_env);
     }
 
-    ~db_load_smt_t() { }
+    ~db_load_smt_t() {}
 
     // thread entrance
     void work();
+
     inline int rv() { return (_rv); }
-    w_rc_t    _rc;
+
+    w_rc_t _rc;
 
 }; // EOF: db_load_smt_t
 
 
-    
+
 /****************************************************************** 
  *
  *  @class: table_loading_smt_t
@@ -145,36 +142,36 @@ public:
  *
  ******************************************************************/
 
-class table_loading_smt_t : public thread_t 
-{
+class table_loading_smt_t : public std::thread {
 protected:
 
-    ss_m*         _pssm;
-    table_desc_t* _ptable;
-    const int     _sf;    
-    const char*   _datadir;
-    int           _rv;
+    ss_m *_pssm;
+    table_desc_t *_ptable;
+    const int _sf;
+    const char *_datadir;
+    int _rv;
 
 public:
-    
-    table_loading_smt_t(c_str tname, ss_m* assm, 
-                        table_desc_t* atable, 
-                        const int asf, const char* adatadir) 
-	: thread_t(tname), _pssm(assm), _ptable(atable), 
-          _sf(asf), _datadir(adatadir)
-    {
+
+    table_loading_smt_t(ss_m *assm,
+                        table_desc_t *atable,
+                        const int asf, const char *adatadir)
+            : std::thread(), _pssm(assm), _ptable(atable),
+              _sf(asf), _datadir(adatadir) {
         assert (_pssm);
         assert (_ptable);
         assert (_sf);
         assert (_datadir);
     }
 
-    virtual ~table_loading_smt_t() { }
+    virtual ~table_loading_smt_t() {}
 
     // thread entrance
-    virtual void work()=0;
+    virtual void work() = 0;
+
     inline int rv() { return (_rv); }
-    inline table_desc_t* table() { return (_ptable); }
+
+    inline table_desc_t *table() { return (_ptable); }
 
 }; // EOF: table_loading_smt_t
 
@@ -193,70 +190,66 @@ public:
  *
  ******************************************************************/
 
-template <class TableDesc>
-class index_loading_smt_t : public thread_t 
-{
+template<class TableDesc>
+class index_loading_smt_t : public std::thread {
     typedef table_row_t table_tuple;
-    typedef table_man_impl<TableDesc> table_manager;
+    typedef table_man_t<TableDesc> table_manager;
 
 private:
 
-    ss_m*          _pssm;
-    table_manager* _pmanager;    
-    index_desc_t*  _pindex;
-    int            _t_count;
-    int            _rv;
+    ss_m *_pssm;
+    table_manager *_pmanager;
+    index_desc_t *_pindex;
+    int _t_count;
+    int _rv;
 
 
 public:
 
-    table_tuple* _ptuple;
-    mcs_lock     _cs_mutex; /* (?) */
+    table_tuple *_ptuple;
+    tatas_lock _cs_mutex; /* (?) */
 
-    bool         _has_to_consume;
-    bool         _start;
-    bool         _finish;
+    bool _has_to_consume;
+    bool _start;
+    bool _finish;
 
-    
-    index_loading_smt_t(c_str tname, ss_m* assm, table_manager* aptable_manager,
-                        index_desc_t* apindex, table_tuple* aptuple) 
-	: thread_t(tname), _pssm(assm), _pmanager(aptable_manager), 
-          _pindex(apindex), _t_count(0), _ptuple(aptuple), 
-          _has_to_consume(false), _start(false), _finish(false)
-    {
+
+    index_loading_smt_t(ss_m *assm, table_manager *aptable_manager,
+                        index_desc_t *apindex, table_tuple *aptuple)
+            : std::thread(), _pssm(assm), _pmanager(aptable_manager),
+              _pindex(apindex), _t_count(0), _ptuple(aptuple),
+              _has_to_consume(false), _start(false), _finish(false) {
         assert (_pssm);
         assert (_pmanager);
         assert (_pindex);
         assert (_ptuple);
     }
 
-    ~index_loading_smt_t() 
-    { 
+    ~index_loading_smt_t() {
     }
 
     inline int rv() { return (_rv); }
 
-    w_rc_t do_help()
-    {
-        assert (_pmanager);        
+    w_rc_t do_help() {
+        assert (_pmanager);
         assert (_pindex);
 
-        char* pdest  = NULL;
-        int   bufsz  = 0;
-        int   key_sz = 0;
-        int   mark   = COMMIT_ACTION_COUNT;
-        bool  cons_happened = false;
-        int   ispin  = 0;
+        char *pdest = NULL;
+        int bufsz = 0;
+        int key_sz = 0;
+        int mark = COMMIT_ACTION_COUNT;
+        bool cons_happened = false;
+        int ispin = 0;
 
-        CRITICAL_SECTION(hcs, &_cs_mutex);
+        CRITICAL_SECTION(hcs, _cs_mutex);
         hcs.pause();
 
-        while(!_start) {
+        while (!_start) {
             ispin++;
         }
 
-        W_DO(_pssm->begin_xct());    
-    
+        W_DO(_pssm->begin_xct());
+
         while (true) {
 
             //*** START: CS ***//
@@ -273,12 +266,12 @@ public:
 
                 key_sz = _pmanager->format_key(_pindex, _ptuple, *_ptuple->_rep);
                 assert (pdest); // if NULL invalid key
-            
-		int pnum = _pmanager->get_pnum(_pindex, _ptuple);
+
+                int pnum = _pmanager->get_pnum(_pindex, _ptuple);
                 W_DO(_pssm->create_assoc(_pindex->fid(pnum),
                                          vec_t(pdest, key_sz),
                                          vec_t(&(_ptuple->_rid), sizeof(rid_t))));
-            
+
                 _has_to_consume = false;
                 cons_happened = true; // a consumption just happened
             }
@@ -289,17 +282,16 @@ public:
             if (cons_happened) {
                 // It just consumed a row, increase the counters
                 _t_count++;
-            
-                if (_t_count >= mark) { 
+
+                if (_t_count >= mark) {
                     W_DO(_pssm->commit_xct());
 
                     if ((_t_count % 100000) == 0) { // every 100K
-                        TRACE( TRACE_ALWAYS, "index(%s): %d\n", 
-                               _pindex->name(), _t_count);
-                    }
-                    else {
-                        TRACE( TRACE_TRX_FLOW, "index(%s): %d\n", 
-                               _pindex->name(), _t_count);
+                        TRACE(TRACE_ALWAYS, "index(%s): %d\n",
+                              _pindex->name(), _t_count);
+                    } else {
+                        TRACE(TRACE_TRX_FLOW, "index(%s): %d\n",
+                              _pindex->name(), _t_count);
                     }
 
                     W_DO(_pssm->begin_xct());
@@ -320,16 +312,16 @@ public:
     void work() {
         w_rc_t e = do_help();
         if (e.is_error()) {
-            TRACE( TRACE_ALWAYS, "Index (%s) loading aborted [0x%x]\n", 
-                   _pindex->name(), e.err_num());
-       
+            TRACE(TRACE_ALWAYS, "Index (%s) loading aborted [0x%x]\n",
+                  _pindex->name(), e.err_num());
+
             int iretries = 0;
             w_rc_t abrt_rc = _pssm->abort_xct();
-        
+
             while (!abrt_rc.is_error()) {
                 iretries++;
                 abrt_rc = _pssm->abort_xct();
-                if (iretries > SHORE_NUM_OF_RETRIES)
+                if (iretries > 3)
                     break;
             }
 
@@ -338,13 +330,13 @@ public:
         }
 
         // the do_help() function exits _finish should be set to true
-        assert (_finish); 
+        assert (_finish);
 
         // if reached this point everything was ok
         _rv = 0;
     }
 
-    int    count() { return (_t_count); }
+    int count() { return (_t_count); }
 
 }; // EOF: index_loading_smt_t
 
@@ -359,64 +351,59 @@ public:
  *
  ******************************************************************/
 
-class table_checking_smt_t : public thread_t 
-{
+class table_checking_smt_t : public std::thread {
 protected:
 
-    ss_m*         _pssm;
-    table_desc_t* _ptable;
+    ss_m *_pssm;
+    table_desc_t *_ptable;
 
 public:
-    
-    table_checking_smt_t(c_str tname, ss_m* pssm, 
-                        table_desc_t* atable) 
-	: thread_t(tname), _pssm(pssm), _ptable(atable)
-    {
+
+    table_checking_smt_t(ss_m *pssm,
+                         table_desc_t *atable)
+            : std::thread(), _pssm(pssm), _ptable(atable) {
         assert (_pssm);
         assert (_ptable);
     }
 
-    virtual ~table_checking_smt_t() { }
+    virtual ~table_checking_smt_t() {}
 
     // thread entrance
-    virtual void work()=0;
+    virtual void work() = 0;
 
 }; // EOF: table_checking_smt_t
 
 
-template <class TableDesc>
-class table_checking_smt_impl : public table_checking_smt_t 
-{
+template<class TableDesc>
+class table_checking_smt_impl : public table_checking_smt_t {
     typedef table_row_t table_tuple;
-    typedef table_man_impl<TableDesc> table_manager;
+    typedef table_man_t<TableDesc> table_manager;
 
 private:
 
-    table_manager* _pmanager;
+    table_manager *_pmanager;
 
 public:
-    
-    table_checking_smt_impl(c_str tname, ss_m* pssm, 
-                            table_man_impl<TableDesc>* amanager, 
-                            table_desc_t* atable) 
-	: table_checking_smt_t(tname, pssm, atable), _pmanager(amanager)
-    {
+
+    table_checking_smt_impl(ss_m *pssm,
+                            table_man_t<TableDesc> *amanager,
+                            table_desc_t *atable)
+            : table_checking_smt_t(pssm, atable), _pmanager(amanager) {
         assert (_pmanager);
     }
 
-    ~table_checking_smt_impl() { }
+    ~table_checking_smt_impl() {}
 
     // thread entrance
     void work() {
-        TRACE( TRACE_DEBUG, "Checking (%s)\n", _ptable->name());
+        TRACE(TRACE_DEBUG, "Checking (%s)\n", _ptable->name());
 
         //if (!_pmanager->check_all_indexes(_pssm)) {
         w_rc_t e = _pmanager->check_all_indexes_together(_pssm);
         if (e.is_error()) {
-            TRACE( TRACE_DEBUG, "Inconsistency in (%s)\n", _ptable->name());
-        }
-        else {
-            TRACE( TRACE_DEBUG, "(%s) OK...\n", _ptable->name());
+            TRACE(TRACE_DEBUG, "Inconsistency in (%s)\n", _ptable->name());
+        } else {
+            TRACE(TRACE_DEBUG, "(%s) OK...\n", _ptable->name());
         }
     }
 
@@ -433,17 +420,16 @@ public:
  *
  ******************************************************************/
 
-class close_smt_t : public thread_t {
+class close_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;    
+    ShoreEnv *_env;
 
 public:
-    int	_rv;
-    
-    close_smt_t(ShoreEnv* env, c_str tname) 
-	: thread_t(tname), 
-          _env(env), _rv(0)
-    {
+    int _rv;
+
+    close_smt_t(ShoreEnv *env)
+            : std::thread(),
+              _env(env), _rv(0) {
     }
 
     ~close_smt_t() {
@@ -455,7 +441,7 @@ public:
      *        smthread-inherited class that runs using run_smthread()
      */
     inline int retval() { return (_rv); }
-    
+
 }; // EOF: close_smt_t
 
 
@@ -469,18 +455,16 @@ public:
  *
  ******************************************************************/
 
-class dump_smt_t : public thread_t 
-{
+class dump_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;    
+    ShoreEnv *_env;
 
 public:
-    int	_rv;
-    
-    dump_smt_t(ShoreEnv* env, c_str tname) 
-	: thread_t(tname), 
-          _env(env), _rv(0)
-    {
+    int _rv;
+
+    dump_smt_t(ShoreEnv *env)
+            : std::thread(),
+              _env(env), _rv(0) {
     }
 
     ~dump_smt_t() {
@@ -492,7 +476,7 @@ public:
      *        smthread-inherited class that runs using run_smthread()
      */
     inline int retval() { return (_rv); }
-    
+
 }; // EOF: dump_smt_t
 
 
@@ -506,26 +490,22 @@ public:
  *
  ******************************************************************/
 
-class abort_smt_t : public thread_t 
-{
+class abort_smt_t : public std::thread {
 private:
-    ShoreEnv* _env;    
+    ShoreEnv *_env;
 
 public:
 
-    vector<xct_t*>* _toabort;
+    vector<xct_t *> *_toabort;
     uint _aborted;
-    
-    abort_smt_t(c_str tname, ShoreEnv* env, vector<xct_t*>& toabort);
+
+    abort_smt_t(ShoreEnv *env, vector<xct_t *> &toabort);
+
     ~abort_smt_t();
+
     void work();
-    
+
 }; // EOF: abort_smt_t
-
-
-
-EXIT_NAMESPACE(shore);
-
 
 #endif /* __SHORE_HELPER_LOADER_H */
 

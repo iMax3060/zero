@@ -41,12 +41,16 @@
 
 #include <cstddef>
 #include <cstdio>
+
 #ifdef WIN32            //for Windows platform
 #include <windows.h>
 #else
+
 #include <cerrno>       //for Unix
 #include <sys/time.h>   //for gettimeofday() on Linux
+
 #endif
+
 #include <ctime>
 #include <cassert>
 #include <list>

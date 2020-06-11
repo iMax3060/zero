@@ -39,24 +39,20 @@
 *                       See CE.h for a description.
 ******************************************************************************/
 
-#include "workload/tpce/egen/CE.h"
+#include "CE.h"
 
-using namespace TPCE;
+using namespace tpce;
 
 // Initialization that is common for all constructors.
-void CCE::Initialize( PDriverCETxnSettings pTxnParamSettings )
-{
+void CCE::Initialize(PDriverCETxnSettings pTxnParamSettings) {
     m_pLogger->SendToLogger(m_DriverGlobalSettings);
 
     // If the provided parameter settings are valid, use them.
     // Otherwise use default settings.
-    if( pTxnParamSettings )
-    {
-        SetTxnTunables( pTxnParamSettings );
-    }
-    else
-    {
-        SetTxnTunables( &m_DriverCETxnSettings );
+    if (pTxnParamSettings) {
+        SetTxnTunables(pTxnParamSettings);
+    } else {
+        SetTxnTunables(&m_DriverCETxnSettings);
     }
 }
 
@@ -75,17 +71,16 @@ void CCE::Initialize( PDriverCETxnSettings pTxnParamSettings )
 //                  the generated values every 5 years.
 //  Bits    44 - 63 Current time of day measured in 1/10's of a second.
 //
-void CCE::AutoSetRNGSeeds( UINT32 UniqueId )
-{
-    CDateTime   Now;
-    INT32       BaseYear;
-    INT32       Tmp1, Tmp2;
+void CCE::AutoSetRNGSeeds(UINT32 UniqueId) {
+    CDateTime Now;
+    INT32 BaseYear;
+    INT32 Tmp1, Tmp2;
 
-    Now.GetYMD( &BaseYear, &Tmp1, &Tmp2 );
+    Now.GetYMD(&BaseYear, &Tmp1, &Tmp2);
 
     // Set the base year to be the most recent year that was a multiple of 5.
-    BaseYear -= ( BaseYear % 5 );
-    CDateTime   Base( BaseYear, 1, 1 ); // January 1st in the BaseYear
+    BaseYear -= (BaseYear % 5);
+    CDateTime Base(BaseYear, 1, 1); // January 1st in the BaseYear
 
     // Initialize the seed with the current time of day measured in 1/10's of a second.
     // This will use up to 20 bits.
@@ -96,7 +91,7 @@ void CCE::AutoSetRNGSeeds( UINT32 UniqueId )
     // The number of days in the 5 year period requires 11 bits.
     // So shift up by that much to make room in the "lower" bits.
     Seed <<= 11;
-    Seed += (RNGSEED)((INT64)Now.DayNo() - (INT64)Base.DayNo());
+    Seed += (RNGSEED) ((INT64) Now.DayNo() - (INT64) Base.DayNo());
 
     // So far, we've used up 31 bits.
     // Save the "last" bit of the "upper" 32 for the RNG id.
@@ -109,38 +104,34 @@ void CCE::AutoSetRNGSeeds( UINT32 UniqueId )
     Seed += UniqueId;
 
     // Set the TxnMixGenerator RNG to the unique seed.
-    m_TxnMixGenerator.SetRNGSeed( Seed );
+    m_TxnMixGenerator.SetRNGSeed(Seed);
     m_DriverCESettings.cur.TxnMixRNGSeed = Seed;
 
     // Set the RNG Id to 1 for the TxnInputGenerator.
     Seed |= UINT64_CONST(0x0000000100000000);
-    m_TxnInputGenerator.SetRNGSeed( Seed );
+    m_TxnInputGenerator.SetRNGSeed(Seed);
     m_DriverCESettings.cur.TxnInputRNGSeed = Seed;
 }
-
-
 
 
 /*
 * Constructor - no partitioning by C_ID, automatic RNG seed generation (requires unique input)
 */
-CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                           TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                           INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                           UINT32 UniqueId,
-                           const PDriverCETxnSettings pDriverCETxnSettings )
-    : m_DriverGlobalSettings( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverCESettings( UniqueId, 0, 0 )
-    , m_pSUT( pSUT )
-    , m_pLogger ( pLogger )
-    , m_TxnMixGenerator( &m_DriverCETxnSettings, m_pLogger )
-    , m_TxnInputGenerator( inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades * HoursPerWorkDay, m_pLogger, &m_DriverCETxnSettings )
-    , m_bClearBufferBeforeGeneration(false)
-{
+CCE::CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+         TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+         INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+         UINT32 UniqueId,
+         const PDriverCETxnSettings pDriverCETxnSettings)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverCESettings(UniqueId, 0, 0), m_pSUT(pSUT), m_pLogger(pLogger),
+          m_TxnMixGenerator(&m_DriverCETxnSettings, m_pLogger),
+          m_TxnInputGenerator(inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor,
+                              iDaysOfInitialTrades * HoursPerWorkDay, m_pLogger, &m_DriverCETxnSettings),
+          m_bClearBufferBeforeGeneration(false) {
     m_pLogger->SendToLogger("CE object constructed using constructor 1 (valid for publication: YES).");
 
-    Initialize( pDriverCETxnSettings );
-    AutoSetRNGSeeds( UniqueId );
+    Initialize(pDriverCETxnSettings);
+    AutoSetRNGSeeds(UniqueId);
 
     m_pLogger->SendToLogger(m_DriverCESettings);    // log the RNG seeds
 }
@@ -148,24 +139,22 @@ CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputF
 /*
 * Constructor - no partitioning by C_ID, RNG seeds provided
 */
-CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                           TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                           INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                           UINT32 UniqueId,
-                           RNGSEED TxnMixRNGSeed,
-                           RNGSEED TxnInputRNGSeed,
-                           const PDriverCETxnSettings pDriverCETxnSettings )
-    : m_DriverGlobalSettings( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverCESettings( UniqueId, TxnMixRNGSeed, TxnInputRNGSeed )
-    , m_pSUT( pSUT )
-    , m_pLogger ( pLogger )
-    , m_TxnMixGenerator( &m_DriverCETxnSettings, TxnMixRNGSeed, m_pLogger )
-    , m_TxnInputGenerator( inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades * HoursPerWorkDay, TxnInputRNGSeed, m_pLogger, &m_DriverCETxnSettings )
-    , m_bClearBufferBeforeGeneration(false)
-{
+CCE::CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+         TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+         INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+         UINT32 UniqueId,
+         RNGSEED TxnMixRNGSeed,
+         RNGSEED TxnInputRNGSeed,
+         const PDriverCETxnSettings pDriverCETxnSettings)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverCESettings(UniqueId, TxnMixRNGSeed, TxnInputRNGSeed), m_pSUT(pSUT), m_pLogger(pLogger),
+          m_TxnMixGenerator(&m_DriverCETxnSettings, TxnMixRNGSeed, m_pLogger),
+          m_TxnInputGenerator(inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor,
+                              iDaysOfInitialTrades * HoursPerWorkDay, TxnInputRNGSeed, m_pLogger,
+                              &m_DriverCETxnSettings), m_bClearBufferBeforeGeneration(false) {
     m_pLogger->SendToLogger("CE object constructed using constructor 2 (valid for publication: NO).");
 
-    Initialize( pDriverCETxnSettings );
+    Initialize(pDriverCETxnSettings);
 
     m_pLogger->SendToLogger(m_DriverCESettings);    // log the RNG seeds
 }
@@ -173,26 +162,24 @@ CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputF
 /*
 * Constructor - partitioning by C_ID, automatic RNG seed generation (requires unique input)
 */
-CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                            TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
-                            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                            UINT32 UniqueId,
-                            const PDriverCETxnSettings pDriverCETxnSettings )
-    : m_DriverGlobalSettings( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverCESettings( UniqueId, 0, 0 )
-    , m_DriverCEPartitionSettings( iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent )
-    , m_pSUT( pSUT )
-    , m_pLogger ( pLogger )
-    , m_TxnMixGenerator( &m_DriverCETxnSettings, m_pLogger )
-    , m_TxnInputGenerator(  inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades * HoursPerWorkDay,
-                            iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent, m_pLogger, &m_DriverCETxnSettings )
-    , m_bClearBufferBeforeGeneration(false)
-{
+CCE::CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+         TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+         TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
+         INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+         UINT32 UniqueId,
+         const PDriverCETxnSettings pDriverCETxnSettings)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverCESettings(UniqueId, 0, 0),
+          m_DriverCEPartitionSettings(iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent), m_pSUT(pSUT),
+          m_pLogger(pLogger), m_TxnMixGenerator(&m_DriverCETxnSettings, m_pLogger),
+          m_TxnInputGenerator(inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor,
+                              iDaysOfInitialTrades * HoursPerWorkDay,
+                              iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent, m_pLogger,
+                              &m_DriverCETxnSettings), m_bClearBufferBeforeGeneration(false) {
     m_pLogger->SendToLogger("CE object constructed using constructor 3 (valid for publication: YES).");
 
-    Initialize( pDriverCETxnSettings );
-    AutoSetRNGSeeds( UniqueId );
+    Initialize(pDriverCETxnSettings);
+    AutoSetRNGSeeds(UniqueId);
 
     m_pLogger->SendToLogger(m_DriverCEPartitionSettings); // log the partition settings
     m_pLogger->SendToLogger(m_DriverCESettings);    // log the RNG seeds
@@ -201,51 +188,44 @@ CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputF
 /*
 * Constructor - partitioning by C_ID, RNG seeds provided
 */
-CCE::CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                            TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
-                            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                            UINT32 UniqueId,
-                            RNGSEED TxnMixRNGSeed,
-                            RNGSEED TxnInputRNGSeed,
-                            const PDriverCETxnSettings pDriverCETxnSettings )
-    : m_DriverGlobalSettings( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverCESettings( UniqueId, TxnMixRNGSeed, TxnInputRNGSeed )
-    , m_DriverCEPartitionSettings( iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent )
-    , m_pSUT( pSUT )
-    , m_pLogger ( pLogger )
-    , m_TxnMixGenerator( &m_DriverCETxnSettings, TxnMixRNGSeed, m_pLogger )
-    , m_TxnInputGenerator(  inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades * HoursPerWorkDay,
-                            iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent, TxnInputRNGSeed, m_pLogger, &m_DriverCETxnSettings )
-    , m_bClearBufferBeforeGeneration(false)
-{
+CCE::CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+         TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+         TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
+         INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+         UINT32 UniqueId,
+         RNGSEED TxnMixRNGSeed,
+         RNGSEED TxnInputRNGSeed,
+         const PDriverCETxnSettings pDriverCETxnSettings)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverCESettings(UniqueId, TxnMixRNGSeed, TxnInputRNGSeed),
+          m_DriverCEPartitionSettings(iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent), m_pSUT(pSUT),
+          m_pLogger(pLogger), m_TxnMixGenerator(&m_DriverCETxnSettings, TxnMixRNGSeed, m_pLogger),
+          m_TxnInputGenerator(inputFiles, iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor,
+                              iDaysOfInitialTrades * HoursPerWorkDay,
+                              iMyStartingCustomerId, iMyCustomerCount, iPartitionPercent, TxnInputRNGSeed, m_pLogger,
+                              &m_DriverCETxnSettings), m_bClearBufferBeforeGeneration(false) {
     m_pLogger->SendToLogger("CE object constructed using constructor 4 (valid for publication: NO).");
 
-    Initialize( pDriverCETxnSettings );
+    Initialize(pDriverCETxnSettings);
 
     m_pLogger->SendToLogger(m_DriverCEPartitionSettings); // log the partition settings
     m_pLogger->SendToLogger(m_DriverCESettings);    // log the RNG seeds
 }
 
-CCE::~CCE( void )
-{
+CCE::~CCE(void) {
     m_pLogger->SendToLogger("CE object destroyed.");
 }
 
-RNGSEED CCE::GetTxnInputGeneratorRNGSeed( void )
-{
-    return( m_TxnInputGenerator.GetRNGSeed() );
+RNGSEED CCE::GetTxnInputGeneratorRNGSeed(void) {
+    return (m_TxnInputGenerator.GetRNGSeed());
 }
 
-RNGSEED CCE::GetTxnMixGeneratorRNGSeed( void )
-{
-    return( m_TxnMixGenerator.GetRNGSeed() );
+RNGSEED CCE::GetTxnMixGeneratorRNGSeed(void) {
+    return (m_TxnMixGenerator.GetRNGSeed());
 }
 
-bool CCE::SetTxnTunables(const PDriverCETxnSettings pTxnParamSettings)
-{
-    if( pTxnParamSettings->IsValid() )
-    {
+bool CCE::SetTxnTunables(const PDriverCETxnSettings pTxnParamSettings) {
+    if (pTxnParamSettings->IsValid()) {
         // Update Tunables
         if (pTxnParamSettings != &m_DriverCETxnSettings)    // only copy from a different location
         {
@@ -256,61 +236,56 @@ bool CCE::SetTxnTunables(const PDriverCETxnSettings pTxnParamSettings)
         m_TxnMixGenerator.UpdateTunables();
         m_TxnInputGenerator.UpdateTunables();
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
 
-void CCE::DoTxn( void )
-{
-    int iTxnType = m_TxnMixGenerator.GenerateNextTxnType( );
+void CCE::DoTxn(void) {
+    int iTxnType = m_TxnMixGenerator.GenerateNextTxnType();
 
-    if (m_bClearBufferBeforeGeneration)
-    {
+    if (m_bClearBufferBeforeGeneration) {
         ZeroInputBuffer(iTxnType);
     }
 
-    switch( iTxnType )
-    {
-    case CCETxnMixGenerator::BROKER_VOLUME:
-        m_TxnInputGenerator.GenerateBrokerVolumeInput( m_BrokerVolumeTxnInput );
-        m_pSUT->BrokerVolume( &m_BrokerVolumeTxnInput );
-        break;
-    case CCETxnMixGenerator::CUSTOMER_POSITION:
-        m_TxnInputGenerator.GenerateCustomerPositionInput( m_CustomerPositionTxnInput );
-        m_pSUT->CustomerPosition( &m_CustomerPositionTxnInput );
-        break;
-    case CCETxnMixGenerator::MARKET_WATCH:
-        m_TxnInputGenerator.GenerateMarketWatchInput( m_MarketWatchTxnInput );
-        m_pSUT->MarketWatch( &m_MarketWatchTxnInput );
-        break;
-    case CCETxnMixGenerator::SECURITY_DETAIL:
-        m_TxnInputGenerator.GenerateSecurityDetailInput( m_SecurityDetailTxnInput );
-        m_pSUT->SecurityDetail( &m_SecurityDetailTxnInput );
-        break;
-    case CCETxnMixGenerator::TRADE_LOOKUP:
-        m_TxnInputGenerator.GenerateTradeLookupInput( m_TradeLookupTxnInput );
-        m_pSUT->TradeLookup( &m_TradeLookupTxnInput );
-        break;
-    case CCETxnMixGenerator::TRADE_ORDER:
-        bool    bExecutorIsAccountOwner;
-        INT32   iTradeType;
-        m_TxnInputGenerator.GenerateTradeOrderInput( m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner );
-        m_pSUT->TradeOrder( &m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner );
-        break;
-    case CCETxnMixGenerator::TRADE_STATUS:
-        m_TxnInputGenerator.GenerateTradeStatusInput( m_TradeStatusTxnInput );
-        m_pSUT->TradeStatus( &m_TradeStatusTxnInput );
-        break;
-    case CCETxnMixGenerator::TRADE_UPDATE:
-        m_TxnInputGenerator.GenerateTradeUpdateInput( m_TradeUpdateTxnInput );
-        m_pSUT->TradeUpdate( &m_TradeUpdateTxnInput );
-        break;
-    default:
-        cerr << "CE: Generated illegal transaction" << endl;
-        exit(1);
+    switch (iTxnType) {
+        case CCETxnMixGenerator::BROKER_VOLUME:
+            m_TxnInputGenerator.GenerateBrokerVolumeInput(m_BrokerVolumeTxnInput);
+            m_pSUT->BrokerVolume(&m_BrokerVolumeTxnInput);
+            break;
+        case CCETxnMixGenerator::CUSTOMER_POSITION:
+            m_TxnInputGenerator.GenerateCustomerPositionInput(m_CustomerPositionTxnInput);
+            m_pSUT->CustomerPosition(&m_CustomerPositionTxnInput);
+            break;
+        case CCETxnMixGenerator::MARKET_WATCH:
+            m_TxnInputGenerator.GenerateMarketWatchInput(m_MarketWatchTxnInput);
+            m_pSUT->MarketWatch(&m_MarketWatchTxnInput);
+            break;
+        case CCETxnMixGenerator::SECURITY_DETAIL:
+            m_TxnInputGenerator.GenerateSecurityDetailInput(m_SecurityDetailTxnInput);
+            m_pSUT->SecurityDetail(&m_SecurityDetailTxnInput);
+            break;
+        case CCETxnMixGenerator::TRADE_LOOKUP:
+            m_TxnInputGenerator.GenerateTradeLookupInput(m_TradeLookupTxnInput);
+            m_pSUT->TradeLookup(&m_TradeLookupTxnInput);
+            break;
+        case CCETxnMixGenerator::TRADE_ORDER:
+            bool bExecutorIsAccountOwner;
+            INT32 iTradeType;
+            m_TxnInputGenerator.GenerateTradeOrderInput(m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner);
+            m_pSUT->TradeOrder(&m_TradeOrderTxnInput, iTradeType, bExecutorIsAccountOwner);
+            break;
+        case CCETxnMixGenerator::TRADE_STATUS:
+            m_TxnInputGenerator.GenerateTradeStatusInput(m_TradeStatusTxnInput);
+            m_pSUT->TradeStatus(&m_TradeStatusTxnInput);
+            break;
+        case CCETxnMixGenerator::TRADE_UPDATE:
+            m_TxnInputGenerator.GenerateTradeUpdateInput(m_TradeUpdateTxnInput);
+            m_pSUT->TradeUpdate(&m_TradeUpdateTxnInput);
+            break;
+        default:
+            cerr << "CE: Generated illegal transaction" << endl;
+            exit(1);
     }
 }
 
@@ -323,34 +298,32 @@ void CCE::DoTxn( void )
 *  RETURNS:
 *           none.
 */
-void CCE::ZeroInputBuffer(int iTxnType)
-{
-    switch( iTxnType )
-    {
-    case CCETxnMixGenerator::BROKER_VOLUME:
-        memset( &m_BrokerVolumeTxnInput, 0, sizeof(m_BrokerVolumeTxnInput) );        
-        break;
-    case CCETxnMixGenerator::CUSTOMER_POSITION:
-        memset( &m_CustomerPositionTxnInput, 0, sizeof(m_CustomerPositionTxnInput) );
-        break;
-    case CCETxnMixGenerator::MARKET_WATCH:
-        memset( &m_MarketWatchTxnInput, 0, sizeof(m_MarketWatchTxnInput) );
-        break;
-    case CCETxnMixGenerator::SECURITY_DETAIL:
-        memset( &m_SecurityDetailTxnInput, 0, sizeof(m_SecurityDetailTxnInput) );
-        break;
-    case CCETxnMixGenerator::TRADE_LOOKUP:
-        memset( &m_TradeLookupTxnInput, 0, sizeof(m_TradeLookupTxnInput) );
-        break;
-    case CCETxnMixGenerator::TRADE_ORDER:
-        memset( &m_TradeOrderTxnInput, 0, sizeof(m_TradeOrderTxnInput) );
-        break;
-    case CCETxnMixGenerator::TRADE_STATUS:
-        memset( &m_TradeStatusTxnInput, 0, sizeof(m_TradeStatusTxnInput) );
-        break;
-    case CCETxnMixGenerator::TRADE_UPDATE:
-        memset( &m_TradeUpdateTxnInput, 0, sizeof(m_TradeUpdateTxnInput) );
-        break;
+void CCE::ZeroInputBuffer(int iTxnType) {
+    switch (iTxnType) {
+        case CCETxnMixGenerator::BROKER_VOLUME:
+            memset(&m_BrokerVolumeTxnInput, 0, sizeof(m_BrokerVolumeTxnInput));
+            break;
+        case CCETxnMixGenerator::CUSTOMER_POSITION:
+            memset(&m_CustomerPositionTxnInput, 0, sizeof(m_CustomerPositionTxnInput));
+            break;
+        case CCETxnMixGenerator::MARKET_WATCH:
+            memset(&m_MarketWatchTxnInput, 0, sizeof(m_MarketWatchTxnInput));
+            break;
+        case CCETxnMixGenerator::SECURITY_DETAIL:
+            memset(&m_SecurityDetailTxnInput, 0, sizeof(m_SecurityDetailTxnInput));
+            break;
+        case CCETxnMixGenerator::TRADE_LOOKUP:
+            memset(&m_TradeLookupTxnInput, 0, sizeof(m_TradeLookupTxnInput));
+            break;
+        case CCETxnMixGenerator::TRADE_ORDER:
+            memset(&m_TradeOrderTxnInput, 0, sizeof(m_TradeOrderTxnInput));
+            break;
+        case CCETxnMixGenerator::TRADE_STATUS:
+            memset(&m_TradeStatusTxnInput, 0, sizeof(m_TradeStatusTxnInput));
+            break;
+        case CCETxnMixGenerator::TRADE_UPDATE:
+            memset(&m_TradeUpdateTxnInput, 0, sizeof(m_TradeUpdateTxnInput));
+            break;
     }
 }
 
@@ -366,7 +339,6 @@ void CCE::ZeroInputBuffer(int iTxnType)
 *  RETURNS:
 *           none.
 */
-void CCE::SetClearBufferOption(bool bClearBufferBeforeGeneration)
-{
+void CCE::SetClearBufferOption(bool bClearBufferBeforeGeneration) {
     m_bClearBufferBeforeGeneration = bClearBufferBeforeGeneration;
 }

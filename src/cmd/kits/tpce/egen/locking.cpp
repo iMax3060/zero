@@ -34,9 +34,10 @@
  * - Christopher Chan-Nui, Matt Emmerton
  */
 
-#include "workload/tpce/egen/locking.h"
+#include "locking.h"
 
 #ifndef WIN32
+
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -48,42 +49,41 @@ using std::strerror;
 using std::exit;
 #endif
 
-#include "workload/tpce/egen/error.h"
+#include "error.h"
 
-namespace TPCE
-{
+namespace tpce {
 
 #ifdef WIN32
 
-//////////////////////////////////////////////////////////
-// Windows Implementation
-//////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////
+    // Windows Implementation
+    //////////////////////////////////////////////////////////
 
-CMutex::CMutex()
-    : mutex_()
-{
-    InitializeCriticalSection(&mutex_);
-}
+    CMutex::CMutex()
+        : mutex_()
+    {
+        InitializeCriticalSection(&mutex_);
+    }
 
-CMutex::~CMutex()
-{
-    DeleteCriticalSection(&mutex_);
-}
+    CMutex::~CMutex()
+    {
+        DeleteCriticalSection(&mutex_);
+    }
 
-LPCRITICAL_SECTION CMutex::mutex()
-{
-    return &mutex_;
-}
+    LPCRITICAL_SECTION CMutex::mutex()
+    {
+        return &mutex_;
+    }
 
-void CMutex::lock()
-{
-    EnterCriticalSection(&mutex_);
-}
+    void CMutex::lock()
+    {
+        EnterCriticalSection(&mutex_);
+    }
 
-void CMutex::unlock()
-{
-    LeaveCriticalSection(&mutex_);
-}
+    void CMutex::unlock()
+    {
+        LeaveCriticalSection(&mutex_);
+    }
 
 #else
 
@@ -91,51 +91,46 @@ void CMutex::unlock()
 // Non-Windows Implementation (pthreads)
 //////////////////////////////////////////////////////////
 
-CMutex::CMutex()
-    : mutex_()
-{
-    int rc = pthread_mutex_init(&mutex_, NULL);
-    if (rc != 0) {
-        std::ostringstream strm;
-        strm << "pthread_mutex_init error: " << strerror(rc) << "(" << rc << ")";
-        throw std::runtime_error(strm.str());
+    CMutex::CMutex()
+            : mutex_() {
+        int rc = pthread_mutex_init(&mutex_, NULL);
+        if (rc != 0) {
+            std::ostringstream strm;
+            strm << "pthread_mutex_init error: " << strerror(rc) << "(" << rc << ")";
+            throw std::runtime_error(strm.str());
+        }
     }
-}
 
-CMutex::~CMutex()
-{
-    int rc = pthread_mutex_destroy(&mutex_);
-    if (rc != 0) {
-        std::ostringstream strm;
-        strm << "pthread_mutex_destroy error: " << strerror(rc) << "(" << rc << ")";
-        throw std::runtime_error(strm.str());
+    CMutex::~CMutex() {
+        int rc = pthread_mutex_destroy(&mutex_);
+        if (rc != 0) {
+            std::ostringstream strm;
+            strm << "pthread_mutex_destroy error: " << strerror(rc) << "(" << rc << ")";
+            throw std::runtime_error(strm.str());
+        }
     }
-}
 
-pthread_mutex_t* CMutex::mutex()
-{
-    return &mutex_;
-}
-
-void CMutex::lock()
-{
-    int rc = pthread_mutex_lock(&mutex_);
-    if (rc != 0) {
-        std::ostringstream strm;
-        strm << "pthread_cond_wait error: " << strerror(rc) << "(" << rc << ")";
-        throw std::runtime_error(strm.str());
+    pthread_mutex_t *CMutex::mutex() {
+        return &mutex_;
     }
-}
 
-void CMutex::unlock()
-{
-    int rc = pthread_mutex_unlock(&mutex_);
-    if (rc != 0) {
-        std::ostringstream strm;
-        strm << "pthread_cond_wait error: " << strerror(rc) << "(" << rc << ")";
-        throw std::runtime_error(strm.str());
+    void CMutex::lock() {
+        int rc = pthread_mutex_lock(&mutex_);
+        if (rc != 0) {
+            std::ostringstream strm;
+            strm << "pthread_cond_wait error: " << strerror(rc) << "(" << rc << ")";
+            throw std::runtime_error(strm.str());
+        }
     }
-}
+
+    void CMutex::unlock() {
+        int rc = pthread_mutex_unlock(&mutex_);
+        if (rc != 0) {
+            std::ostringstream strm;
+            strm << "pthread_cond_wait error: " << strerror(rc) << "(" << rc << ")";
+            throw std::runtime_error(strm.str());
+        }
+    }
 
 #endif
 

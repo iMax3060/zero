@@ -44,92 +44,100 @@
 
 #include <memory>
 
-namespace TPCE
-{
+namespace TPCE {
 
 // Thread abstraction classes these classes
 
-class CCondition;
-class CMutex
-{
+    class CCondition;
+
+    class CMutex {
     public:
         CMutex();
+
         void lock();
+
         void unlock();
 
         friend class CCondition;
-};
+    };
 
-class CCondition
-{
+    class CCondition {
     private:
-        CMutex&        mutex_;
+        CMutex &mutex_;
     protected:
-        CMutex&        mutex();
+        CMutex &mutex();
+
     public:
-        CCondition(CMutex& mutex);
+        CCondition(CMutex &mutex);
+
         void lock();
+
         void unlock();
+
         void wait() const;
-        bool timedwait(const struct timespec& timeout) const;
-        bool timedwait(long timeout=-1 /*us*/) const;
+
+        bool timedwait(const struct timespec &timeout) const;
+
+        bool timedwait(long timeout = -1 /*us*/) const;
+
         void signal();
+
         void broadcast();
-};
+    };
 
 // Provide a RAII style lock for any class which supports
 // lock() and unlock()
-template<typename T>
-class Locker
-{
+    template<typename T>
+    class Locker {
     private:
-        T& mutex_;
+        T &mutex_;
 
     public:
-        explicit Locker<T>(T& mutex)
-            : mutex_(mutex)
-        {
+        explicit Locker<T>(T &mutex)
+                : mutex_(mutex) {
             mutex_.lock();
         }
 
         ~Locker<T>() {
             mutex_.unlock();
         }
-};
+    };
 
 // Base class to provide a run() method for objects which can be threaded.
 // This is required because under pthreads we have to provide an interface
 // through a C ABI call, which we can't do with templated classes.
-class ThreadBase
-{
+    class ThreadBase {
     public:
         virtual ~ThreadBase();
+
         virtual void run() = 0;
-};
+    };
 
 // Template to wrap around a class that has a run() method and spawn it in a
 // thread of its own.
-template<typename T>
-class Thread : public ThreadBase
-{
+    template<typename T>
+    class Thread : public ThreadBase {
     private:
         std::auto_ptr<T> obj_;
     public:
         Thread(std::auto_ptr<T> obj)
-            : obj_(obj)
-        {
+                : obj_(obj) {
         }
+
         void start() {
             obj_->run(this);
         }
+
         void stop() {
         }
+
         void run() {
         }
-        T* obj() {
+
+        T *obj() {
             return obj_.get();
         }
-};
+    };
 
 }
 

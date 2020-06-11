@@ -17,6 +17,8 @@ namespace fs = boost::filesystem;
 #include "tpcc/tpcc_env.h"
 #include "tpcc/tpcc_client.h"
 #include "tpcc/tpcc_input.h"
+#include "tpce/shore_tpce_env.h"
+#include "tpce/shore_tpce_client.h"
 #include "ycsb/ycsb.h"
 
 #include "util/stopwatch.h"
@@ -116,7 +118,7 @@ void KitsCommand::setupOptions()
     boost::program_options::options_description kits("Kits Options");
     kits.add_options()
         ("benchmark,b", po::value<string>(&opt_benchmark)->required(),
-            "Benchmark to execute. Possible values: tpcb, tpcc, ycsb")
+            "Benchmark to execute. Possible values: tpcb, tpcc, tpce, ycsb")
         ("load", po::value<bool>(&opt_load)->default_value(false)
             ->implicit_value(true),
             "If set, log and archive folders are emptied, database files \
@@ -250,6 +252,9 @@ void KitsCommand::init()
     else if (opt_benchmark == "tpcc") {
         initShoreEnv<tpcc::ShoreTPCCEnv>();
     }
+    else if (opt_benchmark == "tpce") {
+        initShoreEnv<tpce::ShoreTPCEEnv>();
+    }
     else if (opt_benchmark == "ycsb") {
         initShoreEnv<ycsb::ShoreYCSBEnv>();
     }
@@ -265,6 +270,9 @@ void KitsCommand::runBenchmark()
     }
     else if (opt_benchmark == "tpcc") {
         runBenchmarkSpec<tpcc::baseline_tpcc_client_t, tpcc::ShoreTPCCEnv>();
+    }
+    else if (opt_benchmark == "tpce") {
+        runBenchmarkSpec<tpce::baseline_tpce_client_t, tpce::ShoreTPCEEnv>();
     }
     else if (opt_benchmark == "ycsb") {
         runBenchmarkSpec<ycsb::baseline_ycsb_client_t, ycsb::ShoreYCSBEnv>();

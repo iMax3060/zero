@@ -43,201 +43,202 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CAddressTable : public TableTemplate<ADDRESS_ROW>
-{
-private:
-    CDateTime               m_date_time;
-    CCompanyFile*           m_companies;
-    TStreetNamesFile*       m_Street;
-    TStreetSuffixFile*      m_StreetSuffix;
-    TZipCodeFile*           m_ZipCode;
-    TIdent                  m_iStartFromCustomer;
-    TIdent                  m_iCustomerCount;   //total # of customers for whom to generate addresses
-    bool                    m_bCustomerAddressesOnly;   // whether generating only customer addresses
-    bool                    m_bCustomerAddress; //whether the currently generated row is for a customer
-    TIdent                  m_iCompanyCount;    //total # of companies for which to generate addresses
-    UINT                    m_iExchangeCount;   //total # of exchanges for which to generate addresses
-    TIdent                  m_iTotalAddressCount;   // total # of address rows to generate
-    bool                    m_bCacheEnabled;
-    int                     m_iCacheSize;
-    TIdent                  m_iCacheOffset;
-    const TZipCodeInputRow** m_CacheZipCode;
+    class CAddressTable : public TableTemplate<ADDRESS_ROW> {
+    private:
+        CDateTime m_date_time;
+        CCompanyFile *m_companies;
+        TStreetNamesFile *m_Street;
+        TStreetSuffixFile *m_StreetSuffix;
+        TZipCodeFile *m_ZipCode;
+        TIdent m_iStartFromCustomer;
+        TIdent m_iCustomerCount;   //total # of customers for whom to generate addresses
+        bool m_bCustomerAddressesOnly;   // whether generating only customer addresses
+        bool m_bCustomerAddress; //whether the currently generated row is for a customer
+        TIdent m_iCompanyCount;    //total # of companies for which to generate addresses
+        UINT m_iExchangeCount;   //total # of exchanges for which to generate addresses
+        TIdent m_iTotalAddressCount;   // total # of address rows to generate
+        bool m_bCacheEnabled;
+        int m_iCacheSize;
+        TIdent m_iCacheOffset;
+        const TZipCodeInputRow **m_CacheZipCode;
 
-    /*
-    *   Generate AD_LINE_1 and store it in the record structure.
-    *   Does not increment the number of rows generated.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void GenerateAD_LINE_1();
-    /*
-    *   Generate AD_LINE_2 and store it in the record structure.
-    *   Does not increment the number of rows generated.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void GenerateAD_LINE_2();
-    /*
-    *   For a given address id returns the same Threshold used to
-    *   select the town, division, zip, and country.
-    *   Needed to return a specific division/country for a given address id (for customer tax rates).
-    *
-    *   PARAMETERS:
-    *           IN  ADID        - address id
-    *
-    *   RETURNS:
-    *           none.
-    */
-    int GetTownDivisionZipCodeThreshold(TIdent ADID);
-    /*
-    *   Return the country code code for a given zip code.
-    *
-    *   PARAMETERS:
-    *           IN  szZipCode       - string with a US or Canada zip code
-    *
-    *   RETURNS:
-    *           country code.
-    */
-    UINT GetCountryCode( const char *pZipCode );
-    /*
-    *   Generate zip code and country for the current address id
-    *   and store them in the record structure.
-    *   Does not increment the number of rows generated.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void GenerateAD_ZC_CODE_CTRY();
+        /*
+        *   Generate AD_LINE_1 and store it in the record structure.
+        *   Does not increment the number of rows generated.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void GenerateAD_LINE_1();
 
-public:
-    /*
-    *  Constructor for the ADDRESS table class.
-    *
-    *  PARAMETERS:
-    *       IN  inputFiles              - input flat files loaded in memory
-    *       IN  iCustomerCount          - number of customers to generate
-    *       IN  iStartFromCustomer      - ordinal position of the first customer in the sequence (Note: 1-based)
-    *                                     for whom to generate the addresses.
-    *                                     Used if generating customer addresses only.
-    *       IN  bCustomerAddressesOnly  - if true, generate only customer addresses
-    *                                     if false, generate exchange, company, and customer addresses
-    *                                      (always start from the first customer in this case)
-    *  RETURNS:
-    *       not applicable.
-    */
-    CAddressTable(CInputFiles   inputFiles,
-                  TIdent          iCustomerCount,
-                  TIdent          iStartFromCustomer,
-                  bool            bCustomerAddressesOnly = false,
-                  bool            bCacheEnabled = false
-                 );
+        /*
+        *   Generate AD_LINE_2 and store it in the record structure.
+        *   Does not increment the number of rows generated.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void GenerateAD_LINE_2();
 
-    /*
-    *  Destructor for the ADDRESS table class.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *  RETURNS:
-    *       not applicable.
-    */
-    ~CAddressTable();
+        /*
+        *   For a given address id returns the same Threshold used to
+        *   select the town, division, zip, and country.
+        *   Needed to return a specific division/country for a given address id (for customer tax rates).
+        *
+        *   PARAMETERS:
+        *           IN  ADID        - address id
+        *
+        *   RETURNS:
+        *           none.
+        */
+        int GetTownDivisionZipCodeThreshold(TIdent ADID);
 
-    /*
-    *   Reset the state for the next load unit.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void InitNextLoadUnit();
+        /*
+        *   Return the country code code for a given zip code.
+        *
+        *   PARAMETERS:
+        *           IN  szZipCode       - string with a US or Canada zip code
+        *
+        *   RETURNS:
+        *           country code.
+        */
+        UINT GetCountryCode(const char *pZipCode);
 
-    /*
-    *   Generates the next A_ID value.
-    *   It is stored in the internal record structure and also returned.
-    *   The number of rows generated is incremented. This is why
-    *   this function cannot be called more than once for a record.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           next address id.
-    */
-    TIdent GenerateNextAD_ID();
+        /*
+        *   Generate zip code and country for the current address id
+        *   and store them in the record structure.
+        *   Does not increment the number of rows generated.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void GenerateAD_ZC_CODE_CTRY();
 
-    /*
-    *   Returns the address id of the customer specified by the customer id.
-    *
-    *   PARAMETERS:
-    *           IN  C_ID        - customer id (1-based)
-    *
-    *   RETURNS:
-    *           address id.
-    */
-    TIdent GetAD_IDForCustomer(TIdent C_ID);    // return address id for the customer id
+    public:
+        /*
+        *  Constructor for the ADDRESS table class.
+        *
+        *  PARAMETERS:
+        *       IN  inputFiles              - input flat files loaded in memory
+        *       IN  iCustomerCount          - number of customers to generate
+        *       IN  iStartFromCustomer      - ordinal position of the first customer in the sequence (Note: 1-based)
+        *                                     for whom to generate the addresses.
+        *                                     Used if generating customer addresses only.
+        *       IN  bCustomerAddressesOnly  - if true, generate only customer addresses
+        *                                     if false, generate exchange, company, and customer addresses
+        *                                      (always start from the first customer in this case)
+        *  RETURNS:
+        *       not applicable.
+        */
+        CAddressTable(CInputFiles inputFiles,
+                      TIdent iCustomerCount,
+                      TIdent iStartFromCustomer,
+                      bool bCustomerAddressesOnly = false,
+                      bool bCacheEnabled = false
+        );
 
-    /*
-    *   Return a certain division/country code (from the input file) for a given address id.
-    *   Used in the loader to properly calculate tax on a trade.
-    *
-    *   PARAMETERS:
-    *           IN  AD_ID       - address id
-    *           OUT iDivCode    - division (state/province) code
-    *           OUT iCtryCode   - country (USA/CANADA) code
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void GetDivisionAndCountryCodesForAddress(TIdent AD_ID, UINT &iDivCode, UINT &iCtryCode);
+        /*
+        *  Destructor for the ADDRESS table class.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *  RETURNS:
+        *       not applicable.
+        */
+        ~CAddressTable();
 
-    /*
-    *   Return division and country codes for current address.
-    *   Used in generating customer taxrates.
-    *
-    *   PARAMETERS:
-    *           OUT iDivCode    - division (state/province) code
-    *           OUT iCtryCode   - country (USA/CANADA) code
-    *
-    *   RETURNS:
-    *           none.
-    */
-    void GetDivisionAndCountryCodes(UINT &iDivCode, UINT &iCtryCode)
-    {
-        GetDivisionAndCountryCodesForAddress(m_row.AD_ID, iDivCode, iCtryCode);
-    }
+        /*
+        *   Reset the state for the next load unit.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void InitNextLoadUnit();
 
-    /*
-    *   Generate all column values for the next row
-    *   and store them in the record structure.
-    *   Increment the number of rows generated.
-    *
-    *   PARAMETERS:
-    *           none.
-    *
-    *   RETURNS:
-    *           TRUE, if there are more records in the ADDRESS table; FALSE othewise.
-    */
-    bool GenerateNextRecord();  //generates the next table row
+        /*
+        *   Generates the next A_ID value.
+        *   It is stored in the internal record structure and also returned.
+        *   The number of rows generated is incremented. This is why
+        *   this function cannot be called more than once for a record.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           next address id.
+        */
+        TIdent GenerateNextAD_ID();
 
-};
+        /*
+        *   Returns the address id of the customer specified by the customer id.
+        *
+        *   PARAMETERS:
+        *           IN  C_ID        - customer id (1-based)
+        *
+        *   RETURNS:
+        *           address id.
+        */
+        TIdent GetAD_IDForCustomer(TIdent C_ID);    // return address id for the customer id
 
-}   // namespace TPCE
+        /*
+        *   Return a certain division/country code (from the input file) for a given address id.
+        *   Used in the loader to properly calculate tax on a trade.
+        *
+        *   PARAMETERS:
+        *           IN  AD_ID       - address id
+        *           OUT iDivCode    - division (state/province) code
+        *           OUT iCtryCode   - country (USA/CANADA) code
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void GetDivisionAndCountryCodesForAddress(TIdent AD_ID, UINT &iDivCode, UINT &iCtryCode);
 
-#endif //ADDRESS_TABLE_H
+        /*
+        *   Return division and country codes for current address.
+        *   Used in generating customer taxrates.
+        *
+        *   PARAMETERS:
+        *           OUT iDivCode    - division (state/province) code
+        *           OUT iCtryCode   - country (USA/CANADA) code
+        *
+        *   RETURNS:
+        *           none.
+        */
+        void GetDivisionAndCountryCodes(UINT &iDivCode, UINT &iCtryCode) {
+            GetDivisionAndCountryCodesForAddress(m_row.AD_ID, iDivCode, iCtryCode);
+        }
+
+        /*
+        *   Generate all column values for the next row
+        *   and store them in the record structure.
+        *   Increment the number of rows generated.
+        *
+        *   PARAMETERS:
+        *           none.
+        *
+        *   RETURNS:
+        *           TRUE, if there are more records in the ADDRESS table; FALSE othewise.
+        */
+        bool GenerateNextRecord();  //generates the next table row
+
+    };
+
+}  // namespace TPCE
+
+#endif // ADDRESS_TABLE_H

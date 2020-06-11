@@ -53,44 +53,47 @@
 #include "MEEPriceBoard.h"
 #include "MEETickerTape.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CMEETradingFloor
-{
-private:
-    CMEESUTInterface*                                       m_pSUT;
-    CMEEPriceBoard*                                         m_pPriceBoard;
-    CMEETickerTape*                                         m_pTickerTape;
+    class CMEETradingFloor {
+    private:
+        CMEESUTInterface *m_pSUT;
+        CMEEPriceBoard *m_pPriceBoard;
+        CMEETickerTape *m_pTickerTape;
 
-    CDateTime*  m_pBaseTime;
-    CDateTime*  m_pCurrentTime;
+        CDateTime *m_pBaseTime;
+        CDateTime *m_pCurrentTime;
 
-    CTimerWheel< TTradeRequest, CMEETradingFloor, 5, 1 >    m_OrderTimers;  //Size wheel for 5 seconds with 1 millisecond resolution.
-    CRandom                                                 m_rnd;
-    double                                                  m_OrderProcessingDelayMean;
-    static const INT32                                      m_MaxOrderProcessingDelay = 5;
+        CTimerWheel<TTradeRequest, CMEETradingFloor, 5, 1> m_OrderTimers;  //Size wheel for 5 seconds with 1 millisecond resolution.
+        CRandom m_rnd;
+        double m_OrderProcessingDelayMean;
+        static const INT32 m_MaxOrderProcessingDelay = 5;
 
-    double  GenProcessingDelay( double fMean );
-    void    SendTradeResult( PTradeRequest pTradeRequest );
+        double GenProcessingDelay(double fMean);
 
-public:
-    static const INT32  NO_OUTSTANDING_TRADES = CTimerWheel< TTradeRequest, CMEETradingFloor, 5, 1 >::NO_OUTSTANDING_TIMERS;
+        void SendTradeResult(PTradeRequest pTradeRequest);
 
-    // Constructor - use default RNG seed
-    CMEETradingFloor( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CMEETickerTape* pTickerTape, CDateTime* pBaseTime, CDateTime* pCurrentTime );
+    public:
+        static const INT32 NO_OUTSTANDING_TRADES = CTimerWheel<TTradeRequest, CMEETradingFloor, 5, 1>::NO_OUTSTANDING_TIMERS;
 
-    // Constructor - RNG seed provided
-    CMEETradingFloor( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CMEETickerTape* pTickerTape, CDateTime* pBaseTime, CDateTime* pCurrentTime, RNGSEED RNGSeed );
+        // Constructor - use default RNG seed
+        CMEETradingFloor(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CMEETickerTape *pTickerTape,
+                         CDateTime *pBaseTime, CDateTime *pCurrentTime);
 
-    ~CMEETradingFloor( void );
+        // Constructor - RNG seed provided
+        CMEETradingFloor(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CMEETickerTape *pTickerTape,
+                         CDateTime *pBaseTime, CDateTime *pCurrentTime, RNGSEED RNGSeed);
 
-    INT32 SubmitTradeRequest( PTradeRequest pTradeRequest );
-    INT32 GenerateTradeResult( void );
+        ~CMEETradingFloor(void);
 
-    RNGSEED GetRNGSeed( void );
-    void    SetRNGSeed( RNGSEED RNGSeed );
-};
+        INT32 SubmitTradeRequest(PTradeRequest pTradeRequest);
+
+        INT32 GenerateTradeResult(void);
+
+        RNGSEED GetRNGSeed(void);
+
+        void SetRNGSeed(RNGSEED RNGSeed);
+    };
 
 }   // namespace TPCE
 

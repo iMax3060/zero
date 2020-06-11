@@ -47,206 +47,171 @@
 
 #include "EGenTables_stdafx.h"
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CFinalTransform
-{
-public:
+    class CFinalTransform {
+    public:
 
-    void Transform(PACCOUNT_PERMISSION_ROW  pRow)
-    {
-        pRow->AP_CA_ID += iTIdentShift;
-    }
+        void Transform(PACCOUNT_PERMISSION_ROW pRow) {
+            pRow->AP_CA_ID += iTIdentShift;
+        }
 
-    void Transform(PADDRESS_ROW pRow)
-    {
-        pRow->AD_ID += iTIdentShift;
-    }
+        void Transform(PADDRESS_ROW pRow) {
+            pRow->AD_ID += iTIdentShift;
+        }
 
-    void Transform(PBROKER_ROW  pRow)
-    {
-        pRow->B_ID += iTIdentShift;
-    }
+        void Transform(PBROKER_ROW pRow) {
+            pRow->B_ID += iTIdentShift;
+        }
 
-    void Transform(PCASH_TRANSACTION_ROW    pRow)
-    {
-        pRow->CT_T_ID += iTTradeShift;
-    }
+        void Transform(PCASH_TRANSACTION_ROW pRow) {
+            pRow->CT_T_ID += iTTradeShift;
+        }
 
-    void Transform(PCHARGE_ROW  pRow)
-    {
-        // do nothing
-    }
+        void Transform(PCHARGE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PCOMMISSION_RATE_ROW pRow)
-    {
-        // do nothing
-    }
+        void Transform(PCOMMISSION_RATE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PCOMPANY_ROW pRow)
-    {
-        pRow->CO_ID += iTIdentShift;
-        pRow->CO_AD_ID += iTIdentShift;
-    }
+        void Transform(PCOMPANY_ROW pRow) {
+            pRow->CO_ID += iTIdentShift;
+            pRow->CO_AD_ID += iTIdentShift;
+        }
 
-    void Transform(PCOMPANY_COMPETITOR_ROW  pRow)
-    {
-        pRow->CP_CO_ID += iTIdentShift;
-        pRow->CP_COMP_CO_ID += iTIdentShift;
-    }
+        void Transform(PCOMPANY_COMPETITOR_ROW pRow) {
+            pRow->CP_CO_ID += iTIdentShift;
+            pRow->CP_COMP_CO_ID += iTIdentShift;
+        }
 
-    void Transform(PCUSTOMER_ROW    pRow)
-    {
-        pRow->C_ID += iTIdentShift;
-        pRow->C_AD_ID += iTIdentShift;
-    }
+        void Transform(PCUSTOMER_ROW pRow) {
+            pRow->C_ID += iTIdentShift;
+            pRow->C_AD_ID += iTIdentShift;
+        }
 
-    void Transform(PCUSTOMER_ACCOUNT_ROW    pRow)
-    {
-        pRow->CA_ID += iTIdentShift;
-        pRow->CA_B_ID += iTIdentShift;
-        pRow->CA_C_ID += iTIdentShift;
-    }
+        void Transform(PCUSTOMER_ACCOUNT_ROW pRow) {
+            pRow->CA_ID += iTIdentShift;
+            pRow->CA_B_ID += iTIdentShift;
+            pRow->CA_C_ID += iTIdentShift;
+        }
 
-    void Transform(PCUSTOMER_TAXRATE_ROW    pRow)
-    {
-        pRow->CX_C_ID += iTIdentShift;
-    }
+        void Transform(PCUSTOMER_TAXRATE_ROW pRow) {
+            pRow->CX_C_ID += iTIdentShift;
+        }
 
-    void Transform(PDAILY_MARKET_ROW    pRow)
-    {
-        // do nothing
-    }
+        void Transform(PDAILY_MARKET_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PEXCHANGE_ROW    pRow)
-    {
-        pRow->EX_AD_ID += iTIdentShift;
-    }
+        void Transform(PEXCHANGE_ROW pRow) {
+            pRow->EX_AD_ID += iTIdentShift;
+        }
 
-    void Transform(PFINANCIAL_ROW   pRow)
-    {
-        pRow->FI_CO_ID += iTIdentShift;
-    }
+        void Transform(PFINANCIAL_ROW pRow) {
+            pRow->FI_CO_ID += iTIdentShift;
+        }
 
-    void Transform(PHOLDING_ROW pRow)
-    {
-        pRow->H_T_ID += iTTradeShift;
-        pRow->H_CA_ID += iTIdentShift;
-    }
+        void Transform(PHOLDING_ROW pRow) {
+            pRow->H_T_ID += iTTradeShift;
+            pRow->H_CA_ID += iTIdentShift;
+        }
 
-    void Transform(PHOLDING_HISTORY_ROW pRow)
-    {
-        pRow->HH_H_T_ID += iTTradeShift;
-        pRow->HH_T_ID += iTTradeShift;
-    }
+        void Transform(PHOLDING_HISTORY_ROW pRow) {
+            pRow->HH_H_T_ID += iTTradeShift;
+            pRow->HH_T_ID += iTTradeShift;
+        }
 
-    void Transform(PHOLDING_SUMMARY_ROW pRow)
-    {
-        pRow->HS_CA_ID += iTIdentShift;
-    }
+        void Transform(PHOLDING_SUMMARY_ROW pRow) {
+            pRow->HS_CA_ID += iTIdentShift;
+        }
 
-    void Transform(PINDUSTRY_ROW    pRow)
-    {
-        // do nothing
-    }
+        void Transform(PINDUSTRY_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PLAST_TRADE_ROW  pRow)
-    {
-        // do nothing
-    }
+        void Transform(PLAST_TRADE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PNEWS_ITEM_ROW   pRow)
-    {
-        pRow->NI_ID += iTIdentShift;
-    }
+        void Transform(PNEWS_ITEM_ROW pRow) {
+            pRow->NI_ID += iTIdentShift;
+        }
 
-    void Transform(PNEWS_XREF_ROW   pRow)
-    {
-        pRow->NX_NI_ID += iTIdentShift;
-        pRow->NX_CO_ID += iTIdentShift;
-    }
+        void Transform(PNEWS_XREF_ROW pRow) {
+            pRow->NX_NI_ID += iTIdentShift;
+            pRow->NX_CO_ID += iTIdentShift;
+        }
 
-    void Transform(PSECTOR_ROW  pRow)
-    {
-        // do nothing
-    }
+        void Transform(PSECTOR_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PSECURITY_ROW    pRow)
-    {
-        pRow->S_CO_ID += iTIdentShift;
-    }
+        void Transform(PSECURITY_ROW pRow) {
+            pRow->S_CO_ID += iTIdentShift;
+        }
 
-    void Transform(PSETTLEMENT_ROW  pRow)
-    {
-        pRow->SE_T_ID += iTTradeShift;
-    }
+        void Transform(PSETTLEMENT_ROW pRow) {
+            pRow->SE_T_ID += iTTradeShift;
+        }
 
-    void Transform(PSTATUS_TYPE_ROW pRow)
-    {
-        // do nothing
-    }
+        void Transform(PSTATUS_TYPE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PTAXRATE_ROW pRow)
-    {
-        // do nothing
-    }
+        void Transform(PTAXRATE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PTRADE_ROW   pRow)
-    {
-        pRow->T_ID += iTTradeShift;
-        pRow->T_CA_ID += iTIdentShift;
-    }
+        void Transform(PTRADE_ROW pRow) {
+            pRow->T_ID += iTTradeShift;
+            pRow->T_CA_ID += iTIdentShift;
+        }
 
-    void Transform(PTRADE_HISTORY_ROW   pRow)
-    {
-        pRow->TH_T_ID += iTTradeShift;
-    }
+        void Transform(PTRADE_HISTORY_ROW pRow) {
+            pRow->TH_T_ID += iTTradeShift;
+        }
 
-    void Transform(PTRADE_REQUEST_ROW   pRow)
-    {
-        pRow->TR_T_ID += iTTradeShift;
-        pRow->TR_B_ID += iTIdentShift;
-    }
+        void Transform(PTRADE_REQUEST_ROW pRow) {
+            pRow->TR_T_ID += iTTradeShift;
+            pRow->TR_B_ID += iTIdentShift;
+        }
 
-    void Transform(PTRADE_TYPE_ROW  pRow)
-    {
-        // do nothing
-    }
+        void Transform(PTRADE_TYPE_ROW pRow) {
+            // do nothing
+        }
 
-    void Transform(PWATCH_ITEM_ROW  pRow)
-    {
-        pRow->WI_WL_ID += iTIdentShift;
-    }
+        void Transform(PWATCH_ITEM_ROW pRow) {
+            pRow->WI_WL_ID += iTIdentShift;
+        }
 
-    void Transform(PWATCH_LIST_ROW  pRow)
-    {
-        pRow->WL_ID += iTIdentShift;
-        pRow->WL_C_ID += iTIdentShift;
-    }
+        void Transform(PWATCH_LIST_ROW pRow) {
+            pRow->WL_ID += iTIdentShift;
+            pRow->WL_C_ID += iTIdentShift;
+        }
 
-    void Transform(PZIP_CODE_ROW    pRow)
-    {
-        // do nothing
-    }
+        void Transform(PZIP_CODE_ROW pRow) {
+            // do nothing
+        }
 
-    // These methods are for run-time parameter generation.
-    //
-    void TransformCustomerId(TIdent*    pC_ID)      // for customer id
-    {
-        *pC_ID += iTIdentShift;
-    }
+        // These methods are for run-time parameter generation.
+        //
+        void TransformCustomerId(TIdent *pC_ID)      // for customer id
+        {
+            *pC_ID += iTIdentShift;
+        }
 
-    void TransformCustomerAccountId(TIdent* pCA_ID) // for customer account id
-    {
-        *pCA_ID += iTIdentShift;
-    }
+        void TransformCustomerAccountId(TIdent *pCA_ID) // for customer account id
+        {
+            *pCA_ID += iTIdentShift;
+        }
 
-    void TransformTradeId(TTrade*   pT_ID)          // for trade id
-    {
-        *pT_ID += iTTradeShift;
-    }
-};
+        void TransformTradeId(TTrade *pT_ID)          // for trade id
+        {
+            *pT_ID += iTTradeShift;
+        }
+    };
 
 }   // namespace TPCE
 

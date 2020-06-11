@@ -40,9 +40,9 @@
 ******************************************************************************/
 
 #include <cmath>
-#include "workload/tpce/egen/MEESecurity.h"
+#include "MEESecurity.h"
 
-using namespace TPCE;
+using namespace tpce;
 
 //  Period of security price change (in seconds)
 //  e.g. when the price will repeat.
@@ -69,15 +69,9 @@ const double fCompletionSUTDelay = 1.0; // seconds
 *           not applicable.
 */
 CMEESecurity::CMEESecurity()
-: m_rnd(RNGSeedBaseMEESecurity)
-, m_fRangeLow(fMinSecPrice)
-, m_fRangeHigh(fMaxSecPrice)
-, m_fRange(fMaxSecPrice - fMinSecPrice)
-, m_iPeriod(iSecPricePeriod)
-, m_TradingTimeSoFar( 0 )
-, m_pBaseTime( NULL )
-, m_pCurrentTime( NULL )
-{
+        : m_rnd(RNGSeedBaseMEESecurity), m_fRangeLow(fMinSecPrice), m_fRangeHigh(fMaxSecPrice),
+          m_fRange(fMaxSecPrice - fMinSecPrice), m_iPeriod(iSecPricePeriod), m_TradingTimeSoFar(0), m_pBaseTime(NULL),
+          m_pCurrentTime(NULL) {
 }
 
 /*
@@ -96,20 +90,19 @@ CMEESecurity::CMEESecurity()
 *           none
 */
 void CMEESecurity::Init(
-                        INT32       TradingTimeSoFar,   // for picking up where we last left off on the price curve
-                        CDateTime   *pBaseTime,
-                        CDateTime   *pCurrentTime,
+        INT32 TradingTimeSoFar,   // for picking up where we last left off on the price curve
+        CDateTime *pBaseTime,
+        CDateTime *pCurrentTime,
 
-                        // Mean delay between Pending and Submission times
-                        // for an immediatelly triggered (in-the-money) limit
-                        // order.
-                        //
-                        // The actual delay is randomly calculated in the range
-                        // [0.5 * Mean .. 1.5 * Mean]
-                        //
-                        double fMeanInTheMoneySubmissionDelay
-                        )
-{
+        // Mean delay between Pending and Submission times
+        // for an immediatelly triggered (in-the-money) limit
+        // order.
+        //
+        // The actual delay is randomly calculated in the range
+        // [0.5 * Mean .. 1.5 * Mean]
+        //
+        double fMeanInTheMoneySubmissionDelay
+) {
     m_TradingTimeSoFar = TradingTimeSoFar;
     m_pBaseTime = pBaseTime;
     m_pCurrentTime = pCurrentTime;
@@ -135,13 +128,12 @@ void CMEESecurity::Init(
 *   RETURNS:
 *           time from which to calculate initial price
 */
-inline double CMEESecurity::InitialTime( TIdent SecurityIndex )
-{
-    INT32   MsPerPeriod    = iSecPricePeriod * MsPerSecond;
-    TIdent  SecurityFactor = SecurityIndex * 556237 + 253791;
-    TIdent  TradingFactor  = (TIdent)m_TradingTimeSoFar * MsPerSecond; // Cast to avoid truncation
+inline double CMEESecurity::InitialTime(TIdent SecurityIndex) {
+    INT32 MsPerPeriod = iSecPricePeriod * MsPerSecond;
+    TIdent SecurityFactor = SecurityIndex * 556237 + 253791;
+    TIdent TradingFactor = (TIdent) m_TradingTimeSoFar * MsPerSecond; // Cast to avoid truncation
 
-    return ( ((TradingFactor + SecurityFactor) % MsPerPeriod) / MsPerSecondDivisor );
+    return (((TradingFactor + SecurityFactor) % MsPerPeriod) / MsPerSecondDivisor);
 }
 
 /*
@@ -154,8 +146,7 @@ inline double CMEESecurity::InitialTime( TIdent SecurityIndex )
 *           random value according to the negative
 *           exponential distribution with the given mean.
 */
-inline double CMEESecurity::NegExp(double fMean)
-{
+inline double CMEESecurity::NegExp(double fMean) {
     return RoundToNearestNsec(m_rnd.RndDoubleNegExp(fMean));
 }
 
@@ -168,9 +159,8 @@ inline double CMEESecurity::NegExp(double fMean)
 *  RETURNS:
 *           price at this point in time given with integer number of cents.
 */
-CMoney CMEESecurity::GetCurrentPrice( TIdent SecurityIndex )
-{
-    return( CalculatePrice( SecurityIndex, *m_pCurrentTime - *m_pBaseTime ));
+CMoney CMEESecurity::GetCurrentPrice(TIdent SecurityIndex) {
+    return (CalculatePrice(SecurityIndex, *m_pCurrentTime - *m_pBaseTime));
 }
 
 /*
@@ -182,9 +172,8 @@ CMoney CMEESecurity::GetCurrentPrice( TIdent SecurityIndex )
 *  RETURNS:
 *           minimum price given with integer number of cents.
 */
-CMoney CMEESecurity::GetMinPrice( void )
-{
-    return( m_fRangeLow );
+CMoney CMEESecurity::GetMinPrice(void) {
+    return (m_fRangeLow);
 }
 
 /*
@@ -196,9 +185,8 @@ CMoney CMEESecurity::GetMinPrice( void )
 *  RETURNS:
 *           maximum price given with integer number of cents.
 */
-CMoney CMEESecurity::GetMaxPrice( void )
-{
-    return( m_fRangeHigh );
+CMoney CMEESecurity::GetMaxPrice(void) {
+    return (m_fRangeHigh);
 }
 
 /*
@@ -212,22 +200,18 @@ CMoney CMEESecurity::GetMaxPrice( void )
 *           price according to the triangular function
 *           that will be achived at the given time
 */
-CMoney  CMEESecurity::CalculatePrice(   TIdent SecurityIndex,
-                                        double fTime
-                                        )
-{
-    double  fPeriodTime = (fTime + InitialTime( SecurityIndex )) / (double)m_iPeriod;
-    double  fTimeWithinPeriod = (fPeriodTime - (int)fPeriodTime) * (double)m_iPeriod;
+CMoney CMEESecurity::CalculatePrice(TIdent SecurityIndex,
+                                    double fTime
+) {
+    double fPeriodTime = (fTime + InitialTime(SecurityIndex)) / (double) m_iPeriod;
+    double fTimeWithinPeriod = (fPeriodTime - (int) fPeriodTime) * (double) m_iPeriod;
 
-    double  fPricePosition; // 0..1 corresponding to m_fRangeLow..m_fRangeHigh
-    CMoney  PriceCents;
+    double fPricePosition; // 0..1 corresponding to m_fRangeLow..m_fRangeHigh
+    CMoney PriceCents;
 
-    if (fTimeWithinPeriod < m_iPeriod / 2)
-    {
+    if (fTimeWithinPeriod < m_iPeriod / 2) {
         fPricePosition = fTimeWithinPeriod / (m_iPeriod / 2);
-    }
-    else
-    {
+    } else {
         fPricePosition = (m_iPeriod - fTimeWithinPeriod) / (m_iPeriod / 2);
     }
 
@@ -248,12 +232,11 @@ CMoney  CMEESecurity::CalculatePrice(   TIdent SecurityIndex,
 *   RETURNS:
 *           seconds required to move from the start price to the end price
 */
-double  CMEESecurity::CalculateTime(
-                                        CMoney fStartPrice,
-                                        CMoney fEndPrice,
-                                        int iStartDirection)
-{
-    int     iHalfPeriod = m_iPeriod / 2;
+double CMEESecurity::CalculateTime(
+        CMoney fStartPrice,
+        CMoney fEndPrice,
+        int iStartDirection) {
+    int iHalfPeriod = m_iPeriod / 2;
 
     // Distance on the price curve from StartPrice to EndPrice (in dollars)
     //
@@ -264,25 +247,16 @@ double  CMEESecurity::CalculateTime(
     //
     double fSpeed = iHalfPeriod / m_fRange.DollarAmount();
 
-    if (fEndPrice > fStartPrice)
-    {
-        if (iStartDirection > 0)
-        {
+    if (fEndPrice > fStartPrice) {
+        if (iStartDirection > 0) {
             fDistance = fEndPrice - fStartPrice;
-        }
-        else
-        {
+        } else {
             fDistance = (fStartPrice - m_fRangeLow) + (fEndPrice - m_fRangeLow);
         }
-    }
-    else
-    {
-        if (iStartDirection > 0)
-        {
+    } else {
+        if (iStartDirection > 0) {
             fDistance = (m_fRangeHigh - fStartPrice) + (m_fRangeHigh - fEndPrice);
-        }
-        else
-        {
+        } else {
             fDistance = fStartPrice - fEndPrice;
         }
     }
@@ -302,13 +276,12 @@ double  CMEESecurity::CalculateTime(
 *   RETURNS:
 *           the expected submission time
 */
-double CMEESecurity::GetSubmissionTime( TIdent          SecurityIndex,
-                                        double          fPendingTime,   // in seconds from time 0
-                                        CMoney          fLimitPrice,
-                                        eTradeTypeID    TradeType
-                                        )
-{
-    CMoney fPriceAtPendingTime = CalculatePrice( SecurityIndex, fPendingTime );
+double CMEESecurity::GetSubmissionTime(TIdent SecurityIndex,
+                                       double fPendingTime,   // in seconds from time 0
+                                       CMoney fLimitPrice,
+                                       eTradeTypeID TradeType
+) {
+    CMoney fPriceAtPendingTime = CalculatePrice(SecurityIndex, fPendingTime);
 
     int iDirectionAtPendingTime;
 
@@ -318,36 +291,30 @@ double CMEESecurity::GetSubmissionTime( TIdent          SecurityIndex,
     //  e.g. if the current price is less than the buy price
     //  or the current price is more than the sell price.
     //
-    if (    ((TradeType == eLimitBuy || TradeType == eStopLoss) &&
-            fPriceAtPendingTime <= fLimitPrice)
+    if (((TradeType == eLimitBuy || TradeType == eStopLoss) &&
+         fPriceAtPendingTime <= fLimitPrice)
         ||
-            ((TradeType == eLimitSell ) &&
-            fPriceAtPendingTime >= fLimitPrice))
-    {
+        ((TradeType == eLimitSell) &&
+         fPriceAtPendingTime >= fLimitPrice)) {
         //  Order is in-the-money. Trigger immediatelly.
         //
         fSubmissionTimeFromPending = m_rnd.RndDoubleIncrRange(0.5 * m_fMeanInTheMoneySubmissionDelay,
                                                               1.5 * m_fMeanInTheMoneySubmissionDelay,
                                                               0.001);
-    }
-    else
-    {
-        if ((int)(fPendingTime + InitialTime( SecurityIndex )) % m_iPeriod < m_iPeriod / 2)
-        {
+    } else {
+        if ((int) (fPendingTime + InitialTime(SecurityIndex)) % m_iPeriod < m_iPeriod / 2) {
             //  In the first half of the period => price is going up
             //
             iDirectionAtPendingTime = 1;
-        }
-        else
-        {
+        } else {
             //  In the second half of the period => price is going down
             //
             iDirectionAtPendingTime = -1;
         }
 
-        fSubmissionTimeFromPending = CalculateTime( fPriceAtPendingTime,
-            fLimitPrice,
-            iDirectionAtPendingTime);
+        fSubmissionTimeFromPending = CalculateTime(fPriceAtPendingTime,
+                                                   fLimitPrice,
+                                                   iDirectionAtPendingTime);
     }
 
     return fPendingTime + fSubmissionTimeFromPending;
@@ -374,23 +341,20 @@ double CMEESecurity::GetSubmissionTime( TIdent          SecurityIndex,
 *           the approximated completion time for the trade
 *
 */
-double CMEESecurity::GetCompletionTime( TIdent      SecurityIndex,
-                                        double      fSubmissionTime,    // in seconds from time 0
-                                        CMoney*     pCompletionPrice    // out
-                                        )
-{
-    double  fCompletionDelay = NegExp(fMeanCompletionTimeDelay);
+double CMEESecurity::GetCompletionTime(TIdent SecurityIndex,
+                                       double fSubmissionTime,    // in seconds from time 0
+                                       CMoney *pCompletionPrice    // out
+) {
+    double fCompletionDelay = NegExp(fMeanCompletionTimeDelay);
 
     // Clip at 5 seconds to prevent rare, but really long delays
     //
-    if (fCompletionDelay > 5.0)
-    {
+    if (fCompletionDelay > 5.0) {
         fCompletionDelay = 5.0;
     }
 
-    if (pCompletionPrice != NULL)
-    {
-        *pCompletionPrice = CalculatePrice( SecurityIndex, fSubmissionTime + fCompletionDelay );
+    if (pCompletionPrice != NULL) {
+        *pCompletionPrice = CalculatePrice(SecurityIndex, fSubmissionTime + fCompletionDelay);
     }
 
     return fSubmissionTime + fCompletionDelay + fCompletionSUTDelay;

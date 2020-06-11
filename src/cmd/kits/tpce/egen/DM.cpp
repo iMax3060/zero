@@ -39,24 +39,24 @@
 *                       See DM.h for a description.
 ******************************************************************************/
 
-#include "workload/tpce/egen/DM.h"
+#include "DM.h"
 
-using namespace TPCE;
+using namespace tpce;
 
-const INT32     iDataMaintenanceTableCount = 12;
-static const char*  DataMaintenanceTableName[iDataMaintenanceTableCount] =
-                { "ACCOUNT_PERMISSION",
-                  "ADDRESS",
-                  "COMPANY",
-                  "CUSTOMER",
-                  "CUSTOMER_TAXRATE",
-                  "DAILY_MARKET",
-                  "EXCHANGE",
-                  "FINANCIAL",
-                  "NEWS_ITEM",
-                  "SECURITY",
-                  "TAXRATE",
-                  "WATCH_ITEM" };
+const INT32 iDataMaintenanceTableCount = 12;
+static const char *DataMaintenanceTableName[iDataMaintenanceTableCount] =
+        {"ACCOUNT_PERMISSION",
+         "ADDRESS",
+         "COMPANY",
+         "CUSTOMER",
+         "CUSTOMER_TAXRATE",
+         "DAILY_MARKET",
+         "EXCHANGE",
+         "FINANCIAL",
+         "NEWS_ITEM",
+         "SECURITY",
+         "TAXRATE",
+         "WATCH_ITEM"};
 
 // Automatically generate unique RNG seeds.
 // The CRandom class uses an unsigned 64-bit value for the seed.
@@ -73,17 +73,16 @@ static const char*  DataMaintenanceTableName[iDataMaintenanceTableCount] =
 //                  the generated values every 5 years.
 //  Bits    44 - 63 Current time of day measured in 1/10's of a second.
 //
-void CDM::AutoSetRNGSeeds( UINT32 UniqueId )
-{
-    CDateTime   Now;
-    INT32       BaseYear;
-    INT32       Tmp1, Tmp2;
+void CDM::AutoSetRNGSeeds(UINT32 UniqueId) {
+    CDateTime Now;
+    INT32 BaseYear;
+    INT32 Tmp1, Tmp2;
 
-    Now.GetYMD( &BaseYear, &Tmp1, &Tmp2 );
+    Now.GetYMD(&BaseYear, &Tmp1, &Tmp2);
 
     // Set the base year to be the most recent year that was a multiple of 5.
-    BaseYear -= ( BaseYear % 5 );
-    CDateTime   Base( BaseYear, 1, 1 ); // January 1st in the BaseYear
+    BaseYear -= (BaseYear % 5);
+    CDateTime Base(BaseYear, 1, 1); // January 1st in the BaseYear
 
     // Initialize the seed with the current time of day measured in 1/10's of a second.
     // This will use up to 20 bits.
@@ -94,7 +93,7 @@ void CDM::AutoSetRNGSeeds( UINT32 UniqueId )
     // The number of days in the 5 year period requires 11 bits.
     // So shift up by that much to make room in the "lower" bits.
     Seed <<= 11;
-    Seed += (RNGSEED) ((INT64)Now.DayNo() - (INT64)Base.DayNo());
+    Seed += (RNGSEED) ((INT64) Now.DayNo() - (INT64) Base.DayNo());
 
     // So far, we've used up 31 bits.
     // Save the "last" bit of the "upper" 32 for the RNG id. In
@@ -109,12 +108,11 @@ void CDM::AutoSetRNGSeeds( UINT32 UniqueId )
     Seed += UniqueId;
 
     // Set the RNG to the unique seed.
-    m_rnd.SetSeed( Seed );
+    m_rnd.SetSeed(Seed);
     m_DriverDMSettings.cur.RNGSeed = Seed;
 }
 
-void CDM::Initialize( void )
-{
+void CDM::Initialize(void) {
     m_pLogger->SendToLogger(m_DriverGlobalSettings);
 
     m_iSecurityCount = m_pSecurities->GetActiveSecurityCount();
@@ -124,43 +122,31 @@ void CDM::Initialize( void )
     m_iStartFromCustomer = iDefaultStartFromCustomer + iTIdentShift;
 }
 
-CDM::CDM( CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId )
-    : m_DriverGlobalSettings ( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverDMSettings( UniqueId, 0 )
-    , m_CustomerSelection(&m_rnd, iDefaultStartFromCustomer, iActiveCustomerCount)
-    , m_AccsAndPerms(inputFiles, iDefaultLoadUnitSize, iActiveCustomerCount, iDefaultStartFromCustomer)
-    , m_pSecurities(inputFiles.Securities)
-    , m_pCompanies(inputFiles.Company)
-    , m_pTaxRatesDivision(inputFiles.TaxRatesDivision)
-    , m_pStatusType(inputFiles.StatusType)
-    , m_iDivisionTaxCount(0)
-    , m_DataMaintenanceTableNum(0)
-    , m_pSUT( pSUT )
-    , m_pLogger ( pLogger )
-{
+CDM::CDM(CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount,
+         TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverDMSettings(UniqueId, 0), m_CustomerSelection(&m_rnd, iDefaultStartFromCustomer, iActiveCustomerCount),
+          m_AccsAndPerms(inputFiles, iDefaultLoadUnitSize, iActiveCustomerCount, iDefaultStartFromCustomer),
+          m_pSecurities(inputFiles.Securities), m_pCompanies(inputFiles.Company),
+          m_pTaxRatesDivision(inputFiles.TaxRatesDivision), m_pStatusType(inputFiles.StatusType),
+          m_iDivisionTaxCount(0), m_DataMaintenanceTableNum(0), m_pSUT(pSUT), m_pLogger(pLogger) {
     m_pLogger->SendToLogger("DM object constructed using constructor 1 (valid for publication: YES).");
 
     Initialize();
-    AutoSetRNGSeeds( UniqueId );
+    AutoSetRNGSeeds(UniqueId);
 
     m_pLogger->SendToLogger(m_DriverDMSettings);    // log the RNG seeds
 }
 
-CDM::CDM( CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId, RNGSEED RNGSeed )
-    : m_DriverGlobalSettings ( iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades )
-    , m_DriverDMSettings( UniqueId, RNGSeed )
-    , m_rnd( RNGSeed )
-    , m_CustomerSelection(&m_rnd, iDefaultStartFromCustomer, iActiveCustomerCount)
-    , m_AccsAndPerms(inputFiles, iDefaultLoadUnitSize, iActiveCustomerCount, iDefaultStartFromCustomer)
-    , m_pSecurities(inputFiles.Securities)
-    , m_pCompanies(inputFiles.Company)
-    , m_pTaxRatesDivision(inputFiles.TaxRatesDivision)
-    , m_pStatusType(inputFiles.StatusType)
-    , m_iDivisionTaxCount(0)
-    , m_DataMaintenanceTableNum(0)
-    , m_pSUT( pSUT )
-    , m_pLogger( pLogger )
-{
+CDM::CDM(CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount,
+         TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId, RNGSEED RNGSeed)
+        : m_DriverGlobalSettings(iConfiguredCustomerCount, iActiveCustomerCount, iScaleFactor, iDaysOfInitialTrades),
+          m_DriverDMSettings(UniqueId, RNGSeed), m_rnd(RNGSeed),
+          m_CustomerSelection(&m_rnd, iDefaultStartFromCustomer, iActiveCustomerCount),
+          m_AccsAndPerms(inputFiles, iDefaultLoadUnitSize, iActiveCustomerCount, iDefaultStartFromCustomer),
+          m_pSecurities(inputFiles.Securities), m_pCompanies(inputFiles.Company),
+          m_pTaxRatesDivision(inputFiles.TaxRatesDivision), m_pStatusType(inputFiles.StatusType),
+          m_iDivisionTaxCount(0), m_DataMaintenanceTableNum(0), m_pSUT(pSUT), m_pLogger(pLogger) {
     m_pLogger->SendToLogger("DM object constructed using constructor 2 (valid for publication: NO).");
 
     Initialize();
@@ -168,243 +154,234 @@ CDM::CDM( CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, 
     m_pLogger->SendToLogger(m_DriverDMSettings);    // log the RNG seeds
 }
 
-CDM::~CDM()
-{
+CDM::~CDM() {
     m_pLogger->SendToLogger("DM object destroyed.");
 }
 
-TIdent CDM::GenerateRandomCustomerId()
-{
+TIdent CDM::GenerateRandomCustomerId() {
     return m_rnd.RndInt64Range(m_iStartFromCustomer,
-                             m_iStartFromCustomer + m_DriverGlobalSettings.cur.iActiveCustomerCount - 1);
+                               m_iStartFromCustomer + m_DriverGlobalSettings.cur.iActiveCustomerCount - 1);
 }
 
-TIdent CDM::GenerateRandomCustomerAccountId()
-{
+TIdent CDM::GenerateRandomCustomerAccountId() {
     TIdent iCustomerId;
 
     eCustomerTier iCustomerTier;
 
     m_CustomerSelection.GenerateRandomCustomer(iCustomerId, iCustomerTier);
 
-    return( m_AccsAndPerms.GenerateRandomAccountId( m_rnd, iCustomerId, iCustomerTier));
+    return (m_AccsAndPerms.GenerateRandomAccountId(m_rnd, iCustomerId, iCustomerTier));
 
 }
 
-TIdent CDM::GenerateRandomCompanyId()
-{
+TIdent CDM::GenerateRandomCompanyId() {
     return m_rnd.RndInt64Range(m_iStartFromCompany, m_iStartFromCompany + m_iCompanyCount - 1);
 }
 
-TIdent CDM::GenerateRandomSecurityId()
-{
-    return m_rnd.RndInt64Range(0, m_iSecurityCount-1);
+TIdent CDM::GenerateRandomSecurityId() {
+    return m_rnd.RndInt64Range(0, m_iSecurityCount - 1);
 }
 
-RNGSEED CDM::GetRNGSeed( void )
-{
-    return( m_rnd.GetSeed() );
+RNGSEED CDM::GetRNGSeed(void) {
+    return (m_rnd.GetSeed());
 }
 
-void CDM::DoTxn( void )
-{
-    memset( &m_TxnInput, 0, sizeof( m_TxnInput ));
-    strncpy( m_TxnInput.table_name,
+void CDM::DoTxn(void) {
+    memset(&m_TxnInput, 0, sizeof(m_TxnInput));
+    strncpy(m_TxnInput.table_name,
             DataMaintenanceTableName[m_DataMaintenanceTableNum],
-            sizeof(m_TxnInput.table_name ));
+            sizeof(m_TxnInput.table_name));
 
-    switch( m_DataMaintenanceTableNum )
-    {
-    case 0: // ACCOUNT_PERMISSION
-        m_TxnInput.acct_id = GenerateRandomCustomerAccountId();
-        break;
-    case 1: // ADDRESS
-        if (m_rnd.RndPercent(67))
-        {
-            m_TxnInput.c_id = GenerateRandomCustomerId();
-        }
-        else
-        {
+    switch (m_DataMaintenanceTableNum) {
+        case 0: // ACCOUNT_PERMISSION
+            m_TxnInput.acct_id = GenerateRandomCustomerAccountId();
+            break;
+        case 1: // ADDRESS
+            if (m_rnd.RndPercent(67)) {
+                m_TxnInput.c_id = GenerateRandomCustomerId();
+            } else {
+                m_TxnInput.co_id = GenerateRandomCompanyId();
+            }
+            break;
+        case 2: // COMPANY
             m_TxnInput.co_id = GenerateRandomCompanyId();
-        }
-        break;
-    case 2: // COMPANY
-        m_TxnInput.co_id = GenerateRandomCompanyId();
-        break;
-    case 3: // CUSTOMER
-        m_TxnInput.c_id = GenerateRandomCustomerId();
-        break;
-    case 4: // CUSTOMER_TAXRATE
-        m_TxnInput.c_id = GenerateRandomCustomerId();
-        break;
-    case 5: // DAILY_MARKET
-        m_pSecurities->CreateSymbol( GenerateRandomSecurityId(), m_TxnInput.symbol, static_cast<int>(sizeof( m_TxnInput.symbol )));
-        m_TxnInput.day_of_month = m_rnd.RndIntRange(1, 31);
-        m_TxnInput.vol_incr = m_rnd.RndIntRange(-2, 3);
-        if (m_TxnInput.vol_incr == 0)   // don't want 0 as increment
-        {
-            m_TxnInput.vol_incr = -3;
-        }
-        break;
-    case 6: // EXCHANGE
-        break;
-    case 7: // FINANCIAL
-        m_TxnInput.co_id = GenerateRandomCompanyId();
-        break;
-    case 8: // NEWS_ITEM
-        m_TxnInput.co_id = GenerateRandomCompanyId();
-        break;
-    case 9: // SECURITY
-        m_pSecurities->CreateSymbol( GenerateRandomSecurityId(), m_TxnInput.symbol, static_cast<int>(sizeof( m_TxnInput.symbol )));
-        break;
-    case 10: // TAXRATE
-        const vector<TTaxRateInputRow>  *pRates;
-        UINT                            iThreshold;
+            break;
+        case 3: // CUSTOMER
+            m_TxnInput.c_id = GenerateRandomCustomerId();
+            break;
+        case 4: // CUSTOMER_TAXRATE
+            m_TxnInput.c_id = GenerateRandomCustomerId();
+            break;
+        case 5: // DAILY_MARKET
+            m_pSecurities->CreateSymbol(GenerateRandomSecurityId(), m_TxnInput.symbol,
+                                        static_cast<int>(sizeof(m_TxnInput.symbol)));
+            m_TxnInput.day_of_month = m_rnd.RndIntRange(1, 31);
+            m_TxnInput.vol_incr = m_rnd.RndIntRange(-2, 3);
+            if (m_TxnInput.vol_incr == 0)   // don't want 0 as increment
+            {
+                m_TxnInput.vol_incr = -3;
+            }
+            break;
+        case 6: // EXCHANGE
+            break;
+        case 7: // FINANCIAL
+            m_TxnInput.co_id = GenerateRandomCompanyId();
+            break;
+        case 8: // NEWS_ITEM
+            m_TxnInput.co_id = GenerateRandomCompanyId();
+            break;
+        case 9: // SECURITY
+            m_pSecurities->CreateSymbol(GenerateRandomSecurityId(), m_TxnInput.symbol,
+                                        static_cast<int>(sizeof(m_TxnInput.symbol)));
+            break;
+        case 10: // TAXRATE
+            const vector<TTaxRateInputRow> *pRates;
+            UINT iThreshold;
 
-        pRates = m_pTaxRatesDivision->GetRecord((UINT)m_rnd.RndIntRange(0, 
-                                                m_iDivisionTaxCount - 1));
-        iThreshold = (UINT) m_rnd.RndIntRange(0, (UINT)pRates->size()-1);
+            pRates = m_pTaxRatesDivision->GetRecord((UINT) m_rnd.RndIntRange(0,
+                                                                             m_iDivisionTaxCount - 1));
+            iThreshold = (UINT) m_rnd.RndIntRange(0, (UINT) pRates->size() - 1);
 
-        strncpy(m_TxnInput.tx_id,
-                (*pRates)[iThreshold].TAX_ID,
-                sizeof(m_TxnInput.tx_id));
-        break;
-    case 11: // WATCH_ITEM
-        m_TxnInput.c_id = GenerateRandomCustomerId();
-        break;
+            strncpy(m_TxnInput.tx_id,
+                    (*pRates)[iThreshold].TAX_ID,
+                    sizeof(m_TxnInput.tx_id));
+            break;
+        case 11: // WATCH_ITEM
+            m_TxnInput.c_id = GenerateRandomCustomerId();
+            break;
 
-    default:
-        assert(false);  // should never happen
+        default:
+            assert(false);  // should never happen
     }
 
-    m_pSUT->DataMaintenance( &m_TxnInput );
+    m_pSUT->DataMaintenance(&m_TxnInput);
 
     m_DataMaintenanceTableNum = (m_DataMaintenanceTableNum + 1) % iDataMaintenanceTableCount;
 }
 
 
-TDataMaintenanceTxnInput* CDM::createDMInput()
-{
-	TDataMaintenanceTxnInput*  input = new TDataMaintenanceTxnInput();
+TDataMaintenanceTxnInput *CDM::createDMInput() {
+    TDataMaintenanceTxnInput *input = new TDataMaintenanceTxnInput();
 
-	memset( input, 0, sizeof( m_TxnInput ));
-	strncpy( input->table_name,
+    memset(input, 0, sizeof(m_TxnInput));
+    strncpy(input->table_name,
             DataMaintenanceTableName[m_DataMaintenanceTableNum],
-            sizeof(m_TxnInput.table_name ));
+            sizeof(m_TxnInput.table_name));
 
-    switch( m_DataMaintenanceTableNum )
-    {
-    case 0: // ACCOUNT_PERMISSION
-        input->acct_id = GenerateRandomCustomerAccountId();
-        break;
-    case 1: // ADDRESS
-        if (m_rnd.RndPercent(67))
-        {
-            input->c_id = GenerateRandomCustomerId();
-        }
-        else
-        {
+    switch (m_DataMaintenanceTableNum) {
+        case 0: // ACCOUNT_PERMISSION
+            input->acct_id = GenerateRandomCustomerAccountId();
+            break;
+        case 1: // ADDRESS
+            if (m_rnd.RndPercent(67)) {
+                input->c_id = GenerateRandomCustomerId();
+            } else {
+                input->co_id = GenerateRandomCompanyId();
+            }
+            break;
+        case 2: // COMPANY
             input->co_id = GenerateRandomCompanyId();
-        }
-        break;
-    case 2: // COMPANY
-        input->co_id = GenerateRandomCompanyId();
-        break;
-    case 3: // CUSTOMER
-        input->c_id = GenerateRandomCustomerId();
-        break;
-    case 4: // CUSTOMER_TAXRATE
-        input->c_id = GenerateRandomCustomerId();
-        break;
-    case 5: // DAILY_MARKET
-        m_pSecurities->CreateSymbol( GenerateRandomSecurityId(), input->symbol, static_cast<int>(sizeof( m_TxnInput.symbol )));
-        input->day_of_month = m_rnd.RndIntRange(1, 31);
-        input->vol_incr = m_rnd.RndIntRange(-2, 3);
-        if (input->vol_incr == 0)   // don't want 0 as increment
-        {
-            input->vol_incr = -3;
-        }
-        break;
-    case 6: // EXCHANGE
-        break;
-    case 7: // FINANCIAL
-        input->co_id = GenerateRandomCompanyId();
-        break;
-    case 8: // NEWS_ITEM
-        input->co_id = GenerateRandomCompanyId();
-        break;
-    case 9: // SECURITY
-        m_pSecurities->CreateSymbol( GenerateRandomSecurityId(), input->symbol, static_cast<int>(sizeof( m_TxnInput.symbol )));
-        break;
-    case 10: // TAXRATE
-        const vector<TTaxRateInputRow>  *pRates;
-        UINT                            iThreshold;
+            break;
+        case 3: // CUSTOMER
+            input->c_id = GenerateRandomCustomerId();
+            break;
+        case 4: // CUSTOMER_TAXRATE
+            input->c_id = GenerateRandomCustomerId();
+            break;
+        case 5: // DAILY_MARKET
+            m_pSecurities->CreateSymbol(GenerateRandomSecurityId(), input->symbol,
+                                        static_cast<int>(sizeof(m_TxnInput.symbol)));
+            input->day_of_month = m_rnd.RndIntRange(1, 31);
+            input->vol_incr = m_rnd.RndIntRange(-2, 3);
+            if (input->vol_incr == 0)   // don't want 0 as increment
+            {
+                input->vol_incr = -3;
+            }
+            break;
+        case 6: // EXCHANGE
+            break;
+        case 7: // FINANCIAL
+            input->co_id = GenerateRandomCompanyId();
+            break;
+        case 8: // NEWS_ITEM
+            input->co_id = GenerateRandomCompanyId();
+            break;
+        case 9: // SECURITY
+            m_pSecurities->CreateSymbol(GenerateRandomSecurityId(), input->symbol,
+                                        static_cast<int>(sizeof(m_TxnInput.symbol)));
+            break;
+        case 10: // TAXRATE
+            const vector<TTaxRateInputRow> *pRates;
+            UINT iThreshold;
 
-        pRates = m_pTaxRatesDivision->GetRecord((UINT)m_rnd.RndIntRange(0, 
-                                                m_iDivisionTaxCount - 1));
-        iThreshold = (UINT) m_rnd.RndIntRange(0, (UINT)pRates->size()-1);
+            pRates = m_pTaxRatesDivision->GetRecord((UINT) m_rnd.RndIntRange(0,
+                                                                             m_iDivisionTaxCount - 1));
+            iThreshold = (UINT) m_rnd.RndIntRange(0, (UINT) pRates->size() - 1);
 
-        strncpy(input->tx_id,
-                (*pRates)[iThreshold].TAX_ID,
-                sizeof(m_TxnInput.tx_id));
-        break;
-    case 11: // WATCH_ITEM
-        input->c_id = GenerateRandomCustomerId();
-        break;
+            strncpy(input->tx_id,
+                    (*pRates)[iThreshold].TAX_ID,
+                    sizeof(m_TxnInput.tx_id));
+            break;
+        case 11: // WATCH_ITEM
+            input->c_id = GenerateRandomCustomerId();
+            break;
 
-    default:
-        assert(false);  // should never happen
+        default:
+            assert(false);  // should never happen
     }
 
     m_DataMaintenanceTableNum = (m_DataMaintenanceTableNum + 1) % iDataMaintenanceTableCount;
-	return input;
+    return input;
 }
 
-void CDM::DoCleanupTxn( void )
-{
-    memset( &m_CleanupTxnInput, 0, sizeof( m_CleanupTxnInput ));
+void CDM::DoCleanupTxn(void) {
+    memset(&m_CleanupTxnInput, 0, sizeof(m_CleanupTxnInput));
 
     // Compute Starting Trade ID (Copied from CETxnInputGenerator.cpp)
-    m_CleanupTxnInput.start_trade_id = (TTrade)(( m_DriverGlobalSettings.cur.iDaysOfInitialTrades * (TTrade)HoursPerWorkDay * (TTrade)SecondsPerHour * ( m_DriverGlobalSettings.cur.iActiveCustomerCount / m_DriverGlobalSettings.cur.iScaleFactor )) * iAbortTrade / 100 ) + 1 + iTTradeShift;  // 1.01 to account for rollbacks, +1 to get first runtime trade
+    m_CleanupTxnInput.start_trade_id = (TTrade) (
+            (m_DriverGlobalSettings.cur.iDaysOfInitialTrades * (TTrade) HoursPerWorkDay * (TTrade) SecondsPerHour *
+             (m_DriverGlobalSettings.cur.iActiveCustomerCount / m_DriverGlobalSettings.cur.iScaleFactor)) *
+            iAbortTrade / 100) + 1 + iTTradeShift;  // 1.01 to account for rollbacks, +1 to get first runtime trade
 
-        // Copy the status type id's from the flat file
-        strncpy(m_CleanupTxnInput.st_pending_id,
-                        (m_pStatusType->GetRecord(ePending))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_pending_id));
-        strncpy(m_CleanupTxnInput.st_submitted_id,
-                        (m_pStatusType->GetRecord(eSubmitted))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_submitted_id));
-        strncpy(m_CleanupTxnInput.st_canceled_id,
-                        (m_pStatusType->GetRecord(eCanceled))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_canceled_id));
+    // Copy the status type id's from the flat file
+    strncpy(m_CleanupTxnInput.st_pending_id,
+            (m_pStatusType->GetRecord(ePending))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_pending_id));
+    strncpy(m_CleanupTxnInput.st_submitted_id,
+            (m_pStatusType->GetRecord(eSubmitted))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_submitted_id));
+    strncpy(m_CleanupTxnInput.st_canceled_id,
+            (m_pStatusType->GetRecord(eCanceled))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_canceled_id));
 
     // Execute Transaction
-    m_pSUT->TradeCleanup( &m_CleanupTxnInput );
+    m_pSUT->TradeCleanup(&m_CleanupTxnInput);
 }
 
 
+TTradeCleanupTxnInput *CDM::createTCInput() {
+    TTradeCleanupTxnInput *input = new TTradeCleanupTxnInput();
 
-TTradeCleanupTxnInput* CDM::createTCInput()
-{
-	TTradeCleanupTxnInput*	 input = new TTradeCleanupTxnInput();
-
-	memset(input, 0, sizeof (m_CleanupTxnInput));
+    memset(input, 0, sizeof(m_CleanupTxnInput));
 
 // Compute Starting Trade ID (Copied from CETxnInputGenerator.cpp)
-    input->start_trade_id = (TTrade)(( m_DriverGlobalSettings.cur.iDaysOfInitialTrades * (TTrade)HoursPerWorkDay * (TTrade)SecondsPerHour * ( m_DriverGlobalSettings.cur.iActiveCustomerCount / m_DriverGlobalSettings.cur.iScaleFactor )) * iAbortTrade / 100 ) + 1 + iTTradeShift;  // 1.01 to account for rollbacks, +1 to get first runtime trade
+    input->start_trade_id = (TTrade) (
+            (m_DriverGlobalSettings.cur.iDaysOfInitialTrades * (TTrade) HoursPerWorkDay * (TTrade) SecondsPerHour *
+             (m_DriverGlobalSettings.cur.iActiveCustomerCount / m_DriverGlobalSettings.cur.iScaleFactor)) *
+            iAbortTrade / 100) + 1 + iTTradeShift;  // 1.01 to account for rollbacks, +1 to get first runtime trade
 
-        // Copy the status type id's from the flat file
-        strncpy(input->st_pending_id,
-                        (m_pStatusType->GetRecord(ePending))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_pending_id));
-        strncpy(input->st_submitted_id,
-                        (m_pStatusType->GetRecord(eSubmitted))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_submitted_id));
-        strncpy(input->st_canceled_id,
-                        (m_pStatusType->GetRecord(eCanceled))->ST_ID,
-                        sizeof(m_CleanupTxnInput.st_canceled_id));
+    // Copy the status type id's from the flat file
+    strncpy(input->st_pending_id,
+            (m_pStatusType->GetRecord(ePending))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_pending_id));
+    strncpy(input->st_submitted_id,
+            (m_pStatusType->GetRecord(eSubmitted))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_submitted_id));
+    strncpy(input->st_canceled_id,
+            (m_pStatusType->GetRecord(eCanceled))->ST_ID,
+            sizeof(m_CleanupTxnInput.st_canceled_id));
 
-	return input;
+    return input;
 }
 
 

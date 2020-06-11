@@ -42,52 +42,50 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatSecurityLoad : public CFlatFileLoader <SECURITY_ROW>
-{
-private:
-    CDateTime   Flat_S_START_DATE;
-    CDateTime   Flat_S_EXCH_DATE;
-    CDateTime   Flat_S_52WK_HIGH_DATE;
-    CDateTime   Flat_S_52WK_LOW_DATE;
-public:
-    CFlatSecurityLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<SECURITY_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatSecurityLoad : public CFlatFileLoader<SECURITY_ROW> {
+    private:
+        CDateTime Flat_S_START_DATE;
+        CDateTime Flat_S_EXCH_DATE;
+        CDateTime Flat_S_52WK_HIGH_DATE;
+        CDateTime Flat_S_52WK_LOW_DATE;
+    public:
+        CFlatSecurityLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<SECURITY_ROW>(
+                szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        Flat_S_START_DATE = next_record->S_START_DATE;
-        Flat_S_EXCH_DATE = next_record->S_EXCH_DATE;
-        Flat_S_52WK_HIGH_DATE = next_record->S_52WK_HIGH_DATE;
-        Flat_S_52WK_LOW_DATE = next_record->S_52WK_LOW_DATE;
-        int rc = fprintf( hOutFile, SecurityRowFmt,
-                  next_record->S_SYMB,
-                  next_record->S_ISSUE,
-                  next_record->S_ST_ID,
-                  next_record->S_NAME,
-                  next_record->S_EX_ID,
-                  next_record->S_CO_ID,
-                  next_record->S_NUM_OUT,
-                  Flat_S_START_DATE.ToStr(FlatFileDateFormat),
-                  Flat_S_EXCH_DATE.ToStr(FlatFileDateFormat),
-                  next_record->S_PE,
-                  next_record->S_52WK_HIGH,
-                  Flat_S_52WK_HIGH_DATE.ToStr(FlatFileDateFormat),
-                  next_record->S_52WK_LOW,
-                  Flat_S_52WK_LOW_DATE.ToStr(FlatFileDateFormat),
-                  next_record->S_DIVIDEND,
-                  next_record->S_YIELD
-                );
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            Flat_S_START_DATE = next_record->S_START_DATE;
+            Flat_S_EXCH_DATE = next_record->S_EXCH_DATE;
+            Flat_S_52WK_HIGH_DATE = next_record->S_52WK_HIGH_DATE;
+            Flat_S_52WK_LOW_DATE = next_record->S_52WK_LOW_DATE;
+            int rc = fprintf(hOutFile, SecurityRowFmt,
+                             next_record->S_SYMB,
+                             next_record->S_ISSUE,
+                             next_record->S_ST_ID,
+                             next_record->S_NAME,
+                             next_record->S_EX_ID,
+                             next_record->S_CO_ID,
+                             next_record->S_NUM_OUT,
+                             Flat_S_START_DATE.ToStr(FlatFileDateFormat),
+                             Flat_S_EXCH_DATE.ToStr(FlatFileDateFormat),
+                             next_record->S_PE,
+                             next_record->S_52WK_HIGH,
+                             Flat_S_52WK_HIGH_DATE.ToStr(FlatFileDateFormat),
+                             next_record->S_52WK_LOW,
+                             Flat_S_52WK_LOW_DATE.ToStr(FlatFileDateFormat),
+                             next_record->S_DIVIDEND,
+                             next_record->S_YIELD
+            );
 
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatSecurityLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatSecurityLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

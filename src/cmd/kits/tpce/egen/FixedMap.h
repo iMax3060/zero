@@ -45,42 +45,38 @@
 
 #include "EGenUtilities_stdafx.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFixedMapErr : public CBaseErr
-{
-public:
-    enum eFixedMapErrs
-    {
-        eNotEnoughMemory,
-        eKeyOutOfRange,
-        eOverflow
-    };
-
-    CFixedMapErr( eFixedMapErrs iErr, const char *szLoc) : CBaseErr(iErr, szLoc) {};
-    int ErrorType() {return ERR_TYPE_FIXED_MAP;};
-
-    const char *ErrorText() const
-    {
-        int i;
-        static const char * szErrs[] = {
-            "Not enough memory",
-            "Key value out of range.",
-            "Cannot insert element - container is full.",
-            ""
+    class CFixedMapErr : public CBaseErr {
+    public:
+        enum eFixedMapErrs {
+            eNotEnoughMemory,
+            eKeyOutOfRange,
+            eOverflow
         };
 
-        for(i = 0; szErrs[i][0]; i++)
-        {
-            // Confirm that an error message has been defined for the error code
-            if ( i == m_idMsg )
-                break;
-        }
+        CFixedMapErr(eFixedMapErrs iErr, const char *szLoc) : CBaseErr(iErr, szLoc) {};
 
-        return(szErrs[i][0] ? szErrs[i] : ERR_UNKNOWN);
-    }
-};
+        int ErrorType() { return ERR_TYPE_FIXED_MAP; };
+
+        const char *ErrorText() const {
+            int i;
+            static const char *szErrs[] = {
+                    "Not enough memory",
+                    "Key value out of range.",
+                    "Cannot insert element - container is full.",
+                    ""
+            };
+
+            for (i = 0; szErrs[i][0]; i++) {
+                // Confirm that an error message has been defined for the error code
+                if (i == m_idMsg)
+                    break;
+            }
+
+            return (szErrs[i][0] ? szErrs[i] : ERR_UNKNOWN);
+        }
+    };
 
 /*
 *   Fixed-size map container
@@ -93,99 +89,88 @@ public:
 *   The struct in the second parameter must define HighestKey()
 *   and TotalElements() public member functions.
 */
-template <typename TData, typename TKeyAndElementsLimits>
-class CFixedMap
-{
-    //Highest key value. Key values range is [0, m_iHighestKey)
-    //and
-    //the size of the container (total number of data elements)
-    TKeyAndElementsLimits   m_sLimits;
-    int     m_iHighestKey;      //Highest key value from limits; taken once in constructor for performance
-    UINT    m_iCurrentElements; //current number of elements (cannot be greater than m_iTotalElements)
-    TData   *m_pData;           //array of data elements
-    UINT    *m_keys;            //An array that maps key values to indices of the corresponding
-                                //data values in m_pData array.
-                                //Key value is an index in m_keys array and data value index is the
-                                //value in m_keys array.
+    template<typename TData, typename TKeyAndElementsLimits>
+    class CFixedMap {
+        //Highest key value. Key values range is [0, m_iHighestKey)
+        //and
+        //the size of the container (total number of data elements)
+        TKeyAndElementsLimits m_sLimits;
+        int m_iHighestKey;      //Highest key value from limits; taken once in constructor for performance
+        UINT m_iCurrentElements; //current number of elements (cannot be greater than m_iTotalElements)
+        TData *m_pData;           //array of data elements
+        UINT *m_keys;            //An array that maps key values to indices of the corresponding
+        //data values in m_pData array.
+        //Key value is an index in m_keys array and data value index is the
+        //value in m_keys array.
 
-public:
-    typedef TData*  PData;      //pointer to a data element
+    public:
+        typedef TData *PData;      //pointer to a data element
 
-    //Constructor
-    CFixedMap()
-        : m_iCurrentElements(0) //no elements in the beginning
-    {
-        m_iHighestKey = m_sLimits.HighestKey();
-
-        m_keys = new UINT[m_iHighestKey];
-
-        m_pData = new TData[m_sLimits.TotalElements()];
-    }
-    //Destructor
-    ~CFixedMap()
-    {
-        if (m_keys != NULL)
-            delete [] m_keys;
-
-        if (m_pData != NULL)
-            delete [] m_pData;
-    }
-
-    //Add a (key, data) pair to the container.
-    //Operation is performed in constant time for any (key, data) pair.
-    //iPrevKeysToFill specifies how many previous (to iKey) m_keys entries
-    //to fill with the identical (iKey, *pData) association
-    void Add(int iKey, TData *pData, int iPrevKeysToFill = 1)
-    {
-        if (m_iCurrentElements < m_sLimits.TotalElements())
-        {   //have place to insert new association
-            if (iKey>=0 && iKey < m_iHighestKey)
-            {   //correct key value
-
-                for (int j = 0; j < iPrevKeysToFill && (iKey - j)>=0; ++j)
-                    m_keys[iKey - j] = m_iCurrentElements;  //set the (key -> data) association
-
-                m_pData[m_iCurrentElements] = *pData;   //copy the data value
-
-                ++m_iCurrentElements;               //because just added one element
-            }
-            else
-            {   //incorrect key value (won't be a place for it in the m_keys array)
-                throw CFixedMapErr(CFixedMapErr::eKeyOutOfRange, "CFixedMap::Add");
-            }
-        }
-        else
+        //Constructor
+        CFixedMap()
+                : m_iCurrentElements(0) //no elements in the beginning
         {
-            //container is full
-            throw CFixedMapErr(CFixedMapErr::eOverflow, "CFixedMap::Add");
+            m_iHighestKey = m_sLimits.HighestKey();
+
+            m_keys = new UINT[m_iHighestKey];
+
+            m_pData = new TData[m_sLimits.TotalElements()];
         }
-    }
 
-    //Return reference to the data element associated with iKey.
-    //Operation is performed in constant time for any key value.
-    TData* GetElement(int iKey)
-    {
-        assert(iKey>=0 && iKey < m_iHighestKey);
-        //correct key value
-        return &m_pData[m_keys[iKey]];  //return reference to the data value
-    }
+        //Destructor
+        ~CFixedMap() {
+            if (m_keys != NULL)
+                delete[] m_keys;
 
-    // Provide reference to the next unique element.
-    TData* GetElementByPassKey( UINT ElementID )
-    {
-        assert( ElementID < m_iCurrentElements );
-        return( &m_pData[ElementID] );
-    }
+            if (m_pData != NULL)
+                delete[] m_pData;
+        }
 
-    // Return current element count.
-    UINT ElementCount( )
-    {
-        return m_iCurrentElements;
-    }
+        //Add a (key, data) pair to the container.
+        //Operation is performed in constant time for any (key, data) pair.
+        //iPrevKeysToFill specifies how many previous (to iKey) m_keys entries
+        //to fill with the identical (iKey, *pData) association
+        void Add(int iKey, TData *pData, int iPrevKeysToFill = 1) {
+            if (m_iCurrentElements < m_sLimits.TotalElements()) {   //have place to insert new association
+                if (iKey >= 0 && iKey < m_iHighestKey) {   //correct key value
 
-    //Return the highest possible key number + 1
-    int GetHighestKey() {return m_iHighestKey;}
-};
+                    for (int j = 0; j < iPrevKeysToFill && (iKey - j) >= 0; ++j)
+                        m_keys[iKey - j] = m_iCurrentElements;  //set the (key -> data) association
+
+                    m_pData[m_iCurrentElements] = *pData;   //copy the data value
+
+                    ++m_iCurrentElements;               //because just added one element
+                } else {   //incorrect key value (won't be a place for it in the m_keys array)
+                    throw CFixedMapErr(CFixedMapErr::eKeyOutOfRange, "CFixedMap::Add");
+                }
+            } else {
+                //container is full
+                throw CFixedMapErr(CFixedMapErr::eOverflow, "CFixedMap::Add");
+            }
+        }
+
+        //Return reference to the data element associated with iKey.
+        //Operation is performed in constant time for any key value.
+        TData *GetElement(int iKey) {
+            assert(iKey >= 0 && iKey < m_iHighestKey);
+            //correct key value
+            return &m_pData[m_keys[iKey]];  //return reference to the data value
+        }
+
+        // Provide reference to the next unique element.
+        TData *GetElementByPassKey(UINT ElementID) {
+            assert(ElementID < m_iCurrentElements);
+            return (&m_pData[ElementID]);
+        }
+
+        // Return current element count.
+        UINT ElementCount() {
+            return m_iCurrentElements;
+        }
+
+        //Return the highest possible key number + 1
+        int GetHighestKey() { return m_iHighestKey; }
+    };
 
 }   // namespace TPCE
 

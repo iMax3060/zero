@@ -43,32 +43,30 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatAddressLoad : public CFlatFileLoader <ADDRESS_ROW>
-{
-public:
-    CFlatAddressLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<ADDRESS_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatAddressLoad : public CFlatFileLoader<ADDRESS_ROW> {
+    public:
+        CFlatAddressLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode) : CFlatFileLoader<ADDRESS_ROW>(
+                szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, AddressRowFmt,
-                  next_record->AD_ID,
-                  next_record->AD_LINE1,
-                  next_record->AD_LINE2,
-                  next_record->AD_ZC_CODE,
-                  next_record->AD_CTRY
-                );
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, AddressRowFmt,
+                             next_record->AD_ID,
+                             next_record->AD_LINE1,
+                             next_record->AD_LINE2,
+                             next_record->AD_ZC_CODE,
+                             next_record->AD_CTRY
+            );
 
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatAddressLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatAddressLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

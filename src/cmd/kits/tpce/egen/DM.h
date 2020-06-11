@@ -76,64 +76,69 @@
 #include "BaseLogger.h"
 #include "DriverParamSettings.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CDM
-{
-private:
-    CDriverGlobalSettings                       m_DriverGlobalSettings;
-    CDriverDMSettings                           m_DriverDMSettings;
+    class CDM {
+    private:
+        CDriverGlobalSettings m_DriverGlobalSettings;
+        CDriverDMSettings m_DriverDMSettings;
 
-    CRandom                                     m_rnd;
-    CCustomerSelection                          m_CustomerSelection;
-    CCustomerAccountsAndPermissionsTable        m_AccsAndPerms;
-    CSecurityFile*                              m_pSecurities;
-    CCompanyFile*                               m_pCompanies;
-    TTaxRatesDivisionFile*                      m_pTaxRatesDivision;
-    TStatusTypeFile*                            m_pStatusType;
-    TIdent                                      m_iSecurityCount;
-    TIdent                                      m_iCompanyCount;
-    TIdent                                      m_iStartFromCompany;
-    INT32                                       m_iDivisionTaxCount;
-    TIdent                                      m_iStartFromCustomer;
+        CRandom m_rnd;
+        CCustomerSelection m_CustomerSelection;
+        CCustomerAccountsAndPermissionsTable m_AccsAndPerms;
+        CSecurityFile *m_pSecurities;
+        CCompanyFile *m_pCompanies;
+        TTaxRatesDivisionFile *m_pTaxRatesDivision;
+        TStatusTypeFile *m_pStatusType;
+        TIdent m_iSecurityCount;
+        TIdent m_iCompanyCount;
+        TIdent m_iStartFromCompany;
+        INT32 m_iDivisionTaxCount;
+        TIdent m_iStartFromCustomer;
 
-    INT32                                       m_DataMaintenanceTableNum;
+        INT32 m_DataMaintenanceTableNum;
 
-    TDataMaintenanceTxnInput                    m_TxnInput;
-    TTradeCleanupTxnInput                       m_CleanupTxnInput;
-    CDMSUTInterface*                            m_pSUT;
-    CBaseLogger*                                m_pLogger;
+        TDataMaintenanceTxnInput m_TxnInput;
+        TTradeCleanupTxnInput m_CleanupTxnInput;
+        CDMSUTInterface *m_pSUT;
+        CBaseLogger *m_pLogger;
 
-    // Automatically generate unique RNG seeds
-    void                                        AutoSetRNGSeeds( UINT32 UniqueId );
+        // Automatically generate unique RNG seeds
+        void AutoSetRNGSeeds(UINT32 UniqueId);
 
-    TIdent                                      GenerateRandomCustomerId();
+        TIdent GenerateRandomCustomerId();
 
-    TIdent                                      GenerateRandomCustomerAccountId();
+        TIdent GenerateRandomCustomerAccountId();
 
-    TIdent                                      GenerateRandomCompanyId();
+        TIdent GenerateRandomCompanyId();
 
-    TIdent                                      GenerateRandomSecurityId();
+        TIdent GenerateRandomSecurityId();
 
-    // Initialization that is common for all constructors.
-    void                                        Initialize();
+        // Initialization that is common for all constructors.
+        void Initialize();
 
-public:
-    // Constructor - automatice RNG seed generation
-    CDM( CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId );
+    public:
+        // Constructor - automatice RNG seed generation
+        CDM(CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount,
+            TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId);
 
-    // Constructor - RNG seed provided
-    CDM( CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId, RNGSEED RNGSeed );
+        // Constructor - RNG seed provided
+        CDM(CDMSUTInterface *pSUT, CBaseLogger *pLogger, CInputFiles &inputFiles, TIdent iConfiguredCustomerCount,
+            TIdent iActiveCustomerCount, INT32 iScaleFactor, INT32 iDaysOfInitialTrades, UINT32 UniqueId,
+            RNGSEED RNGSeed);
 
-    ~CDM( void );
+        ~CDM(void);
 
-    RNGSEED GetRNGSeed( void );
-    void    DoTxn( void );
-    void    DoCleanupTxn( void );
-	TDataMaintenanceTxnInput* createDMInput(void);
-    TTradeCleanupTxnInput* createTCInput(void);
-};
+        RNGSEED GetRNGSeed(void);
+
+        void DoTxn(void);
+
+        void DoCleanupTxn(void);
+
+        TDataMaintenanceTxnInput *createDMInput(void);
+
+        TTradeCleanupTxnInput *createTCInput(void);
+    };
 
 }   // namespace TPCE
 

@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CChargeTable : public TableTemplate<CHARGE_ROW>
-{
-    ifstream    InFile;
+    class CChargeTable : public TableTemplate<CHARGE_ROW> {
+        ifstream InFile;
 
-public:
-    CChargeTable( char *szDirName ) // input directory where to find the flat file
-        : TableTemplate<CHARGE_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CChargeTable(char *szDirName) // input directory where to find the flat file
+                : TableTemplate<CHARGE_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "Charge.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "Charge.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CChargeTable( )
-    {
-        InFile.close();
-    };
+        ~CChargeTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

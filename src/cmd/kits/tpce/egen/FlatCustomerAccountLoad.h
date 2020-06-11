@@ -42,32 +42,30 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatCustomerAccountLoad : public CFlatFileLoader <CUSTOMER_ACCOUNT_ROW>
-{
-public:
-    CFlatCustomerAccountLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<CUSTOMER_ACCOUNT_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatCustomerAccountLoad : public CFlatFileLoader<CUSTOMER_ACCOUNT_ROW> {
+    public:
+        CFlatCustomerAccountLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<CUSTOMER_ACCOUNT_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        int rc = fprintf( hOutFile, CustomerAccountRowFmt,
-                  next_record->CA_ID,
-                  next_record->CA_B_ID,
-                  next_record->CA_C_ID,
-                  next_record->CA_NAME,
-                  (int)next_record->CA_TAX_ST,
-                  next_record->CA_BAL
-                );
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatCustomerAccountLoad::WriteNextRecord");
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            int rc = fprintf(hOutFile, CustomerAccountRowFmt,
+                             next_record->CA_ID,
+                             next_record->CA_B_ID,
+                             next_record->CA_C_ID,
+                             next_record->CA_NAME,
+                             (int) next_record->CA_TAX_ST,
+                             next_record->CA_BAL
+            );
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatCustomerAccountLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

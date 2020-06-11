@@ -38,6 +38,7 @@
 #define EGEN_GENERATE_AND_LOAD_STDAFX_H
 
 #define WIN32_LEAN_AND_MEAN     // Exclude rarely-used stuff from Windows headers
+
 #include <cstdio>
 #include <cassert>
 #include <fstream>

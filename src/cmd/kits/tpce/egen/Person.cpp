@@ -34,33 +34,26 @@
  * - Sergey Vasilevskiy
  */
 
-#include "workload/tpce/egen/EGenTables_stdafx.h"
+#include "EGenTables_stdafx.h"
 
-using namespace TPCE;
+using namespace tpce;
 
 // Percentages used in determining gender.
-const int   iPercentGenderIsMale = 49;
+const int iPercentGenderIsMale = 49;
 
 /*
 *   Initializes in-memory representation of names files.
 */
-CPerson::CPerson(CInputFiles inputFiles
-                ,TIdent iStartFromCustomer
-                ,bool bCacheEnabled
-                )
-    : m_LastNames(inputFiles.LastNames)
-    , m_MaleFirstNames(inputFiles.MaleFirstNames)
-    , m_FemaleFirstNames(inputFiles.FemaleFirstNames)
-    , m_bCacheEnabled(bCacheEnabled)
-{
-    if (m_bCacheEnabled)
-    {
+CPerson::CPerson(CInputFiles inputFiles, TIdent iStartFromCustomer, bool bCacheEnabled
+)
+        : m_LastNames(inputFiles.LastNames), m_MaleFirstNames(inputFiles.MaleFirstNames),
+          m_FemaleFirstNames(inputFiles.FemaleFirstNames), m_bCacheEnabled(bCacheEnabled) {
+    if (m_bCacheEnabled) {
         m_iCacheSize = iDefaultLoadUnitSize;
         m_iCacheOffset = iTIdentShift + iStartFromCustomer;
-        m_CacheLastName = new char* [m_iCacheSize];
-        m_CacheFirstName = new char* [m_iCacheSize];
-        for (int i=0; i<m_iCacheSize; i++)
-        {
+        m_CacheLastName = new char *[m_iCacheSize];
+        m_CacheFirstName = new char *[m_iCacheSize];
+        for (int i = 0; i < m_iCacheSize; i++) {
             m_CacheLastName[i] = NULL;
             m_CacheFirstName[i] = NULL;
         }
@@ -70,10 +63,8 @@ CPerson::CPerson(CInputFiles inputFiles
 /*
 *   Deallocate in-memory representation of names files.
 */
-CPerson::~CPerson()
-{
-    if (m_bCacheEnabled)
-    {
+CPerson::~CPerson() {
+    if (m_bCacheEnabled) {
         delete[] m_CacheLastName;
         delete[] m_CacheFirstName;
     }
@@ -82,13 +73,10 @@ CPerson::~CPerson()
 /*
 *   Resets the cache.
 */
-void CPerson::InitNextLoadUnit(TIdent iCacheOffsetIncrement)
-{
-    if (m_bCacheEnabled)
-    {
+void CPerson::InitNextLoadUnit(TIdent iCacheOffsetIncrement) {
+    if (m_bCacheEnabled) {
         m_iCacheOffset += iCacheOffsetIncrement;
-        for (int i=0; i<m_iCacheSize; i++)
-        {
+        for (int i = 0; i < m_iCacheSize; i++) {
             m_CacheLastName[i] = NULL;
             m_CacheFirstName[i] = NULL;
         }
@@ -99,8 +87,7 @@ void CPerson::InitNextLoadUnit(TIdent iCacheOffsetIncrement)
 *   Returns the last name for a particular customer id.
 *   It'll always be the same for the same customer id.
 */
-char* CPerson::GetLastName(TIdent CID)
-{
+char *CPerson::GetLastName(TIdent CID) {
     char *LastName = NULL;
 
     // We will sometimes get CID values that are outside the current
@@ -113,28 +100,25 @@ char* CPerson::GetLastName(TIdent CID)
     // and thus not in the cache.
     TIdent index = CID - m_iCacheOffset;
     bool bCheckCache = (index >= 0 && index < m_iCacheSize);
-    if (m_bCacheEnabled && bCheckCache)
-    {
+    if (m_bCacheEnabled && bCheckCache) {
         LastName = m_CacheLastName[index];
     }
 
-    if (LastName == NULL)
-    {
+    if (LastName == NULL) {
         RNGSEED OldSeed;
-        int     iThreshold;
+        int iThreshold;
 
         OldSeed = m_rnd.GetSeed();
 
-        m_rnd.SetSeed( m_rnd.RndNthElement( RNGSeedBaseLastName, (RNGSEED) CID ));
+        m_rnd.SetSeed(m_rnd.RndNthElement(RNGSeedBaseLastName, (RNGSEED) CID));
 
         //generate Threshold up to the value of the last key (first member in a pair)
         iThreshold = m_rnd.RndIntRange(0, m_LastNames->GetGreatestKey() - 1);
         LastName = (m_LastNames->GetRecord(iThreshold))->LAST_NAME;
 
-        m_rnd.SetSeed( OldSeed );
+        m_rnd.SetSeed(OldSeed);
 
-        if (m_bCacheEnabled && bCheckCache)
-        {
+        if (m_bCacheEnabled && bCheckCache) {
             m_CacheLastName[index] = LastName;
         }
     }
@@ -146,8 +130,7 @@ char* CPerson::GetLastName(TIdent CID)
 *   Returns the first name for a particular customer id.
 *   Determines gender first.
 */
-char* CPerson::GetFirstName(TIdent CID)
-{
+char *CPerson::GetFirstName(TIdent CID) {
     char *FirstName = NULL;
 
     // cached before attempting to use the cache.
@@ -158,95 +141,83 @@ char* CPerson::GetFirstName(TIdent CID)
     // rows are selected at random from a wide range of LUs and thus
     TIdent index = CID - m_iCacheOffset;
     bool bCheckCache = (index >= 0 && index < m_iCacheSize);
-    if (m_bCacheEnabled && bCheckCache)
-    {
+    if (m_bCacheEnabled && bCheckCache) {
         FirstName = m_CacheFirstName[index];
     }
 
-    if (FirstName == NULL)
-    {
+    if (FirstName == NULL) {
         RNGSEED OldSeed;
-        int     iThreshold;
+        int iThreshold;
 
         OldSeed = m_rnd.GetSeed();
 
-        m_rnd.SetSeed( m_rnd.RndNthElement( RNGSeedBaseFirstName, (RNGSEED) CID ));
+        m_rnd.SetSeed(m_rnd.RndNthElement(RNGSeedBaseFirstName, (RNGSEED) CID));
 
         //Find out gender
-        if (IsMaleGender(CID))
-        {
+        if (IsMaleGender(CID)) {
             iThreshold = m_rnd.RndIntRange(0, m_MaleFirstNames->GetGreatestKey() - 1);
             FirstName = (m_MaleFirstNames->GetRecord(iThreshold))->FIRST_NAME;
-        }
-        else
-        {
+        } else {
             iThreshold = m_rnd.RndIntRange(0, m_FemaleFirstNames->GetGreatestKey() - 1);
             FirstName = (m_FemaleFirstNames->GetRecord(iThreshold))->FIRST_NAME;
         }
-        m_rnd.SetSeed( OldSeed );
+        m_rnd.SetSeed(OldSeed);
 
-        if (m_bCacheEnabled && bCheckCache)
-        {
+        if (m_bCacheEnabled && bCheckCache) {
             m_CacheFirstName[index] = FirstName;
         }
     }
     return FirstName;
 }
+
 /*
 *   Returns the middle name.
 */
-char CPerson::GetMiddleName(TIdent CID)
-{
+char CPerson::GetMiddleName(TIdent CID) {
     RNGSEED OldSeed;
-    char    cMiddleInitial[2];
+    char cMiddleInitial[2];
 
     OldSeed = m_rnd.GetSeed();
-    m_rnd.SetSeed( m_rnd.RndNthElement( RNGSeedBaseMiddleInitial, 
-                   (RNGSEED) CID ));
+    m_rnd.SetSeed(m_rnd.RndNthElement(RNGSeedBaseMiddleInitial,
+                                      (RNGSEED) CID));
     cMiddleInitial[1] = '\0';
-    m_rnd.RndAlphaNumFormatted( cMiddleInitial, "a" );
-    m_rnd.SetSeed( OldSeed );
-    return( cMiddleInitial[0] );
+    m_rnd.RndAlphaNumFormatted(cMiddleInitial, "a");
+    m_rnd.SetSeed(OldSeed);
+    return (cMiddleInitial[0]);
 }
 
 /*
 *   Returns the gender character for a particular customer id.
 */
-char CPerson::GetGender(TIdent CID)
-{
+char CPerson::GetGender(TIdent CID) {
     RNGSEED OldSeed;
-    char    cGender;
+    char cGender;
 
     OldSeed = m_rnd.GetSeed();
-    m_rnd.SetSeed( m_rnd.RndNthElement( RNGSeedBaseGender, (RNGSEED) CID ));
+    m_rnd.SetSeed(m_rnd.RndNthElement(RNGSeedBaseGender, (RNGSEED) CID));
 
     //Find out gender
-    if (m_rnd.RndPercent( iPercentGenderIsMale ))
-    {
+    if (m_rnd.RndPercent(iPercentGenderIsMale)) {
         cGender = 'M';
-    }
-    else
-    {
+    } else {
         cGender = 'F';
     }
 
-    m_rnd.SetSeed( OldSeed );
-    return( cGender );
+    m_rnd.SetSeed(OldSeed);
+    return (cGender);
 }
 
 /*
 *   Returns TRUE is a customer id is male
 */
-bool CPerson::IsMaleGender(TIdent CID)
-{
-    return GetGender(CID)=='M';
+bool CPerson::IsMaleGender(TIdent CID) {
+    return GetGender(CID) == 'M';
 }
 
 /*
 *   Generate tax id
 */
-void CPerson::GetTaxID(TIdent CID, char *buf)
-{
+void CPerson::GetTaxID(TIdent CID, char *buf) {
     RNGSEED OldSeed;
 
     OldSeed = m_rnd.GetSeed();
@@ -255,17 +226,16 @@ void CPerson::GetTaxID(TIdent CID, char *buf)
     // for EACH character in the format string. Therefore, to avoid getting
     // tax ID's that overlap N-1 out of N characters, multiply the offset into
     // the sequence by N to get a unique range of values.
-    m_rnd.SetSeed( m_rnd.RndNthElement( RNGSeedBaseTaxID, 
-                   ( (RNGSEED)CID * TaxIDFmt_len )));
+    m_rnd.SetSeed(m_rnd.RndNthElement(RNGSeedBaseTaxID,
+                                      ((RNGSEED) CID * TaxIDFmt_len)));
     m_rnd.RndAlphaNumFormatted(buf, TaxIDFmt);
-    m_rnd.SetSeed( OldSeed );
+    m_rnd.SetSeed(OldSeed);
 }
 
 /*
 *   Get first name, last name, and tax id.
 */
-void CPerson::GetFirstLastAndTaxID(TIdent C_ID, char *szFirstName, char *szLastName, char *szTaxID)
-{
+void CPerson::GetFirstLastAndTaxID(TIdent C_ID, char *szFirstName, char *szLastName, char *szTaxID) {
     //Fill in the last name
     strncpy(szLastName, GetLastName(C_ID), cL_NAME_len);
     //Fill in the first name

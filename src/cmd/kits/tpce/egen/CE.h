@@ -113,122 +113,122 @@
 #include "BaseLogger.h"
 #include "DriverParamSettings.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CCE
-{
-private:
+    class CCE {
+    private:
 
-    CDriverGlobalSettings       m_DriverGlobalSettings;
-    CDriverCESettings           m_DriverCESettings;
-    CDriverCEPartitionSettings  m_DriverCEPartitionSettings;
-    TDriverCETxnSettings        m_DriverCETxnSettings;
+        CDriverGlobalSettings m_DriverGlobalSettings;
+        CDriverCESettings m_DriverCESettings;
+        CDriverCEPartitionSettings m_DriverCEPartitionSettings;
+        TDriverCETxnSettings m_DriverCETxnSettings;
 
-    CCESUTInterface*            m_pSUT;
-    CBaseLogger*                m_pLogger;
-    CCETxnMixGenerator          m_TxnMixGenerator;
-    CCETxnInputGenerator        m_TxnInputGenerator;
+        CCESUTInterface *m_pSUT;
+        CBaseLogger *m_pLogger;
+        CCETxnMixGenerator m_TxnMixGenerator;
+        CCETxnInputGenerator m_TxnInputGenerator;
 
-    TBrokerVolumeTxnInput       m_BrokerVolumeTxnInput;
-    TCustomerPositionTxnInput   m_CustomerPositionTxnInput;
-    TMarketWatchTxnInput        m_MarketWatchTxnInput;
-    TSecurityDetailTxnInput     m_SecurityDetailTxnInput;
-    TTradeLookupTxnInput        m_TradeLookupTxnInput;
-    TTradeOrderTxnInput         m_TradeOrderTxnInput;
-    TTradeStatusTxnInput        m_TradeStatusTxnInput;
-    TTradeUpdateTxnInput        m_TradeUpdateTxnInput;
+        TBrokerVolumeTxnInput m_BrokerVolumeTxnInput;
+        TCustomerPositionTxnInput m_CustomerPositionTxnInput;
+        TMarketWatchTxnInput m_MarketWatchTxnInput;
+        TSecurityDetailTxnInput m_SecurityDetailTxnInput;
+        TTradeLookupTxnInput m_TradeLookupTxnInput;
+        TTradeOrderTxnInput m_TradeOrderTxnInput;
+        TTradeStatusTxnInput m_TradeStatusTxnInput;
+        TTradeUpdateTxnInput m_TradeUpdateTxnInput;
 
-    // Whether to zero the buffer before generating transaction input data into it.
-    bool                        m_bClearBufferBeforeGeneration;
+        // Whether to zero the buffer before generating transaction input data into it.
+        bool m_bClearBufferBeforeGeneration;
 
-    // Initialization that is common for all constructors.
-    void Initialize( PDriverCETxnSettings pTxnParamSettings );
+        // Initialization that is common for all constructors.
+        void Initialize(PDriverCETxnSettings pTxnParamSettings);
 
-    // Automatically generate unique RNG seeds
-    void AutoSetRNGSeeds( UINT32 UniqueId );
+        // Automatically generate unique RNG seeds
+        void AutoSetRNGSeeds(UINT32 UniqueId);
 
-    /*
-    *  Zero transaction input buffer.
-    *
-    *  PARAMETERS:
-    *           IN iTxnType     - what transaction to zero the buffer for.
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void ZeroInputBuffer(int iTxnType);
+        /*
+        *  Zero transaction input buffer.
+        *
+        *  PARAMETERS:
+        *           IN iTxnType     - what transaction to zero the buffer for.
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void ZeroInputBuffer(int iTxnType);
 
-public:
-    static const INT32 INVALID_TRANSACTION_TYPE = CCETxnMixGenerator::INVALID_TRANSACTION_TYPE;
-    static const INT32 SECURITY_DETAIL          = CCETxnMixGenerator::SECURITY_DETAIL;
-    static const INT32 BROKER_VOLUME            = CCETxnMixGenerator::BROKER_VOLUME;
-    static const INT32 CUSTOMER_POSITION        = CCETxnMixGenerator::CUSTOMER_POSITION;
-    static const INT32 MARKET_WATCH             = CCETxnMixGenerator::MARKET_WATCH;
-    static const INT32 TRADE_STATUS             = CCETxnMixGenerator::TRADE_STATUS;
-    static const INT32 TRADE_LOOKUP             = CCETxnMixGenerator::TRADE_LOOKUP;
-    static const INT32 TRADE_ORDER              = CCETxnMixGenerator::TRADE_ORDER;
-    static const INT32 TRADE_UPDATE             = CCETxnMixGenerator::TRADE_UPDATE;
-    //Trade-Result and Market-Feed are included for completness.
-    static const INT32 MARKET_FEED              = CCETxnMixGenerator::MARKET_FEED;
-    static const INT32 TRADE_RESULT             = CCETxnMixGenerator::TRADE_RESULT;
+    public:
+        static const INT32 INVALID_TRANSACTION_TYPE = CCETxnMixGenerator::INVALID_TRANSACTION_TYPE;
+        static const INT32 SECURITY_DETAIL = CCETxnMixGenerator::SECURITY_DETAIL;
+        static const INT32 BROKER_VOLUME = CCETxnMixGenerator::BROKER_VOLUME;
+        static const INT32 CUSTOMER_POSITION = CCETxnMixGenerator::CUSTOMER_POSITION;
+        static const INT32 MARKET_WATCH = CCETxnMixGenerator::MARKET_WATCH;
+        static const INT32 TRADE_STATUS = CCETxnMixGenerator::TRADE_STATUS;
+        static const INT32 TRADE_LOOKUP = CCETxnMixGenerator::TRADE_LOOKUP;
+        static const INT32 TRADE_ORDER = CCETxnMixGenerator::TRADE_ORDER;
+        static const INT32 TRADE_UPDATE = CCETxnMixGenerator::TRADE_UPDATE;
+        //Trade-Result and Market-Feed are included for completness.
+        static const INT32 MARKET_FEED = CCETxnMixGenerator::MARKET_FEED;
+        static const INT32 TRADE_RESULT = CCETxnMixGenerator::TRADE_RESULT;
 
-    // Constructor - no partitioning by C_ID, automatic RNG seed generation (requires unique input)
-    CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                UINT32 UniqueId,
-                const PDriverCETxnSettings pParameterSettings = NULL );
+        // Constructor - no partitioning by C_ID, automatic RNG seed generation (requires unique input)
+        CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+            UINT32 UniqueId,
+            const PDriverCETxnSettings pParameterSettings = NULL);
 
-    // Constructor - no partitioning by C_ID, RNG seeds provided
-    CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                UINT32 UniqueId,
-                RNGSEED TxnMixRNGSeed,
-                RNGSEED TxnInputRNGSeed,
-                const PDriverCETxnSettings pParameterSettings = NULL );
+        // Constructor - no partitioning by C_ID, RNG seeds provided
+        CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+            UINT32 UniqueId,
+            RNGSEED TxnMixRNGSeed,
+            RNGSEED TxnInputRNGSeed,
+            const PDriverCETxnSettings pParameterSettings = NULL);
 
-    // Constructor - partitioning by C_ID, automatic RNG seed generation (requires unique input)
-    CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
-                INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                UINT32 UniqueId,
-                const PDriverCETxnSettings pParameterSettings = NULL );
+        // Constructor - partitioning by C_ID, automatic RNG seed generation (requires unique input)
+        CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+            TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
+            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+            UINT32 UniqueId,
+            const PDriverCETxnSettings pParameterSettings = NULL);
 
-    // Constructor - partitioning by C_ID, RNG seeds provided
-    CCE( CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
-                TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
-                TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
-                INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
-                UINT32 UniqueId,
-                RNGSEED TxnMixRNGSeed,
-                RNGSEED TxnInputRNGSeed,
-                const PDriverCETxnSettings pParameterSettings = NULL );
+        // Constructor - partitioning by C_ID, RNG seeds provided
+        CCE(CCESUTInterface *pSUT, CBaseLogger *pLogger, const CInputFiles &inputFiles,
+            TIdent iConfiguredCustomerCount, TIdent iActiveCustomerCount,
+            TIdent iMyStartingCustomerId, TIdent iMyCustomerCount, INT32 iPartitionPercent,
+            INT32 iScaleFactor, INT32 iDaysOfInitialTrades,
+            UINT32 UniqueId,
+            RNGSEED TxnMixRNGSeed,
+            RNGSEED TxnInputRNGSeed,
+            const PDriverCETxnSettings pParameterSettings = NULL);
 
-    ~CCE( void );
+        ~CCE(void);
 
-    RNGSEED GetTxnInputGeneratorRNGSeed( void );
-    RNGSEED GetTxnMixGeneratorRNGSeed( void );
-    bool    SetTxnTunables( const PDriverCETxnSettings pTxnParamSettings );
+        RNGSEED GetTxnInputGeneratorRNGSeed(void);
 
-    void DoTxn( void );
+        RNGSEED GetTxnMixGeneratorRNGSeed(void);
 
-    /*
-    *  Whether to zero the buffer before generating transaction input data.
-    *  Allows bitwise comparison of transaction input buffers.
-    *
-    *  Note: the option is set to 'false' by default (in the constructor).
-    *
-    *  PARAMETERS:
-    *           IN bClearBufferBeforeGeneration     - zero the buffer before input generation, if true
-    *
-    *  RETURNS:
-    *           none.
-    */
-    void SetClearBufferOption(bool bClearBufferBeforeGeneration);
-};
+        bool SetTxnTunables(const PDriverCETxnSettings pTxnParamSettings);
+
+        void DoTxn(void);
+
+        /*
+        *  Whether to zero the buffer before generating transaction input data.
+        *  Allows bitwise comparison of transaction input buffers.
+        *
+        *  Note: the option is set to 'false' by default (in the constructor).
+        *
+        *  PARAMETERS:
+        *           IN bClearBufferBeforeGeneration     - zero the buffer before input generation, if true
+        *
+        *  RETURNS:
+        *           none.
+        */
+        void SetClearBufferOption(bool bClearBufferBeforeGeneration);
+    };
 
 }   // namespace TPCE
 

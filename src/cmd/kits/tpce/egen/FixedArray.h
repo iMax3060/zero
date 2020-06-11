@@ -43,42 +43,38 @@
 
 #include "EGenUtilities_stdafx.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFixedArrayErr : public CBaseErr
-{
-public:
-    enum eFixedArrayErrs
-    {
-        eNotEnoughMemory,
-        eIndexOutOfRange,
-        eOverflow
-    };
-
-    CFixedArrayErr( eFixedArrayErrs iErr, const char *szLoc) : CBaseErr(iErr, szLoc) {};
-    int ErrorType() {return ERR_TYPE_FIXED_ARRAY;};
-
-    const char *ErrorText() const
-    {
-        int i;
-        static const char * szErrs[] = {
-            "Not enough memory",
-            "Index out of range.",
-            "Cannot insert element - container is full.",
-            ""
+    class CFixedArrayErr : public CBaseErr {
+    public:
+        enum eFixedArrayErrs {
+            eNotEnoughMemory,
+            eIndexOutOfRange,
+            eOverflow
         };
 
-        for(i = 0; szErrs[i][0]; i++)
-        {
-            // Confirm that an error message has been defined for the error code
-            if ( i == m_idMsg )
-                break;
-        }
+        CFixedArrayErr(eFixedArrayErrs iErr, const char *szLoc) : CBaseErr(iErr, szLoc) {};
 
-        return(szErrs[i][0] ? szErrs[i] : ERR_UNKNOWN);
-    }
-};
+        int ErrorType() { return ERR_TYPE_FIXED_ARRAY; };
+
+        const char *ErrorText() const {
+            int i;
+            static const char *szErrs[] = {
+                    "Not enough memory",
+                    "Index out of range.",
+                    "Cannot insert element - container is full.",
+                    ""
+            };
+
+            for (i = 0; szErrs[i][0]; i++) {
+                // Confirm that an error message has been defined for the error code
+                if (i == m_idMsg)
+                    break;
+            }
+
+            return (szErrs[i][0] ? szErrs[i] : ERR_UNKNOWN);
+        }
+    };
 
 /*
 *   Fixed-size array container
@@ -88,62 +84,56 @@ public:
 *   contains the total number of data elements possible to store.
 *   The struct in the second parameter must define TotalElements() public member function.
 */
-template <typename TData, typename TElementsLimits>
-class CFixedArray
-{
-    //Really using only the TotalElements() member function on this type
-    TElementsLimits m_sLimits;
-    int             m_iTotalElements;   // total elements from limits; taken once in the constructor for performance
-    int             m_iCurrentElements; //current number of elements (cannot be greater than m_iTotalElements)
-    TData           *m_pData;           //array of data elements
+    template<typename TData, typename TElementsLimits>
+    class CFixedArray {
+        //Really using only the TotalElements() member function on this type
+        TElementsLimits m_sLimits;
+        int m_iTotalElements;   // total elements from limits; taken once in the constructor for performance
+        int m_iCurrentElements; //current number of elements (cannot be greater than m_iTotalElements)
+        TData *m_pData;           //array of data elements
 
-public:
-    typedef TData*  PData;      //pointer to a data element
+    public:
+        typedef TData *PData;      //pointer to a data element
 
-    //Constructor
-    CFixedArray()
-        : m_iCurrentElements(0) //no elements in the beginning
-    {
-        m_iTotalElements = m_sLimits.TotalElements();
-
-        m_pData = new TData[m_iTotalElements];
-    }
-    //Destructor
-    ~CFixedArray()
-    {
-        if (m_pData != NULL)
-            delete [] m_pData;
-    }
-
-    //Add a (key, data) pair to the container.
-    //Operation is performed in constant time for any (key, data) pair.
-    void Add(TData *pData)
-    {
-        if (m_iCurrentElements < m_iTotalElements)
-        {   //have place to insert new association
-
-            m_pData[m_iCurrentElements] = *pData;   //copy the data value
-
-            ++m_iCurrentElements;               //because just added one element
-        }
-        else
+        //Constructor
+        CFixedArray()
+                : m_iCurrentElements(0) //no elements in the beginning
         {
-            //container is full
-            throw CFixedArrayErr(CFixedArrayErr::eOverflow, "CFixedArray::Add");
+            m_iTotalElements = m_sLimits.TotalElements();
+
+            m_pData = new TData[m_iTotalElements];
         }
-    }
 
-    //Element access by index
-    TData& operator[](int iIndex)
-    {
-        assert(iIndex>=0 && iIndex < m_iTotalElements);
-        //correct index value
-        return m_pData[iIndex]; //return reference to the data value
-    }
+        //Destructor
+        ~CFixedArray() {
+            if (m_pData != NULL)
+                delete[] m_pData;
+        }
 
-    //Return the total number of elements
-    int size() {return m_iTotalElements;}
-};
+        //Add a (key, data) pair to the container.
+        //Operation is performed in constant time for any (key, data) pair.
+        void Add(TData *pData) {
+            if (m_iCurrentElements < m_iTotalElements) {   //have place to insert new association
+
+                m_pData[m_iCurrentElements] = *pData;   //copy the data value
+
+                ++m_iCurrentElements;               //because just added one element
+            } else {
+                //container is full
+                throw CFixedArrayErr(CFixedArrayErr::eOverflow, "CFixedArray::Add");
+            }
+        }
+
+        //Element access by index
+        TData &operator[](int iIndex) {
+            assert(iIndex >= 0 && iIndex < m_iTotalElements);
+            //correct index value
+            return m_pData[iIndex]; //return reference to the data value
+        }
+
+        //Return the total number of elements
+        int size() { return m_iTotalElements; }
+    };
 
 }   // namespace TPCE
 

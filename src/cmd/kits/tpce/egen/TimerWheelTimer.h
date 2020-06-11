@@ -41,39 +41,35 @@
 #ifndef TIMER_WHEEL_TIMER_H
 #define TIMER_WHEEL_TIMER_H
 
-namespace TPCE
-{
+namespace tpce {
 
-template <class T, class T2>
-class CTimerWheelTimer
-{
+    template<class T, class T2>
+    class CTimerWheelTimer {
 
-private:
+    private:
 
-public:
+    public:
 
-    T*  m_pExpiryData;                      //The data to be passed back
-    T2* m_pExpiryObject;                    //The object on which to call the function
-    void (T2::* m_pExpiryFunction) ( T* );  //The function to call at expiration
+        T *m_pExpiryData;                      //The data to be passed back
+        T2 *m_pExpiryObject;                    //The object on which to call the function
+        void (T2::* m_pExpiryFunction)(T *);  //The function to call at expiration
 
-    CTimerWheelTimer( T2* pExpiryObject, void (T2::* pExpiryFunction) ( T* ), T* pExpiryData );
+        CTimerWheelTimer(T2 *pExpiryObject, void (T2::* pExpiryFunction)(T *), T *pExpiryData);
 
-    ~CTimerWheelTimer(void);
+        ~CTimerWheelTimer(void);
 
-};  // class CTimerWheelTimer
+    };  // class CTimerWheelTimer
 
-template <class T, class T2>
-CTimerWheelTimer<T,T2>::CTimerWheelTimer( T2* pExpiryObject, void (T2::* pExpiryFunction) ( T* ), T* pExpiryData )
-{
-    m_pExpiryData = pExpiryData;
-    m_pExpiryObject = pExpiryObject;
-    m_pExpiryFunction = pExpiryFunction;
-}
+    template<class T, class T2>
+    CTimerWheelTimer<T, T2>::CTimerWheelTimer(T2 *pExpiryObject, void (T2::* pExpiryFunction)(T *), T *pExpiryData) {
+        m_pExpiryData = pExpiryData;
+        m_pExpiryObject = pExpiryObject;
+        m_pExpiryFunction = pExpiryFunction;
+    }
 
-template <class T, class T2>
-CTimerWheelTimer<T,T2>::~CTimerWheelTimer(void)
-{
-}
+    template<class T, class T2>
+    CTimerWheelTimer<T, T2>::~CTimerWheelTimer(void) {
+    }
 
 }   // namespace TPCE
 

@@ -123,15 +123,15 @@ typedef CRITICAL_SECTION    TMutex;
 
 #include <inttypes.h>
 
-typedef int8_t          INT8, *PINT8;
-typedef int16_t         INT16, *PINT16;
-typedef int32_t         INT32, *PINT32;
-typedef int64_t         INT64, *PINT64;
+typedef int8_t INT8, *PINT8;
+typedef int16_t INT16, *PINT16;
+typedef int32_t INT32, *PINT32;
+typedef int64_t INT64, *PINT64;
 
-typedef uint8_t         UINT8,  *PUINT8;
-typedef uint16_t        UINT16, *PUINT16;
-typedef uint32_t        UINT32, *PUINT32;
-typedef uint64_t        UINT64, *PUINT64;
+typedef uint8_t UINT8, *PUINT8;
+typedef uint16_t UINT16, *PUINT16;
+typedef uint32_t UINT32, *PUINT32;
+typedef uint64_t UINT64, *PUINT64;
 
 /////////////////////////////////////////////
 // 64-bit integer printf format specifier  //
@@ -151,8 +151,8 @@ typedef uint64_t        UINT64, *PUINT64;
 
 #include <pthread.h>
 
-typedef pthread_t       TThread;
-typedef pthread_attr_t  TThreadAttr;
+typedef pthread_t TThread;
+typedef pthread_attr_t TThreadAttr;
 typedef pthread_mutex_t TMutex;
 
 #endif // (__unix) || (_AIX)
@@ -179,20 +179,20 @@ typedef pthread_mutex_t TMutex;
 #else
 //
 // Arbitrary default just so we can compile
-    typedef INT32   DB_INDICATOR;
+typedef INT32 DB_INDICATOR;
 #endif  // ORACLE
 
 /////////////////////////////////////////////////////////
 // Identifier type for all integer primary key fields. //
 // Corresponds to IDENT_T metatype in TPC-E spec.      //
 /////////////////////////////////////////////////////////
-typedef long long   TIdent;
+typedef long long TIdent;
 
 /////////////////////////////////////////////////////////
 // Identifier type for all trade id primary key fields.//
 // Corresponds to TRADE_T metatype in TPC-E spec.      //
 /////////////////////////////////////////////////////////
-typedef long long   TTrade;
+typedef long long TTrade;
 
 
 #endif  // #ifndef EGEN_STANDARD_TYPES_H

@@ -52,57 +52,64 @@
 #include "MEESUTInterface.h"
 #include "MEEPriceBoard.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CMEETickerTape
-{
-private:
-    CMEESUTInterface*   m_pSUT;
-    CMEEPriceBoard*     m_pPriceBoard;
-    TMarketFeedTxnInput m_TxnInput;
-    INT32               m_BatchIndex;
-    INT32               m_BatchDuplicates;
-    CRandom             m_rnd;
-    bool                m_Enabled;
-    TStatusTypeFile*    m_pStatusType;
-    TTradeTypeFile*     m_pTradeType;
+    class CMEETickerTape {
+    private:
+        CMEESUTInterface *m_pSUT;
+        CMEEPriceBoard *m_pPriceBoard;
+        TMarketFeedTxnInput m_TxnInput;
+        INT32 m_BatchIndex;
+        INT32 m_BatchDuplicates;
+        CRandom m_rnd;
+        bool m_Enabled;
+        TStatusTypeFile *m_pStatusType;
+        TTradeTypeFile *m_pTradeType;
 
-    static const int    LIMIT_TRIGGER_TRADE_QTY;
-    static const int    RANDOM_TRADE_QTY_1;
-    static const int    RANDOM_TRADE_QTY_2;
+        static const int LIMIT_TRIGGER_TRADE_QTY;
+        static const int RANDOM_TRADE_QTY_1;
+        static const int RANDOM_TRADE_QTY_2;
 
-    CTimerWheel< TTickerEntry, CMEETickerTape, 900, 1000 >  m_LimitOrderTimers; //Size wheel for 900 seconds with 1,000 millisecond resolution.
-    queue<PTickerEntry> m_InTheMoneyLimitOrderQ;
+        CTimerWheel<TTickerEntry, CMEETickerTape, 900, 1000> m_LimitOrderTimers; //Size wheel for 900 seconds with 1,000 millisecond resolution.
+        queue<PTickerEntry> m_InTheMoneyLimitOrderQ;
 
-    CDateTime*          m_pBaseTime;
-    CDateTime*          m_pCurrentTime;
+        CDateTime *m_pBaseTime;
+        CDateTime *m_pCurrentTime;
 
-    void AddToBatch( PTickerEntry pTickerEntry );
-    void AddArtificialEntries( void );
-    void AddLimitTrigger( PTickerEntry pTickerEntry );
+        void AddToBatch(PTickerEntry pTickerEntry);
 
-    // Performs initialization common to all constructors.
-    void    Initialize( void );
+        void AddArtificialEntries(void);
 
-public:
-    // Constructor - use default RNG seed
-    CMEETickerTape( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CDateTime* pBaseTime, CDateTime* pCurrentTime, const CInputFiles &inputFiles );
+        void AddLimitTrigger(PTickerEntry pTickerEntry);
 
-    // Constructor - RNG seed provided
-    CMEETickerTape( CMEESUTInterface* pSUT, CMEEPriceBoard* pPriceBoard, CDateTime* pBaseTime, CDateTime* pCurrentTime, RNGSEED RNGSeed, const CInputFiles &inputFiles );
+        // Performs initialization common to all constructors.
+        void Initialize(void);
 
-    ~CMEETickerTape( void );
+    public:
+        // Constructor - use default RNG seed
+        CMEETickerTape(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CDateTime *pBaseTime,
+                       CDateTime *pCurrentTime, const CInputFiles &inputFiles);
 
-    void AddEntry( PTickerEntry pTickerEntry );
-    void PostLimitOrder( PTradeRequest pTradeRequest );
-    bool DisableTicker( void );
-    bool EnableTicker( void );
-    eTradeTypeID ConvertTradeTypeIdToEnum( char* pTradeType );
+        // Constructor - RNG seed provided
+        CMEETickerTape(CMEESUTInterface *pSUT, CMEEPriceBoard *pPriceBoard, CDateTime *pBaseTime,
+                       CDateTime *pCurrentTime, RNGSEED RNGSeed, const CInputFiles &inputFiles);
 
-    RNGSEED GetRNGSeed( void );
-    void    SetRNGSeed( RNGSEED RNGSeed );
-};
+        ~CMEETickerTape(void);
+
+        void AddEntry(PTickerEntry pTickerEntry);
+
+        void PostLimitOrder(PTradeRequest pTradeRequest);
+
+        bool DisableTicker(void);
+
+        bool EnableTicker(void);
+
+        eTradeTypeID ConvertTradeTypeIdToEnum(char *pTradeType);
+
+        RNGSEED GetRNGSeed(void);
+
+        void SetRNGSeed(RNGSEED RNGSeed);
+    };
 
 }   // namespace TPCE
 

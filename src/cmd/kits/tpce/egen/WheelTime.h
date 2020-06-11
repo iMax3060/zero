@@ -45,40 +45,47 @@
 #include "EGenUtilities_stdafx.h"
 #include "Wheel.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CWheelTime
-{
+    class CWheelTime {
 
-private:
-    PWheelConfig    m_pWheelConfig; //Pointer to configuration info for the wheel
-    INT32           m_Cycles;       //Number of completed cycles so far
-    INT32           m_Index;        //Index into the current cycle
+    private:
+        PWheelConfig m_pWheelConfig; //Pointer to configuration info for the wheel
+        INT32 m_Cycles;       //Number of completed cycles so far
+        INT32 m_Index;        //Index into the current cycle
 
-public:
-    CWheelTime( PWheelConfig pWheelConfig );
-    CWheelTime( PWheelConfig pWheelConfig, INT32 cycles, INT32 index );
-    CWheelTime( PWheelConfig pWheelConfig, CDateTime& Base, CDateTime& Now, INT32 Offset );
-    ~CWheelTime( void );
+    public:
+        CWheelTime(PWheelConfig pWheelConfig);
 
-    inline INT32 Cycles( void ) { return m_Cycles; };
-    inline INT32 Index( void ) { return m_Index; };
+        CWheelTime(PWheelConfig pWheelConfig, INT32 cycles, INT32 index);
 
-    void Add( INT32 Interval );
+        CWheelTime(PWheelConfig pWheelConfig, CDateTime &Base, CDateTime &Now, INT32 Offset);
 
-    INT32 Offset( const CWheelTime& Time );
+        ~CWheelTime(void);
 
-    void Set( INT32 cycles, INT32 index );
-    void Set( CDateTime& Base, CDateTime& Now );
-    void Set( CDateTime* pBase, CDateTime* pNow );
+        inline INT32 Cycles(void) { return m_Cycles; };
 
-    CWheelTime& operator = (const CWheelTime& Time);
-    bool operator <(const CWheelTime& Time);
-    CWheelTime& operator += ( const INT32& Interval );
-    CWheelTime operator ++ ( INT32 );
+        inline INT32 Index(void) { return m_Index; };
 
-};
+        void Add(INT32 Interval);
+
+        INT32 Offset(const CWheelTime &Time);
+
+        void Set(INT32 cycles, INT32 index);
+
+        void Set(CDateTime &Base, CDateTime &Now);
+
+        void Set(CDateTime *pBase, CDateTime *pNow);
+
+        CWheelTime &operator=(const CWheelTime &Time);
+
+        bool operator<(const CWheelTime &Time);
+
+        CWheelTime &operator+=(const INT32 &Interval);
+
+        CWheelTime operator++(INT32);
+
+    };
 
 }   // namespace TPCE
 

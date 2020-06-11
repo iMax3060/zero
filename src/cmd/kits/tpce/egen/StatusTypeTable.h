@@ -42,43 +42,37 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CStatusTypeTable : public TableTemplate<STATUS_TYPE_ROW>
-{
-    ifstream    InFile;
+    class CStatusTypeTable : public TableTemplate<STATUS_TYPE_ROW> {
+        ifstream InFile;
 
-public:
-    CStatusTypeTable( char *szDirName )
-        : TableTemplate<STATUS_TYPE_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CStatusTypeTable(char *szDirName)
+                : TableTemplate<STATUS_TYPE_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "StatusType.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "StatusType.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
-    };
+            InFile.open(szFileName);
+        };
 
-    ~CStatusTypeTable( )
-    {
-        InFile.close();
-    };
+        ~CStatusTypeTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+            }
+
+            return (InFile.eof());
         }
-
-        return ( InFile.eof() );
-    }
-};
+    };
 
 }   // namespace TPCE
 

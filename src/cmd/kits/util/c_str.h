@@ -29,9 +29,6 @@
 #define _GNU_SOURCE
 #endif
 
-#include "k_defines.h"
-#include "util/namespace.h"
-
 #include "compat.h"
 
 #define DEBUG_C_STR 0

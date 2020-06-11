@@ -274,7 +274,7 @@ struct trx_request_t : public base_request_t
 
     void set(xct_t* pxct, const tid_t& atid, const int axctid,
              const trx_result_tuple_t& aresult,
-             const int axcttype, const int aspecid, int tspread)
+             const int axcttype, const int aspecid, int tspread = 0)
     {
         base_request_t::set(pxct,atid,axctid,aresult);
         _xct_type = axcttype;

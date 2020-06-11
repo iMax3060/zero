@@ -44,16 +44,15 @@
 
 #include "EGenStandardTypes.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-extern "C"
-{
-void GetEGenVersion_C(INT32 &iMajorVersion, INT32 &iMinorVersion, INT32 &iRevisionNumber, INT32 &iBetaLevel);
-void GetEGenVersionString_C(char* szOutput, size_t iOutputBufferLen);
-void PrintEGenVersion_C();
-void GetEGenVersionUpdateTimestamp_C(char* szOutput, size_t iOutputBufferLen);
-}
+    extern "C"
+    {
+    void GetEGenVersion_C(INT32 &iMajorVersion, INT32 &iMinorVersion, INT32 &iRevisionNumber, INT32 &iBetaLevel);
+    void GetEGenVersionString_C(char *szOutput, size_t iOutputBufferLen);
+    void PrintEGenVersion_C();
+    void GetEGenVersionUpdateTimestamp_C(char *szOutput, size_t iOutputBufferLen);
+    }
 
 // Retrieve major, minor, revision, and beta level numbers for EGen.
 // For example, v3.10 beta 1 has:
@@ -67,21 +66,21 @@ void GetEGenVersionUpdateTimestamp_C(char* szOutput, size_t iOutputBufferLen);
 //  revision    0
 //  beta level  0
 //
-void GetEGenVersion(INT32 &iMajorVersion, INT32 &iMinorVersion, INT32 &iRevisionNumber, INT32 &iBetaLevel);
+    void GetEGenVersion(INT32 &iMajorVersion, INT32 &iMinorVersion, INT32 &iRevisionNumber, INT32 &iBetaLevel);
 
 // Return versioning information formated as a string
 //
 // Note: requires output buffer at least 64 characters long, or nothing will be returned.
 //
-void GetEGenVersionString(char* szOutput, size_t iOutputBufferLen);
+    void GetEGenVersionString(char *szOutput, size_t iOutputBufferLen);
 
 // Output EGen versioning information on stdout
 //
-void PrintEGenVersion();
+    void PrintEGenVersion();
 
 // Return the date/time when the EGen versioning information was last updated.
 //
-void GetEGenVersionUpdateTimestamp(char* szOutput, size_t iOutputBufferLen);
+    void GetEGenVersionUpdateTimestamp(char *szOutput, size_t iOutputBufferLen);
 
 }
 

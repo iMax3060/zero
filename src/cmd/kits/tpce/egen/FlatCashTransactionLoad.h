@@ -42,34 +42,32 @@
 
 #include "FlatFileLoad_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-class CFlatCashTransactionLoad : public CFlatFileLoader <CASH_TRANSACTION_ROW>
-{
-private:
-    CDateTime   Flat_CT_DTS;
-public:
-    CFlatCashTransactionLoad( char *szFileName, FlatFileOutputModes FlatFileOutputMode ) : CFlatFileLoader<CASH_TRANSACTION_ROW>(szFileName, FlatFileOutputMode){};
+    class CFlatCashTransactionLoad : public CFlatFileLoader<CASH_TRANSACTION_ROW> {
+    private:
+        CDateTime Flat_CT_DTS;
+    public:
+        CFlatCashTransactionLoad(char *szFileName, FlatFileOutputModes FlatFileOutputMode)
+                : CFlatFileLoader<CASH_TRANSACTION_ROW>(szFileName, FlatFileOutputMode) {};
 
-    /*
-    *   Writes a record to the file.
-    */
-    void WriteNextRecord(PT next_record)
-    {
-        Flat_CT_DTS = next_record->CT_DTS;
-        int rc = fprintf( hOutFile, CashTransactionRowFmt,
-                  next_record->CT_T_ID,
-                  Flat_CT_DTS.ToStr(FlatFileDateTimeFormat),
-                  next_record->CT_AMT,
-                  next_record->CT_NAME
-                );
+        /*
+        *   Writes a record to the file.
+        */
+        void WriteNextRecord(PT next_record) {
+            Flat_CT_DTS = next_record->CT_DTS;
+            int rc = fprintf(hOutFile, CashTransactionRowFmt,
+                             next_record->CT_T_ID,
+                             Flat_CT_DTS.ToStr(FlatFileDateTimeFormat),
+                             next_record->CT_AMT,
+                             next_record->CT_NAME
+            );
 
-        if (rc < 0) {
-            throw CSystemErr(CSystemErr::eWriteFile, "CFlatCashTransactionLoad::WriteNextRecord");
+            if (rc < 0) {
+                throw CSystemErr(CSystemErr::eWriteFile, "CFlatCashTransactionLoad::WriteNextRecord");
+            }
         }
-    }
-};
+    };
 
 }   // namespace TPCE
 

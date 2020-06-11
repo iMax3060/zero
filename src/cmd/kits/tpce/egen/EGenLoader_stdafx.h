@@ -68,6 +68,7 @@ using namespace std;
 
 // Include one or more load types.
 #include "NullLoad_stdafx.h"
+
 #ifdef COMPILE_FLAT_FILE_LOAD
 #include "FlatFileLoad_stdafx.h"
 #endif

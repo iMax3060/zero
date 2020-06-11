@@ -49,99 +49,105 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace TPCE
-{
+namespace TPCE {
 
-class CCondition;
+    class CCondition;
 
 // Standard mutex
-class CMutex
-{
+    class CMutex {
     private:
         pthread_mutex_t mutex_;
-        pthread_mutex_t* mutex();
+
+        pthread_mutex_t *mutex();
+
     public:
         CMutex();
+
         void lock();
+
         void unlock();
 
         friend class CCondition;
-};
+    };
 
 // Condition class, requires a separate mutex to pair with.
-class CCondition
-{
+    class CCondition {
     private:
-                CMutex&        mutex_;
+        CMutex &mutex_;
         mutable pthread_cond_t cond_;
     protected:
-        CMutex&        mutex();
+        CMutex &mutex();
+
     public:
-        CCondition(CMutex& mutex);
+        CCondition(CMutex &mutex);
+
         void wait() const;
+
         void lock();
+
         void unlock();
-        bool timedwait(const struct timespec& timeout) const;
-        bool timedwait(long timeout=-1 /*us*/) const;
+
+        bool timedwait(const struct timespec &timeout) const;
+
+        bool timedwait(long timeout = -1 /*us*/) const;
+
         void signal();
+
         void broadcast();
-};
+    };
 
 // Provide a RAII style lock for any class which supports
 // lock() and unlock()
-template<typename T>
-class Locker
-{
+    template<typename T>
+    class Locker {
     private:
-        T& mutex_;
+        T &mutex_;
 
     public:
-        explicit Locker<T>(T& mutex)
-            : mutex_(mutex)
-        {
+        explicit Locker<T>(T &mutex)
+                : mutex_(mutex) {
             mutex_.lock();
         }
 
         ~Locker<T>() {
             mutex_.unlock();
         }
-};
+    };
 
 // Base class to provide a run() method for objects which can be threaded.
 // This is required because under pthreads we have to provide an interface
 // through a C ABI call, which we can't do with templated classes.
-class ThreadBase
-{
+    class ThreadBase {
     public:
         virtual ~ThreadBase();
+
         virtual void invoke() = 0;
-};
+    };
 
 // Call the run() method of passed argument.  Always returns NULL.
-extern "C" void* start_thread(void *arg);
+    extern "C" void *start_thread(void *arg);
 
 // Template to wrap around a class that has a ThreadBase::run() method and
 // spawn it in a thread of its own.
-template<typename T>
-class Thread : public ThreadBase
-{
+    template<typename T>
+    class Thread : public ThreadBase {
     private:
         std::auto_ptr<T> obj_;
         pthread_t tid_;
     public:
         Thread(std::auto_ptr<T> throbj)
-            : obj_(throbj)
-            , tid_()
-        {
+                : obj_(throbj), tid_() {
         }
+
         void start() {
-            int rc = pthread_create(&tid_,  NULL, start_thread, this);
+            int rc = pthread_create(&tid_, NULL, start_thread, this);
             if (rc != 0) {
                 std::ostringstream strm;
                 strm << "pthread_create error: " << strerror(rc) << "(" << rc << ")";
                 throw std::runtime_error(strm.str());
             }
         }
+
         void stop() {
             int rc = pthread_join(tid_, NULL);
             if (rc != 0) {
@@ -150,13 +156,15 @@ class Thread : public ThreadBase
                 throw std::runtime_error(strm.str());
             }
         }
+
         void invoke() {
             obj_->run(this);
         }
-        T* obj() {
+
+        T *obj() {
             return obj_.get();
         }
-};
+    };
 
 }
 

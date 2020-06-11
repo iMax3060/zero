@@ -42,76 +42,68 @@
 
 #include "EGenTables_common.h"
 
-namespace TPCE
-{
+namespace tpce {
 
-const int iSecurityCounts[4][11] = { { 0, 153, 307, 491, 688, 859, 1028, 1203, 1360, 1532, 1704 },
-                                     { 0, 173, 344, 498, 658, 848, 1006, 1191, 1402, 1572, 1749 },
-                                     { 0, 189, 360, 534, 714, 875, 1023, 1174, 1342, 1507, 1666 },
-                                     { 0, 170, 359, 532, 680, 843, 1053, 1227, 1376, 1554, 1731 } };
+    const int iSecurityCounts[4][11] = {{0, 153, 307, 491, 688, 859, 1028, 1203, 1360, 1532, 1704},
+                                        {0, 173, 344, 498, 658, 848, 1006, 1191, 1402, 1572, 1749},
+                                        {0, 189, 360, 534, 714, 875, 1023, 1174, 1342, 1507, 1666},
+                                        {0, 170, 359, 532, 680, 843, 1053, 1227, 1376, 1554, 1731}};
 
-class CExchangeTable : public TableTemplate<EXCHANGE_ROW>
-{
-    ifstream            InFile;
-    TIdent              m_iCurExchange;
-    INT32               m_iNumSecurities[4];
+    class CExchangeTable : public TableTemplate<EXCHANGE_ROW> {
+        ifstream InFile;
+        TIdent m_iCurExchange;
+        INT32 m_iNumSecurities[4];
 
-    /*
-    *   Computes the number of securities in each exchange.
-    *   Assumption is that exchanges are ordered in NYSE, NASDAQ, AMEX, PCX order.
-    *   (This is the current ordering of exchanges in the flat_in/Exchange.txt file.)
-    */
-    void ComputeNumSecurities( TIdent iCustomerCount )
-    {
-        INT32 numLU     = static_cast<INT32>(iCustomerCount / 1000);
-        INT32 numLU_Tens = numLU / 10;
-        INT32 numLU_Ones = numLU % 10;
+        /*
+        *   Computes the number of securities in each exchange.
+        *   Assumption is that exchanges are ordered in NYSE, NASDAQ, AMEX, PCX order.
+        *   (This is the current ordering of exchanges in the flat_in/Exchange.txt file.)
+        */
+        void ComputeNumSecurities(TIdent iCustomerCount) {
+            INT32 numLU = static_cast<INT32>(iCustomerCount / 1000);
+            INT32 numLU_Tens = numLU / 10;
+            INT32 numLU_Ones = numLU % 10;
 
-        for (int i=0; i<4; i++)
-        {
-            m_iNumSecurities[i] = iSecurityCounts[i][10] * numLU_Tens + iSecurityCounts[i][numLU_Ones];
+            for (int i = 0; i < 4; i++) {
+                m_iNumSecurities[i] = iSecurityCounts[i][10] * numLU_Tens + iSecurityCounts[i][numLU_Ones];
+            }
         }
-    }
 
-public:
-    CExchangeTable( char *szDirName, TIdent iConfiguredCustomerCount )
-        : TableTemplate<EXCHANGE_ROW>()
-    {
-        char szFileName[iMaxPath];
+    public:
+        CExchangeTable(char *szDirName, TIdent iConfiguredCustomerCount)
+                : TableTemplate<EXCHANGE_ROW>() {
+            char szFileName[iMaxPath];
 
-        strncpy(szFileName, szDirName, sizeof(szFileName));
-        strncat(szFileName, "Exchange.txt", sizeof(szFileName) - strlen(szDirName) - 1);
+            strncpy(szFileName, szDirName, sizeof(szFileName));
+            strncat(szFileName, "Exchange.txt", sizeof(szFileName) - strlen(szDirName) - 1);
 
-        InFile.open( szFileName );
+            InFile.open(szFileName);
 
-        ComputeNumSecurities(iConfiguredCustomerCount);
+            ComputeNumSecurities(iConfiguredCustomerCount);
 
-        m_iCurExchange = 1;
-    };
+            m_iCurExchange = 1;
+        };
 
-    ~CExchangeTable( )
-    {
-        InFile.close();
-    };
+        ~CExchangeTable() {
+            InFile.close();
+        };
 
-    /*
-    *   Generates all column values for the next row.
-    */
-    bool GenerateNextRecord()
-    {
-        if( InFile.good() )
-        {
-            m_row.Load(InFile);
-            m_row.EX_AD_ID += iTIdentShift;
-            m_row.EX_NUM_SYMB = m_iNumSecurities[m_iCurExchange-1];
+        /*
+        *   Generates all column values for the next row.
+        */
+        bool GenerateNextRecord() {
+            if (InFile.good()) {
+                m_row.Load(InFile);
+                m_row.EX_AD_ID += iTIdentShift;
+                m_row.EX_NUM_SYMB = m_iNumSecurities[m_iCurExchange - 1];
 
-            m_iCurExchange++;
+                m_iCurExchange++;
+            }
+
+            bool xx = InFile.eof();
+            return (xx);
         }
-	
-	bool xx =InFile.eof();
-        return ( xx );
-    }
-};
+    };
 
 }   // namespace TPCE
 
