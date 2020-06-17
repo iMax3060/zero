@@ -53,11 +53,6 @@ bool PageEvictioner::evictOne(bf_idx& victim) {
 bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
     bf_tree_cb_t& victimControlBlock = smlevel_0::bf->getControlBlock(victim);
 
-    // Only evict actually evictable pages (not required to stay in the buffer pool):
-    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
-        return false;
-    }
-
     // CS: If I already hold the latch on this page (e.g., with latch coupling), then the latch acquisition below will
     // succeed, but the page is obviously not available for eviction. This would not happen if every fix would also
     // pin the page, which I didn't want to do because it seems like a waste. Note that this is only a problem with
@@ -70,11 +65,25 @@ bool PageEvictioner::_doEviction(bf_idx victim) noexcept {
         return false;
     }
 
+    // Acquire the latch of the buffer frame in shared mode:
+    w_rc_t latchStatus = victimControlBlock.latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
+    if (latchStatus.is_error()) {
+        updateOnPageFixed(victim);
+        DBG3(<< "Eviction failed on latch for " << victim);
+        return false;
+    }
+    w_assert1(victimControlBlock.latch().held_by_me());
+
+    // Only evict actually evictable pages (not required to stay in the buffer pool):
+    if (!smlevel_0::bf->isEvictable(victim, _flushDirty)) {
+        return false;
+    }
+
     // If we got here, we passed all tests and have a victim!
     w_assert1(smlevel_0::bf->isActiveIndex(victim));
 
-    // Acquire the latch of the buffer frame in exclusive mode:
-    w_rc_t latchStatus = victimControlBlock.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
+    // Upgrade the latch of the buffer frame to exclusive mode:
+    latchStatus = victimControlBlock.latch().latch_acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE);
     if (latchStatus.is_error()) {
         updateOnPageFixed(victim);
         DBG3(<< "Eviction failed on latch for " << victim);
