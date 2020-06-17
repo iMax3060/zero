@@ -297,12 +297,12 @@ protected:
  */
 template <class T>
 struct GcSegment {
-    GcSegment(gc_offset size) {
-        ::memset(this, 0, sizeof(GcSegment));
+    GcSegment(gc_offset size) :
+            owner(0),
+            total_objects(size),
+            allocated_objects(0) {
         objects = new T[size];
-        ::memset(objects, 0, sizeof(T) * size); // for easier debugging
         w_assert1(objects != nullptr);
-        total_objects = size;
     }
     ~GcSegment() {
         delete[] objects;
@@ -315,7 +315,6 @@ struct GcSegment {
     void recycle() {
         owner = 0;
         allocated_objects = 0;
-        ::memset(objects, 0, sizeof(T) * total_objects);
     }
     /** ID of the thread that can exclusively own this segment. */
     gc_thread_id    owner;
@@ -336,10 +335,11 @@ struct GcSegment {
  */
 template <class T>
 struct GcGeneration {
-    GcGeneration(uint32_t generation_nowrap_arg) {
-        ::memset(this, 0, sizeof(GcGeneration));
-        generation_nowrap = generation_nowrap_arg;
-    }
+    GcGeneration(uint32_t generation_nowrap_arg) :
+        retire_suggested(false),
+        total_segments(0),
+        allocated_segments(0),
+        generation_nowrap(generation_nowrap_arg) {}
     ~GcGeneration() {
         DBGOUT1(<<"Destroying a GC Generation " << generation_nowrap
             << ". total_segments=" << total_segments
@@ -436,21 +436,21 @@ struct GcWakeupFunctor {
 template <class T>
 struct GcPoolForest {
     GcPoolForest(const char* debug_name, uint32_t desired_gens,
-        size_t initial_segment_count, gc_offset initial_segment_size) {
-        ::memset(this, 0, sizeof(GcPoolForest));
-        desired_generations = desired_gens;
-        name = debug_name;
-        // generation=0 is an invalid generation, so we start from 1.
-        head_nowrap = 1;
-        curr_nowrap = 1;
+        size_t initial_segment_count, gc_offset initial_segment_size) :
+            name(debug_name),
+            head_nowrap(1), // generation=0 is an invalid generation, so we start from 1.
+            curr_nowrap(1),
+            tail_nowrap(2),
+            desired_generations(desired_gens),
+            gc_wakeup_functor(nullptr) {
         // We always have at least one active generation
-        epochs[1].set(0);
+        generations[0] = nullptr;
         generations[1] = new GcGeneration<T>(1);
-        tail_nowrap = 2;
         if (initial_segment_count > 0) {
             generations[1]->preallocate_segments(initial_segment_count, initial_segment_size);
         }
-        gc_wakeup_functor = nullptr;
+        epochs[0].set(0);
+        epochs[1].set(0);
     }
     ~GcPoolForest() {
         DBGOUT1(<< name << ": Destroying a GC Pool Forest. head_nowrap=" << head_nowrap
