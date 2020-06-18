@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/MPMCQueue" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/Random123" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/arc4" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/backward-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/cgs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/chacha" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/gcem" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/gjrand" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/jsf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/junction" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/lehmer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/pcg-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/sfc" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/splitmix" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/turf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/well-random" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/xoroshiro" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/xorshift" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/third_party/xoshiro" vcs="Git" />
+  </component>
+</project>
