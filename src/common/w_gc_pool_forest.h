@@ -47,10 +47,15 @@
  * All the classes are header-only template classes. Just include w_gc_pool_forest.h to use.
  */
 
-template <class T> class GcPointer;
-template <class T> struct GcSegment;
-template <class T> struct GcGeneration;
-template <class T> struct GcPoolForest;
+template<class T>
+class GcPointer;
+
+template<class T>
+struct GcSegment;
+template<class T>
+struct GcGeneration;
+template<class T>
+struct GcPoolForest;
 
 /**
  * \brief Status bits in gc_pointer.
@@ -75,6 +80,7 @@ typedef uint32_t gc_aba;
  * \ingroup GCFOREST
  */
 typedef uint8_t gc_generation;
+
 const size_t GC_MAX_GENERATIONS = (1 << (sizeof(gc_generation) * 8));
 
 /**
@@ -82,13 +88,17 @@ const size_t GC_MAX_GENERATIONS = (1 << (sizeof(gc_generation) * 8));
  * \ingroup GCFOREST
  */
 typedef uint8_t gc_segment;
+
 const size_t GC_MAX_SEGMENTS = (1 << (sizeof(gc_segment) * 8));
+
 /**
  * Offset bits in gc_pointer (not in bytes but in \e objects).
  * \ingroup GCFOREST
  */
 typedef uint16_t gc_offset;
+
 const size_t GC_MAX_OFFSETS = (1 << (sizeof(gc_offset) * 8));
+
 /**
  * Identifier of threads (which might be pthread_self() or something else).
  * \ingroup GCFOREST
@@ -118,20 +128,24 @@ typedef uint64_t gc_thread_id;
 union gc_pointer_raw {
     // so far 4/1/1/2. Maybe 2/2/2/2 might make sense if we need more generations/segments.
     struct {
-        gc_status       status;
-        gc_generation   generation;
-        gc_segment      segment;
-        gc_offset       offset;
+        gc_status status;
+        gc_generation generation;
+        gc_segment segment;
+        gc_offset offset;
     } components;
 
     /** Integer representation, which is handy for single-word CAS. */
     uint64_t word;
-
 };
 
 // csauer: gcc 6+ needs this
-inline bool operator==(const gc_pointer_raw& a, const gc_pointer_raw& b) { return a.word == b.word; };
-inline bool operator!=(const gc_pointer_raw& a, const gc_pointer_raw& b) { return a.word != b.word; };
+inline bool operator==(const gc_pointer_raw& a, const gc_pointer_raw& b) {
+    return a.word == b.word;
+};
+
+inline bool operator!=(const gc_pointer_raw& a, const gc_pointer_raw& b) {
+    return a.word != b.word;
+};
 
 /**
  * \brief Wrapper for gc_pointer_raw
@@ -169,86 +183,111 @@ inline bool operator!=(const gc_pointer_raw& a, const gc_pointer_raw& b) { retur
  * Still, CPU might do something and this is not atomic either.
  * In case it matters, use the atomic_cas() or atomic_swap().
  */
-template <class T>
+template<class T>
 class GcPointer {
 public:
     /** Empty NULL constructor. */
-    GcPointer() { _raw.word = 0; }
+    GcPointer() {
+        _raw.word = 0;
+    }
 
     /** Constructs with gc_pointer_raw. */
     explicit GcPointer(gc_pointer_raw raw) : _raw(raw) {}
 
     /** Copy constructor. This is regular though might not be atomic. */
-    GcPointer(const GcPointer &other) {
+    GcPointer(const GcPointer& other) {
         operator=(other);
     }
+
     /** Copy assignment. This is regular though might not be atomic. */
-    GcPointer& operator=(const GcPointer &other) {
+    GcPointer& operator=(const GcPointer& other) {
         // ACCESS_ONCE semantics to make it at least regular.
         _raw.word = static_cast<const volatile gc_pointer_raw&>(other._raw).word;
         return *this;
     }
+
     /**
      * [Non-atomic] Equality operator on the contained pointer value.
      */
-    bool operator==(const GcPointer &other) const {
+    bool operator==(const GcPointer& other) const {
         return _raw == other._raw;
     }
+
     /**
      * [Non-atomic] Inequality operator on the contained pointer value.
      */
-    bool operator!=(const GcPointer &other) const {
+    bool operator!=(const GcPointer& other) const {
         return _raw != other._raw;
     }
+
     /**
      * [Non-atomic] Equality operator that compares only the address
      * part without ABA counter and mark.
      */
-    bool    is_equal_address(const GcPointer &other) const {
+    bool is_equal_address(const GcPointer& other) const {
         return _raw.components.generation == other._raw.components.generation
-            && _raw.components.segment == other._raw.components.segment
-            && _raw.components.offset == other._raw.components.offset;
+               && _raw.components.segment == other._raw.components.segment
+               && _raw.components.offset == other._raw.components.offset;
     }
 
     /**
      * De-references the pointer to return the actual object.
      */
-    T*      dereference(GcPoolForest<T> &pool) const;
+    T* dereference(GcPoolForest<T>& pool) const;
 
     /**
      * [Non-atomic] Marks the pointer for death, stashing TRUE into the pointer.
      * @see atomic_cas()
      */
-    void        set_mark(bool on) {
+    void set_mark(bool on) {
         _raw.components.status = get_aba() | (on ? 0x80000000 : 0);
     }
+
     /** [Non-atomic] Returns if the pointer is marked in the stashed boolen flag. */
-    bool        is_marked() const { return _raw.components.status < 0; }
+    bool is_marked() const {
+        return _raw.components.status < 0;
+    }
 
     /** [Non-atomic] Returns the ABA counter. */
-    gc_aba      get_aba() const {
+    gc_aba get_aba() const {
         return static_cast<gc_aba>(_raw.components.status & 0x7FFFFFFF);
     }
+
     /** [Non-atomic] Sets the ABA counter. */
-    void        set_aba(gc_aba stamp) {
+    void set_aba(gc_aba stamp) {
         _raw.components.status = (_raw.components.status & 0x80000000)
-            | static_cast<gc_status>(stamp);
+                                 | static_cast<gc_status>(stamp);
     }
 
     /** [Non-atomic] Returns generation. */
-    gc_generation   get_generation() const { return _raw.components.generation; }
+    gc_generation get_generation() const {
+        return _raw.components.generation;
+    }
+
     /** [Non-atomic] Returns segment. */
-    gc_segment      get_segment() const { return _raw.components.segment; }
+    gc_segment get_segment() const {
+        return _raw.components.segment;
+    }
+
     /** [Non-atomic] Returns offset. */
-    gc_offset       get_offset() const { return _raw.components.offset; }
+    gc_offset get_offset() const {
+        return _raw.components.offset;
+    }
 
     /** [Non-atomic] Tells if the pointer is null. */
-    bool            is_null() const { return get_generation() == 0; }
+    bool is_null() const {
+        return get_generation() == 0;
+    }
 
     /** [Non-atomic] Returns single integer representation. */
-    gc_pointer_raw&         raw() { return _raw; }
+    gc_pointer_raw& raw() {
+        return _raw;
+    }
+
     /** [Non-atomic] Returns single integer representation. */
-    gc_pointer_raw          raw() const { return _raw; }
+    gc_pointer_raw raw() const {
+        return _raw;
+    }
 
     /**
      * \brief [Atomic] Compare and set for pointer, mark, and ABA counter altogether.
@@ -257,10 +296,10 @@ public:
      * @param[in] desired if succeeds this value is set
      * @return whether the CAS succeeds.
      */
-    bool                atomic_cas(const GcPointer &expected, const GcPointer &desired) {
+    bool atomic_cas(const GcPointer& expected, const GcPointer& desired) {
         gc_pointer_raw expected_tmp = expected._raw;
         return lintel::unsafe::atomic_compare_exchange_strong<gc_pointer_raw>(
-            &_raw, &expected_tmp, desired._raw);
+                &_raw, &expected_tmp, desired._raw);
     }
 
     /**
@@ -268,7 +307,7 @@ public:
      * @param[in] new_ptr the value to set
      * @return old value before swap
      */
-    GcPointer           atomic_swap(const GcPointer &new_ptr) {
+    GcPointer atomic_swap(const GcPointer& new_ptr) {
         return GcPointer(lintel::unsafe::atomic_exchange<gc_pointer_raw>(&_raw, new_ptr._raw));
     }
 
@@ -276,7 +315,6 @@ protected:
     /** The pointer and stashed flags. */
     gc_pointer_raw _raw;
 };
-
 
 /**
  * \brief A segment in each generation.
@@ -295,7 +333,7 @@ protected:
  *
  * Hence, we don't need any atomic/barrier for allocation/deallocation.
  */
-template <class T>
+template<class T>
 struct GcSegment {
     GcSegment(gc_offset size) :
             owner(0),
@@ -304,9 +342,11 @@ struct GcSegment {
         objects = new T[size];
         w_assert1(objects != nullptr);
     }
+
     ~GcSegment() {
         delete[] objects;
     }
+
     /**
      * Recycle this generation \b assuming there is no transaction that uses any of the
      * objects in this segment. If the assumption does not hold, this might cause ABA
@@ -316,14 +356,18 @@ struct GcSegment {
         owner = 0;
         allocated_objects = 0;
     }
+
     /** ID of the thread that can exclusively own this segment. */
-    gc_thread_id    owner;
+    gc_thread_id owner;
+
     /** size of objects array. */
-    gc_offset       total_objects;
+    gc_offset total_objects;
+
     /** How many objects we allocated. Stop allocation when this reaches total_objects. */
-    gc_offset       allocated_objects;
+    gc_offset allocated_objects;
+
     /** The bulk-allocated objects. T[total_objects]. */
-    T*              objects;
+    T* objects;
 };
 
 /**
@@ -333,24 +377,27 @@ struct GcSegment {
  * A \e generation groups objects in similar age and controls
  * when we can start deallocating segments in it.
  */
-template <class T>
+template<class T>
 struct GcGeneration {
     GcGeneration(uint32_t generation_nowrap_arg) :
-        retire_suggested(false),
-        total_segments(0),
-        allocated_segments(0),
-        generation_nowrap(generation_nowrap_arg) {}
+            retire_suggested(false),
+            total_segments(0),
+            allocated_segments(0),
+            generation_nowrap(generation_nowrap_arg) {}
+
     ~GcGeneration() {
         DBGOUT1(<<"Destroying a GC Generation " << generation_nowrap
-            << ". total_segments=" << total_segments
-            << ", allocated_segments=" << allocated_segments);
+                        << ". total_segments=" << total_segments
+                        << ", allocated_segments=" << allocated_segments);
         for (gc_segment i = 0; i < total_segments; ++i) {
             delete segments[i];
         }
     }
 
     /** Returns the number of segments up for grab. */
-    uint32_t        get_free_count() const { return total_segments - allocated_segments; }
+    uint32_t get_free_count() const {
+        return total_segments - allocated_segments;
+    }
 
     /**
      * Pre-allocate a few segments and make them up for grab.
@@ -358,14 +405,14 @@ struct GcGeneration {
      * @param[in] segment_size How many objects we should allocate per segment
      * @return whether we preallocated the segments. false if the generation is already full.
      */
-    bool            preallocate_segments(size_t segment_count, gc_offset segment_size);
+    bool preallocate_segments(size_t segment_count, gc_offset segment_size);
 
     /**
      * Recycle this generation \b assuming there is no transaction that uses any of the
      * segments in this generation. If the assumption does not hold, this might cause ABA
      * and other corruption.
      */
-    void            recycle(uint32_t generation_nowrap_arg) {
+    void recycle(uint32_t generation_nowrap_arg) {
         retire_suggested = false;
         generation_nowrap = generation_nowrap_arg;
         for (uint32_t seg = 0; seg < total_segments; ++seg) {
@@ -381,14 +428,14 @@ struct GcGeneration {
      * Threads that saw this stop making a new segment in this generation.
      * It's loose. Threads might not take barriers to check this.
      */
-    bool            retire_suggested;
+    bool retire_suggested;
 
     /**
      * Number of total segments. We don't reuse segments, so this monotonically increases.
      * We use atomic operation to increase this.
      * 32bits for CAS.
      */
-    uint32_t        total_segments;
+    uint32_t total_segments;
 
     /**
      * Number of allocated segments owned by some thread.
@@ -398,13 +445,13 @@ struct GcGeneration {
      * We use atomic operation to increase this (=occupy the segment).
      * 32bits for CAS.
      */
-    uint32_t        allocated_segments;
+    uint32_t allocated_segments;
 
     /** ID of this generation. */
-    uint32_t        generation_nowrap;
+    uint32_t generation_nowrap;
 
     /** Active segments in this generation. The first total_segments elements are non-NULL. */
-    GcSegment<T>*   segments[GC_MAX_SEGMENTS];
+    GcSegment<T>* segments[GC_MAX_SEGMENTS];
 };
 
 /**
@@ -421,6 +468,7 @@ struct GcPoolEntry {
  */
 struct GcWakeupFunctor {
     virtual ~GcWakeupFunctor() {}
+
     virtual void wakeup() = 0;
 };
 
@@ -433,10 +481,10 @@ struct GcWakeupFunctor {
  * This is a Roll-Your-Own Garbage Collector implementation optimized for long-running services
  * such as filesystems and databases.
  */
-template <class T>
+template<class T>
 struct GcPoolForest {
     GcPoolForest(const char* debug_name, uint32_t desired_gens,
-        size_t initial_segment_count, gc_offset initial_segment_size) :
+                 size_t initial_segment_count, gc_offset initial_segment_size) :
             name(debug_name),
             head_nowrap(1), // generation=0 is an invalid generation, so we start from 1.
             curr_nowrap(1),
@@ -452,28 +500,36 @@ struct GcPoolForest {
         epochs[0].set(0);
         epochs[1].set(0);
     }
+
     ~GcPoolForest() {
         DBGOUT1(<< name << ": Destroying a GC Pool Forest. head_nowrap=" << head_nowrap
-            << ", tail_nowrap=" << tail_nowrap);
+                        << ", tail_nowrap=" << tail_nowrap);
         for (size_t i = head_nowrap; i < tail_nowrap; ++i) {
             delete generations[wrap(i)];
         }
     }
-    /** Returns a physical pointer represented by the logical pointer. */
-    T*  resolve_pointer(const GcPointer<T> &pointer) { return pointer.raw(); }
-    /** Returns a physical pointer represented by the logical pointer. */
-    T*  resolve_pointer(gc_pointer_raw pointer);
 
-    GcGeneration<T>*    resolve_generation(gc_pointer_raw pointer) {
+    /** Returns a physical pointer represented by the logical pointer. */
+    T* resolve_pointer(const GcPointer<T>& pointer) {
+        return pointer.raw();
+    }
+
+    /** Returns a physical pointer represented by the logical pointer. */
+    T* resolve_pointer(gc_pointer_raw pointer);
+
+    GcGeneration<T>* resolve_generation(gc_pointer_raw pointer) {
         return resolve_generation(pointer.components.generation);
     }
-    GcGeneration<T>*    resolve_generation(gc_generation gen) {
+
+    GcGeneration<T>* resolve_generation(gc_generation gen) {
         return generations[gen];
     }
-    GcSegment<T>*       resolve_segment(gc_pointer_raw pointer) {
+
+    GcSegment<T>* resolve_segment(gc_pointer_raw pointer) {
         return resolve_segment(pointer.components.generation, pointer.components.segment);
     }
-    GcSegment<T>*       resolve_segment(gc_generation gen, gc_segment seg) {
+
+    GcSegment<T>* resolve_segment(gc_generation gen, gc_segment seg) {
         w_assert1(is_valid_generation(gen));
         GcGeneration<T>* generation = resolve_generation(gen);
         w_assert1(seg < generation->total_segments);
@@ -486,43 +542,65 @@ struct GcPoolForest {
      * or even switch to new segment. the caller probably uses a thread-local for this.
      * @param[in] self Some ID of the calling thread. eg, pthread_self().
      */
-    T*                  allocate(gc_pointer_raw &next, gc_thread_id self);
+    T* allocate(gc_pointer_raw& next, gc_thread_id self);
+
     /**
      * Return an object to this pool.
      * @param[in] pointer The object to return.
      */
-    void                deallocate(T* pointer) { deallocate(pointer->gc_pointer); }
+    void deallocate(T* pointer) {
+        deallocate(pointer->gc_pointer);
+    }
+
     /**
      * Return an object to this pool.
      * @param[in] pointer Logical pointer to the object to return.
      */
-    void                deallocate(gc_pointer_raw pointer);
+    void deallocate(gc_pointer_raw pointer);
+
     /** Occupy a segment in latest generation and return a pointer to its first object. */
-    gc_pointer_raw      occupy_segment(gc_thread_id self);
+    gc_pointer_raw occupy_segment(gc_thread_id self);
 
     /** The oldest active generation. wrapped. */
-    gc_generation       head() const { return wrap(head_nowrap); }
-    /** The exclusive end of active generations. wrapped. */
-    gc_generation       tail() const { return wrap(tail_nowrap); }
-    /** The yougnest active generation in which we should allocate new segments. wrapped. */
-    gc_generation       curr() const { return wrap(curr_nowrap); }
-    /** Returns the number of active generations. */
-    size_t              active_generations() const { return tail_nowrap - head_nowrap; }
-    GcGeneration<T>*    head_generation() { return generations[head()]; }
-    GcGeneration<T>*    curr_generation() { return generations[curr()]; }
+    gc_generation head() const {
+        return wrap(head_nowrap);
+    }
 
-    bool is_valid_generation(gc_generation generation) const
-    {
+    /** The exclusive end of active generations. wrapped. */
+    gc_generation tail() const {
+        return wrap(tail_nowrap);
+    }
+
+    /** The yougnest active generation in which we should allocate new segments. wrapped. */
+    gc_generation curr() const {
+        return wrap(curr_nowrap);
+    }
+
+    /** Returns the number of active generations. */
+    size_t active_generations() const {
+        return tail_nowrap - head_nowrap;
+    }
+
+    GcGeneration<T>* head_generation() {
+        return generations[head()];
+    }
+
+    GcGeneration<T>* curr_generation() {
+        return generations[curr()];
+    }
+
+    bool is_valid_generation(gc_generation generation) const {
         // CS: changed check conditions because otherwise the tail might wrap
         // around and in that case it will be greater than the given generation
         // return generation != 0 && generation >= head() && generation < tail();
-        if (generation == 0) { return false; }
+        if (generation == 0) {
+            return false;
+        }
         if (head() < tail()) {
             return generation >= head() && generation < tail();
-        }
-        else if (tail() < head()) {
+        } else if (tail() < head()) {
             return (generation >= head() && generation < GC_MAX_GENERATIONS)
-                || generation < tail();
+                   || generation < tail();
         }
         return false;
     }
@@ -536,8 +614,8 @@ struct GcPoolForest {
      * @return whether we could advance the generation or there is already a generation
      * for the starting LSN (or more recent). false means too many generations.
      */
-    bool                advance_generation(lsn_t low_water_mark, lsn_t now,
-                size_t initial_segment_count, gc_offset segment_size);
+    bool advance_generation(lsn_t low_water_mark, lsn_t now,
+                            size_t initial_segment_count, gc_offset segment_size);
 
     /**
      * Retire old generations that are no longer needed.
@@ -545,35 +623,43 @@ struct GcPoolForest {
      * @param[in] recycle_now higest LSN as of now. This is used to recycle retired generations.
      * lsn_t::null means prohibiting recycle.
      */
-    void                retire_generations(lsn_t low_water_mark, lsn_t recycle_now = lsn_t::null);
+    void retire_generations(lsn_t low_water_mark, lsn_t recycle_now = lsn_t::null);
 
     /** full load-store fence. */
-    void                mfence() const {
+    void mfence() const {
         lintel::atomic_thread_fence(lintel::memory_order_seq_cst);
     }
 
-    static gc_generation wrap(size_t i) { return static_cast<gc_generation>(i); }
+    static gc_generation wrap(size_t i) {
+        return static_cast<gc_generation>(i);
+    }
 
     /** Only used to put the name of this forest in debug print. */
-    const char*         name;
+    const char* name;
+
     /** The oldest active generation. No wrap, so take modulo before use. */
-    uint32_t            head_nowrap;
+    uint32_t head_nowrap;
+
     /** The latest active generation. No wrap, so take modulo before use. */
-    uint32_t            curr_nowrap;
+    uint32_t curr_nowrap;
+
     /** The exclusive end of active generation. No wrap, so take modulo before use. */
-    uint32_t            tail_nowrap;
+    uint32_t tail_nowrap;
+
     /** Desired number of generations. Don't add more than it unless can't retire old ones. */
-    uint32_t            desired_generations;
+    uint32_t desired_generations;
+
     /** Active (or being-retired) generation objects. */
-    GcGeneration<T>*    generations[GC_MAX_GENERATIONS];
+    GcGeneration<T>* generations[GC_MAX_GENERATIONS];
+
     /** LSN as of starting each generation. */
-    lsn_t               epochs[GC_MAX_GENERATIONS];
+    lsn_t epochs[GC_MAX_GENERATIONS];
 
     /** Function pointer to wakeup GC when pre-allocation or retiring gets behind. */
-    GcWakeupFunctor*    gc_wakeup_functor;
+    GcWakeupFunctor* gc_wakeup_functor;
 };
 
-template <class T>
+template<class T>
 inline T* GcPoolForest<T>::resolve_pointer(gc_pointer_raw pointer) {
     gc_generation generation = pointer.components.generation;
     if (generation == 0) {
@@ -596,8 +682,8 @@ inline T* GcPoolForest<T>::resolve_pointer(gc_pointer_raw pointer) {
     return segment->objects + offset;
 }
 
-template <class T>
-inline T* GcPoolForest<T>::allocate(gc_pointer_raw &next, gc_thread_id self) {
+template<class T>
+inline T* GcPoolForest<T>::allocate(gc_pointer_raw& next, gc_thread_id self) {
     if (!is_valid_generation(next.components.generation)
         || generations[next.components.generation]->retire_suggested
         || next.components.generation != curr()) {
@@ -611,7 +697,7 @@ inline T* GcPoolForest<T>::allocate(gc_pointer_raw &next, gc_thread_id self) {
     if (next.components.segment >= gen->allocated_segments
         || gen->segments[next.components.segment]->owner != self
         || gen->segments[next.components.segment]->allocated_objects
-            >= gen->segments[next.components.segment]->total_objects) {
+           >= gen->segments[next.components.segment]->total_objects) {
         next = occupy_segment(self);
         gen = generations[next.components.generation];
     }
@@ -630,7 +716,7 @@ inline T* GcPoolForest<T>::allocate(gc_pointer_raw &next, gc_thread_id self) {
     return ret;
 }
 
-template <class T>
+template<class T>
 inline void GcPoolForest<T>::deallocate(gc_pointer_raw pointer) {
     // We don't do anything in deallocate.
     w_assert1(is_valid_generation(pointer.components.generation));
@@ -645,7 +731,7 @@ inline void GcPoolForest<T>::deallocate(gc_pointer_raw pointer) {
     w_assert1(pointer.components.offset < segment->allocated_objects);
 }
 
-template <class T>
+template<class T>
 inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
     // this method is relatively infrequently called, so we can afford barriers and atomics.
     while (true) {
@@ -665,14 +751,14 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
         uint32_t alloc_segment = gen->allocated_segments;
         mfence();
         if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
-            &gen->allocated_segments, &alloc_segment, alloc_segment + 1)) {
+                &gen->allocated_segments, &alloc_segment, alloc_segment + 1)) {
             // Okay, we are surely the only winner of the pre-allocated segment.
             GcSegment<T>* segment = gen->segments[alloc_segment];
             while (segment == nullptr) {
                 // possible right after CAS in preallocate_segments. wait.
                 mfence();
                 DBGOUT3(<< name << ": Waiting for segment " << alloc_segment << " in generation "
-                    << gen->generation_nowrap << ". me=" << self);
+                                << gen->generation_nowrap << ". me=" << self);
                 segment = gen->segments[alloc_segment];
             }
             w_assert1(segment->owner == 0);
@@ -681,7 +767,7 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
 
             // Occupied!
             DBGOUT1(<< name << ": Occupied a pre-allocated Segment " << alloc_segment
-                << " in generation " << gen->generation_nowrap << ". me=" << self << ".");
+                            << " in generation " << gen->generation_nowrap << ". me=" << self << ".");
             segment->owner = self;
             mfence(); // let the world know (though the CAS above should be enough..)
             gc_pointer_raw ret;
@@ -697,10 +783,9 @@ inline gc_pointer_raw GcPoolForest<T>::occupy_segment(gc_thread_id self) {
     }
 }
 
-
-template <class T>
+template<class T>
 inline bool GcPoolForest<T>::advance_generation(lsn_t low_water_mark, lsn_t now,
-    size_t segment_count, gc_offset segment_size) {
+                                                size_t segment_count, gc_offset segment_size) {
     while (true) {
         mfence();
         if (low_water_mark != lsn_t::null && active_generations() >= desired_generations) {
@@ -722,14 +807,14 @@ inline bool GcPoolForest<T>::advance_generation(lsn_t low_water_mark, lsn_t now,
             ++new_tail; // skip generation==0
         }
         if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
-            &tail_nowrap, &new_generation_nowrap, new_tail)) {
+                &tail_nowrap, &new_generation_nowrap, new_tail)) {
             // okay, let's create the generation
             gc_generation new_generation = wrap(new_generation_nowrap);
             generations[new_generation] = new GcGeneration<T>(new_generation_nowrap);
             epochs[new_generation] = now;
             generations[new_generation]->preallocate_segments(segment_count, segment_size);
             DBGOUT1(<< name << ": Generation " << new_generation_nowrap
-                << " created. epoch=" << now.data());
+                            << " created. epoch=" << now.data());
             curr_nowrap = new_generation_nowrap;
             mfence();
             return true;
@@ -738,7 +823,7 @@ inline bool GcPoolForest<T>::advance_generation(lsn_t low_water_mark, lsn_t now,
     }
 }
 
-template <class T>
+template<class T>
 inline bool GcGeneration<T>::preallocate_segments(size_t segment_count, gc_offset segment_size) {
     // this method is infrequently called by background thread,
     // so barriers/atomics and big allocations are fine.
@@ -750,20 +835,20 @@ inline bool GcGeneration<T>::preallocate_segments(size_t segment_count, gc_offse
 
         uint32_t new_segment = total_segments;
         if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
-            &total_segments, &new_segment, new_segment + 1)) {
+                &total_segments, &new_segment, new_segment + 1)) {
             // okay, we exclusively own this segment index
-            GcSegment<T> *seg = new GcSegment<T>(segment_size);
+            GcSegment<T>* seg = new GcSegment<T>(segment_size);
             segments[new_segment] = seg;
             --segment_count;
             DBGOUT1(<<"Pre-allocated Segment " << new_segment << " in generation "
-                << generation_nowrap << ". segment size=" << segment_size << ".");
+                            << generation_nowrap << ". segment size=" << segment_size << ".");
         }
         // else, someone else has just changed. retry
     }
     return true;
 }
 
-template <class T>
+template<class T>
 inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recycle_now) {
     // this method is infrequently called by background thread,
     // so barriers/atomics and big deallocations are fine.
@@ -788,7 +873,7 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
             // there is no chance that the oldest generation has anything used.
             // Let _me_ retire that.
             if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
-                &head_nowrap, &oldest_nowrap, next_oldest_nowrap)) {
+                    &head_nowrap, &oldest_nowrap, next_oldest_nowrap)) {
                 // okay, I'm exclusively retiring this generation.
                 generations[wrap(oldest_nowrap)] = nullptr;
                 epochs[wrap(oldest_nowrap)].set(0);
@@ -805,7 +890,7 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
                     }
 
                     if (lintel::unsafe::atomic_compare_exchange_strong<uint32_t>(
-                        &tail_nowrap, &new_generation_nowrap, new_tail)) {
+                            &tail_nowrap, &new_generation_nowrap, new_tail)) {
                         oldest->recycle(new_generation_nowrap);
                         generations[wrap(new_generation_nowrap)] = oldest;
                         epochs[wrap(new_generation_nowrap)].set(recycle_now.data());
@@ -815,7 +900,7 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
                         return;
                     } else {
                         DBGOUT1(<< name << ": Oops, others incremented generation. couldn't "
-                            << " reuse the retired generation");
+                                        << " reuse the retired generation");
                         delete oldest; // well, no other way.
                     }
                 } else {
@@ -833,8 +918,8 @@ inline void GcPoolForest<T>::retire_generations(lsn_t low_water_mark, lsn_t recy
     }
 }
 
-template <class T>
-inline T* GcPointer<T>::dereference(GcPoolForest<T> &pool) const {
+template<class T>
+inline T* GcPointer<T>::dereference(GcPoolForest<T>& pool) const {
     T* pointer = pool.resolve_pointer(_raw);
     w_assert1(pointer != nullptr);
     return pointer;

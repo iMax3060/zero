@@ -3,13 +3,15 @@
 
 #include "command.h"
 
-class TruncateLog : public Command
-{
+class TruncateLog : public Command {
 public:
     void setupOptions();
+
     void run();
+
 private:
     string logdir;
+
     size_t partition;
 };
 

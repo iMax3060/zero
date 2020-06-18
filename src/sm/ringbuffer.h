@@ -38,31 +38,54 @@
 class AsyncRingBuffer {
 public:
     char* producerRequest();
+
     void producerRelease();
+
     char* consumerRequest();
+
     void consumerRelease();
 
-    bool isFull() { return begin == end && bparity != eparity; }
-    bool isEmpty() { return begin == end && bparity == eparity; }
-    size_t getBlockSize() { return blockSize; }
-    size_t getBlockCount() { return blockCount; }
-    void set_finished(bool f = true) { finished = f; }
-    bool* get_finished() { return &finished; } // not thread-safe
+    bool isFull() {
+        return begin == end && bparity != eparity;
+    }
+
+    bool isEmpty() {
+        return begin == end && bparity == eparity;
+    }
+
+    size_t getBlockSize() {
+        return blockSize;
+    }
+
+    size_t getBlockCount() {
+        return blockCount;
+    }
+
+    void set_finished(bool f = true) {
+        finished = f;
+    }
+
+    bool* get_finished() {
+        return &finished;
+    } // not thread-safe
     bool isFinished(); // thread-safe
 
 
     AsyncRingBuffer(size_t bsize, size_t bcount)
-        : begin(0), end(0), bparity(true), eparity(true),
-        finished(false), blockSize(bsize), blockCount(bcount)
-    {
+            : begin(0),
+              end(0),
+              bparity(true),
+              eparity(true),
+              finished(false),
+              blockSize(bsize),
+              blockCount(bcount) {
         buf = new char[blockCount * blockSize];
         DO_PTHREAD(pthread_mutex_init(&mutex, nullptr));
         DO_PTHREAD(pthread_cond_init(&notEmpty, nullptr));
         DO_PTHREAD(pthread_cond_init(&notFull, nullptr));
     }
 
-    ~AsyncRingBuffer()
-    {
+    ~AsyncRingBuffer() {
         delete buf;
         DO_PTHREAD(pthread_mutex_destroy(&mutex));
         DO_PTHREAD(pthread_cond_destroy(&notEmpty));
@@ -70,18 +93,26 @@ public:
     }
 
 private:
-    char * buf;
+    char* buf;
+
     int begin;
+
     int end;
+
     bool bparity;
+
     bool eparity;
+
     bool finished;
 
     const size_t blockSize;
+
     const size_t blockCount;
 
     pthread_mutex_t mutex;
+
     pthread_cond_t notEmpty;
+
     pthread_cond_t notFull;
 
     bool wait(pthread_cond_t*);
@@ -94,9 +125,7 @@ private:
     }
 };
 
-
-inline bool AsyncRingBuffer::wait(pthread_cond_t* cond)
-{
+inline bool AsyncRingBuffer::wait(pthread_cond_t* cond) {
     struct timespec timeout;
     smthread_t::timeout_to_timespec(100, timeout); // 100ms
     // caller must have locked mutex!
@@ -112,8 +141,7 @@ inline bool AsyncRingBuffer::wait(pthread_cond_t* cond)
     return true;
 }
 
-inline char* AsyncRingBuffer::producerRequest()
-{
+inline char* AsyncRingBuffer::producerRequest() {
     CRITICAL_SECTION(cs, mutex);
     while (isFull()) {
         DBGTHRD(<< "Waiting for condition notFull ...");
@@ -126,8 +154,7 @@ inline char* AsyncRingBuffer::producerRequest()
     return buf + (end * blockSize);
 }
 
-inline void AsyncRingBuffer::producerRelease()
-{
+inline void AsyncRingBuffer::producerRelease() {
     CRITICAL_SECTION(cs, mutex);
     bool wasEmpty = isEmpty();
     increment(end, eparity);
@@ -139,8 +166,7 @@ inline void AsyncRingBuffer::producerRelease()
     }
 }
 
-inline char* AsyncRingBuffer::consumerRequest()
-{
+inline char* AsyncRingBuffer::consumerRequest() {
     CRITICAL_SECTION(cs, mutex);
     while (isEmpty()) {
         DBGTHRD(<< "Waiting for condition notEmpty ...");
@@ -153,8 +179,7 @@ inline char* AsyncRingBuffer::consumerRequest()
     return buf + (begin * blockSize);
 }
 
-inline void AsyncRingBuffer::consumerRelease()
-{
+inline void AsyncRingBuffer::consumerRelease() {
     CRITICAL_SECTION(cs, mutex);
     bool wasFull = isFull();
     increment(begin, bparity);
@@ -166,8 +191,7 @@ inline void AsyncRingBuffer::consumerRelease()
     }
 }
 
-inline bool AsyncRingBuffer::isFinished()
-{
+inline bool AsyncRingBuffer::isFinished() {
     /*
      * Acquiring the mutex here is done to ensure consistency
      * of modifications to the finished flag. It creates a memory

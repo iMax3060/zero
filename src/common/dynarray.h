@@ -80,7 +80,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
  */
 struct dynarray {
-    
+
     /* Attempts to initialize the array with a capacity of /max_size/ bytes
        of address space and /size()/ zero.
 
@@ -89,14 +89,14 @@ struct dynarray {
 
        @return 0 on success, appropriate errno on failure
      */
-    int init(size_t max_size, size_t align=0);
+    int init(size_t max_size, size_t align = 0);
 
     /* Attempts to make a deep copy of /to_copy/, setting my capacity
        to the larger of /to_copy.capacity()/ and /max_size/
 
        @return 0 on success, appropriate errno on failure
      */
-    int init(dynarray const &to_copy, size_t max_size=0);
+    int init(dynarray const& to_copy, size_t max_size = 0);
 
     /* Destroys the existing mapping, if any, and returns the object
        to its uninitialized state
@@ -106,7 +106,9 @@ struct dynarray {
     /* The reserved size of this mapping. The limit is set at
        initialization and cannot change later.
      */
-    size_t capacity() const { return _capacity; }
+    size_t capacity() const {
+        return _capacity;
+    }
 
     /* Maps in memory to bring the total to /new_size/ bytes. 
 
@@ -132,37 +134,47 @@ struct dynarray {
        available the array can grow to /capacity()/ bytes -- using
        calls to /resize()/.
      */
-    size_t size() const { return _size; }
-    
-    operator char*() { return _base; }
-    operator char const*() const { return _base; }
+    size_t size() const {
+        return _size;
+    }
 
-    dynarray() : _base(0), _size(0), _capacity(0) { }
-    
+    operator char*() {
+        return _base;
+    }
+
+    operator char const*() const {
+        return _base;
+    }
+
+    dynarray() : _base(0),
+                 _size(0),
+                 _capacity(0) {}
+
 private:
     // only safe if we're willing to throw exceptions (use init() and memcpy() instead)
-    dynarray(dynarray const &other);
-    dynarray &operator=(dynarray const &other);
-    
+    dynarray(dynarray const& other);
+
+    dynarray& operator=(dynarray const& other);
+
     char* _base;
+
     size_t _size;
+
     size_t _capacity;
 };
-
-
 
 /* Think std::vector except backed by a dynarray.
 
  */
 template<typename T>
 struct dynvector {
-    
+
     /* Initialize an empty dynvector with /limit() == max_count/
 
        @return 0 on success or an appropriate errno
      */
     int init(size_t max_count) {
-	return _arr.init(count2bytes(max_count));
+        return _arr.init(count2bytes(max_count));
     }
 
     /* Destroy all contained objects and deallocate memory, returning
@@ -171,32 +183,33 @@ struct dynvector {
        @return 0 on success or an appropriate errno
      */
     int fini() {
-	for(size_t i=0; i < _size; i++)
-	    (*this)[i].~T();
+        for (size_t i = 0; i < _size; i++) {
+            (*this)[i].~T();
+        }
 
-	_size = 0;
-	return _arr.fini();
+        _size = 0;
+        return _arr.fini();
     }
 
     /* The largest number of elements the underlying dynarray instance
        can accommodate
      */
     size_t limit() const {
-	return bytes2count(_arr.capacity());
+        return bytes2count(_arr.capacity());
     }
 
     /* The current capacity of this dynvector (= elements worth of
        allocated memory)
      */
     size_t capacity() const {
-	return bytes2count(_arr.size());
+        return bytes2count(_arr.size());
     }
 
     /* The current logical size of this dynvector (= elements pushed
        so far)
      */
     size_t size() const {
-	return _size;
+        return _size;
     }
 
     /* Ensure space for the requested number of elements.
@@ -209,7 +222,7 @@ struct dynvector {
        @return 0 on success or an appropriate errno
     */
     int reserve(size_t new_capacity) {
-	return _arr.ensure_capacity(count2bytes(new_capacity));
+        return _arr.ensure_capacity(count2bytes(new_capacity));
     }
 
     /* Default-construct objects at-end (if needed) to make /size() == new_size/
@@ -217,52 +230,78 @@ struct dynvector {
        @return 0 on success or an appropriate errno
      */
     int resize(size_t new_size) {
-	if(int err=reserve(new_size))
-	    return err;
+        if (int err = reserve(new_size)) {
+            return err;
+        }
 
-	for(size_t i=size(); i < new_size; i++)
-	    new (_at(i).c) T;
-	
-	_size = new_size;
-	return 0;
+        for (size_t i = size(); i < new_size; i++) {
+            new(_at(i).c) T;
+        }
+
+        _size = new_size;
+        return 0;
     }
 
     /* Add /obj/ at-end, incrementing /size()/ by one
 
        @return 0 on success or an appropriate errno
      */
-    int push_back(T const &obj) {
-	size_t new_size = _size+1;
-	if(int err=reserve(new_size))
-	    return err;
+    int push_back(T const& obj) {
+        size_t new_size = _size + 1;
+        if (int err = reserve(new_size)) {
+            return err;
+        }
 
-	new (_at(_size).c) T(obj);
-	_size = new_size;
-	return 0;
+        new(_at(_size).c) T(obj);
+        _size = new_size;
+        return 0;
     }
 
-    T &back() { return this->operator[](size()-1); }
-    T const &back() const { return this->operator[](size()-1); }
+    T& back() {
+        return this->operator[](size() - 1);
+    }
+
+    T const& back() const {
+        return this->operator[](size() - 1);
+    }
 
     /* Returns the ith element of the array; it is the caller's
        responsibility to ensure the index is in bounds.
      */
-    T &operator[](size_t i) { return *_at(i).t; }
-    T const &operator[](size_t i) const { return *_at(i).tc; }
+    T& operator[](size_t i) {
+        return *_at(i).t;
+    }
 
-    dynvector() : _size(0), _align_offset(0) { }
-    
+    T const& operator[](size_t i) const {
+        return *_at(i).tc;
+    }
+
+    dynvector() : _size(0),
+                  _align_offset(0) {}
+
 private:
-    union ptr { char const* cc; T const* tc; char* c; T* t; };
-    static size_t count2bytes(size_t count) { return count*sizeof(T); }
-    static size_t bytes2count(size_t bytes) { return bytes/sizeof(T); }
+    union ptr {
+        char const* cc;
+        T const* tc;
+        char* c;
+        T* t;
+    };
+
+    static size_t count2bytes(size_t count) {
+        return count * sizeof(T);
+    }
+
+    static size_t bytes2count(size_t bytes) {
+        return bytes / sizeof(T);
+    }
 
     ptr _at(size_t idx) const {
-	ptr rval = {_arr + count2bytes(idx)};
-	return rval;
+        ptr rval = {_arr + count2bytes(idx)};
+        return rval;
     }
-    
+
     dynarray _arr;
+
     size_t _size; // element count, not bytes!!
     size_t _align_offset;
 };

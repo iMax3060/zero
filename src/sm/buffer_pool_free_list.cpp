@@ -53,7 +53,7 @@ void FreeListHighContention::addFreeBufferpoolFrame(bf_idx freeFrame) {
     approximateListLength++;
 };
 
-bool FreeListHighContention::grabFreeBufferpoolFrame(bf_idx &freeFrame) {
+bool FreeListHighContention::grabFreeBufferpoolFrame(bf_idx& freeFrame) {
     while (true) {
         if (list.try_pop(freeFrame)) {
             approximateListLength--;

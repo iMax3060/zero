@@ -20,7 +20,9 @@
 DECLARE_TLS(block_alloc<xct_lock_entry_t>, xctLockEntryPool);
 
 xct_lock_info_t::xct_lock_info_t()
-    : _head (nullptr), _tail (nullptr), _permission_to_violate (false) {
+        : _head(nullptr),
+          _tail(nullptr),
+          _permission_to_violate(false) {
     // init_wait_map(g_me());
 }
 
@@ -29,7 +31,7 @@ xct_lock_info_t* xct_lock_info_t::reset_for_reuse() {
     // make sure the lock lists are empty
     w_assert1(_head == nullptr);
     w_assert1(_tail == nullptr);
-    new (this) xct_lock_info_t;
+    new(this) xct_lock_info_t;
     return this;
 }
 
@@ -38,9 +40,9 @@ xct_lock_info_t::~xct_lock_info_t() {
     w_assert1(_tail == nullptr);
 }
 
-xct_lock_entry_t* xct_lock_info_t::link_to_new_request (lock_queue_t *queue,
-                                                        lock_queue_entry_t *entry) {
-    xct_lock_entry_t* link = new (*xctLockEntryPool) xct_lock_entry_t();
+xct_lock_entry_t* xct_lock_info_t::link_to_new_request(lock_queue_t* queue,
+                                                       lock_queue_entry_t* entry) {
+    xct_lock_entry_t* link = new(*xctLockEntryPool) xct_lock_entry_t();
     link->queue = queue;
     link->entry = entry;
     if (_head == nullptr) {
@@ -54,8 +56,9 @@ xct_lock_entry_t* xct_lock_info_t::link_to_new_request (lock_queue_t *queue,
     _hashmap.push_front(link); // also add to private hashmap
     return link;
 }
-void xct_lock_info_t::remove_request (xct_lock_entry_t *entry) {
-#if W_DEBUG_LEVEL>=3
+
+void xct_lock_info_t::remove_request(xct_lock_entry_t* entry) {
+#if W_DEBUG_LEVEL >= 3
     bool found = false;
     for (xct_lock_entry_t *p = _head; p != nullptr; p = p->next) {
         if (p == entry) {
@@ -97,8 +100,9 @@ void xct_lock_info_t::remove_request (xct_lock_entry_t *entry) {
 XctLockHashMap::XctLockHashMap() {
     reset();
 }
-XctLockHashMap::~XctLockHashMap() {
-}
+
+XctLockHashMap::~XctLockHashMap() {}
+
 void XctLockHashMap::reset() {
     ::memset(_buckets, 0, sizeof(xct_lock_entry_t*) * XCT_LOCK_HASHMAP_SIZE);
 }
@@ -107,7 +111,7 @@ const okvl_mode& XctLockHashMap::get_granted_mode(uint32_t lock_id) const {
     uint32_t bid = _bucket_id(lock_id);
     // we don't take any latch here. See the comment of XctLockHashMap
     // for why this is safe.
-    for (const xct_lock_entry_t *current = _buckets[bid]; current != nullptr;
+    for (const xct_lock_entry_t* current = _buckets[bid]; current != nullptr;
          current = current->private_hashmap_next) {
         if (current->queue->hash() == lock_id) {
             return current->entry->get_granted_mode();
@@ -126,6 +130,7 @@ void XctLockHashMap::push_front(xct_lock_entry_t* link) {
     }
     _buckets[bid] = link;
 }
+
 void XctLockHashMap::remove(xct_lock_entry_t* link) {
     if (link->private_hashmap_next != nullptr) {
         link->private_hashmap_next->private_hashmap_prev = link->private_hashmap_prev;

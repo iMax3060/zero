@@ -24,34 +24,41 @@ class WriterThread : public thread_wrapper_t {
 private:
 
     AsyncRingBuffer* buf;
+
     ArchiveIndex* index;
+
     lsn_t maxLSNInRun;
+
     run_number_t currentRun;
+
     unsigned level;
+
     PageID maxPIDInRun;
 
 public:
     virtual void run();
 
-    ArchiveIndex* getIndex() { return index; }
+    ArchiveIndex* getIndex() {
+        return index;
+    }
 
     /*
      * Called by processFlushRequest to forcibly start a new run
      */
-    void resetCurrentRun()
-    {
+    void resetCurrentRun() {
         currentRun++;
         maxLSNInRun = lsn_t::null;
         maxPIDInRun = std::numeric_limits<PageID>::min();
     }
 
     WriterThread(AsyncRingBuffer* writebuf, ArchiveIndex* index, unsigned level)
-        :
-            buf(writebuf), index(index),
-            maxLSNInRun(lsn_t::null), currentRun(0), level(level),
-            maxPIDInRun(std::numeric_limits<PageID>::min())
-    {
-    }
+            :
+            buf(writebuf),
+            index(index),
+            maxLSNInRun(lsn_t::null),
+            currentRun(0),
+            level(level),
+            maxPIDInRun(std::numeric_limits<PageID>::min()) {}
 
     virtual ~WriterThread() {}
 };
@@ -88,50 +95,74 @@ public:
 class BlockAssembly {
 public:
     BlockAssembly(ArchiveIndex* index, unsigned level = 1, bool compression = true);
+
     virtual ~BlockAssembly();
 
     bool start(run_number_t run);
+
     bool add(logrec_t* lr);
+
     void finish();
+
     void shutdown();
+
     bool hasPendingBlocks();
 
-    void resetWriter()
-    {
+    void resetWriter() {
         writer->resetCurrentRun();
     }
 
-    PageID getCurrentMaxPID() { return maxPID; }
+    PageID getCurrentMaxPID() {
+        return maxPID;
+    }
 
     // methods that abstract block metadata
     static run_number_t getRunFromBlock(const char* b);
+
     static lsn_t getLSNFromBlock(const char* b);
+
     static size_t getEndOfBlock(const char* b);
+
     static PageID getMaxPIDFromBlock(const char* b);
+
 private:
     char* dest;
+
     AsyncRingBuffer* writebuf;
+
     WriterThread* writer;
+
     ArchiveIndex* archIndex;
+
     size_t blockSize;
+
     size_t pos;
+
     size_t fpos;
 
     lsn_t maxLSNInBlock;
+
     int maxLSNLength;
+
     run_number_t lastRun;
 
     PageID currentPID;
+
     size_t currentPIDpos;
+
     size_t currentPIDfpos;
+
     lsn_t currentPIDprevLSN;
+
     bool enableCompression;
 
     // if using a variable-bucket index, this is the number of page IDs
     // that will be stored within a bucket (aka restore's segment)
     size_t bucketSize;
+
     // list of buckets beginning in the current block
-    std::vector<pair<PageID, size_t> > buckets;
+    std::vector<pair<PageID, size_t>> buckets;
+
     // number of the nex bucket to be indexed
     size_t nextBucket;
 
@@ -141,6 +172,7 @@ private:
 
     // Amount of space to reserve in each block (e.g., for skip log record)
     size_t spaceToReserve;
+
 public:
     struct BlockHeader {
         lsn_t lsn;
@@ -148,7 +180,6 @@ public:
         PageID maxPID;
         run_number_t run;
     };
-
 };
 
 #endif // __LOGARCHIVE_WRITER_H

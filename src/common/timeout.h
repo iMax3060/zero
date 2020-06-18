@@ -24,9 +24,9 @@
  * \see int
  */
 struct timeout_t {
-    static constexpr int WAIT_IMMEDIATE     = 0;
-    static constexpr int WAIT_FOREVER     = -1;
-    static constexpr int WAIT_SPECIFIED_BY_THREAD     = -4; // used by lock manager
+    static constexpr int WAIT_IMMEDIATE = 0;
+    static constexpr int WAIT_FOREVER = -1;
+    static constexpr int WAIT_SPECIFIED_BY_THREAD = -4; // used by lock manager
     static constexpr int WAIT_SPECIFIED_BY_XCT = -5; // used by lock manager
     // CS: I guess the NOT_USED value is only for threads that never acquire
     // any locks? And neither latches?

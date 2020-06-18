@@ -34,7 +34,7 @@ public:
      * @param[in] stid StoreID to which this page will belong -- this is used for
      *              clustering pages of the same store in the same extents
      */
-    rc_t sx_allocate_page(PageID &pid, StoreID stid = 0);
+    rc_t sx_allocate_page(PageID& pid, StoreID stid = 0);
 
     /**
      * Deallocates one page. (System transaction)
@@ -48,20 +48,23 @@ public:
      */
     rc_t sx_format_alloc_page(PageID alloc_pid);
 
-    bool is_allocated (PageID pid);
+    bool is_allocated(PageID pid);
 
     /// Returns last allocated PID of a given store
     PageID get_last_allocated_pid(StoreID s) const;
 
     /// Returns last allocated PID of ALL stores
     PageID get_last_allocated_pid() const;
+
     PageID _get_last_allocated_pid_internal() const;
 
     lsn_t get_page_lsn(PageID pid);
 
     static constexpr size_t extent_size = alloc_page::bits_held;
 
-    static bool is_alloc_pid(PageID pid) { return pid % extent_size == 0; }
+    static bool is_alloc_pid(PageID pid) {
+        return pid % extent_size == 0;
+    }
 
 private:
 

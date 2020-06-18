@@ -11,7 +11,6 @@
 #include "lsn.h"
 #include "w_defines.h"
 
-
 /**
  * \brief Page headers shared by all Zero pages
  *
@@ -37,7 +36,6 @@ public:
     /// Size of all Zero pages
     static const size_t page_sz = SM_PAGESIZE;
 
-
     /**
      * \brief Stored checksum of this page.
      *
@@ -50,29 +48,29 @@ public:
     mutable uint32_t checksum;     // +4 -> 4
 
     /// ID of this page
-    PageID           pid;          // +4 -> 8
+    PageID pid;          // +4 -> 8
 
     /// LSN (Log Sequence Number) of the last write to this page
-    lsn_t            lsn;          // +8 -> 16
+    lsn_t lsn;          // +8 -> 16
 
     /// ID of the store to which this page belongs (0 if none)
-    StoreID           store;        // +4 -> 20
+    StoreID store;        // +4 -> 20
 
     /// Page type (a page_tag_t)
-    uint16_t         tag;          // +2 -> 22
+    uint16_t tag;          // +2 -> 22
 
 protected:
     friend class fixable_page_h;   // for access to page_flags&t_to_be_deleted
 
     /// Page flags (an OR of page_flag_t's)
-    uint16_t         page_flags;   //  +2 -> 24
+    uint16_t page_flags;   //  +2 -> 24
 
     /// Reserved for subclass usage
-    uint64_t         reserved;     //  +8 -> 32
+    uint64_t reserved;     //  +8 -> 32
 
 public:
     /// Calculate the correct value of checksum for this page.
-    uint32_t    calculate_checksum () const;
+    uint32_t calculate_checksum() const;
 
 public:
     friend std::ostream& operator<<(std::ostream&, generic_page_header&);
@@ -86,12 +84,11 @@ BOOST_STATIC_ASSERT(sizeof(generic_page_header) == 32);
  * allocation page, or what?
  */
 enum page_tag_t {
-    t_bad_p    = 0,        ///< not used
-    t_alloc_p  = 1,        ///< free-page allocation page
+    t_bad_p = 0,        ///< not used
+    t_alloc_p = 1,        ///< free-page allocation page
     t_stnode_p = 2,        ///< store node page
-    t_btree_p  = 5,        ///< btree page
+    t_btree_p = 5,        ///< btree page
 };
-
 
 /**
  * \brief Flags that can be turned on or off per page; held in
@@ -99,11 +96,8 @@ enum page_tag_t {
  */
 enum page_flag_t {
     // Flags used by fixable pages:
-    t_to_be_deleted  = 0x01,     ///< this page will be deleted as soon as the page is evicted from bufferpool
+    t_to_be_deleted = 0x01,     ///< this page will be deleted as soon as the page is evicted from bufferpool
 };
-
-
-
 
 /**
  * \brief A generic page view: any Zero page can be viewed as being of
@@ -128,9 +122,8 @@ class generic_page : public generic_page_header {
 private:
     char subclass_specific[page_sz - sizeof(generic_page_header)];
 };
+
 BOOST_STATIC_ASSERT(sizeof(generic_page) == generic_page_header::page_sz);
-
-
 
 /**
  * \brief Page handle class for any page type.
@@ -142,25 +135,34 @@ BOOST_STATIC_ASSERT(sizeof(generic_page) == generic_page_header::page_sz);
 class generic_page_h {
 public:
     generic_page_h(generic_page* s) : _pp(s) {}
+
     virtual ~generic_page_h() {}
 
-
     /// return pointer to underlying page
-    generic_page* get_generic_page() const { return _pp; }
+    generic_page* get_generic_page() const {
+        return _pp;
+    }
 
+    PageID pid() const {
+        return _pp->pid;
+    }
 
-    PageID pid() const { return _pp->pid; }
-    StoreID      store() const { return _pp->store; }
+    StoreID store() const {
+        return _pp->store;
+    }
 
-    page_tag_t    tag()   const { return (page_tag_t) _pp->tag; }
+    page_tag_t tag() const {
+        return (page_tag_t)_pp->tag;
+    }
 
-    const lsn_t&  lsn()   const { return _pp->lsn; }
+    const lsn_t& lsn() const {
+        return _pp->lsn;
+    }
 
 protected:
     generic_page_h(generic_page* s, const PageID& pid, page_tag_t tag,
-            StoreID store)
-        : _pp(s)
-    {
+                   StoreID store)
+            : _pp(s) {
         ::memset(_pp, 0, sizeof(*_pp));
         _pp->pid = pid;
         _pp->store = store;

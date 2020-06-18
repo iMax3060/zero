@@ -31,7 +31,6 @@
 
 #include "trx_worker.h"
 
-
 /******************************************************************
  *
  * @fn:    notify_client()
@@ -40,17 +39,15 @@
  *
  ******************************************************************/
 
-void base_request_t::notify_client()
-{
+void base_request_t::notify_client() {
     // signal cond var
     condex* pcondex = _result.get_notify();
     if (pcondex) {
         // TRACE( TRACE_TRX_FLOW, "Xct (%d) notifying client (%x)\n",
         //       _tid.get_lo(), pcondex);
         _result.set_notify(nullptr);
-	pcondex->signal();
-    }
-    else {
+        pcondex->signal();
+    } else {
         //TRACE( TRACE_TRX_FLOW, "Xct (%d) not notifying client\n",
         //       _tid.get_lo());
     }

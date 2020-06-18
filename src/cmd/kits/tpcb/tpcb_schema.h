@@ -33,7 +33,6 @@
 #ifndef __TPCB_SCHEMA_H
 #define __TPCB_SCHEMA_H
 
-
 #include <cmath>
 
 #include "sm_vas.h"
@@ -50,12 +49,13 @@
 
 namespace tpcb {
 
-DECLARE_TABLE_SCHEMA(branch_t);
-DECLARE_TABLE_SCHEMA(teller_t);
-DECLARE_TABLE_SCHEMA(account_t);
-DECLARE_TABLE_SCHEMA(history_t);
+    DECLARE_TABLE_SCHEMA(branch_t);
 
+    DECLARE_TABLE_SCHEMA(teller_t);
+
+    DECLARE_TABLE_SCHEMA(account_t);
+
+    DECLARE_TABLE_SCHEMA(history_t);
 };
-
 
 #endif // __TPCB_SCHEMA_H

@@ -17,12 +17,14 @@ class generic_page;
 class page_cleaner_base : public worker_thread_t {
 public:
     page_cleaner_base(const sm_options& _options);
+
     virtual ~page_cleaner_base();
 
     virtual void notify_archived_lsn(lsn_t) {}
 
 protected:
     void write_pages(size_t from, size_t to);
+
     void mark_pages_clean(size_t from, size_t to);
 
     /** the buffer pool this cleaner deals with. */
@@ -30,6 +32,7 @@ protected:
 
     /** in-transit buffer for written pages */
     vector<generic_page, memalign_allocator<generic_page>> _workspace;
+
     size_t _workspace_size;
 
     vector<bf_idx> _workspace_cb_indexes;

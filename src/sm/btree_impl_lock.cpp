@@ -23,32 +23,30 @@ struct RawLock;
 
 rc_t
 btree_impl::_ux_lock_key(
-    const StoreID&      stid,
-    btree_page_h&      leaf,
-    const w_keystr_t&   key,
-    latch_mode_t        latch_mode,
-    const okvl_mode&       lock_mode,
-    bool                check_only
-    )
-{
+        const StoreID& stid,
+        btree_page_h& leaf,
+        const w_keystr_t& key,
+        latch_mode_t latch_mode,
+        const okvl_mode& lock_mode,
+        bool check_only
+                        ) {
     // Top level function used by I/U/D (EX) and search (SH) operations to acquire a lock
     // Lock conflict is possible
 
     return _ux_lock_key(stid, leaf, key.buffer_as_keystr(), key.get_length_as_keystr(),
-                         latch_mode, lock_mode, check_only);
+                        latch_mode, lock_mode, check_only);
 }
 
 rc_t
 btree_impl::_ux_lock_key(
-    const StoreID&      store,
-    btree_page_h&      leaf,
-    const void*        keystr,
-    size_t             keylen,
-    latch_mode_t       latch_mode,
-    const okvl_mode&   lock_mode,
-    bool               check_only
-    )
-{
+        const StoreID& store,
+        btree_page_h& leaf,
+        const void* keystr,
+        size_t keylen,
+        latch_mode_t latch_mode,
+        const okvl_mode& lock_mode,
+        bool check_only
+                        ) {
     // Callers:
     // 1. Top level _ux_lock_key() - I/U/D and search operations, lock conflict is possible
     // 2. _ux_lock_range() - lock conflict is possible
@@ -65,7 +63,7 @@ btree_impl::_ux_lock_key(
     //                                                 transactions asking for the same lock are blocked, no deadlock
     // 2. Traditional UNDO - original behavior, either deadlock error or timeout and retry
 
-    lockid_t lid (store, (const unsigned char*) keystr, keylen);
+    lockid_t lid(store, (const unsigned char*)keystr, keylen);
     // first, try conditionally. we utilize the inserted lock entry even if it fails
     RawLock* entry = nullptr;
 
@@ -81,15 +79,14 @@ btree_impl::_ux_lock_key(
     // the current transaction already held other locks, it is not safe to retry (will cause
     // further deadlocks) therefore caller must abort the current transaction
     rc_t lock_rc = lm->lock(lid.hash(), lock_mode, true /*check */, false /* wait */,
-            !check_only /* acquire */, smthread_t::xct(),timeout_t::WAIT_IMMEDIATE, &entry);
+                            !check_only /* acquire */, smthread_t::xct(), timeout_t::WAIT_IMMEDIATE, &entry);
 
     if (!lock_rc.is_error()) {
         // lucky! we got it immediately. just return.
         return RCOK;
     } else {
         // if it caused deadlock and it was chosen to be victim, give up! (not retry)
-        if (lock_rc.err_num() == eDEADLOCK)
-        {
+        if (lock_rc.err_num() == eDEADLOCK) {
             // The user transaction will abort and rollback itself upon deadlock detection.
             // Because Express does not have a deadlock monitor and policy to determine
             // which transaction to rollback during a deadlock (should abort the cheaper
@@ -111,8 +108,7 @@ btree_impl::_ux_lock_key(
         W_DO(lm->retry_lock(&entry, !check_only /* acquire */));
         // now we got the lock.. but it might be changed because we unlatched.
         w_rc_t refix_rc = leaf.refix_direct(pin_holder._idx, latch_mode);
-        if (refix_rc.is_error() || leaf.get_page_lsn() != prelsn)
-        {
+        if (refix_rc.is_error() || leaf.get_page_lsn() != prelsn) {
             // release acquired lock
             if (entry != nullptr) {
                 w_assert1(!check_only);
@@ -120,12 +116,9 @@ btree_impl::_ux_lock_key(
             } else {
                 w_assert1(check_only);
             }
-            if (refix_rc.is_error())
-            {
+            if (refix_rc.is_error()) {
                 return refix_rc;
-            }
-            else
-            {
+            } else {
                 w_assert1(leaf.get_page_lsn() != prelsn); // unluckily, it's the case
                 return RC(eLOCKRETRY); // retry!
             }
@@ -135,34 +128,35 @@ btree_impl::_ux_lock_key(
 }
 
 rc_t
-btree_impl::_ux_lock_range(const StoreID&     stid,
-                           btree_page_h&     leaf,
+btree_impl::_ux_lock_range(const StoreID& stid,
+                           btree_page_h& leaf,
                            const w_keystr_t& key,
-                           slotid_t          slot,
-                           latch_mode_t      latch_mode,
-                           const okvl_mode&  exact_hit_lock_mode,
-                           const okvl_mode&  miss_lock_mode,
-                           bool              check_only) {
+                           slotid_t slot,
+                           latch_mode_t latch_mode,
+                           const okvl_mode& exact_hit_lock_mode,
+                           const okvl_mode& miss_lock_mode,
+                           bool check_only) {
     return _ux_lock_range(stid, leaf, key.buffer_as_keystr(), key.get_length_as_keystr(),
                           slot, latch_mode, exact_hit_lock_mode, miss_lock_mode, check_only);
 }
+
 rc_t
-btree_impl::_ux_lock_range(const StoreID&    stid,
-                           btree_page_h&    leaf,
-                           const void*      keystr,
-                           size_t           keylen,
-                           slotid_t         slot,
-                           latch_mode_t     latch_mode,
+btree_impl::_ux_lock_range(const StoreID& stid,
+                           btree_page_h& leaf,
+                           const void* keystr,
+                           size_t keylen,
+                           slotid_t slot,
+                           latch_mode_t latch_mode,
                            const okvl_mode& exact_hit_lock_mode,
                            const okvl_mode& miss_lock_mode,
-                           bool             check_only) {
+                           bool check_only) {
     w_assert1(slot >= -1 && slot <= leaf.nrecs());
     w_assert1(exact_hit_lock_mode.get_gap_mode() == okvl_mode::N);
     w_assert1(miss_lock_mode.is_keylock_empty());
 
     if (slot == -1) { // this means we should search it again
         bool found;
-        leaf.search((const char *) keystr, keylen, found, slot);
+        leaf.search((const char*)keystr, keylen, found, slot);
         w_assert1(!found); // precondition
     }
     w_assert1(slot >= 0 && slot <= leaf.nrecs());
@@ -179,12 +173,12 @@ btree_impl::_ux_lock_range(const StoreID&    stid,
     if (slot == -1 &&
         w_keystr_t::compare_bin_str(keystr, keylen,
                                     leaf.get_fence_low_key(), leaf.get_fence_low_length()) == 0) {
-            // We were searching for the low-fence key!  then, we take key lock on it and
-            // subsequent structural modification (e.g., merge) will add the low-fence as
-            // ghost record to be aware of the lock.
-            W_DO (_ux_lock_key(stid, leaf,
-                               leaf.get_fence_low_key(), leaf.get_fence_low_length(),
-                               latch_mode, exact_hit_lock_mode, check_only));
+        // We were searching for the low-fence key!  then, we take key lock on it and
+        // subsequent structural modification (e.g., merge) will add the low-fence as
+        // ghost record to be aware of the lock.
+        W_DO (_ux_lock_key(stid, leaf,
+                           leaf.get_fence_low_key(), leaf.get_fence_low_length(),
+                           latch_mode, exact_hit_lock_mode, check_only));
     } else {
         w_keystr_t prevkey;
         if (slot == -1) {
@@ -200,8 +194,7 @@ btree_impl::_ux_lock_range(const StoreID&    stid,
     return RCOK;
 }
 
-rc_t btree_impl::_ux_assure_fence_low_entry(btree_page_h &leaf)
-{
+rc_t btree_impl::_ux_assure_fence_low_entry(btree_page_h& leaf) {
     w_assert1(leaf.is_fixed());
     w_assert1(leaf.latch_mode() == LATCH_EX);
     if (!leaf.is_leaf()) {

@@ -46,10 +46,9 @@ namespace tpcc {
 
 /** Exported Functions */
 
-int NURand(int A, int low, int high);
+    int NURand(int A, int low, int high);
 
-int generate_cust_last(int select, char* dest);
-
+    int generate_cust_last(int select, char* dest);
 };
 
 #endif // __TPCC_RANDOM_H

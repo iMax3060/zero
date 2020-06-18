@@ -13,6 +13,7 @@ namespace zero::buffer_pool {
      */
     class NoSwizzling {
         friend class BufferPool;
+
     public:
         /*!\var     usesPointerSwizzling
          * \brief   TODO
@@ -72,7 +73,6 @@ namespace zero::buffer_pool {
         static bf_idx makeBufferIndexForFix(generic_page* parentPage, generic_page*& targetPage, PageID pid) {
             w_assert0(false);
         };
-
     };
 
     /*!\class   SimpleSwizzling
@@ -81,6 +81,7 @@ namespace zero::buffer_pool {
      */
     class SimpleSwizzling {
         friend class BufferPool;
+
     public:
         /*!\var     usesPointerSwizzling
          * \brief   TODO
@@ -139,9 +140,7 @@ namespace zero::buffer_pool {
          * \brief Bit which is set in swizzled pointers to mark those
          */
         static constexpr PageID swizzledPIDBit = 0b10000000000000000000000000000000;
-
     };
-
 } // zero::buffer_pool
 
 #endif // __ZERO_BUFFER_POOL_POINTER_SWIZZLING_HPP

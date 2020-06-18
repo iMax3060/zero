@@ -31,7 +31,8 @@ const int NO_LOSER_COUNT = 0;                        // No more loser transactio
 int RawLockQueue::loser_count = HAS_LOSER_COUNT;
 
 RawLockQueue::Iterator::Iterator(const RawLockQueue* enclosure_arg, RawLock* start_from)
-    : enclosure(enclosure_arg), predecessor(start_from) {
+        : enclosure(enclosure_arg),
+          predecessor(start_from) {
     w_assert1(predecessor != nullptr);
     w_assert1(!predecessor->next.is_marked());
     current = predecessor->next;
@@ -61,7 +62,7 @@ RawLock* RawLockQueue::find_predecessor(RawLock* lock) const {
     do {
         must_retry = false;
         for (Iterator iterator(this, &head); !must_retry && !iterator.is_null();
-                iterator.next(must_retry)) {
+             iterator.next(must_retry)) {
             if (iterator.current.get_pointer() == lock) {
                 return iterator.predecessor;
             }
@@ -75,7 +76,7 @@ RawLock* RawLockQueue::tail() const {
     do {
         bool must_retry = false;
         Iterator iterator(this, &head);
-        for (; !must_retry && !iterator.is_null(); iterator.next(must_retry));
+        for (; !must_retry && !iterator.is_null(); iterator.next(must_retry)) {}
         if (!must_retry) {
             w_assert1(iterator.predecessor != nullptr); // at least head exists.
             return iterator.predecessor;
@@ -102,9 +103,8 @@ bool RawLockQueue::delink(RawLock* predecessor, RawLock* target, RawLock* succes
 ////////////////////////////////////////////////////////////////////////////////////////
 
 w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode& mode,
-                int32_t timeout_in_ms, bool check, bool wait, bool acquire,
-                RawLock** out)
-{
+                                    int32_t timeout_in_ms, bool check, bool wait, bool acquire,
+                                    RawLock** out) {
     w_assert1(wait || check || acquire);
     w_assert1(check || !wait);
     w_assert1(out != nullptr);
@@ -128,8 +128,7 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
     atomic_lock_insert(new_lock); // A3 . BTW this implies a barrier in x86
     Compatibility compatibility = check_compatiblity(new_lock); // A4-A5
 
-    if (check && (compatibility.deadlocked || !compatibility.can_be_granted))
-    {
+    if (check && (compatibility.deadlocked || !compatibility.can_be_granted)) {
         DBGOUT1(<< "RawLockQueue::acquire: not able to acquire lock, check for UNDO");
 
         // Cannot grant the requested lock
@@ -139,8 +138,7 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
         w_assert1(nullptr != compatibility.blocker);
         w_assert1(compatibility.blocker != new_lock->owner_xct);
         DBGOUT3(<< "RawLockQueue::acquire(): cannot grant the lock, check for UNDO");
-        if (trigger_UNDO(compatibility))
-        {
+        if (trigger_UNDO(compatibility)) {
             // The user transaction (this thread) triggered an on_demand UNDO which
             // rolled back a loser transaction, check the compatibility again since
             // the lock manager entries changed due to loser transaction rollback
@@ -194,10 +192,9 @@ w_error_codes RawLockQueue::acquire(RawXct* xct, uint32_t hash, const okvl_mode&
 }
 
 w_error_codes RawLockQueue::retry_acquire(RawLock** lock, bool wait, bool acquire,
-        int32_t timeout_in_ms)
-{
+                                          int32_t timeout_in_ms) {
     w_assert1(lock != nullptr && (*lock) != nullptr);
-    RawXct *xct = (*lock)->owner_xct;
+    RawXct* xct = (*lock)->owner_xct;
     atomic_synchronize();
     Compatibility compatibility = check_compatiblity(*lock);
     if (compatibility.deadlocked) {
@@ -214,12 +211,11 @@ w_error_codes RawLockQueue::retry_acquire(RawLock** lock, bool wait, bool acquir
 }
 
 w_error_codes RawLockQueue::complete_acquire(RawLock** lock, bool wait, bool acquire,
-        int32_t timeout_in_ms)
-{
+                                             int32_t timeout_in_ms) {
     // if we get here, the lock can be granted, but we might need
     // to wait for the lock to be available, it happens in 'wait_for'
 
-    RawXct *xct = (*lock)->owner_xct;
+    RawXct* xct = (*lock)->owner_xct;
     if (wait && (*lock)->state == RawLock::WAITING) {
         w_error_codes err_code = wait_for(*lock, timeout_in_ms);
         if (err_code != w_error_ok) {
@@ -248,7 +244,7 @@ void RawLockQueue::atomic_lock_insert(RawLock* new_lock) {
     // the protocol below is usual lock-free list's algortihm, not the tail swap in [JUNG13]
     MarkablePointer<RawLock> new_ptr(new_lock, false);
     while (true) {
-        RawLock *last = tail();
+        RawLock* last = tail();
         // in case someone else is now deleting or adding to tail, we must do atomic CAS
         // with special pointer that has mark-for-death and ABA counter.
         // if anything unexpected observed, retry from traversal. same as LockFreeList.
@@ -258,7 +254,7 @@ void RawLockQueue::atomic_lock_insert(RawLock* new_lock) {
     }
 }
 
-RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) const {
+RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock* lock) const {
     if (head.next.get_pointer() == lock) {
         // fast path. If it's the first, because followers respect predecessors, granted.
         // also, remember that no one can newly enter between I and head because
@@ -266,15 +262,15 @@ RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) cons
         // Can grant the lock, it is not a deadlock, no blocker
         return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, nullptr /*blocker txn*/);
     }
-    const okvl_mode &mode = lock->mode;
+    const okvl_mode& mode = lock->mode;
     uint32_t hash = lock->hash;
-    RawXct *xct = lock->owner_xct;
+    RawXct* xct = lock->owner_xct;
     bool must_retry = false;
     do {
         must_retry = false;
         for (Iterator iterator(this, &head); !must_retry && !iterator.is_null();
-                iterator.next(must_retry)) {
-            RawLock *pointer = iterator.current.get_pointer();
+             iterator.next(must_retry)) {
+            RawLock* pointer = iterator.current.get_pointer();
             if (pointer == lock) {
                 // as we atomically insert, every lock respects predecessors.
                 // furthermore, we no longer have lock upgrades. they are multiple locks.
@@ -316,12 +312,14 @@ RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) cons
 
                 if (xct->is_deadlocked(pointer->owner_xct)) {
                     // Cannot grant the lock because this is a deadlock, no blocker txn in this case
-                    return Compatibility(false /*can_be_granted*/, true /*deadlocked*/, pointer->owner_xct /*blocker txn*/);
+                    return Compatibility(false /*can_be_granted*/, true /*deadlocked*/,
+                                         pointer->owner_xct /*blocker txn*/);
                 } else {
                     // Cannot grant the lock but it is not a deadlock (it is a lock conflict),
                     // blocker txn is pointer->owner_xct (current owning transaction of the lock),
                     // caller need to wait for the blocker txn to release its lock
-                    return Compatibility(false /*can_be_granted*/, false /*deadlocked*/, pointer->owner_xct /*blocker txn*/);
+                    return Compatibility(false /*can_be_granted*/, false /*deadlocked*/,
+                                         pointer->owner_xct /*blocker txn*/);
                 }
             }
         }
@@ -330,9 +328,9 @@ RawLockQueue::Compatibility RawLockQueue::check_compatiblity(RawLock *lock) cons
     return Compatibility(true /*can_be_granted*/, false /*deadlocked*/, nullptr /*blocker txn*/);
 }
 
-bool RawLockQueue::peek_compatiblity(RawXct* xct, uint32_t hash, const okvl_mode &mode) const {
+bool RawLockQueue::peek_compatiblity(RawXct* xct, uint32_t hash, const okvl_mode& mode) const {
     for (MarkablePointer<RawLock> lock = head.next; !lock.is_null();) {
-        RawLock *pointer = lock.get_pointer();
+        RawLock* pointer = lock.get_pointer();
         if (pointer->state == RawLock::ACTIVE && pointer->hash == hash
             && pointer->owner_xct != xct) {
             if (!mode.is_compatible_grant(pointer->mode)) {
@@ -352,7 +350,7 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
     // 1) encounter new deadlock, 2) acquired lock, 3) timeout, 4) unexpected error
 
     w_assert1(timeout_in_ms >= 0 || timeout_in_ms < 0); // to suppress warning
-    RawXct *xct = new_lock->owner_xct;
+    RawXct* xct = new_lock->owner_xct;
 #ifndef PURE_SPIN_RAWLOCK
     CRITICAL_SECTION(cs, xct->lock_wait_mutex); // A18
 #endif // PURE_SPIN_RAWLOCK
@@ -381,7 +379,7 @@ w_error_codes RawLockQueue::wait_for(RawLock* new_lock, int32_t timeout_in_ms) {
                 return w_error_ok;
             } else if (compatibility.deadlocked) {
                 DBGOUT1(<<"Deadlock found by myself! lock=" << *new_lock << ", queue="
-                    << *this << ", xct=" << *xct);
+                                << *this << ", xct=" << *xct);
                 xct->blocker = nullptr;
                 atomic_synchronize();
                 return eDEADLOCK;
@@ -461,12 +459,12 @@ void RawLockQueue::update_xlock_tag(const lsn_t& commit_lsn) {
         return;
     }
     DBGOUT4(<<"CAS to update x_lock_tag... cur=" << x_lock_tag.data() << " to "
-        << commit_lsn.data());
+                    << commit_lsn.data());
     while (true) {
         lsndata_t current = x_lock_tag.data();
         lsndata_t desired = commit_lsn.data();
         if (lintel::unsafe::atomic_compare_exchange_strong<lsndata_t>(
-            reinterpret_cast<lsndata_t*>(&x_lock_tag), &current, desired)) {
+                reinterpret_cast<lsndata_t*>(&x_lock_tag), &current, desired)) {
             break;
         } else if (lsn_t(current) >= commit_lsn) {
             break;
@@ -478,7 +476,7 @@ void RawLockQueue::update_xlock_tag(const lsn_t& commit_lsn) {
 void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
     w_assert1(!head.next.is_null());
     w_assert1(!head.next.is_marked());
-    RawXct *xct = lock->owner_xct;
+    RawXct* xct = lock->owner_xct;
     xct->blocker = nullptr;
     DBGOUT4(<<"Releasing lock=" << *lock << ", xct=" << *xct);
     if (lock->mode.contains_dirty_lock() && commit_lsn > x_lock_tag) {
@@ -556,8 +554,8 @@ void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
                 // but, if it keeps happening even after mfence and many retries, probably bug.
                 if (retry_count > 5) {
                     DBGOUT0(<<"The lock we are deleting now isn't found in the queue. phantom"
-                        << ", retry_count=" << retry_count
-                        << ". lock=" << *lock << ", queue=" << *this << ", me=" << *xct);
+                                    << ", retry_count=" << retry_count
+                                    << ". lock=" << *lock << ", queue=" << *this << ", me=" << *xct);
                 }
                 atomic_synchronize();
                 ++retry_count;
@@ -592,8 +590,7 @@ void RawLockQueue::release(RawLock* lock, const lsn_t& commit_lsn) {
     xct->deallocate_lock(lock);
 }
 
-bool RawLockQueue::trigger_UNDO(Compatibility& compatibility)
-{
+bool RawLockQueue::trigger_UNDO(Compatibility& compatibility) {
     // This helper function is called by RawLockQueue::acquire() which performs
     // initial lock acquire (not retry), it is called after the initial call to check_compatibility(),
     // based on returned 'compatibility', if the request lock was not granted and if we
@@ -602,195 +599,175 @@ bool RawLockQueue::trigger_UNDO(Compatibility& compatibility)
     // perform the on_demand UNDO for this loser transaction
     // Return true if an on_demand UNDO operation was triggered and completed
 
-    if ((compatibility.deadlocked) || (!compatibility.can_be_granted))
-    {
+    if ((compatibility.deadlocked) || (!compatibility.can_be_granted)) {
         // Cannot grant the requested lock
         // Handle on_demand UNDO if necessary
         w_assert1(nullptr != compatibility.blocker);
 
-            // If using lock re-acquisition for restart concurrency control
-                DBGOUT3(<< "RawLockQueue::trigger_UNDO(): on_demand or mixed UNDO with loc, check for loser transaction...");
+        // If using lock re-acquisition for restart concurrency control
+        DBGOUT3(<< "RawLockQueue::trigger_UNDO(): on_demand or mixed UNDO with loc, check for loser transaction...");
 
-                // If we did not find any loser transaction in the transaction table
-                // previously, fast return
-                // this is because loser transactions were inserted into transaction
-                // during Log Analysis phase only, once the system is opened for
-                // user transactions, we will not create more loser transactions
-                // into transaction table
-                if ( NO_LOSER_COUNT == loser_count)
-                {
-                    DBGOUT3( << "RawLockQueue::trigger_UNDO: skip due to no loser transaction found in transaction table previously");
-                    return false;
-                }
+        // If we did not find any loser transaction in the transaction table
+        // previously, fast return
+        // this is because loser transactions were inserted into transaction
+        // during Log Analysis phase only, once the system is opened for
+        // user transactions, we will not create more loser transactions
+        // into transaction table
+        if (NO_LOSER_COUNT == loser_count) {
+            DBGOUT3(<< "RawLockQueue::trigger_UNDO: skip due to no loser transaction found in transaction table previously");
+            return false;
+        }
 
-                DBGOUT3( << "RawLockQueue::trigger_UNDO: Is the blocking transaction a loser transaction???");
+        DBGOUT3(<< "RawLockQueue::trigger_UNDO: Is the blocking transaction a loser transaction???");
 
-                // Using lock re-acquisition and on_demand or mixed UNDO
-                // to rollback loser transactions
+        // Using lock re-acquisition and on_demand or mixed UNDO
+        // to rollback loser transactions
 
-                // If the transaction which is holding the lock (compatibility.blocker)
-                // is a loser transaction and not in the middle of rolling back currently,
-                // then attach to the loser transaction, change the loser transaction state
-                // to 'rolling back' state and trigger the rollback of the loser transaction
-                // During this operation, the caller transaction is blocked
+        // If the transaction which is holding the lock (compatibility.blocker)
+        // is a loser transaction and not in the middle of rolling back currently,
+        // then attach to the loser transaction, change the loser transaction state
+        // to 'rolling back' state and trigger the rollback of the loser transaction
+        // During this operation, the caller transaction is blocked
 
-                // If the transaction which is holding the lock (compatibility.blocker)
-                // is a loser transaction but it is in rolling back state already (another
-                // user transaction has triggered the UNDO operation), fall through
-                // and no-op
+        // If the transaction which is holding the lock (compatibility.blocker)
+        // is a loser transaction but it is in rolling back state already (another
+        // user transaction has triggered the UNDO operation), fall through
+        // and no-op
 
-                // If the transaction which is holding the lock is not a loser transaction
-                // fall through and no-op
+        // If the transaction which is holding the lock is not a loser transaction
+        // fall through and no-op
 
-                // Note all we have is a RawXct, which is a member of xct_core and
-                // we don't have an easy way to identify the owning xct_t object
-                // Loop through the transaction table to find the owner of the RawXct first
+        // Note all we have is a RawXct, which is a member of xct_core and
+        // we don't have an easy way to identify the owning xct_t object
+        // Loop through the transaction table to find the owner of the RawXct first
 
-                xct_i iter(false); // not locking the transaction table list, we only need to
-                                   // look at existing transactions for loser transactions,
-                                   // no need to look into the new incoming transactions
-                xct_t* xd = 0;
-                xd = iter.next();
-                bool has_loser = false;  // true if we found at least one loser transaction in transaction table
-                while (xd)
-                {
-                    if (true == xd->is_loser_xct())
-                        has_loser = true;
+        xct_i iter(false); // not locking the transaction table list, we only need to
+        // look at existing transactions for loser transactions,
+        // no need to look into the new incoming transactions
+        xct_t* xd = 0;
+        xd = iter.next();
+        bool has_loser = false;  // true if we found at least one loser transaction in transaction table
+        while (xd) {
+            if (true == xd->is_loser_xct()) {
+                has_loser = true;
+            }
 
-                    if ((xct_t::xct_active == xd->state()) &&           // Active txn
-                        (compatibility.blocker == xd->raw_lock_xct()))  // it is the blocker txn
-                    {
-                        // Found the blocker transaction
-                        if (true == xd->is_loser_xct())
-                        {
-                            w_assert1(false == xd->is_sys_xct());
-                            DBGOUT3( << "RawLockQueue::trigger_UNDO: blocker transaction is a loser transaction, txn: "
-                                     << xd->tid());
+            if ((xct_t::xct_active == xd->state()) &&           // Active txn
+                (compatibility.blocker == xd->raw_lock_xct()))  // it is the blocker txn
+            {
+                // Found the blocker transaction
+                if (true == xd->is_loser_xct()) {
+                    w_assert1(false == xd->is_sys_xct());
+                    DBGOUT3(<< "RawLockQueue::trigger_UNDO: blocker transaction is a loser transaction, txn: "
+                                    << xd->tid());
 
-                            // Acquire latch before checking the loser status
-                            try
-                            {
-                                w_rc_t latch_rc = xd->latch().latch_acquire(LATCH_EX, timeout_t::WAIT_SPECIFIED_BY_XCT);
-                                if (latch_rc.is_error())
-                                {
-                                    // Failed to acquire latch on the transaction
-                                    // this is the loser transaction we are looking for but we
-                                    // are not able to latch the txn, to be safe we skip this time
-                                    // and wait for next opportunity for the on_demand UNDO
+                    // Acquire latch before checking the loser status
+                    try {
+                        w_rc_t latch_rc = xd->latch().latch_acquire(LATCH_EX, timeout_t::WAIT_SPECIFIED_BY_XCT);
+                        if (latch_rc.is_error()) {
+                            // Failed to acquire latch on the transaction
+                            // this is the loser transaction we are looking for but we
+                            // are not able to latch the txn, to be safe we skip this time
+                            // and wait for next opportunity for the on_demand UNDO
 
-                                    if (stTIMEOUT == latch_rc.err_num())
-                                    {
-                                        // There is a small possibility that another concurrent
-                                        // transaction is checking for loser status on the same
-                                        // transaction at this moment
-                                        // Eat the error and skip UNDO this time, caller must retry
-                                        DBGOUT0( << "RawLockQueue::trigger_UNDO: failed to latch the loser txn object to check rollback status,"
+                            if (stTIMEOUT == latch_rc.err_num()) {
+                                // There is a small possibility that another concurrent
+                                // transaction is checking for loser status on the same
+                                // transaction at this moment
+                                // Eat the error and skip UNDO this time, caller must retry
+                                DBGOUT0(<< "RawLockQueue::trigger_UNDO: failed to latch the loser txn object to check rollback status,"
                                                 << " this is due to latch time out, skip the on_demand UNDO");
-                                        return false;
-                                    }
-                                    else
-                                    {
-                                        W_FATAL_MSG(fcINTERNAL,
-                                                    << "RawLockQueue::trigger_UNDO: failed to latch the loser txn object due to unknown reason,"
+                                return false;
+                            } else {
+                                W_FATAL_MSG(fcINTERNAL,
+                                            << "RawLockQueue::trigger_UNDO: failed to latch the loser txn object due to unknown reason,"
                                                     << " this is un-expected error, error out");
-                                    }
-                                }
-                            }
-                            catch (...)
-                            {
-                                // Race condition while the transaction is being destroyed?
-                                // Skip UNDO
-                                return false;
-                            }
-
-                            if (false == xd->is_loser_xct_in_undo())
-                            {
-                                // Loser transaction has not been rollback at this point,
-                                // we are the first user transaction to trigger the UNDO
-                                // set the loser transaction state first to indicate the current
-                                // thread is handling the loser transaction UNDO which is a
-                                // blocking operation
-
-                                xd->set_loser_xct_in_undo();
-                                if (xd->latch().held_by_me())
-                                    xd->latch().latch_release();
-
-                                // Only one transaction may be attached to a thread at any time
-                                // The current running thread has the user transaction so
-                                // it cannot attach to the loser transaction without detach from the
-                                // user transaction first
-                                xct_t* user_xd = smthread_t::xct();
-                                if (user_xd) {
-                                    smthread_t::detach_xct(user_xd);
-                                }
-
-                                // The blocker txn is a loser transaction and it is not in the middle of rolling back
-                                DBGOUT3( << "RawLockQueue::trigger_UNDO: blocker loser transaction needs UNDO,"
-                                         << " user txn: " << user_xd->tid() << ", loser txn: " << xd->tid()
-                                         << ", detached from user transaction, start UNDO of loser transaction");
-
-                                // Attach to the loser transaction
-                                smthread_t::attach_xct(xd);
-                                W_COERCE(xd->abort());
-
-                                // Done with rollback of loser transaction, destroy it
-                                delete xd;
-
-                                DBGOUT3( << "RawLockQueue::trigger_UNDO: blocker loser transaction successfully aborted,"
-                                         << "re-attach to the original user transaction");
-
-                                // Re-attach to the original user transaction
-                                if (user_xd) {
-                                    smthread_t::attach_xct(user_xd);
-                                }
-
-                                // Notify caller an on_demand UNDO has been performed
-                                return true;
-                            }
-                            else
-                            {
-                                if (xd->latch().held_by_me())
-                                    xd->latch().latch_release();
-
-                                // The blocker txn is a loser transaction but it is in the middle of rolling back already
-                                DBGOUT3( << "RawLockQueue::trigger_UNDO: blocker loser transaction already in the middle of UNDO");
-                                return false;
                             }
                         }
-                        else
-                        {
-                            DBGOUT3( << "RawLockQueue::trigger_UNDO: blocker transaction is not a loser transaction");
-                            // Do not exist, continue looping through the remaining items in transaction table
-                            // because if we do not find any loser transactions in the transaction table
-                            // set the static loser count so we can safely skip this function in the future
+                    }
+                    catch (...) {
+                        // Race condition while the transaction is being destroyed?
+                        // Skip UNDO
+                        return false;
+                    }
+
+                    if (false == xd->is_loser_xct_in_undo()) {
+                        // Loser transaction has not been rollback at this point,
+                        // we are the first user transaction to trigger the UNDO
+                        // set the loser transaction state first to indicate the current
+                        // thread is handling the loser transaction UNDO which is a
+                        // blocking operation
+
+                        xd->set_loser_xct_in_undo();
+                        if (xd->latch().held_by_me()) {
+                            xd->latch().latch_release();
                         }
+
+                        // Only one transaction may be attached to a thread at any time
+                        // The current running thread has the user transaction so
+                        // it cannot attach to the loser transaction without detach from the
+                        // user transaction first
+                        xct_t* user_xd = smthread_t::xct();
+                        if (user_xd) {
+                            smthread_t::detach_xct(user_xd);
+                        }
+
+                        // The blocker txn is a loser transaction and it is not in the middle of rolling back
+                        DBGOUT3(<< "RawLockQueue::trigger_UNDO: blocker loser transaction needs UNDO,"
+                                        << " user txn: " << user_xd->tid() << ", loser txn: " << xd->tid()
+                                        << ", detached from user transaction, start UNDO of loser transaction");
+
+                        // Attach to the loser transaction
+                        smthread_t::attach_xct(xd);
+                        W_COERCE(xd->abort());
+
+                        // Done with rollback of loser transaction, destroy it
+                        delete xd;
+
+                        DBGOUT3(<< "RawLockQueue::trigger_UNDO: blocker loser transaction successfully aborted,"
+                                        << "re-attach to the original user transaction");
+
+                        // Re-attach to the original user transaction
+                        if (user_xd) {
+                            smthread_t::attach_xct(user_xd);
+                        }
+
+                        // Notify caller an on_demand UNDO has been performed
+                        return true;
+                    } else {
+                        if (xd->latch().held_by_me()) {
+                            xd->latch().latch_release();
+                        }
+
+                        // The blocker txn is a loser transaction but it is in the middle of rolling back already
+                        DBGOUT3(<< "RawLockQueue::trigger_UNDO: blocker loser transaction already in the middle of UNDO");
+                        return false;
                     }
-                    else
-                    {
-                        // No match, continue the search
-                    }
-
-                    // Fetch next transaction object
-                    xd = iter.next();
+                } else {
+                    DBGOUT3(<< "RawLockQueue::trigger_UNDO: blocker transaction is not a loser transaction");
+                    // Do not exist, continue looping through the remaining items in transaction table
+                    // because if we do not find any loser transactions in the transaction table
+                    // set the static loser count so we can safely skip this function in the future
                 }
+            } else {
+                // No match, continue the search
+            }
 
-                // Done with the loop through transaction table and did not find a match
-                // If we did not find any loser transaction in transaction table
-                // set the static loser count to 0 so we will skip
-                // this expensive lookup loop in the future
-                if (false == has_loser)
-                {
-                    DBGOUT3(<< "RawLockQueue::trigger_UNDO(): no existing loser transaction in transaction table");
-                    loser_count = NO_LOSER_COUNT;
-                }
-                else
-                {
-                    DBGOUT3(<< "RawLockQueue::trigger_UNDO(): have more loser transactions in transaction table");
-                }
+            // Fetch next transaction object
+            xd = iter.next();
+        }
 
-    }
-    else
-    {
+        // Done with the loop through transaction table and did not find a match
+        // If we did not find any loser transaction in transaction table
+        // set the static loser count to 0 so we will skip
+        // this expensive lookup loop in the future
+        if (false == has_loser) {
+            DBGOUT3(<< "RawLockQueue::trigger_UNDO(): no existing loser transaction in transaction table");
+            loser_count = NO_LOSER_COUNT;
+        } else {
+            DBGOUT3(<< "RawLockQueue::trigger_UNDO(): have more loser transactions in transaction table");
+        }
+    } else {
         // Lock was granted, no-op
     }
 
@@ -807,7 +784,7 @@ bool RawLockQueue::trigger_UNDO(Compatibility& compatibility)
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void RawXct::init(gc_thread_id thread_id_arg,
-        GcPoolForest<RawLock>* lock_pool_arg, gc_pointer_raw* lock_pool_next_arg) {
+                  GcPoolForest<RawLock>* lock_pool_arg, gc_pointer_raw* lock_pool_next_arg) {
     thread_id = thread_id_arg;
     lock_pool = lock_pool_arg;
     lock_pool_next = lock_pool_next_arg;
@@ -834,7 +811,7 @@ void RawXct::uninit() {
 
 // for assertion only.
 // this is quite expensive (insert_100K test takes 2 minutes). thus should be level 4.
-bool is_private_list_consistent(RawXct *xct) {
+bool is_private_list_consistent(RawXct* xct) {
     std::set<RawLock*> dup;
     RawLock* last_observed = nullptr;
     for (RawLock* lock = xct->private_first; lock != nullptr; lock = lock->xct_next) {
@@ -870,10 +847,10 @@ bool is_private_list_consistent(RawXct *xct) {
 RawLock* RawXct::allocate_lock(uint32_t hash, const okvl_mode& mode, RawLock::LockState state) {
     RawLock* lock = lock_pool->allocate(*lock_pool_next, thread_id);
     lock->hash = hash;
-    lock->mode = mode;
-    lock->owner_xct = this;
-    lock->next = NULL_RAW_LOCK;
     lock->state = state;
+    lock->next = NULL_RAW_LOCK;
+    lock->owner_xct = this;
+    lock->mode = mode;
 
     w_assert4(is_private_list_consistent(this));
     // put it on transaction-private linked list
@@ -987,8 +964,9 @@ bool RawXct::is_deadlocked(RawXct* first_blocker) {
 RawXctLockHashMap::RawXctLockHashMap() {
     reset();
 }
-RawXctLockHashMap::~RawXctLockHashMap() {
-}
+
+RawXctLockHashMap::~RawXctLockHashMap() {}
+
 void RawXctLockHashMap::reset() {
     ::memset(_buckets, 0, sizeof(RawLock*) * RAW_XCT_LOCK_HASHMAP_SIZE);
 }
@@ -998,7 +976,7 @@ okvl_mode RawXctLockHashMap::get_granted_mode(uint32_t lock_id) const {
     // we don't take any latch here. See the comment of RawXctLockHashMap
     // for why this is safe.
     okvl_mode ret(ALL_N_GAP_N);
-    for (const RawLock *current = _buckets[bid]; current != nullptr;
+    for (const RawLock* current = _buckets[bid]; current != nullptr;
          current = current->xct_hashmap_next) {
         if (current->hash == lock_id && current->state == RawLock::ACTIVE) {
             // we don't upgrade locks any more, so we can have multiple lock entries
@@ -1019,6 +997,7 @@ void RawXctLockHashMap::push_front(RawLock* link) {
     }
     _buckets[bid] = link;
 }
+
 void RawXctLockHashMap::remove(RawLock* link) {
     if (link->xct_hashmap_next != nullptr) {
         link->xct_hashmap_next->xct_hashmap_previous = link->xct_hashmap_previous;
@@ -1040,7 +1019,7 @@ void RawXctLockHashMap::remove(RawLock* link) {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 RawLockBackgroundThread::RawLockBackgroundThread(const sm_options& options,
-    GcPoolForest< RawLock >* lock_pool, GcPoolForest< RawXct >* xct_pool) {
+                                                 GcPoolForest<RawLock>* lock_pool, GcPoolForest<RawXct>* xct_pool) {
     _stop_requested = false;
     _running = false;
     _dummy_lsn_lock = 1000;
@@ -1049,20 +1028,20 @@ RawLockBackgroundThread::RawLockBackgroundThread(const sm_options& options,
     _xct_pool = xct_pool;
 
     // CS TODO: options below were set in the old Zero tpcc.cpp
-            // // very short interval, large segments, for massive accesses.
-            // // back-of-envelope-calculation: ignore xct. it's all about RawLock.
-            // // sizeof(RawLock)=64 or something. 8 * 256 * 4096 * 64 = 512MB. tolerable.
-            // options.set_int_option("sm_rawlock_gc_interval_ms", 3);
-            // options.set_int_option("sm_rawlock_lockpool_initseg", 255);
-            // options.set_int_option("sm_rawlock_xctpool_initseg", 255);
-            // options.set_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
-            // options.set_int_option("sm_rawlock_xctpool_segsize", 1 << 8);
-            // options.set_int_option("sm_rawlock_gc_generation_count", 5);
-            // options.set_int_option("sm_rawlock_gc_init_generation_count", 5);
-            // options.set_int_option("sm_rawlock_gc_free_segment_count", 50);
-            // options.set_int_option("sm_rawlock_gc_max_segment_count", 255);
-            // // meaning: a newly created generation has a lot of (255) segments.
-            // // as soon as remaining gets low, we recycle older ones (few generations).
+    // // very short interval, large segments, for massive accesses.
+    // // back-of-envelope-calculation: ignore xct. it's all about RawLock.
+    // // sizeof(RawLock)=64 or something. 8 * 256 * 4096 * 64 = 512MB. tolerable.
+    // options.set_int_option("sm_rawlock_gc_interval_ms", 3);
+    // options.set_int_option("sm_rawlock_lockpool_initseg", 255);
+    // options.set_int_option("sm_rawlock_xctpool_initseg", 255);
+    // options.set_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
+    // options.set_int_option("sm_rawlock_xctpool_segsize", 1 << 8);
+    // options.set_int_option("sm_rawlock_gc_generation_count", 5);
+    // options.set_int_option("sm_rawlock_gc_init_generation_count", 5);
+    // options.set_int_option("sm_rawlock_gc_free_segment_count", 50);
+    // options.set_int_option("sm_rawlock_gc_max_segment_count", 255);
+    // // meaning: a newly created generation has a lot of (255) segments.
+    // // as soon as remaining gets low, we recycle older ones (few generations).
 
     _internal_milliseconds = options.get_int_option("sm_rawlock_gc_interval_ms", 3);
     _lockpool_segsize = options.get_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
@@ -1075,10 +1054,11 @@ RawLockBackgroundThread::RawLockBackgroundThread(const sm_options& options,
     _max_segment_count = options.get_int_option("sm_rawlock_gc_max_segment_count", 255);
 
     DO_PTHREAD(::pthread_mutex_init(&_interval_mutex, nullptr));
-    DO_PTHREAD(::pthread_cond_init (&_interval_cond, nullptr));
+    DO_PTHREAD(::pthread_cond_init(&_interval_cond, nullptr));
     DO_PTHREAD(::pthread_attr_init(&_join_attr));
     DO_PTHREAD(::pthread_attr_setdetachstate(&_join_attr, PTHREAD_CREATE_JOINABLE));
 }
+
 RawLockBackgroundThread::~RawLockBackgroundThread() {
     DO_PTHREAD(::pthread_attr_destroy(&_join_attr));
     DO_PTHREAD(::pthread_cond_destroy(&_interval_cond));
@@ -1116,41 +1096,41 @@ void* RawLockBackgroundThread::pthread_main(void* t) {
  * Templatized to handle both pools. Can't be a class member without putting these dirty
  * details in header file. C++ sucks, though other languages suck more.
  */
-template <class T>
-void handle_pool(bool &more_work,
-                 bool &stop_requested,
+template<class T>
+void handle_pool(bool& more_work,
+                 bool& stop_requested,
                  GcPoolForest<T>* pool,
-                 const char *name,
+                 const char* name,
                  uint32_t generation_count,
                  uint32_t free_segment_count,
                  uint32_t max_segment_count,
                  uint32_t init_segment_count,
                  uint32_t segment_size,
-                 int &dummy_lsn) {
+                 int& dummy_lsn) {
     w_assert3(name != nullptr);
     DBGOUT1(<< name << "handle_pool start.");
     // Pre allocate segments
     atomic_synchronize();
     if (!stop_requested && pool->curr_generation()->get_free_count() < free_segment_count) {
         DBGOUT1(<< name << "Current generation (" << pool->curr_nowrap << ") has too few free"
-            << "  segments. allocated=" << pool->curr_generation()->allocated_segments
-            << "/" << pool->curr_generation()->total_segments << ". Preallocating..");
+                        << "  segments. allocated=" << pool->curr_generation()->allocated_segments
+                        << "/" << pool->curr_generation()->total_segments << ". Preallocating..");
         uint32_t more_segments = free_segment_count;
         if (more_segments + pool->curr_generation()->total_segments > max_segment_count) {
             more_segments = max_segment_count - pool->curr_generation()->total_segments;
         }
         pool->curr_generation()->preallocate_segments(
-            free_segment_count, segment_size);
+                free_segment_count, segment_size);
     }
 
     // Advance generation
     atomic_synchronize();
     if (!stop_requested && pool->curr_generation()->get_free_count() < free_segment_count
-            && pool->curr_generation()->total_segments >= max_segment_count) {
+        && pool->curr_generation()->total_segments >= max_segment_count) {
         DBGOUT1(<< name << "Current generation (" << pool->curr_nowrap << ")  can't add more"
-            << " segments. current allocated=" << pool->curr_generation()->allocated_segments
-            << "/" << pool->curr_generation()->total_segments
-            << " new gen segments will be:" << init_segment_count);
+                        << " segments. current allocated=" << pool->curr_generation()->allocated_segments
+                        << "/" << pool->curr_generation()->total_segments
+                        << " new gen segments will be:" << init_segment_count);
         lsn_t low_water_mark; // try recycling
         lsn_t now;
         if (smlevel_0::log == nullptr) {
@@ -1159,7 +1139,7 @@ void handle_pool(bool &more_work,
             now.set(++dummy_lsn);
         } else {
             low_water_mark = smlevel_0::log->get_oldest_lsn_tracker()->get_oldest_active_lsn(
-                smlevel_0::log->curr_lsn());
+                    smlevel_0::log->curr_lsn());
             now = smlevel_0::log->curr_lsn();
         }
         bool ret = pool->advance_generation(low_water_mark, now, init_segment_count, segment_size);
@@ -1170,20 +1150,20 @@ void handle_pool(bool &more_work,
     atomic_synchronize();
     if (!stop_requested && pool->active_generations() > generation_count) {
         DBGOUT1(<< name << "There are too many generations retiring some. head_nowrap="
-            << pool->head_nowrap << ", tail_nowrap=" << pool->tail_nowrap
-            << ", desired generation_count=" << generation_count);
+                        << pool->head_nowrap << ", tail_nowrap=" << pool->tail_nowrap
+                        << ", desired generation_count=" << generation_count);
         lsn_t low_water_mark;
         if (smlevel_0::log == nullptr) {
             DBGOUT1(<< name << "There is no log manager. Immitating low-water-mark"
-                << ". dummy_lsn=" << dummy_lsn);
+                            << ". dummy_lsn=" << dummy_lsn);
             low_water_mark.set(dummy_lsn - generation_count + 1);
         } else {
             DBGOUT1(<< name << "Retrieving low water mark...");
             low_water_mark = smlevel_0::log->get_oldest_lsn_tracker()->get_oldest_active_lsn(
-                smlevel_0::log->curr_lsn());
+                    smlevel_0::log->curr_lsn());
             DBGOUT1(<< name << "Retrieved low water mark=" << low_water_mark.data()
-                << "(curr_lsn=" << smlevel_0::log->curr_lsn().data()
-                << ", durable_lsn=" << smlevel_0::log->durable_lsn().data() << ")");
+                            << "(curr_lsn=" << smlevel_0::log->curr_lsn().data()
+                            << ", durable_lsn=" << smlevel_0::log->durable_lsn().data() << ")");
         }
         pool->retire_generations(low_water_mark);
     }
@@ -1203,11 +1183,11 @@ void RawLockBackgroundThread::run_main() {
         atomic_synchronize();
         bool more_work = false; // do we have more work without sleep?
         handle_pool<RawLock>(more_work, _stop_requested, _lock_pool, "LockPool:",
-            _generation_count, _free_segment_count, _max_segment_count,
-            _lockpool_initseg, _lockpool_segsize, _dummy_lsn_lock);
+                             _generation_count, _free_segment_count, _max_segment_count,
+                             _lockpool_initseg, _lockpool_segsize, _dummy_lsn_lock);
         handle_pool<RawXct>(more_work, _stop_requested, _xct_pool, "XctPool:",
-            _generation_count, _free_segment_count, _max_segment_count,
-            _xctpool_initseg, _xctpool_segsize, _dummy_lsn_xct);
+                            _generation_count, _free_segment_count, _max_segment_count,
+                            _xctpool_initseg, _xctpool_segsize, _dummy_lsn_xct);
 
         // let's sleep.
         atomic_synchronize();
@@ -1219,7 +1199,7 @@ void RawLockBackgroundThread::run_main() {
             ::gettimeofday(&now, nullptr);
             timeout.tv_sec = now.tv_sec + _internal_milliseconds / 1000;
             timeout.tv_nsec = now.tv_usec * 1000
-                + (_internal_milliseconds % 1000) * 1000000;
+                              + (_internal_milliseconds % 1000) * 1000000;
             if (timeout.tv_nsec >= 1000000000LL) {
                 w_assert1(timeout.tv_nsec < 2000000000LL);
                 timeout.tv_nsec -= 1000000000LL;
@@ -1249,13 +1229,14 @@ void RawLockBackgroundThread::stop_synchronous() {
     int ret_cond = ::pthread_cond_broadcast(&_interval_cond);
     DO_PTHREAD(::pthread_mutex_unlock(&_interval_mutex));
     DBGOUT1(<<"Noticed RawLockBackgroundThread. ret=" << ret_cond << ". joining..");
-    void *join_status;
+    void* join_status;
     int ret_join = ::pthread_join(_thread, &join_status);
     DBGOUT1(<<"Joined RawLockBackgroundThread thread. done. ret=" << ret_join);
     w_assert1(!_running);
     (void)ret_join; // suppress compiler warning in release
     (void)ret_cond; // suppress compiler warning in release
 }
+
 void RawLockBackgroundThread::wakeup() {
     DBGOUT1(<<"Waking up RawLockBackgroundThread...");
     if (_running) {
@@ -1278,11 +1259,21 @@ void RawLockBackgroundThread::wakeup() {
 std::ostream& operator<<(std::ostream& o, const RawLock& v) {
     o << "RawLock Hash=" << v.hash << " State=";
     switch (v.state) {
-        case RawLock::UNUSED : o << "UNUSED"; break;
-        case RawLock::OBSOLETE : o << "OBSOLETE"; break;
-        case RawLock::ACTIVE : o << "ACTIVE"; break;
-        case RawLock::WAITING : o << "WAITING"; break;
-        default : o << "Unknown"; break;
+        case RawLock::UNUSED :
+            o << "UNUSED";
+            break;
+        case RawLock::OBSOLETE :
+            o << "OBSOLETE";
+            break;
+        case RawLock::ACTIVE :
+            o << "ACTIVE";
+            break;
+        case RawLock::WAITING :
+            o << "WAITING";
+            break;
+        default :
+            o << "Unknown";
+            break;
     }
     if (v.next.is_marked()) {
         o << "<Marked for death>";
@@ -1298,19 +1289,19 @@ std::ostream& operator<<(std::ostream& o, const RawLock& v) {
 std::ostream& operator<<(std::ostream& o, const RawLockQueue& v) {
     o << "RawLockQueue x_lock_tag=" << v.x_lock_tag.data() << " locks:" << std::endl;
     for (MarkablePointer<RawLock> lock = v.head.next; !lock.is_null(); lock = lock->next) {
-        RawLock *pointer = lock.get_pointer();
+        RawLock* pointer = lock.get_pointer();
         o << *pointer << std::endl;
     }
     return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const RawXct &v) {
+std::ostream& operator<<(std::ostream& o, const RawXct& v) {
     o << "Transaction: xct-" << v.thread_id;
     if (v.blocker != nullptr) {
         o << " blocked by " << v.blocker->thread_id;
     }
     o << std::endl << "Transaction-private Lock list" << std::endl;
-    for (RawLock *lock = v.private_first; lock != nullptr; lock = lock->xct_next) {
+    for (RawLock* lock = v.private_first; lock != nullptr; lock = lock->xct_next) {
         o << *lock << std::endl;
     }
     return o;

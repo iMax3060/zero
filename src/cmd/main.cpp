@@ -1,10 +1,9 @@
 #include "base/command.h"
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
     Command::init();
 
-    Command *cmd;
+    Command* cmd;
     cmd = Command::parse(argc, argv);
     if (!cmd) {
         return 1;

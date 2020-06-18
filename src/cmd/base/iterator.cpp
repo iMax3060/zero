@@ -6,28 +6,42 @@
 const size_t PageIterator::PAGE_SIZE = 8192;
 
 PageIterator::PageIterator(string inPath, string outPath,
-        unsigned ioSizeInPages)
-    : inPath(inPath), outPath(outPath), blockSize(ioSizeInPages * PAGE_SIZE),
-    in(inPath), count(0), fpos(0), bpos(0), bytesRead(0), blocksRead(0),
-    prevPageNo(0), asyncBuf(nullptr)
-{
+                           unsigned ioSizeInPages) :
+        inPath(inPath),
+        outPath(outPath),
+        blockSize(ioSizeInPages * PAGE_SIZE),
+        in(inPath),
+        count(0),
+        fpos(0),
+        bpos(0),
+        bytesRead(0),
+        blocksRead(0),
+        prevPageNo(0),
+        asyncBuf(nullptr) {
     openOutput();
     buf = new char[ioSizeInPages * PAGE_SIZE];
     next(); // first page contains only system metadata
 }
 
 PageIterator::PageIterator(string inPath, string outPath,
-        AsyncRingBuffer* asyncBuf, unsigned ioSizeInPages)
-    :
-    inPath(inPath), outPath(outPath), blockSize(ioSizeInPages * PAGE_SIZE),
-    in(inPath), count(0), fpos(0), bpos(0), bytesRead(0), blocksRead(0),
-    buf(nullptr), prevPageNo(0), asyncBuf(asyncBuf)
-{
-}
+                           AsyncRingBuffer* asyncBuf, unsigned ioSizeInPages) :
+        inPath(inPath),
+        outPath(outPath),
+        blockSize(ioSizeInPages * PAGE_SIZE),
+        in(inPath),
+        count(0),
+        fpos(0),
+        bpos(0),
+        bytesRead(0),
+        blocksRead(0),
+        buf(nullptr),
+        prevPageNo(0),
+        asyncBuf(asyncBuf) {}
 
-PageIterator::~PageIterator()
-{
-    if (!asyncBuf) delete buf;
+PageIterator::~PageIterator() {
+    if (!asyncBuf) {
+        delete buf;
+    }
     if (in.is_open()) {
         in.close();
     }
@@ -36,10 +50,9 @@ PageIterator::~PageIterator()
     }
 }
 
-void PageIterator::openOutput()
-{
+void PageIterator::openOutput() {
     if (!outPath.empty()) {
-        out.exceptions (ofstream::failbit | ofstream::badbit);
+        out.exceptions(ofstream::failbit | ofstream::badbit);
         out.open(outPath, ios::binary | ios::out);
         out.clear();
         if (!out.is_open()) {
@@ -48,8 +61,7 @@ void PageIterator::openOutput()
     }
 }
 
-void PageIterator::readBlock(char* b)
-{
+void PageIterator::readBlock(char* b) {
     if (out.is_open() && fpos > 0) {
         writeBlock(b);
     }
@@ -64,40 +76,35 @@ void PageIterator::readBlock(char* b)
     blocksRead++;
 }
 
-void PageIterator::writeBlock(char* b)
-{
+void PageIterator::writeBlock(char* b) {
     // seek beyond EOF only works with ios::end
-    out.seekp((blocksRead -1 ) * blockSize, ios::beg);
+    out.seekp((blocksRead - 1) * blockSize, ios::beg);
     out.write(b, bytesRead);
     out.flush();
 }
 
-void PageIterator::writePage(char* buf, size_t index)
-{
+void PageIterator::writePage(char* buf, size_t index) {
     out.seekp(index * PAGE_SIZE);
     out.write(buf, PAGE_SIZE);
 }
 
-bool PageIterator::hasNext()
-{
+bool PageIterator::hasNext() {
     if (!asyncBuf) {
         return in.good() && in.is_open() &&
-            (bpos < bytesRead || fpos == 0);
+               (bpos < bytesRead || fpos == 0);
     }
     return bpos < bytesRead || !asyncBuf->isFinished();
 }
 
-generic_page* PageIterator::next()
-{
+generic_page* PageIterator::next() {
     assert(hasNext());
     if (bpos == 0) {
         if (asyncBuf) {
-            if(blocksRead > 0) {
+            if (blocksRead > 0) {
                 asyncBuf->consumerRelease();
             }
             buf = asyncBuf->consumerRequest();
-        }
-        else {
+        } else {
             readBlock(buf);
         }
     }
@@ -111,7 +118,7 @@ generic_page* PageIterator::next()
     assert(buf);
     assert(bpos < blockSize);
 
-    generic_page* ps = (generic_page*) (buf + bpos);
+    generic_page* ps = (generic_page*)(buf + bpos);
     prevPageNo = ps->pid;
 
     bpos += PAGE_SIZE;
@@ -121,8 +128,7 @@ generic_page* PageIterator::next()
         // block in buf, so we must also check the finished flag
         eof = eof && asyncBuf->isFinished();
     }
-    if (bpos >= blockSize || eof)
-    {
+    if (bpos >= blockSize || eof) {
         assert(asyncBuf || bpos == bytesRead);
         bpos = 0;
     }
@@ -137,16 +143,14 @@ generic_page* PageIterator::next()
     return &currentPage;
 }
 
-void PageIterator::seek(size_t pageIndex)
-{
+void PageIterator::seek(size_t pageIndex) {
     assert(!asyncBuf);
     fpos = pageIndex * PAGE_SIZE;
     bpos = 0;
     readBlock(buf);
 }
 
-void PageIterator::run()
-{
+void PageIterator::run() {
     cout << "Iterator starting" << endl;
     assert(asyncBuf);
     while (!asyncBuf->isFinished()) {

@@ -37,51 +37,57 @@
 #include "block_alloc.h"
 #include "row.h"
 
-template <class TableDesc>
-class row_cache_t
-{
+template<class TableDesc>
+class row_cache_t {
 public:
     struct tuple_factory {
-	// WARNING: manually assign non-NULL before using the cache... Or Else
+        // WARNING: manually assign non-NULL before using the cache... Or Else
         // CS TODO -- bad design! Implement new row cache
-	static TableDesc* &ptable() {
-	    static TableDesc* _ptable;
-	    return _ptable;
-	}
-	static table_row_t* construct(void* ptr) {
-	    return new(ptr) table_row_t(ptable());
-	}
-	static void destroy(table_row_t* t) { t->~table_row_t(); }
+        static TableDesc*& ptable() {
+            static TableDesc* _ptable;
+            return _ptable;
+        }
 
-	static void reset(table_row_t* t) {
-	    t->reset();
-	}
+        static table_row_t* construct(void* ptr) {
+            return new(ptr) table_row_t(ptable());
+        }
 
-	// TODO: figure out how to build in the areprow stuff?
+        static void destroy(table_row_t* t) {
+            t->~table_row_t();
+        }
+
+        static void reset(table_row_t* t) {
+            t->reset();
+        }
+
+        // TODO: figure out how to build in the areprow stuff?
         // IP: The areprow stuff should use another block allocator for char*[some-max-size]
-	static table_row_t* init(table_row_t* t) { return t; }
+        static table_row_t* init(table_row_t* t) {
+            return t;
+        }
     };
 
 private:
     typedef object_cache<table_row_t, tuple_factory> Cache;
-    Cache	  _cache;
+
+    Cache _cache;
 
 public:
 
     /* Return an unused object, if cache empty allocate and return a new one
      */
-    table_row_t* borrow() { return _cache.acquire(); }
+    table_row_t* borrow() {
+        return _cache.acquire();
+    }
 
     /* Returns an object to the cache. The object is reset and put on the
      * free list.
      */
     static
-    void giveback(table_row_t* ptn)
-    {
+    void giveback(table_row_t* ptn) {
         assert (ptn);
-	Cache::release(ptn);
+        Cache::release(ptn);
     }
-
 }; // EOF: row_cache_t
 
 

@@ -42,30 +42,49 @@ public:
      * one.
      */
     static constexpr int bitmapsize = sizeof(generic_page) / 2;
+
     static constexpr int bits_held = bitmapsize * 8;
+
     uint8_t bitmap[bitmapsize];
 
     // Fill second half of the page with char array (unused part). This is
     // currently 4KB, whereas the bitmap occupies the remaining 4KB.
     // This reserved space of 4KB is kept here just for future uses; it is
     // currently not used.
-    char _fill[sizeof(generic_page)/2 - sizeof(generic_page_header)];
+    char _fill[sizeof(generic_page) / 2 - sizeof(generic_page_header)];
 
-    uint32_t byte_place(uint32_t index) { return index >> 3; }
-    uint32_t bit_place (uint32_t index) { return index & 0x7; }
-    uint32_t bit_mask  (uint32_t index) { return 1 << bit_place(index); }
+    uint32_t byte_place(uint32_t index) {
+        return index >> 3;
+    }
 
-    bool get_bit(uint32_t index) { return (bitmap[byte_place(index)]&bit_mask(index)) != 0; }
-    void unset_bit(uint32_t index) { bitmap[byte_place(index)] &= ~bit_mask(index); }
-    void set_bit(uint32_t index) { bitmap[byte_place(index)] |=  bit_mask(index); }
+    uint32_t bit_place(uint32_t index) {
+        return index & 0x7;
+    }
+
+    uint32_t bit_mask(uint32_t index) {
+        return 1 << bit_place(index);
+    }
+
+    bool get_bit(uint32_t index) {
+        return (bitmap[byte_place(index)] & bit_mask(index)) != 0;
+    }
+
+    void unset_bit(uint32_t index) {
+        bitmap[byte_place(index)] &= ~bit_mask(index);
+    }
+
+    void set_bit(uint32_t index) {
+        bitmap[byte_place(index)] |= bit_mask(index);
+    }
 
     uint32_t get_last_set_bit();
+
     void set_bits(uint32_t from, uint32_t to);
+
     void format_empty();
 
     // Used to generate page_img_format log records
-    char* unused_part(size_t& length)
-    {
+    char* unused_part(size_t& length) {
         auto first_unset_byte = byte_place(get_last_set_bit()) + 1;
         char* pos = reinterpret_cast<char*>(&bitmap[first_unset_byte]);
         length = sizeof(alloc_page) - (pos - reinterpret_cast<char*>(this));
@@ -73,6 +92,7 @@ public:
         return pos;
     }
 };
+
 BOOST_STATIC_ASSERT(sizeof(alloc_page) == generic_page_header::page_sz);
 
 #endif // __ALLOC_PAGE_H

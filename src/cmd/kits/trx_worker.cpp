@@ -43,25 +43,20 @@
 
 trx_worker_t::trx_worker_t(ShoreEnv* env, std::string tname,
                            const int use_sli)
-    : base_worker_t(env, tname, use_sli)
-{
+        : base_worker_t(env, tname, use_sli) {
     assert (env);
-    _actionpool = new Pool(sizeof(Request*),REQUESTS_PER_WORKER_POOL_SZ);
-    _pqueue = new Queue( _actionpool.get() );
+    _actionpool = new Pool(sizeof(Request*), REQUESTS_PER_WORKER_POOL_SZ);
+    _pqueue = new Queue(_actionpool.get());
 }
 
-trx_worker_t::~trx_worker_t()
-{
+trx_worker_t::~trx_worker_t() {
     _pqueue = nullptr;
     _actionpool = nullptr;
 }
 
-
-void trx_worker_t::init(const int lc)
-{
-    _pqueue->setqueue(WS_INPUT_Q,this,lc,0);
+void trx_worker_t::init(const int lc) {
+    _pqueue->setqueue(WS_INPUT_Q, this, lc, 0);
 }
-
 
 /******************************************************************
  *
@@ -73,8 +68,7 @@ void trx_worker_t::init(const int lc)
  *
  ******************************************************************/
 
-int trx_worker_t::_work_ACTIVE_impl()
-{
+int trx_worker_t::_work_ACTIVE_impl() {
     w_rc_t e;
     Request* ar = nullptr;
 
@@ -102,8 +96,6 @@ int trx_worker_t::_work_ACTIVE_impl()
     return (0);
 }
 
-
-
 /******************************************************************
  *
  * @fn:     _serve_action()
@@ -114,8 +106,7 @@ int trx_worker_t::_work_ACTIVE_impl()
  *
  ******************************************************************/
 
-int trx_worker_t::_serve_action(Request* prequest)
-{
+int trx_worker_t::_serve_action(Request* prequest) {
     // Begin xct
     // *** note: It used to attach but the clients no longer begin
     //           the xct in order the SLI to work
@@ -123,14 +114,14 @@ int trx_worker_t::_serve_action(Request* prequest)
     //smthread_t::me()->attach_xct(prequest->_xct);
     tid_t atid;
     {
-    w_rc_t e = _env->db()->begin_xct(atid);
-    if (e.is_error()) {
-        TRACE( TRACE_TRX_FLOW, "Problem beginning xct [0x%x]\n",
-               e.err_num());
-        W_COERCE(e);
-        ++_stats._problems;
-        return (1);
-    }
+        w_rc_t e = _env->db()->begin_xct(atid);
+        if (e.is_error()) {
+            TRACE(TRACE_TRX_FLOW, "Problem beginning xct [0x%x]\n",
+                  e.err_num());
+            W_COERCE(e);
+            ++_stats._problems;
+            return (1);
+        }
     }
 
     xct_t* pxct = smthread_t::xct();
@@ -141,24 +132,22 @@ int trx_worker_t::_serve_action(Request* prequest)
 
     // Serve request
     {
-    w_rc_t e = _env->run_one_xct(prequest);
-    if (e.is_error()) {
-        // TRACE( TRACE_TRX_FLOW, "Problem running xct (%d) (%d) [0x%x]\n",
-        //        prequest->_tid.get_lo(), prequest->_xct_id, e.err_num());
-        ++_stats._problems;
-        // CS TODO -- added this so that error in xct execution don't
-        // go unnoticed
-        // W_COERCE(e);
-        return (1);
-    }
+        w_rc_t e = _env->run_one_xct(prequest);
+        if (e.is_error()) {
+            // TRACE( TRACE_TRX_FLOW, "Problem running xct (%d) (%d) [0x%x]\n",
+            //        prequest->_tid.get_lo(), prequest->_xct_id, e.err_num());
+            ++_stats._problems;
+            // CS TODO -- added this so that error in xct execution don't
+            // go unnoticed
+            // W_COERCE(e);
+            return (1);
+        }
     }
 
     // Update worker stats
     ++_stats._processed;
     return (0);
 }
-
-
 
 /******************************************************************
  *
@@ -169,12 +158,11 @@ int trx_worker_t::_serve_action(Request* prequest)
  *
  ******************************************************************/
 
-int trx_worker_t::_pre_STOP_impl()
-{
+int trx_worker_t::_pre_STOP_impl() {
     Request* pr;
-    int reqs_read  = 0;
+    int reqs_read = 0;
     int reqs_write = 0;
-    int reqs_abt   = 0;
+    int reqs_abt = 0;
 
     assert (_pqueue);
 
@@ -182,7 +170,9 @@ int trx_worker_t::_pre_STOP_impl()
     for (; _pqueue->_read_pos != _pqueue->_for_readers->end(); _pqueue->_read_pos++) {
         pr = *(_pqueue->_read_pos);
         ++reqs_read;
-        if (abort_one_trx(pr->_xct)) ++reqs_abt;
+        if (abort_one_trx(pr->_xct)) {
+            ++reqs_abt;
+        }
     }
 
     // Go over the writers list
@@ -190,17 +180,18 @@ int trx_worker_t::_pre_STOP_impl()
         spinlock_write_critical_section cs(&_pqueue->_lock);
         for (_pqueue->_read_pos = _pqueue->_for_writers->begin();
              _pqueue->_read_pos != _pqueue->_for_writers->end();
-             _pqueue->_read_pos++)
-            {
-                pr = *(_pqueue->_read_pos);
-                ++reqs_write;
-                if (abort_one_trx(pr->_xct)) ++reqs_abt;
+             _pqueue->_read_pos++) {
+            pr = *(_pqueue->_read_pos);
+            ++reqs_write;
+            if (abort_one_trx(pr->_xct)) {
+                ++reqs_abt;
             }
+        }
     }
 
     if ((reqs_read + reqs_write) > 0) {
-        TRACE( TRACE_ALWAYS, "(%d) aborted before stopping. (%d) (%d)\n",
-               reqs_abt, reqs_read, reqs_write);
+        TRACE(TRACE_ALWAYS, "(%d) aborted before stopping. (%d) (%d)\n",
+              reqs_abt, reqs_read, reqs_write);
     }
     return (reqs_abt);
 }

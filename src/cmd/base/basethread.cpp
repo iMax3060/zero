@@ -13,33 +13,27 @@
 
 sm_options basethread_t::_options;
 
-basethread_t::basethread_t()
-    : finished(false), current_xct(nullptr)
-{
+basethread_t::basethread_t() :
+        finished(false),
+        current_xct(nullptr) {
     DO_PTHREAD(pthread_mutex_init(&running_mutex, nullptr));
 }
 
-basethread_t::~basethread_t()
-{
+basethread_t::~basethread_t() {
     DO_PTHREAD(pthread_mutex_destroy(&running_mutex));
 }
 
-void basethread_t::before_run()
-{
+void basethread_t::before_run() {
     DO_PTHREAD(pthread_mutex_lock(&running_mutex));
 }
 
-void basethread_t::after_run()
-{
+void basethread_t::after_run() {
     DO_PTHREAD(pthread_mutex_unlock(&running_mutex));
 }
 
-void basethread_t::start_base()
-{
-}
+void basethread_t::start_base() {}
 
-void basethread_t::start_buffer()
-{
+void basethread_t::start_buffer() {
     if (!smlevel_0::bf) {
         cerr << "Initializing buffer manager ... ";
         smlevel_0::bf = new zero::buffer_pool::BufferPool();
@@ -48,8 +42,7 @@ void basethread_t::start_buffer()
     }
 }
 
-void basethread_t::start_log(string logdir)
-{
+void basethread_t::start_log(string logdir) {
     if (!smlevel_0::log) {
         // instantiate log manager
         log_core* log;
@@ -63,8 +56,7 @@ void basethread_t::start_log(string logdir)
     }
 }
 
-void basethread_t::start_archiver(string archdir, size_t wsize, size_t bsize)
-{
+void basethread_t::start_archiver(string archdir, size_t wsize, size_t bsize) {
     LogArchiver* logArchiver;
 
     cerr << "Initializing log archiver ... " << flush;
@@ -77,8 +69,7 @@ void basethread_t::start_archiver(string archdir, size_t wsize, size_t bsize)
     smlevel_0::logArchiver = logArchiver;
 }
 
-void basethread_t::start_merger(string /*archdir*/)
-{
+void basethread_t::start_merger(string /*archdir*/) {
     //ArchiveMerger* archiveMerger;
 
     //cerr << "Initializing archive merger ... " << flush;
@@ -90,8 +81,7 @@ void basethread_t::start_merger(string /*archdir*/)
     //smlevel_0::archiveMerger = archiveMerger;
 }
 
-void basethread_t::start_other()
-{
+void basethread_t::start_other() {
     if (!smlevel_0::lm) {
         cerr << "Initializing lock manager ... ";
         smlevel_0::lm = new lock_m(_options);
@@ -114,8 +104,7 @@ void basethread_t::start_other()
     }
 }
 
-void basethread_t::print_stats()
-{
+void basethread_t::print_stats() {
     sm_stats_t stats;
     ss_m::gather_stats(stats);
     print_sm_stats(stats, cout);
@@ -125,18 +114,16 @@ void basethread_t::print_stats()
  * WARNING: if the transaction produces any log record (i.e., makes any
  * modification), then log_m must be started.
  */
-void basethread_t::begin_xct()
-{
+void basethread_t::begin_xct() {
     assert(current_xct == nullptr);
     int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD;
     current_xct = new xct_t(nullptr, timeout, false, false, false);
     smlevel_0::log->get_oldest_lsn_tracker()
-        ->enter(reinterpret_cast<uintptr_t>(current_xct),
-                smlevel_0::log->curr_lsn());
+            ->enter(reinterpret_cast<uintptr_t>(current_xct),
+                    smlevel_0::log->curr_lsn());
 }
 
-void basethread_t::commit_xct()
-{
+void basethread_t::commit_xct() {
     assert(current_xct != nullptr);
     current_xct->commit(false, nullptr);
     delete current_xct;

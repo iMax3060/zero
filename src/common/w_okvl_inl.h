@@ -14,7 +14,7 @@
 
 /** Pretty name for each lock mode. */
 const char* const element_mode_names[] = {
-    "N", "IS", "IX", "S", "SIX", "X"
+        "N", "IS", "IX", "S", "SIX", "X"
 };
 
 /**
@@ -25,29 +25,43 @@ const char* const element_mode_names[] = {
 * so in long run it will help us.
 */
 const okvl_mode ALL_N_GAP_N(okvl_mode::N, okvl_mode::N);
+
 const okvl_mode ALL_S_GAP_N(okvl_mode::S, okvl_mode::N);
+
 const okvl_mode ALL_X_GAP_N(okvl_mode::X, okvl_mode::N);
+
 const okvl_mode ALL_N_GAP_S(okvl_mode::N, okvl_mode::S);
+
 const okvl_mode ALL_S_GAP_S(okvl_mode::S, okvl_mode::S);
+
 const okvl_mode ALL_X_GAP_S(okvl_mode::X, okvl_mode::S);
+
 const okvl_mode ALL_N_GAP_X(okvl_mode::N, okvl_mode::X);
+
 const okvl_mode ALL_S_GAP_X(okvl_mode::S, okvl_mode::X);
+
 const okvl_mode ALL_X_GAP_X(okvl_mode::X, okvl_mode::X);
 
 #define T true // to make following easier to read
 #define F false
+
 /**
 *  compatibility_table[requested mode][granted mode]
 *  means whether the requested lock mode is allowed given the already existing lock in granted mode.
 */
 const bool compatibility_table[okvl_mode::COUNT][okvl_mode::COUNT] = {
 /*req*/  //N  IS  IX   S SIX   X (granted)
-/*N */    { T, T,  T,  T,  T,  T,},
-/*IS*/    { T, T,  T,  T,  T,  F,},
-/*IX*/    { T, T,  T,  F,  F,  F,},
-/*S */    { T, T,  F,  T,  F,  F,},
-/*SIX*/   { T, T,  F,  F,  F,  F,},
-/*X */    { T, F,  F,  F,  F,  F,},
+/*N */    {T, T, T, T, T, T,},
+/*IS*/
+          {T, T, T, T, T, F,},
+/*IX*/
+          {T, T, T, F, F, F,},
+/*S */
+          {T, T, F, T, F, F,},
+/*SIX*/
+          {T, T, F, F, F, F,},
+/*X */
+          {T, F, F, F, F, F,},
 };
 
 /**
@@ -56,13 +70,19 @@ const bool compatibility_table[okvl_mode::COUNT][okvl_mode::COUNT] = {
 */
 const bool implication_table[okvl_mode::COUNT][okvl_mode::COUNT] = {
 /*left*/  //N  IS  IX   S SIX   X (right)
-/*N */    { T, T,  T,  T,  T,  T,},
-/*IS*/    { F, T,  T,  T,  T,  T,},
-/*IX*/    { F, F,  T,  F,  T,  T,},
-/*S */    { F, F,  F,  T,  T,  T,},
-/*SIX*/   { F, F,  F,  F,  T,  T,},
-/*X */    { F, F,  F,  F,  F,  T,},
+/*N */    {T, T, T, T, T, T,},
+/*IS*/
+          {F, T, T, T, T, T,},
+/*IX*/
+          {F, F, T, F, T, T,},
+/*S */
+          {F, F, F, T, T, T,},
+/*SIX*/
+          {F, F, F, F, T, T,},
+/*X */
+          {F, F, F, F, F, T,},
 };
+
 #undef T
 #undef F
 
@@ -71,12 +91,12 @@ const bool implication_table[okvl_mode::COUNT][okvl_mode::COUNT] = {
 *        e.g. g_parent_lock_mode[X] is IX.
 */
 const okvl_mode::element_lock_mode parent_lock_mode[] = {
-    okvl_mode::N,         // N
-    okvl_mode::IS,        // IS
-    okvl_mode::IX,        // IX
-    okvl_mode::IS,        // S
-    okvl_mode::IX,        // SIX
-    okvl_mode::IX         // X
+        okvl_mode::N,         // N
+        okvl_mode::IS,        // IS
+        okvl_mode::IX,        // IX
+        okvl_mode::IS,        // S
+        okvl_mode::IX,        // SIX
+        okvl_mode::IX         // X
 };
 
 /**
@@ -86,23 +106,28 @@ const okvl_mode::element_lock_mode parent_lock_mode[] = {
 */
 const okvl_mode::element_lock_mode combined_lock_modes[okvl_mode::COUNT][okvl_mode::COUNT] = {
 /*req*/   //N                   IS           IX           S            SIX  X (granted)
-/*N */    { okvl_mode::N,  okvl_mode::IS,  okvl_mode::IX,  okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
-/*IS*/    { okvl_mode::IS, okvl_mode::IS,  okvl_mode::IX,  okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
-/*IX*/    { okvl_mode::IX, okvl_mode::IX,  okvl_mode::IX,  okvl_mode::SIX, okvl_mode::SIX, okvl_mode::X,},
-/*S */    { okvl_mode::S,  okvl_mode::S,   okvl_mode::SIX, okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
-/*SIX*/   { okvl_mode::SIX,okvl_mode::SIX, okvl_mode::SIX, okvl_mode::SIX, okvl_mode::SIX, okvl_mode::X,},
-/*X */    { okvl_mode::X,  okvl_mode::X,   okvl_mode::X,   okvl_mode::X,   okvl_mode::X,   okvl_mode::X,},
+/*N */    {okvl_mode::N,   okvl_mode::IS,  okvl_mode::IX,  okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
+/*IS*/
+          {okvl_mode::IS,  okvl_mode::IS,  okvl_mode::IX,  okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
+/*IX*/
+          {okvl_mode::IX,  okvl_mode::IX,  okvl_mode::IX,  okvl_mode::SIX, okvl_mode::SIX, okvl_mode::X,},
+/*S */
+          {okvl_mode::S,   okvl_mode::S,   okvl_mode::SIX, okvl_mode::S,   okvl_mode::SIX, okvl_mode::X,},
+/*SIX*/
+          {okvl_mode::SIX, okvl_mode::SIX, okvl_mode::SIX, okvl_mode::SIX, okvl_mode::SIX, okvl_mode::X,},
+/*X */
+          {okvl_mode::X,   okvl_mode::X,   okvl_mode::X,   okvl_mode::X,   okvl_mode::X,   okvl_mode::X,},
 };
 
 inline bool okvl_mode::is_compatible_element(
-    element_lock_mode requested,
-    element_lock_mode granted) {
+        element_lock_mode requested,
+        element_lock_mode granted) {
     return compatibility_table[requested][granted];
 }
 
 inline bool okvl_mode::is_implied_by_element(
-    element_lock_mode left,
-    element_lock_mode right) {
+        element_lock_mode left,
+        element_lock_mode right) {
     return implication_table[left][right];
 }
 
@@ -110,7 +135,7 @@ inline okvl_mode::okvl_mode() {
     clear();
 }
 
-inline okvl_mode::okvl_mode (const okvl_mode &r) {
+inline okvl_mode::okvl_mode(const okvl_mode& r) {
     ::memcpy(modes, r.modes, OKVL_MODE_COUNT);
 }
 
@@ -135,15 +160,15 @@ inline okvl_mode::okvl_mode(part_id part, element_lock_mode partition_mode) {
 }
 
 inline okvl_mode::element_lock_mode okvl_mode::get_partition_mode(part_id partition) const {
-    return  (element_lock_mode) modes[partition];
+    return (element_lock_mode)modes[partition];
 }
 
 inline okvl_mode::element_lock_mode okvl_mode::get_key_mode() const {
-    return  (element_lock_mode) modes[OKVL_PARTITIONS];
+    return (element_lock_mode)modes[OKVL_PARTITIONS];
 }
 
 inline okvl_mode::element_lock_mode okvl_mode::get_gap_mode() const {
-    return  (element_lock_mode) modes[OKVL_PARTITIONS + 1];
+    return (element_lock_mode)modes[OKVL_PARTITIONS + 1];
 }
 
 inline bool okvl_mode::is_empty() const {
@@ -178,8 +203,9 @@ inline bool okvl_mode::contains_dirty_lock() const {
     bool ret = contains_dirty_key_lock();
 
     // If no X lock on key, check gap
-    if (false == ret)
+    if (false == ret) {
         return (X == get_gap_mode());
+    }
 
     return ret;
 }
@@ -203,7 +229,7 @@ inline bool okvl_mode::contains_dirty_key_lock() const {
 }
 
 inline void okvl_mode::set_partition_mode(part_id partition, element_lock_mode mode) {
-    modes[partition] = (unsigned char) mode;
+    modes[partition] = (unsigned char)mode;
 
     // also set the intent mode to key
     element_lock_mode parent_mode = parent_lock_mode[mode];
@@ -223,18 +249,18 @@ inline void okvl_mode::clear() {
 }
 
 inline bool okvl_mode::is_compatible_request(
-    const okvl_mode &requested) const {
+        const okvl_mode& requested) const {
     return okvl_mode::is_compatible(requested, *this);
 }
 
 inline bool okvl_mode::is_compatible_grant(
-    const okvl_mode &granted) const {
+        const okvl_mode& granted) const {
     return okvl_mode::is_compatible(*this, granted);
 }
 
 inline bool okvl_mode::is_compatible(
-    const okvl_mode &requested,
-    const okvl_mode &granted) {
+        const okvl_mode& requested,
+        const okvl_mode& granted) {
     // So far we use a straightforward for loop to check.
     // When k is small, we might want to apply some optimization,
     // but let's consider it later. Most likely this is not the major bottleneck.
@@ -276,7 +302,7 @@ inline bool okvl_mode::is_compatible(
     return true;
 }
 
-inline bool okvl_mode::is_implied_by(const okvl_mode &superset) const {
+inline bool okvl_mode::is_implied_by(const okvl_mode& superset) const {
     // obvious case
     element_lock_mode this_gap = get_gap_mode();
     element_lock_mode this_key = get_key_mode();
@@ -321,7 +347,7 @@ inline okvl_mode::part_id okvl_mode::compute_part_id(const void* uniquefier, int
     }
 
     // so far simply mod on hash. mod/div is expensive, but probably not an issue.
-    return (okvl_mode::part_id) (hash % OKVL_PARTITIONS);
+    return (okvl_mode::part_id)(hash % OKVL_PARTITIONS);
 }
 
 inline okvl_mode okvl_mode::combine(const okvl_mode& left, const okvl_mode& right) {
@@ -361,7 +387,8 @@ inline okvl_mode okvl_mode::combine(const okvl_mode& left, const okvl_mode& righ
         }
         // here, we do not use set_partition_mode() to skip setting the intent modes on key.
         // as far as both left and right are in consistent state, just combining key alone is enough.
-        ret.modes[part] = (unsigned char) combined_lock_modes[left.get_partition_mode(part)][right.get_partition_mode(part)];
+        ret.modes[part] = (unsigned char)combined_lock_modes[left.get_partition_mode(part)][right.get_partition_mode(
+                part)];
     }
     ret.set_key_mode(combined_lock_modes[left.get_key_mode()][right.get_key_mode()]);
     ret.set_gap_mode(combined_lock_modes[left.get_gap_mode()][right.get_gap_mode()]);
@@ -372,7 +399,7 @@ inline bool okvl_mode::operator==(const okvl_mode& r) const {
     if (this == &r) {
         return true; // quick check in case this and r are the same object.
     } else if (get_key_mode() != r.get_key_mode()
-        || get_gap_mode() != r.get_gap_mode()) {
+               || get_gap_mode() != r.get_gap_mode()) {
         // another quick check.
         return false;
     } else if (is_keylock_partition_empty() && r.is_keylock_partition_empty()) {
@@ -381,6 +408,7 @@ inline bool okvl_mode::operator==(const okvl_mode& r) const {
     }
     return ::memcmp(modes, r.modes, OKVL_PARTITIONS) == 0;
 }
+
 inline bool okvl_mode::operator!=(const okvl_mode& r) const {
     return !(operator==(r));
 }

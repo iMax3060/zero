@@ -2,24 +2,20 @@
 
 class LogrecInfoHandler : public Handler {
 public:
-    LogrecInfoHandler()
-    {}
+    LogrecInfoHandler() {}
 
-    virtual void invoke(logrec_t& r)
-    {
+    virtual void invoke(logrec_t& r) {
         std::cout << r.lsn().hi()
-            << '\t' << r.lsn().lo()
-            << '\t' << r.pid() << std::endl;
+                  << '\t' << r.lsn().lo()
+                  << '\t' << r.pid() << std::endl;
     }
 };
 
-void LogrecInfo::setupOptions()
-{
+void LogrecInfo::setupOptions() {
     LogScannerCommand::setupOptions();
 }
 
-void LogrecInfo::run()
-{
+void LogrecInfo::run() {
     LogrecInfoHandler h;
     BaseScanner* s = getScanner();
 

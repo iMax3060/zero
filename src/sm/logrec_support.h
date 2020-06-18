@@ -17,14 +17,17 @@
  */
 template<class PagePtr>
 struct page_img_format_t {
-    size_t      beginning_bytes;
-    size_t      ending_bytes;
-    char        data[logrec_t::max_data_sz - 2 * sizeof(size_t)];
+    size_t beginning_bytes;
 
-    int size()        { return 2 * sizeof(size_t) + beginning_bytes + ending_bytes; }
+    size_t ending_bytes;
 
-    page_img_format_t (const PagePtr p)
-    {
+    char data[logrec_t::max_data_sz - 2 * sizeof(size_t)];
+
+    int size() {
+        return 2 * sizeof(size_t) + beginning_bytes + ending_bytes;
+    }
+
+    page_img_format_t(const PagePtr p) {
         /*
          * The mid-section of a btree page is usually not used, since head
          * entries are stored on the beginning of the page and variable-sized
@@ -58,24 +61,23 @@ struct page_img_format_t {
                 W_FATAL(eNOTIMPLEMENTED);
         }
 
-        const char *pp_bin = (const char *) p->get_generic_page();
+        const char* pp_bin = (const char*)p->get_generic_page();
         beginning_bytes = unused - pp_bin;
-        ending_bytes    = sizeof(generic_page) - (beginning_bytes + unused_length);
+        ending_bytes = sizeof(generic_page) - (beginning_bytes + unused_length);
 
-        ::memcpy (data, pp_bin, beginning_bytes);
-        ::memcpy (data + beginning_bytes, unused + unused_length, ending_bytes);
+        ::memcpy(data, pp_bin, beginning_bytes);
+        ::memcpy(data + beginning_bytes, unused + unused_length, ending_bytes);
         // w_assert1(beginning_bytes >= btree_page::hdr_sz);
         w_assert1(beginning_bytes + ending_bytes <= sizeof(generic_page));
     }
 
-    void apply(PagePtr page)
-    {
+    void apply(PagePtr page) {
         // w_assert1(beginning_bytes >= btree_page::hdr_sz);
         w_assert1(beginning_bytes + ending_bytes <= sizeof(generic_page));
-        char *pp_bin = (char *) page->get_generic_page();
-        ::memcpy (pp_bin, data, beginning_bytes);
-        ::memcpy (pp_bin + sizeof(generic_page) - ending_bytes,
-                data + beginning_bytes, ending_bytes);
+        char* pp_bin = (char*)page->get_generic_page();
+        ::memcpy(pp_bin, data, beginning_bytes);
+        ::memcpy(pp_bin + sizeof(generic_page) - ending_bytes,
+                 data + beginning_bytes, ending_bytes);
     }
 };
 

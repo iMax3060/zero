@@ -68,7 +68,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  */
 
 #ifndef __SM_BASE_H
+
 #include "sm_base.h"
+
 #endif // __SM_BASE_H
 
 #include "smstats.h" // declares sm_stats_t and sm_config_info_t
@@ -346,7 +348,6 @@ class w_keystr_t;
 class verify_volume_result;
 class lil_global_table;
 struct okvl_mode;
-
 class key_ranges_map;
 /**\addtogroup SSMSP
  * A transaction may perform a partial rollback using savepoints.
@@ -367,24 +368,32 @@ class key_ranges_map;
  */
 class sm_save_point_t : public lsn_t {
 public:
-    sm_save_point_t(): _tid(0) {};
+    sm_save_point_t() : _tid(0) {};
+
     friend ostream& operator<<(ostream& o, const sm_save_point_t& p) {
-        return o << p._tid << ':' << (const lsn_t&) p;
+        return o << p._tid << ':' << (const lsn_t&)p;
     }
+
     friend istream& operator>>(istream& i, sm_save_point_t& p) {
         char ch;
-        return i >> p._tid >> ch >> (lsn_t&) p;
+        return i >> p._tid >> ch >> (lsn_t&)p;
     }
-    tid_t            tid() const { return _tid; }
+
+    tid_t tid() const {
+        return _tid;
+    }
+
 private:
     friend class ss_m;
-    tid_t            _tid;
+
+    tid_t _tid;
 };
 
 class sm_store_info_t;
 class log_entry;
 class coordinator;
 class tape_t;
+
 /**
  * \brief \b This \b is \b the \b SHORE \b Storage \b Manager \b API.
  * \ingroup SSMBTREE
@@ -392,15 +401,16 @@ class tape_t;
  * Most of the API for using the storage manager is through this
  * interface class.
  */
-class ss_m : public smlevel_top
-{
+class ss_m : public smlevel_top {
     friend class prologue_rc_t;
     friend class log_entry;
     friend class coordinator;
     friend class tape_t;
+
 public:
 
     typedef smlevel_0::concurrency_t concurrency_t;
+
     typedef smlevel_0::xct_state_t xct_state_t;
 
     typedef sm_store_property_t store_property_t;
@@ -434,7 +444,7 @@ public:
 
 #endif /* COMMENT */
 
-  public:
+public:
     /**\brief  Initialize the storage manager.
      * \ingroup SSMINIT
      * \details
@@ -479,7 +489,7 @@ public:
      *  \ref smlevel_0::LOG_ARCHIVED_CALLBACK_FUNC, and
      *  \ref SSMLOG.
      */
-    ss_m(const sm_options &options);
+    ss_m(const sm_options& options);
 
     /**\brief  Shut down the storage manager.
      * \ingroup SSMINIT
@@ -525,7 +535,7 @@ public:
      * \note This method is not thread-safe, only one thread should use this
      * at any time, presumably just before shutting down.
      */
-    static void         set_shutdown_flag(bool clean);
+    static void set_shutdown_flag(bool clean);
 
     /**\brief Cause the storage manager's shutting down to simulate a filthy
      * crash, which worse than the dirty shutdown, because it truncates the log
@@ -535,24 +545,27 @@ public:
      * \note This method is not thread-safe, only one thread should use this
      * at any time, presumably just before shutting down.
      */
-    static void         set_shutdown_filthy(bool filthy);
+    static void set_shutdown_filthy(bool filthy);
 
     /**\brief Notify storage manager when a log file was archived by a
      * LOG_WARN_CALLBACK_FUNC.
      * \ingroup SSMLOG
      * @param[in] logfile   Character string name of file archived.
      */
-    static rc_t         log_file_was_archived(const char * logfile);
+    static rc_t log_file_was_archived(const char* logfile);
 
-    rc_t                _truncate_log();
+    rc_t _truncate_log();
 
 private:
 //    void                _construct_once(LOG_WARN_CALLBACK_FUNC x=nullptr,
 //                                           LOG_ARCHIVED_CALLBACK_FUNC y=nullptr);
-    void                _construct_once();
-    void                _destruct_once();
-    void                _do_restart();
-    void                _finish_recovery();
+    void _construct_once();
+
+    void _destruct_once();
+
+    void _do_restart();
+
+    void _finish_recovery();
 
     // Used for cosntructing xct object depending on chosen implementation
     static xct_t* _new_xct(
@@ -586,8 +599,8 @@ public:
      *
      * \sa int
      */
-    static rc_t           begin_xct(
-        int            timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
+    static rc_t begin_xct(
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
 
     /**\brief Begin an instrumented transaction.
      *\ingroup SSMXCT
@@ -611,9 +624,9 @@ public:
      *
      * \sa int
      */
-    static rc_t           begin_xct(
-        sm_stats_t*         stats,  // allocated by caller
-        int            timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
+    static rc_t begin_xct(
+            sm_stats_t* stats,  // allocated by caller
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
 
     /**\brief Begin a transaction and return the transaction id.
      *\ingroup SSMXCT
@@ -629,9 +642,9 @@ public:
      *
      * \sa int
      */
-    static rc_t           begin_xct(
-        tid_t&                   tid,
-        int            timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
+    static rc_t begin_xct(
+            tid_t& tid,
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
 
     /**
      * \brief Being a new system transaction which might be a nested transaction.
@@ -645,10 +658,10 @@ public:
      * @param[in] stats   Pointer to an allocated statistics-holding structure.
      * @param[in] timeout   Optional, controls blocking behavior.
      */
-    static rc_t           begin_sys_xct(
-        bool single_log_sys_xct = false,
-        sm_stats_t*         stats = nullptr,
-        int            timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
+    static rc_t begin_sys_xct(
+            bool single_log_sys_xct = false,
+            sm_stats_t* stats = nullptr,
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD);
 
     /**\brief Commit a transaction.
      *\ingroup SSMXCT
@@ -663,9 +676,9 @@ public:
      * If \a lazy is true, the log is not synced.  This means that
      * recovery of this transaction might not be possible.
      */
-    static rc_t           commit_xct(
-                                     bool   lazy = false,
-                                     lsn_t* plastlsn=nullptr);
+    static rc_t commit_xct(
+            bool lazy = false,
+            lsn_t* plastlsn = nullptr);
 
     /**\brief Commit an instrumented transaction and get its statistics.
      *\ingroup SSMXCT
@@ -681,10 +694,10 @@ public:
      * If \a lazy is true, the log is not synced.  This means that
      * recovery of this transaction might not be possible.
      */
-    static rc_t            commit_xct(
-                                    sm_stats_t*& stats,
-                                    bool              lazy = false,
-                                    lsn_t*            plastlsn=nullptr);
+    static rc_t commit_xct(
+            sm_stats_t*& stats,
+            bool lazy = false,
+            lsn_t* plastlsn = nullptr);
 
     /**
      * \brief Commit a system transaction, which doesn't cause log sync.
@@ -692,7 +705,7 @@ public:
      * \details
      * This function is a synonym of commit_xct(lazy=true).
      */
-    static rc_t           commit_sys_xct();
+    static rc_t commit_sys_xct();
 
     /**\brief Commit an instrumented transaction and start a new one.
      *\ingroup SSMXCT
@@ -709,9 +722,9 @@ public:
      * If \a lazy is true, the log is not synced.  This means that
      * recovery of this transaction might not be possible.
      */
-    static rc_t            chain_xct(
-        sm_stats_t*&         stats,    /* in w/new, out w/old */
-        bool                      lazy = false);
+    static rc_t chain_xct(
+            sm_stats_t*& stats,    /* in w/new, out w/old */
+            bool lazy = false);
 
     /**\brief Commit a transaction and start a new one, inheriting locks.
      *\ingroup SSMXCT
@@ -727,8 +740,7 @@ public:
      * If \a lazy is true, the log is not synced.  This means that
      * recovery of the committed transaction might not be possible.
      */
-    static rc_t            chain_xct(bool lazy = false);
-
+    static rc_t chain_xct(bool lazy = false);
 
     /**\brief Commit a group of transactions.
      *\ingroup SSMXCT
@@ -769,9 +781,9 @@ public:
 	 * by using ss_m::tid_to_xct from a separate list of transaction ids to determine
 	 * which transactions are extant.
      */
-    static rc_t            commit_xct_group(
-		xct_t *               list[],
-		int                   listlen);
+    static rc_t commit_xct_group(
+            xct_t* list[],
+            int listlen);
 
     /**\brief Abort an instrumented transaction and get its statistics.
      *\ingroup SSMXCT
@@ -780,14 +792,15 @@ public:
      *
      * Abort the attached transaction and detach it, destroy it.
      */
-    static rc_t            abort_xct(sm_stats_t*&  stats);
+    static rc_t abort_xct(sm_stats_t*& stats);
+
     /**\brief Abort a transaction.
      *\ingroup SSMXCT
      * \details
      *
      * Abort the attached transaction and detach it, destroy it.
      */
-    static rc_t            abort_xct();
+    static rc_t abort_xct();
 
     /**\brief Populate a save point.
      *\ingroup SSMSP
@@ -799,7 +812,7 @@ public:
      * \note Only one thread may be attached to a transaction when this
      * is called.
      */
-    static rc_t            save_work(sm_save_point_t& sp);
+    static rc_t save_work(sm_save_point_t& sp);
 
     /**\brief Roll back to a savepoint.
      *\ingroup SSMSP
@@ -813,7 +826,7 @@ public:
      * \note Only one thread may be attached to a transaction when this
      * is called.
      */
-    static rc_t            rollback_work(const sm_save_point_t& sp);
+    static rc_t rollback_work(const sm_save_point_t& sp);
 
     /**\brief Return the number of transactions in active state.
      *\ingroup SSMXCT
@@ -822,14 +835,16 @@ public:
      * be out of date.
      * Useful only for debugging.
      */
-    static uint32_t     num_active_xcts();
+    static uint32_t num_active_xcts();
 
     /**\brief Attach the given transaction to the currently-running smthread_t.
      *\ingroup SSMXCT
      * \details
      * It is assumed that the currently running thread is an smthread_t.
      */
-    static void           attach_xct(xct_t *x) { smthread_t::attach_xct(x); }
+    static void attach_xct(xct_t* x) {
+        smthread_t::attach_xct(x);
+    }
 
     /**\brief Detach any attached from the currently-running smthread_t.
      *\ingroup SSMXCT
@@ -838,8 +853,12 @@ public:
      * This allow the running thread to attach a different
      * transaction and to perform work in its behalf.
      */
-    static void           detach_xct() { xct_t *x = smthread_t::xct();
-                                        if(x) smthread_t::detach_xct(x); }
+    static void detach_xct() {
+        xct_t* x = smthread_t::xct();
+        if (x) {
+            smthread_t::detach_xct(x);
+        }
+    }
 
     /**\brief Get the transaction structure for a given a transaction id.
      *\ingroup SSMXCT
@@ -848,14 +867,15 @@ public:
      * Return a pointer to the storage manager's transaction structure.
      * Can be used with detach_xct and attach_xct.
      */
-    static xct_t*          tid_to_xct(const tid_t& tid);
+    static xct_t* tid_to_xct(const tid_t& tid);
+
     /**\brief Get the transaction ID for a given a transaction structure.
      *\ingroup SSMXCT
      * @param[in] x   Pointer to transaction structure.
      *\details
      * Return the transaction ID for the given transaction.
      */
-    static tid_t           xct_to_tid(const xct_t* x);
+    static tid_t xct_to_tid(const xct_t* x);
 
     /**\brief Print transaction information to an output stream.
      *\ingroup SSMAPIDEBUG
@@ -863,7 +883,7 @@ public:
      * \details
      * This is for debugging only, and is not thread-safe.
      */
-    static rc_t            dump_xcts(ostream &o);
+    static rc_t dump_xcts(ostream& o);
 
     /**\brief Get the transaction state for a given transaction (structure).
      *\ingroup SSMXCT
@@ -873,7 +893,7 @@ public:
      * hard to get the state of an aborted or committed transaction, since
      * their structures no longer exist.
      */
-    static xct_state_t     state_xct(const xct_t* x);
+    static xct_state_t state_xct(const xct_t* x);
 
     /**\brief Return the amount of log this transaction would consume
      * if it rolled back.
@@ -883,7 +903,7 @@ public:
      * be used in conjunction with xct_reserve_log_space to
      * pre-allocate the needed amount of log space before retrying.
      */
-    static off_t        xct_log_space_needed();
+    static off_t xct_log_space_needed();
 
     /**\brief Require the specified amount of log space to be
      * available for this transaction before continuing.
@@ -897,7 +917,7 @@ public:
      * run out of space, because that tends to free up log space and
      * avoids wasting work).
      */
-    static rc_t            xct_reserve_log_space(off_t amt);
+    static rc_t xct_reserve_log_space(off_t amt);
 
     /**
      * \brief Take a checkpoint.
@@ -912,20 +932,22 @@ public:
      *
      * This is thread-safe.
      */
-    static rc_t            checkpoint();
+    static rc_t checkpoint();
 
     /**
      * \brief Force the buffer pool to flush to disk all pages for the given volume.
      * \ingroup SSMBUFPOOL
      */
-    static rc_t            force_volume();
+    static rc_t force_volume();
 
     /**\cond skip
      * Do not document. Very un-thread-safe.
      */
-    static rc_t            dump_buffers(ostream &o);
-    static rc_t            dump_locks(ostream &o);
-    static rc_t            dump_locks(); // defaults to std::cout
+    static rc_t dump_buffers(ostream& o);
+
+    static rc_t dump_locks(ostream& o);
+
+    static rc_t dump_locks(); // defaults to std::cout
 
     /**\endcond skip */
 
@@ -935,25 +957,25 @@ public:
      * @param[out] stats Returns a copy of the statistics for this transaction.
      * @param[in] reset  If true, the statistics for this transaction will be zeroed.
      */
-    static rc_t            gather_xct_stats(
-        sm_stats_t&       stats,
-        bool                   reset = false);
+    static rc_t gather_xct_stats(
+            sm_stats_t& stats,
+            bool reset = false);
 
     /**\brief Get a copy of the global statistics.
      * \ingroup SSMSTATS
      * \details
      * @param[out] stats A pre-allocated structure.
      */
-    static rc_t            gather_stats(
-        sm_stats_t&       stats
-        );
+    static rc_t gather_stats(
+            sm_stats_t& stats
+                            );
 
     /**\brief Get a copy of configuration-dependent information.
      * \ingroup OPT
      * \details
      * @param[out] info A pre-allocated structure.
      */
-    static rc_t            config_info(sm_config_info_t& info);
+    static rc_t config_info(sm_config_info_t& info);
 
     /**\brief Set sleep time before I/O operations.
      * \ingroup SSMVOL
@@ -963,29 +985,31 @@ public:
      * It is useful in discovering thread sync bugs.
      * This delay applies to all threads.
     */
-    static rc_t            set_disk_delay(u_int milli_sec);
+    static rc_t set_disk_delay(u_int milli_sec);
 
     /**
      * \brief Forces a log flush
      * \ingroup SSMLOG
      */
-    static rc_t            sync_log(bool block=true);
+    static rc_t sync_log(bool block = true);
+
     /**
      * \brief Forces a log flush until the given lsn
      * \ingroup SSMLOG
      */
-    static rc_t            flush_until(lsn_t& anlsn, bool block=true);
+    static rc_t flush_until(lsn_t& anlsn, bool block = true);
 
     /**
      * \brief Allowing to access info about the current lsn.
      * \ingroup SSMLOG
      */
-    static rc_t            get_curr_lsn(lsn_t& anlsn);
+    static rc_t get_curr_lsn(lsn_t& anlsn);
+
     /**
      * \brief Allowing to access info about the durable lsn.
      * \ingroup SSMLOG
      */
-    static rc_t            get_durable_lsn(lsn_t& anlsn);
+    static rc_t get_durable_lsn(lsn_t& anlsn);
 
     /**
     * \brief Pretty-prints the content of log file to the given stream
@@ -998,8 +1022,9 @@ public:
     * @param[in] max_lsn If given, we only dump logs required to recover
     * the page up to this LSN. We omit the logs after that.
     */
-    static void             dump_page_lsn_chain(std::ostream &o, const PageID &pid,
-                                                const lsn_t &max_lsn);
+    static void dump_page_lsn_chain(std::ostream& o, const PageID& pid,
+                                    const lsn_t& max_lsn);
+
     /**
     * \brief Pretty-prints the content of log file to the given stream
     * in a way we can easily debug single-page recovery.
@@ -1009,7 +1034,8 @@ public:
     * @param[in] o   Stream to which to write the information.
     * @param[in] pid If given, we only dump logs relevant to the page.
      */
-    static void             dump_page_lsn_chain(std::ostream &o, const PageID &pid);
+    static void dump_page_lsn_chain(std::ostream& o, const PageID& pid);
+
     /**
     * \brief Pretty-prints the content of log file to the given stream
     * in a way we can easily debug single-page recovery.
@@ -1018,7 +1044,7 @@ public:
     * This is for debugging, so performance is not guaranteed and also not thread-safe.
     * @param[in] o   Stream to which to write the information.
      */
-    static void             dump_page_lsn_chain(std::ostream &o);
+    static void dump_page_lsn_chain(std::ostream& o);
 
     /**
      * \brief Verifies consistency of all BTree indexes in the volume.
@@ -1026,8 +1052,8 @@ public:
      * @copydetails btree_impl::_ux_verify_volume()
      * @see verify_index()
      */
-    static rc_t            verify_volume(
-        int hash_bits, verify_volume_result &result);
+    static rc_t verify_volume(
+            int hash_bits, verify_volume_result& result);
 
 
 
@@ -1088,20 +1114,19 @@ public:
      * \ingroup SSMBTREE
      * @param[out] stid New store ID will be returned here.
      */
-    static rc_t            create_index(
-                StoreID&               stid
-    );
-
+    static rc_t create_index(
+            StoreID& stid
+                            );
 
     /**\brief Destroy a B+-Tree index.
      * \ingroup SSMBTREE
      *
      * @param[in] iid  ID of the index to be destroyed.
      */
-    static rc_t            destroy_index(const StoreID& iid);
+    static rc_t destroy_index(const StoreID& iid);
 
     /**\cond skip */
-    static rc_t            print_index(StoreID stid);
+    static rc_t print_index(StoreID stid);
     /**\endcond skip */
 
     /**
@@ -1113,7 +1138,7 @@ public:
      * We traditionally used a cursor to touch all pages, but this one is much more efficient
      * for the purpose.
      */
-    static rc_t            touch_index(StoreID stid, uint64_t &page_count);
+    static rc_t touch_index(StoreID stid, uint64_t& page_count);
 
     /**
      * \brief Create an entry in a B+-Tree index.
@@ -1128,17 +1153,17 @@ public:
      * element vectors must be less than or equal to \ref
      * max_entry_size.
      */
-    static rc_t            create_assoc(
-        StoreID                   stid,
-        const w_keystr_t&             key,
-        const vec_t&             el
-    );
+    static rc_t create_assoc(
+            StoreID stid,
+            const w_keystr_t& key,
+            const vec_t& el
+                            );
 
-    static rc_t            create_assoc(
-        StoreID                   stid,
-        const vec_t&             key,
-        const vec_t&             el
-    );
+    static rc_t create_assoc(
+            StoreID stid,
+            const vec_t& key,
+            const vec_t& el
+                            );
 
     /**
      * \brief Update record data of an entry in a B+-Tree index.
@@ -1147,11 +1172,12 @@ public:
      * @param[in] key  Key for the association to be replaced.
      * @param[in] el  New element for the association.
      */
-    static rc_t            update_assoc(
-        StoreID                   stid,
-        const w_keystr_t&        key,
-        const vec_t&             el
-    );
+    static rc_t update_assoc(
+            StoreID stid,
+            const w_keystr_t& key,
+            const vec_t& el
+                            );
+
     /**
      * \brief Put record data of an entry in a B+-Tree index.
      * \ingroup SSMBTREE
@@ -1159,11 +1185,12 @@ public:
      * @param[in] key  Key for the association to be created or replaced.
      * @param[in] el  New element for the association.
      */
-    static rc_t            put_assoc(
-        StoreID                   stid,
-        const w_keystr_t&        key,
-        const vec_t&             el
-    );
+    static rc_t put_assoc(
+            StoreID stid,
+            const w_keystr_t& key,
+            const vec_t& el
+                         );
+
     /**
     *  \brief This function finds the given key, updates the specific part of element if found.
      * \ingroup SSMBTREE
@@ -1173,20 +1200,20 @@ public:
     * @param[in] offset overwrites to this position of the record
     * @param[in] elen number of bytes to overwrite
     */
-    static rc_t            overwrite_assoc(
-        StoreID                   stid,
-        const w_keystr_t&        key,
-        const char *el, smsize_t offset, smsize_t elen);
+    static rc_t overwrite_assoc(
+            StoreID stid,
+            const w_keystr_t& key,
+            const char* el, smsize_t offset, smsize_t elen);
 
     /** \brief Remove an entry from a B+-Tree index.
      * \ingroup SSMBTREE
      * @param[in] stid  ID of the index.
      * @param[in] key   Key of the entry to be removed.
      */
-    static rc_t            destroy_assoc(
-        StoreID                   stid,
-        const w_keystr_t&             key
-    );
+    static rc_t destroy_assoc(
+            StoreID stid,
+            const w_keystr_t& key
+                             );
 
     /** \brief Find an entry associated with a key in a B+-Tree index.
      * \ingroup SSMBTREE
@@ -1203,20 +1230,20 @@ public:
      * If the index is not unique (allows duplicates), the first
      * element found with the given key will be returned.
      */
-    static rc_t            find_assoc(
-        StoreID                  stid,
-        const w_keystr_t&            key,
-        void*                   el,
-        smsize_t&               elen,
-        bool&                   found
-    );
+    static rc_t find_assoc(
+            StoreID stid,
+            const w_keystr_t& key,
+            void* el,
+            smsize_t& elen,
+            bool& found
+                          );
 
     /**
      * \brief Defrags the given page to remove holes and ghost records in the page.
      * \ingroup SSMBTREE
      * @copydetails btree_impl::_sx_defrag_page
     */
-    static rc_t           defrag_index_page(btree_page_h &page);
+    static rc_t defrag_index_page(btree_page_h& page);
 
     /**
     * \brief Verifies the integrity of B-Tree index using the fence-key bitmap technique.
@@ -1233,7 +1260,7 @@ public:
     * @param[in] hash_bits the number of bits we use for hashing, at most 31.
     * @param[out] consistent whether the BTree is consistent
     */
-    static rc_t           verify_index(StoreID  stid, int hash_bits, bool &consistent);
+    static rc_t verify_index(StoreID stid, int hash_bits, bool& consistent);
 
     /**
      * Starts reading a given store and returns its root page ID.
@@ -1241,10 +1268,11 @@ public:
      * this takes an intent lock on it.
      * @param for_update whether to take IX or IS lock on the store.
      */
-    static rc_t open_store (StoreID stid, PageID &root_pid,
-                            bool for_update = false);
+    static rc_t open_store(StoreID stid, PageID& root_pid,
+                           bool for_update = false);
+
     /** This version doesn't take a lock. */
-    static rc_t open_store_nolock (StoreID stid, PageID &root_pid);
+    static rc_t open_store_nolock(StoreID stid, PageID& root_pid);
 
     /*****************************************************************
      * Locking related functions
@@ -1256,7 +1284,7 @@ public:
      *****************************************************************/
 
     /** Returns the global lock table object for light-weight intent locks. */
-    static lil_global_table*  get_lil_global_table();
+    static lil_global_table* get_lil_global_table();
 
     /**
      * \brief Acquire a lock.
@@ -1268,19 +1296,21 @@ public:
      * @param[in]  check_only  if true, the lock goes away right after grant. default false.
      * @param[in]  timeout  Milliseconds willing to block.  See int.
      */
-    static rc_t            lock(
-        const lockid_t&         n,
-        const okvl_mode&           m,
-        bool                    check_only = false,
-        int           timeout = timeout_t::WAIT_SPECIFIED_BY_XCT
-    );
+    static rc_t lock(
+            const lockid_t& n,
+            const okvl_mode& m,
+            bool check_only = false,
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_XCT
+                    );
 
-    static rc_t            activate_archiver();
+    static rc_t activate_archiver();
 
     /** Start-up parameters for the storage engine. */
     static sm_options _options;
 
-    static const sm_options& get_options() { return _options; }
+    static const sm_options& get_options() {
+        return _options;
+    }
 
 private:
 
@@ -1288,49 +1318,50 @@ private:
 
     void _set_option_logsize();
 
-    static rc_t            _set_store_property(
-        StoreID                stid,
-        store_property_t      property);
+    static rc_t _set_store_property(
+            StoreID stid,
+            store_property_t property);
 
-    static rc_t            _get_store_property(
-        StoreID                stid,
-        store_property_t&     property);
+    static rc_t _get_store_property(
+            StoreID stid,
+            store_property_t& property);
 
-    static rc_t         _begin_xct(
-        sm_stats_t*      stats,  // allocated by caller
-        tid_t&                tid,
-        int         timeout,
-        bool sys_xct = false,
-        bool single_log_sys_xct = false);
+    static rc_t _begin_xct(
+            sm_stats_t* stats,  // allocated by caller
+            tid_t& tid,
+            int timeout,
+            bool sys_xct = false,
+            bool single_log_sys_xct = false);
 
-    static rc_t            _commit_xct(
-        sm_stats_t*&     stats,
-        bool                  lazy,
-        lsn_t* plastlsn);
+    static rc_t _commit_xct(
+            sm_stats_t*& stats,
+            bool lazy,
+            lsn_t* plastlsn);
 
-    static rc_t            _commit_xct_group(
-        xct_t *               list[],
-        int                   listlen);
-    static rc_t            _chain_xct(
-        sm_stats_t*&      stats,
-        bool                   lazy);
+    static rc_t _commit_xct_group(
+            xct_t* list[],
+            int listlen);
 
-    static rc_t            _abort_xct(
-        sm_stats_t*&      stats);
+    static rc_t _chain_xct(
+            sm_stats_t*& stats,
+            bool lazy);
 
-    static rc_t            _save_work(sm_save_point_t& sp);
+    static rc_t _abort_xct(
+            sm_stats_t*& stats);
 
-    static rc_t            _rollback_work(const sm_save_point_t&        sp);
+    static rc_t _save_work(sm_save_point_t& sp);
 
-    static rc_t            _get_store_info(
-        const StoreID  &       stid,
-        sm_store_info_t&      info);
+    static rc_t _rollback_work(const sm_save_point_t& sp);
+
+    static rc_t _get_store_info(
+            const StoreID& stid,
+            sm_store_info_t& info);
 
     //
     // The following functions deal with files of records.
     //
 
-    static store_flag_t     _make_store_flag(store_property_t property);
+    static store_flag_t _make_store_flag(store_property_t property);
     // reverse function:
     // static store_property_t    _make_store_property(uint32_t flag);
     // is in dir_vol_m
@@ -1344,28 +1375,27 @@ private:
  */
 class sm_store_info_t {
 public:
-    NORET sm_store_info_t() : store(0), root(0) {}
+    NORET sm_store_info_t() : store(0),
+                              root(0) {}
 
-    NORET ~sm_store_info_t() {  }
+    NORET ~sm_store_info_t() {}
 
     /// store number
-    StoreID    store;
+    StoreID store;
 
     /// Root page if this is an index.
-    PageID    root;
+    PageID root;
 };
 
-
 ostream& operator<<(ostream& o, const sm_stats_t& s);
+
 template<class ostream>
-ostream& operator<<(ostream& o, const sm_config_info_t& s)
-{
-    o    << "  page_size " << s.page_size
-     << "  lg_rec_page_space " << s.lg_rec_page_space
-     << "  buffer_pool_size " << s.buffer_pool_size
-     << "  max_btree_entry_size " << s.max_btree_entry_size
-     << "  logging " << s.logging
-      ;
+ostream& operator<<(ostream& o, const sm_config_info_t& s) {
+    o << "  page_size " << s.page_size
+      << "  lg_rec_page_space " << s.lg_rec_page_space
+      << "  buffer_pool_size " << s.buffer_pool_size
+      << "  max_btree_entry_size " << s.max_btree_entry_size
+      << "  logging " << s.logging;
     return o;
 }
 

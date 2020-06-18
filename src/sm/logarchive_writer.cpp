@@ -7,10 +7,15 @@
 const static int IO_BLOCK_COUNT = 8; // total buffer = 8MB
 
 BlockAssembly::BlockAssembly(ArchiveIndex* index, unsigned level, bool compression)
-    : dest(nullptr), maxLSNInBlock(lsn_t::null), maxLSNLength(0),
-    lastRun(-1), currentPID(0), bucketSize(0), nextBucket(0), level(level),
-    maxPID(std::numeric_limits<PageID>::min())
-{
+        : dest(nullptr),
+          maxLSNInBlock(lsn_t::null),
+          maxLSNLength(0),
+          lastRun(-1),
+          currentPID(0),
+          bucketSize(0),
+          nextBucket(0),
+          level(level),
+          maxPID(std::numeric_limits<PageID>::min()) {
     archIndex = index;
     blockSize = archIndex->getBlockSize();
     bucketSize = archIndex->getBucketSize();
@@ -24,8 +29,7 @@ BlockAssembly::BlockAssembly(ArchiveIndex* index, unsigned level, bool compressi
     enableCompression = compression;
 }
 
-BlockAssembly::~BlockAssembly()
-{
+BlockAssembly::~BlockAssembly() {
     if (!writebuf->isFinished()) {
         shutdown();
     }
@@ -33,44 +37,38 @@ BlockAssembly::~BlockAssembly()
     delete writebuf;
 }
 
-bool BlockAssembly::hasPendingBlocks()
-{
+bool BlockAssembly::hasPendingBlocks() {
     return !writebuf->isEmpty();
 }
 
-run_number_t BlockAssembly::getRunFromBlock(const char* b)
-{
-    BlockHeader* h = (BlockHeader*) b;
+run_number_t BlockAssembly::getRunFromBlock(const char* b) {
+    BlockHeader* h = (BlockHeader*)b;
     return h->run;
 }
 
-PageID BlockAssembly::getMaxPIDFromBlock(const char* b)
-{
-    BlockHeader* h = (BlockHeader*) b;
+PageID BlockAssembly::getMaxPIDFromBlock(const char* b) {
+    BlockHeader* h = (BlockHeader*)b;
     return h->maxPID;
 }
 
-lsn_t BlockAssembly::getLSNFromBlock(const char* b)
-{
-    BlockHeader* h = (BlockHeader*) b;
+lsn_t BlockAssembly::getLSNFromBlock(const char* b) {
+    BlockHeader* h = (BlockHeader*)b;
     return h->lsn;
 }
 
-size_t BlockAssembly::getEndOfBlock(const char* b)
-{
-    BlockHeader* h = (BlockHeader*) b;
+size_t BlockAssembly::getEndOfBlock(const char* b) {
+    BlockHeader* h = (BlockHeader*)b;
     return h->end;
 }
 
-bool BlockAssembly::start(run_number_t run)
-{
+bool BlockAssembly::start(run_number_t run) {
     DBGTHRD(<< "Requesting write block for selection");
     dest = writebuf->producerRequest();
     if (!dest) {
         DBGTHRD(<< "Block request failed!");
         if (!writebuf->isFinished()) {
             W_FATAL_MSG(fcINTERNAL,
-                    << "ERROR: write ring buffer refused produce request");
+                        << "ERROR: write ring buffer refused produce request");
         }
         return false;
     }
@@ -95,8 +93,7 @@ bool BlockAssembly::start(run_number_t run)
     return true;
 }
 
-bool BlockAssembly::add(logrec_t* lr)
-{
+bool BlockAssembly::add(logrec_t* lr) {
     w_assert0(dest);
     w_assert1(lr->valid_header());
 
@@ -108,9 +105,12 @@ bool BlockAssembly::add(logrec_t* lr)
         if (enableCompression && lr->type() == logrec_t::t_page_img_format) {
             size_t imgAvailable = blockSize - (currentPIDpos + spaceToReserve);
             bool hasSpaceForPageImg = lr->pid() == currentPID && lr->length() < imgAvailable;
-            if (!hasSpaceForPageImg) { return false; }
+            if (!hasSpaceForPageImg) {
+                return false;
+            }
+        } else {
+            return false;
         }
-        else { return false; }
     }
 
     // New PID coming in: reset current PID stuff and check if it's time to add new bucket
@@ -126,7 +126,9 @@ bool BlockAssembly::add(logrec_t* lr)
             nextBucket = shpid / bucketSize + 1;
         }
 
-        if (currentPID > maxPID) { maxPID = currentPID; }
+        if (currentPID > maxPID) {
+            maxPID = currentPID;
+        }
     }
 
     if (maxLSNInBlock < lr->lsn_ck()) {
@@ -155,17 +157,16 @@ bool BlockAssembly::add(logrec_t* lr)
     return true;
 }
 
-void BlockAssembly::finish()
-{
-    DBGTHRD("Selection produced block for writing " << (void*) dest <<
-            " in run " << (int) lastRun << " with end " << pos);
+void BlockAssembly::finish() {
+    DBGTHRD("Selection produced block for writing " << (void*)dest <<
+                                                    " in run " << (int)lastRun << " with end " << pos);
     w_assert0(dest);
 
     w_assert0(archIndex);
     archIndex->newBlock(buckets, level);
 
     // write block header info
-    BlockHeader* h = (BlockHeader*) dest;
+    BlockHeader* h = (BlockHeader*)dest;
     h->run = lastRun;
     h->end = pos;
     h->maxPID = maxPID;
@@ -180,7 +181,7 @@ void BlockAssembly::finish()
      */
     h->lsn = maxLSNInBlock.advance(maxLSNLength);
 
-#if W_DEBUG_LEVEL>=3
+#if W_DEBUG_LEVEL >= 3
     // verify that all log records are within end boundary
     size_t vpos = sizeof(BlockHeader);
     while (vpos < pos) {
@@ -195,18 +196,16 @@ void BlockAssembly::finish()
     dest = nullptr;
 }
 
-void BlockAssembly::shutdown()
-{
+void BlockAssembly::shutdown() {
     w_assert0(!dest);
     writebuf->set_finished();
     writer->join();
 }
 
-void WriterThread::run()
-{
+void WriterThread::run() {
     DBGTHRD(<< "Writer thread activated");
 
-    while(true) {
+    while (true) {
         char* src = buf->consumerRequest();
         if (!src) {
             /* Is the finished flag necessary? Yes.
@@ -243,24 +242,28 @@ void WriterThread::run()
             w_assert1(index->getLastLSN(level) == maxLSNInRun);
             currentRun = run;
             DBGTHRD(<< "Opening file for new run " << run
-                    << " starting on LSN " << maxLSNInRun);
+                            << " starting on LSN " << maxLSNInRun);
             maxLSNInRun = lsn_t::null;
         }
 
         lsn_t blockLSN = BlockAssembly::getLSNFromBlock(src);
-        if (blockLSN > maxLSNInRun) { maxLSNInRun = blockLSN; }
+        if (blockLSN > maxLSNInRun) {
+            maxLSNInRun = blockLSN;
+        }
 
         PageID maxPID = BlockAssembly::getMaxPIDFromBlock(src);
-        if (maxPID > maxPIDInRun) { maxPIDInRun = maxPID; }
+        if (maxPID > maxPIDInRun) {
+            maxPIDInRun = maxPID;
+        }
 
         size_t blockEnd = BlockAssembly::getEndOfBlock(src);
-        size_t actualBlockSize= blockEnd - sizeof(BlockAssembly::BlockHeader);
+        size_t actualBlockSize = blockEnd - sizeof(BlockAssembly::BlockHeader);
         memmove(src, src + sizeof(BlockAssembly::BlockHeader), actualBlockSize);
 
         W_COERCE(index->append(src, actualBlockSize, level));
 
         DBGTHRD(<< "Wrote out block " << (void*) src
-                << " with max LSN " << blockLSN);
+                        << " with max LSN " << blockLSN);
 
         buf->consumerRelease();
     }

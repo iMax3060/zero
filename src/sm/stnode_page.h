@@ -22,15 +22,16 @@
  */
 struct alignas(8) stnode_t {
     /// also okay to initialize via memset
-    stnode_t() : root(0), last_extent(0), clustered(false)
-    { }
+    stnode_t() : root(0),
+                 last_extent(0),
+                 clustered(false) {}
 
     /**
      * Root page ID of the store; 0 if the store is not allocated and 1 for
      * the special store number 0, which is used to keep track of the last
      * extent allocated which was not assigned to a specific store.
      */
-    PageID         root;
+    PageID root;
 
     /**
      * If this store is clustered (see flag below), this keeps track of the
@@ -46,9 +47,10 @@ struct alignas(8) stnode_t {
      */
     bool clustered;
 
-    bool is_used() const  { return root != 0; }
+    bool is_used() const {
+        return root != 0;
+    }
 };
-
 
 /**
  * \brief Store-node page that contains one stnode_t for each
@@ -60,7 +62,7 @@ public:
     /// max # \ref stnode_t's on a single stnode_page; thus, the
     /// maximum number of stores per volume
     static constexpr size_t max =
-        (page_sz - sizeof(generic_page_header)) / sizeof(stnode_t);
+            (page_sz - sizeof(generic_page_header)) / sizeof(stnode_t);
 
     // Page ID used by the stnode page
     static constexpr PageID stpid = 1;
@@ -75,15 +77,13 @@ public:
         stnode[index].root = root;
     }
 
-    void set_last_extent(size_t index, extent_id_t ext)
-    {
+    void set_last_extent(size_t index, extent_id_t ext) {
         w_assert1(index < max);
         w_assert1(index == 0 || stnode[index].is_used());
         stnode[index].last_extent = ext;
     }
 
-    extent_id_t get_last_extent(size_t index)
-    {
+    extent_id_t get_last_extent(size_t index) {
         w_assert1(index < max);
         return stnode[index].last_extent;
     }
@@ -97,8 +97,7 @@ public:
     }
 
     // Used to generate page_img_format log records.
-    char* unused_part(size_t& length)
-    {
+    char* unused_part(size_t& length) {
         size_t first_unused = 0;
         for (size_t i = 1; i < stnode_page::max; ++i) {
             if (!stnode[i].is_used()) {
@@ -113,11 +112,11 @@ public:
         return unused;
     }
 
-
 private:
     /// stnode[i] is the stnode_t for store # i of this volume
     stnode_t stnode[max];
 };
+
 BOOST_STATIC_ASSERT(sizeof(stnode_page) == generic_page_header::page_sz);
 
 /**
@@ -169,7 +168,6 @@ private:
     /// this volume or stnode_page::max if all available stores of
     /// this volume are already allocated.
     StoreID get_min_unused_stid(stnode_page* spage) const;
-
 };
 
 #endif // __STNODE_PAGE_H

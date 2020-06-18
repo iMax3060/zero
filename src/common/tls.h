@@ -103,15 +103,20 @@ namespace tls_tricks {
  * variables get initialized unless they are declared in the same file
  * or declared using a DECLARE_TLS_SCHWARZ/DEFINE_TLS_SCHWARZ pair.
 */
-class tls_manager {
-public:
-    static void global_init();
-    static void global_fini();
-    static void register_tls(void (*init)(), void (*fini)());
-    static void thread_init();
-    static void thread_fini();
-    static __thread bool _thread_initialized;
-};
+    class tls_manager {
+    public:
+        static void global_init();
+
+        static void global_fini();
+
+        static void register_tls(void (* init)(), void (* fini)());
+
+        static void thread_init();
+
+        static void thread_fini();
+
+        static __thread bool _thread_initialized;
+    };
 
 /**\brief Static struct to make
  * sure tls_manager's global init() and fini() are called.
@@ -122,13 +127,19 @@ public:
  * tls_manager is indeed initialized before any other
  * schwarz counter or static declaration uses register_tls.
  */
-struct tls_manager_schwarz {
-    /**\brief Constructor: invokes global init of all registered tls initializers */
-    tls_manager_schwarz() { tls_manager::global_init(); }
-    /**\brief Destructor: invokes global init of all registered tls destructors */
-    ~tls_manager_schwarz() { tls_manager::global_fini(); }
-} ;
-static struct tls_manager_schwarz tlsm_schwarz_one_and_only;
+    struct tls_manager_schwarz {
+        /**\brief Constructor: invokes global init of all registered tls initializers */
+        tls_manager_schwarz() {
+            tls_manager::global_init();
+        }
+
+        /**\brief Destructor: invokes global init of all registered tls destructors */
+        ~tls_manager_schwarz() {
+            tls_manager::global_fini();
+        }
+    };
+
+    static struct tls_manager_schwarz tlsm_schwarz_one_and_only;
 
 /** \brief Wrapper for a type, used by TLS_STRUCT helper macro
  *
@@ -136,29 +147,38 @@ static struct tls_manager_schwarz tlsm_schwarz_one_and_only;
  * just a bunch of bytes... until init() and fini() are called,
  * that is. After that the tls_blob acts like a smart pointer.
  */
-template<typename T>
-struct tls_blob {
-    enum { MAX_BYTES_NEEDED = sizeof(T)+sizeof(long)-1,
-       ARRAY_SIZE = MAX_BYTES_NEEDED/sizeof(long) };
+    template<typename T>
+    struct tls_blob {
+        enum {
+            MAX_BYTES_NEEDED = sizeof(T) + sizeof(long) - 1,
+            ARRAY_SIZE = MAX_BYTES_NEEDED / sizeof(long)
+        };
 
-    // force proper alignment...
-    long _reserved_space[ARRAY_SIZE];
+        // force proper alignment...
+        long _reserved_space[ARRAY_SIZE];
 
-    /** Placement new, using _reserved_space, to make the type T's
-    * constructor get called.
-    */
-    void init() { new (get()) T; }
-    /** 
-     * Call T's destructor */
-    void fini() { get()->~T();   }
-    
-    
-    /** \brief Used by fini() and init() and directly by macros */
-    T* get() {
-        union { long* a; T* t; } u = {_reserved_space};
-        return u.t;
-    }
-};
+        /** Placement new, using _reserved_space, to make the type T's
+        * constructor get called.
+        */
+        void init() {
+            new(get()) T;
+        }
+
+        /**
+         * Call T's destructor */
+        void fini() {
+            get()->~T();
+        }
+
+        /** \brief Used by fini() and init() and directly by macros */
+        T* get() {
+            union {
+                long* a;
+                T* t;
+            } u = {_reserved_space};
+            return u.t;
+        }
+    };
 
 /* WARNING: These thread-local variables essentially use the namespace
    of types, not variables for the purposes of detecting naming
@@ -247,7 +267,7 @@ struct Name {                                            \
  * a tls_tricks::tls_blobType.
  *
  *\addindex DECLARE_TLS
- */ 
+ */
 #define DECLARE_TLS(Type, Name) \
     static \
     TLS_STRUCT(Type, Name##_tls_wrapper, Name##_tls_wrapper) Name
@@ -287,7 +307,6 @@ struct Name {                                            \
     Name##_tls_wrapper_schwarz::Name##_tls_wrapper_schwarz() {        \
         Name##_tls_wrapper::init_wrapper();                \
     }
-
 } /* namespace tls_tricks */
 
 #endif // __TLS_H

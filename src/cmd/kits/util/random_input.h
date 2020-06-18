@@ -33,7 +33,6 @@
 #ifndef __RANDOM_INPUT_H
 #define __RANDOM_INPUT_H
 
-
 #include "zipfian.h"
 #include "kits_thread.h"
 
@@ -46,7 +45,6 @@ short URandShort(const short low, const short high);
 void URandFillStrCaps(char* dest, const int sz);
 
 void URandFillStrNumbx(char* dest, const int sz);
-
 
 int ZRand(const int low, const int high);
 

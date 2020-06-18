@@ -30,8 +30,7 @@
 #define LARGEFILE_AWARE
 #endif
 
-
-#if TRACECODE==1
+#if TRACECODE == 1
 #define W_TRACE
 #endif
 

@@ -13,16 +13,12 @@
  * possible -- new code should use the C++11 thread library directly (as soon as the TODO
  * below about tls_manager is fixed...)
  */
-class thread_wrapper_t
-{
+class thread_wrapper_t {
 public:
 
-    thread_wrapper_t()
-    {
-    }
+    thread_wrapper_t() {}
 
-    virtual ~thread_wrapper_t()
-    {
+    virtual ~thread_wrapper_t() {
         thread_ptr.reset();
     }
 
@@ -30,11 +26,12 @@ public:
      * Virtual methods to be overridden by sub-classes.
      */
     virtual void run() = 0;
+
     virtual void before_run() {};
+
     virtual void after_run() {};
 
-    void spawn()
-    {
+    void spawn() {
         // CS TODO: these are required for the old shore TLS allocator, which is still used.
         // With C++11 and the thread_local specifier, it should be much easier to perform this
         // type of static initialization;
@@ -52,13 +49,13 @@ public:
         latch_t::on_thread_destroy();
     }
 
-    void fork()
-    {
-        thread_ptr.reset(new std::thread ([this] { spawn(); }));
+    void fork() {
+        thread_ptr.reset(new std::thread([this] {
+            spawn();
+        }));
     }
 
-    void join()
-    {
+    void join() {
         if (thread_ptr) {
             thread_ptr->join();
             thread_ptr = nullptr;

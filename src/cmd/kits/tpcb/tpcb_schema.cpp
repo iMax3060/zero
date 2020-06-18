@@ -59,71 +59,63 @@ namespace tpcb {
  */
 
 
-branch_t::branch_t()
-      : table_desc_t("BRANCH", 2)
-{
-    // Schema
-    _desc[0].setup(SQL_INT,   "B_ID");
-    _desc[1].setup(SQL_FLOAT, "B_BALANCE");
+    branch_t::branch_t()
+            : table_desc_t("BRANCH", 2) {
+        // Schema
+        _desc[0].setup(SQL_INT, "B_ID");
+        _desc[1].setup(SQL_FLOAT, "B_BALANCE");
 
-    // create unique index b_idx on (b_id)
-    uint  keys1[1] = { 0 }; // IDX { B_ID }
-    create_primary_idx_desc(keys1, 1);
-}
+        // create unique index b_idx on (b_id)
+        uint keys1[1] = {0}; // IDX { B_ID }
+        create_primary_idx_desc(keys1, 1);
+    }
 
+    teller_t::teller_t()
+            : table_desc_t("TELLER", 3) {
+        // Schema
+        _desc[0].setup(SQL_INT, "T_ID");
+        _desc[1].setup(SQL_INT, "T_B_ID");
+        _desc[2].setup(SQL_FLOAT, "T_BALANCE");
 
+        // create unique index t_idx on (t_id)
+        uint keys1[1] = {0}; // IDX { T_ID }
+        create_primary_idx_desc(keys1, 1);
+    }
 
-teller_t::teller_t()
-      : table_desc_t("TELLER", 3)
-{
-    // Schema
-    _desc[0].setup(SQL_INT,   "T_ID");
-    _desc[1].setup(SQL_INT,   "T_B_ID");
-    _desc[2].setup(SQL_FLOAT, "T_BALANCE");
-
-    // create unique index t_idx on (t_id)
-    uint keys1[1] = { 0 }; // IDX { T_ID }
-    create_primary_idx_desc(keys1, 1);
-}
-
-
-
-account_t::account_t()
-      : table_desc_t("ACCOUNT", 3)
-{
-    // Schema
-    _desc[0].setup(SQL_INT,    "A_ID");
-    _desc[1].setup(SQL_INT,    "A_B_ID");
-    _desc[2].setup(SQL_FLOAT,  "A_BALANCE");
+    account_t::account_t()
+            : table_desc_t("ACCOUNT", 3) {
+        // Schema
+        _desc[0].setup(SQL_INT, "A_ID");
+        _desc[1].setup(SQL_INT, "A_B_ID");
+        _desc[2].setup(SQL_FLOAT, "A_BALANCE");
 
 #ifdef PLP_MBENCH
 #warning PLP MBench !!!!
-    uint keys1[3] = { 0, 1, 2};
-    uint nkeys = 3;
+        uint keys1[3] = { 0, 1, 2};
+        uint nkeys = 3;
 #else
-    uint keys1[1] = {0 }; // IDX { A_ID }
-    uint nkeys = 1;
+        uint keys1[1] = {0}; // IDX { A_ID }
+        uint nkeys = 1;
 #endif
 
-    // create unique index a_idx on (a_id)
-    create_primary_idx_desc(keys1, nkeys);
-}
+        // create unique index a_idx on (a_id)
+        create_primary_idx_desc(keys1, nkeys);
+    }
 
-
-history_t::history_t()
-      : table_desc_t("HISTORY", 5)
+    history_t::history_t()
+            : table_desc_t("HISTORY", 5)
 #
-{
-    // Schema
-    _desc[0].setup(SQL_INT,   "H_B_ID");
-    _desc[1].setup(SQL_INT,   "H_T_ID");
-    _desc[2].setup(SQL_INT,   "H_A_ID");
-    _desc[3].setup(SQL_FLOAT, "H_DELTA");   /* old: INT */
-    _desc[4].setup(SQL_FLOAT, "H_TIME");    /* old: TIME */
 
-    // index is required in Zero -- use all fields
-    unsigned keys[5] = { 0, 1, 2, 3, 4 };
-    create_primary_idx_desc(keys, 5);
-}
+    {
+        // Schema
+        _desc[0].setup(SQL_INT, "H_B_ID");
+        _desc[1].setup(SQL_INT, "H_T_ID");
+        _desc[2].setup(SQL_INT, "H_A_ID");
+        _desc[3].setup(SQL_FLOAT, "H_DELTA");   /* old: INT */
+        _desc[4].setup(SQL_FLOAT, "H_TIME");    /* old: TIME */
 
+        // index is required in Zero -- use all fields
+        unsigned keys[5] = {0, 1, 2, 3, 4};
+        create_primary_idx_desc(keys, 5);
+    }
 }; // namespace

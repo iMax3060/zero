@@ -114,8 +114,7 @@
  * --------------------------------------------------------------- */
 
 template<class T> // T is a table_desc_t implementation
-class table_man_t
-{
+class table_man_t {
 protected:
 
     T* _ptable;       /* pointer back to the table description */
@@ -125,10 +124,9 @@ protected:
 public:
 
     table_man_t(T* aTableDesc,
-		bool construct_cache=true)
-        : _ptable(aTableDesc)
-    {
-	// init tuple cache
+                bool construct_cache = true)
+            : _ptable(aTableDesc) {
+        // init tuple cache
         if (construct_cache) {
             // init trash stack
             _pts = new blob_pool(_ptable->maxsize());
@@ -139,7 +137,9 @@ public:
 
     virtual ~table_man_t() {}
 
-    T* table() { return (_ptable); }
+    T* table() {
+        return (_ptable);
+    }
 
     // loads store id values in fid field for this table and its indexes
     w_rc_t load_and_register_fid(ss_m* db);
@@ -148,7 +148,10 @@ public:
     /* --- trash stack operations --- */
     /* ------------------------------ */
 
-    blob_pool* ts() { assert (_pts); return (_pts); }
+    blob_pool* ts() {
+        assert (_pts);
+        return (_pts);
+    }
 
 
     /* ---------------------------- */
@@ -158,68 +161,62 @@ public:
     // idx probe
     w_rc_t index_probe(ss_m* db,
                        index_desc_t* pidx,
-                       table_row_t*  ptuple,
+                       table_row_t* ptuple,
                        const lock_mode_t lock_mode = okvl_mode::S,     /* One of: N, S, X */
                        const PageID& root = 0);   /* Start of the search */
 
     // probe idx in X (& LATCH_EX) mode
-    inline w_rc_t   index_probe_forupdate(ss_m* db,
-                                          index_desc_t* pidx,
-                                          table_row_t*  ptuple,
-                                          const PageID& root = 0)
-    {
+    inline w_rc_t index_probe_forupdate(ss_m* db,
+                                        index_desc_t* pidx,
+                                        table_row_t* ptuple,
+                                        const PageID& root = 0) {
         return (index_probe(db, pidx, ptuple, okvl_mode::X, root));
     }
 
     // probe idx in N (& LATCH_SH) mode
-    inline w_rc_t   index_probe_nl(ss_m* db,
-                                   index_desc_t* pidx,
-                                   table_row_t*  ptuple,
-                                   const PageID& root = 0)
-    {
+    inline w_rc_t index_probe_nl(ss_m* db,
+                                 index_desc_t* pidx,
+                                 table_row_t* ptuple,
+                                 const PageID& root = 0) {
         return (index_probe(db, pidx, ptuple, okvl_mode::N, root));
     }
 
     // probe primary idx
-    inline w_rc_t   index_probe_primary(ss_m* db,
-                                        table_row_t* ptuple,
-                                        lock_mode_t  lock_mode = okvl_mode::S,
-                                        const PageID& root = 0)
-    {
+    inline w_rc_t index_probe_primary(ss_m* db,
+                                      table_row_t* ptuple,
+                                      lock_mode_t lock_mode = okvl_mode::S,
+                                      const PageID& root = 0) {
         assert (_ptable && _ptable->primary_idx());
         return (index_probe(db, _ptable->primary_idx(), ptuple, lock_mode, root));
     }
 
     // idx probe - based on idx name //
-    inline w_rc_t   index_probe_by_name(ss_m* db,
-                                        const char*  idx_name,
-                                        table_row_t* ptuple,
-                                        lock_mode_t  lock_mode = okvl_mode::S,
-                                        const PageID& root = 0)
-    {
+    inline w_rc_t index_probe_by_name(ss_m* db,
+                                      const char* idx_name,
+                                      table_row_t* ptuple,
+                                      lock_mode_t lock_mode = okvl_mode::S,
+                                      const PageID& root = 0) {
         index_desc_t* pindex = _ptable->find_index(idx_name);
         return (index_probe(db, pindex, ptuple, lock_mode, root));
     }
 
     // probe idx in EX (& LATCH_EX) mode - based on idx name //
-    inline w_rc_t   index_probe_forupdate_by_name(ss_m* db,
-                                                  const char* idx_name,
-                                                  table_row_t* ptuple,
-                                                  const PageID& root = 0)
-    {
-	index_desc_t* pindex = _ptable->find_index(idx_name);
+    inline w_rc_t index_probe_forupdate_by_name(ss_m* db,
+                                                const char* idx_name,
+                                                table_row_t* ptuple,
+                                                const PageID& root = 0) {
+        index_desc_t* pindex = _ptable->find_index(idx_name);
         w_assert0(pindex);
-	return (index_probe_forupdate(db, pindex, ptuple, root));
+        return (index_probe_forupdate(db, pindex, ptuple, root));
     }
 
     // probe idx in N (& LATCH_NL) mode - based on idx name //
-    inline w_rc_t   index_probe_nl_by_name(ss_m* db,
-                                           const char* idx_name,
-                                           table_row_t* ptuple,
-                                           const PageID& root = 0)
-    {
-	index_desc_t* pindex = _ptable->find_index(idx_name);
-	return (index_probe_nl(db, pindex, ptuple, root));
+    inline w_rc_t index_probe_nl_by_name(ss_m* db,
+                                         const char* idx_name,
+                                         table_row_t* ptuple,
+                                         const PageID& root = 0) {
+        index_desc_t* pindex = _ptable->find_index(idx_name);
+        return (index_probe_nl(db, pindex, ptuple, root));
     }
 
 
@@ -227,45 +224,44 @@ public:
     /* --- tuple manipulation --- */
     /* -------------------------- */
 
-    w_rc_t    add_tuple(ss_m* db,
-                        table_row_t*  ptuple,
-                        const lock_mode_t   lock_mode = okvl_mode::X,
-                        const PageID& primary_root = 0);
+    w_rc_t add_tuple(ss_m* db,
+                     table_row_t* ptuple,
+                     const lock_mode_t lock_mode = okvl_mode::X,
+                     const PageID& primary_root = 0);
 
-    w_rc_t    add_index_entry(ss_m* db,
-			      const char* idx_name,
-			      table_row_t* ptuple,
-			      const lock_mode_t lock_mode = okvl_mode::X,
-			      const PageID& primary_root = 0);
-
-    w_rc_t    delete_tuple(ss_m* db,
+    w_rc_t add_index_entry(ss_m* db,
+                           const char* idx_name,
                            table_row_t* ptuple,
                            const lock_mode_t lock_mode = okvl_mode::X,
                            const PageID& primary_root = 0);
 
-    w_rc_t    delete_index_entry(ss_m* db,
-				 const char* idx_name,
-				 table_row_t* ptuple,
-				 const lock_mode_t lock_mode = okvl_mode::X,
-				 const PageID& primary_root = 0);
+    w_rc_t delete_tuple(ss_m* db,
+                        table_row_t* ptuple,
+                        const lock_mode_t lock_mode = okvl_mode::X,
+                        const PageID& primary_root = 0);
 
-    w_rc_t    update_tuple(ss_m* db,
-                           table_row_t* ptuple,
-                           const lock_mode_t lock_mode = okvl_mode::X);
+    w_rc_t delete_index_entry(ss_m* db,
+                              const char* idx_name,
+                              table_row_t* ptuple,
+                              const lock_mode_t lock_mode = okvl_mode::X,
+                              const PageID& primary_root = 0);
 
+    w_rc_t update_tuple(ss_m* db,
+                        table_row_t* ptuple,
+                        const lock_mode_t lock_mode = okvl_mode::X);
 
     // set indexed fields of the row to minimum
-    int  min_key(index_desc_t* pindex,
-                 table_row_t* ptuple,
-                 rep_row_t &arep);
+    int min_key(index_desc_t* pindex,
+                table_row_t* ptuple,
+                rep_row_t& arep);
 
     // set indexed fields of the row to maximum
-    int  max_key(index_desc_t* pindex,
-                 table_row_t* ptuple,
-                 rep_row_t &arep);
+    int max_key(index_desc_t* pindex,
+                table_row_t* ptuple,
+                rep_row_t& arep);
 
     // length of the formatted key
-    int  key_size(index_desc_t* pindex) const;
+    int key_size(index_desc_t* pindex) const;
 
 
 
@@ -286,8 +282,7 @@ public:
     /* -------------------------------- */
     /* - population related if needed - */
     /* -------------------------------- */
-    virtual w_rc_t populate(ss_m* /* db */, bool& /* hasNext */)
-    {
+    virtual w_rc_t populate(ss_m* /* db */, bool& /* hasNext */) {
         return (RCOK);
     }
 
@@ -300,8 +295,9 @@ public:
      * print the table on screen or to files
      */
     virtual w_rc_t print_table(ostream& os, unsigned int num_lines = 0);
+
     virtual w_rc_t print_index(unsigned i, ostream& os,
-            unsigned int num_lines = 0, bool need_tuple = false);
+                               unsigned int num_lines = 0, bool need_tuple = false);
 
 
     /* --------------- */
@@ -320,28 +316,33 @@ protected:
        each instance we create
     */
     struct pcache_link {
-	static row_cache_t<T>* tls_get();
-	operator row_cache_t<T>*() { return tls_get(); }
-	row_cache_t<T>* operator->() { return tls_get(); }
+        static row_cache_t<T>* tls_get();
+
+        operator row_cache_t<T>*() {
+            return tls_get();
+        }
+
+        row_cache_t<T>* operator->() {
+            return tls_get();
+        }
     };
 
     pcache_link _pcache; /* pointer to a tuple cache */
 
 public:
 
-    row_cache_t<T>* get_cache() { assert (_pcache); return (_pcache); }
+    row_cache_t<T>* get_cache() {
+        assert (_pcache);
+        return (_pcache);
+    }
 
-    inline table_row_t* get_tuple()
-    {
+    inline table_row_t* get_tuple() {
         return (_pcache->borrow());
     }
 
-
-    inline void give_tuple(table_row_t* ptt)
-    {
+    inline void give_tuple(table_row_t* ptt) {
         _pcache->giveback(ptt);
     }
-
 }; // EOF: table_man_t
 
 #define DEFINE_ROW_CACHE_TLS(bench, table) \
@@ -349,7 +350,6 @@ public:
     template<> row_cache_t<bench::table##_t>* \
         table_man_t<bench::table##_t>::pcache_link::tls_get() \
             { return bench##_##table##_cache; }
-
 
 #if 0 // CS: disabled for now -- should be moved to other file anyway
 

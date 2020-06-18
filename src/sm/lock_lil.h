@@ -57,17 +57,18 @@ enum lil_lock_modes_t {
  */
 class lil_global_table_base {
 public:
-    uint16_t  _IS_count;  // +2 -> 2
-    uint16_t  _IX_count;  // +2 -> 4
-    uint16_t  _S_count;   // +2 -> 6
-    bool      _X_taken;   // +1 -> 7
-    bool      _dummy1;    // +1 -> 8
-    uint16_t  _waiting_S; // +2 -> 10
-    uint16_t  _waiting_X; // +2 -> 12
-    uint32_t            _release_version; // +4 -> 16
-    lsn_t               _x_lock_tag; // +8 -> 24. this is for Safe SX-ELR
-    pthread_mutex_t     _waiter_mutex;
-    pthread_cond_t      _waiter_cond;
+    uint16_t _IS_count;  // +2 -> 2
+    uint16_t _IX_count;  // +2 -> 4
+    uint16_t _S_count;   // +2 -> 6
+    bool _X_taken;   // +1 -> 7
+    bool _dummy1;    // +1 -> 8
+    uint16_t _waiting_S; // +2 -> 10
+    uint16_t _waiting_X; // +2 -> 12
+    uint32_t _release_version; // +4 -> 16
+    lsn_t _x_lock_tag; // +8 -> 24. this is for Safe SX-ELR
+    pthread_mutex_t _waiter_mutex;
+
+    pthread_cond_t _waiter_cond;
 
     /** all operations in this object are protected by this spin lock. */
     // queue_based_lock_t _spin_lock;
@@ -79,21 +80,25 @@ public:
      * Requests the given mode in the lock table.
      * @param[in] mode the lock mode to acquire
      */
-    w_rc_t      request_lock(lil_lock_modes_t mode);
+    w_rc_t request_lock(lil_lock_modes_t mode);
 
     /**
      * Decreases the corresponding counters. This never sees an error or long blocking.
      * @param[in] read_lock_only if true, releases only read locks. default false.
      */
-    void        release_locks(bool *lock_taken, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
+    void release_locks(bool* lock_taken, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
 
 private:
-    w_rc_t      _request_lock_IS(lsn_t &observed_tag);
-    w_rc_t      _request_lock_IX(lsn_t &observed_tag);
-    w_rc_t      _request_lock_S(lsn_t &observed_tag);
-    w_rc_t      _request_lock_X(lsn_t &observed_tag);
+    w_rc_t _request_lock_IS(lsn_t& observed_tag);
+
+    w_rc_t _request_lock_IX(lsn_t& observed_tag);
+
+    w_rc_t _request_lock_S(lsn_t& observed_tag);
+
+    w_rc_t _request_lock_X(lsn_t& observed_tag);
+
     /** @return whether timeout happened .*/
-    bool        _cond_timedwait (uint32_t base_version, uint32_t timeout_microsec);
+    bool _cond_timedwait(uint32_t base_version, uint32_t timeout_microsec);
 };
 
 /**
@@ -103,6 +108,7 @@ private:
 class lil_global_store_table : public lil_global_table_base {
 public:
     lil_global_store_table() {}
+
     ~lil_global_store_table() {}
 };
 
@@ -115,7 +121,7 @@ public:
     lil_global_store_table _store_tables[stnode_page::max]; // for all possible stores
 
     lil_global_vol_table() {
-        ::memset (this, 0, sizeof(*this));
+        ::memset(this, 0, sizeof(*this));
         ::pthread_mutex_init(&_waiter_mutex, nullptr);
         ::pthread_cond_init(&_waiter_cond, nullptr);
         for (size_t i = 0; i < stnode_page::max; ++i) {
@@ -123,7 +129,8 @@ public:
             ::pthread_cond_init(&(_store_tables[i]._waiter_cond), nullptr);
         }
     }
-    ~lil_global_vol_table(){
+
+    ~lil_global_vol_table() {
         ::pthread_mutex_destroy(&_waiter_mutex);
         ::pthread_cond_destroy(&_waiter_cond);
         for (size_t i = 0; i < stnode_page::max; ++i) {
@@ -139,14 +146,16 @@ public:
  */
 class lil_global_table {
 public:
-    lil_global_vol_table _vol_tables[MAX_VOL_GLOBAL+1];
+    lil_global_vol_table _vol_tables[MAX_VOL_GLOBAL + 1];
 
     lil_global_table() {
         clear();
     }
-    ~lil_global_table(){}
+
+    ~lil_global_table() {}
+
     void clear() {
-        ::memset (this, 0, sizeof(*this));
+        ::memset(this, 0, sizeof(*this));
     }
 };
 
@@ -156,15 +165,17 @@ public:
  */
 class lil_private_store_table {
 public:
-    uint32_t    _store;    // +4 -> 4. zero if this table is not used yet.
-    bool        _lock_taken[LIL_MODES]; // +4 -> 8
+    uint32_t _store;    // +4 -> 4. zero if this table is not used yet.
+    bool _lock_taken[LIL_MODES]; // +4 -> 8
 
     lil_private_store_table() {
         clear();
     }
-    ~lil_private_store_table(){}
+
+    ~lil_private_store_table() {}
+
     void clear() {
-        ::memset (this, 0, sizeof(*this));
+        ::memset(this, 0, sizeof(*this));
     }
 };
 
@@ -174,18 +185,20 @@ public:
  */
 class lil_private_vol_table {
 public:
-    uint16_t    _vid;      // +2 -> 2. zero if this table is not used yet.
-    uint16_t    _stores;   // +2 -> 4. number of stores used in _store_tables
-    bool        _lock_taken[LIL_MODES]; // +4 -> 8
+    uint16_t _vid;      // +2 -> 2. zero if this table is not used yet.
+    uint16_t _stores;   // +2 -> 4. number of stores used in _store_tables
+    bool _lock_taken[LIL_MODES]; // +4 -> 8
 
     lil_private_store_table _store_tables[MAX_STORE_PER_VOL_XCT]; // 8 * MAX_STORE_PER_VOL_XCT
 
     lil_private_vol_table() {
         clear();
     }
-    ~lil_private_vol_table(){}
+
+    ~lil_private_vol_table() {}
+
     void clear() {
-        ::memset (this, 0, sizeof(*this));
+        ::memset(this, 0, sizeof(*this));
     }
 
     /**
@@ -194,14 +207,15 @@ public:
      * @param[in] stid ID of the store to access
      * @param[in] mode lock mode
      */
-    w_rc_t acquire_store_lock(lil_global_table *global_table, const StoreID &stid,
-            lil_lock_modes_t mode);
+    w_rc_t acquire_store_lock(lil_global_table* global_table, const StoreID& stid,
+                              lil_lock_modes_t mode);
 
     /**
      * Release all locks acquired for this volume. This never fails or takes long time.
      * @param[in] read_lock_only if true, releases only read locks. default false.
      */
-    void   release_vol_locks(lil_global_table *global_table, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
+    void release_vol_locks(lil_global_table* global_table, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
+
 private:
     lil_private_store_table* _find_store_table(uint32_t store);
 };
@@ -212,19 +226,20 @@ private:
  */
 class lil_private_table {
 public:
-    uint16_t    _volumes;   // +2 -> 2. number of volumes used in _vol_tables
-    uint16_t    _unused1;   // +2 -> 4
-    uint32_t    _unused2;   // +4 -> 8
+    uint16_t _volumes;   // +2 -> 2. number of volumes used in _vol_tables
+    uint16_t _unused1;   // +2 -> 4
+    uint32_t _unused2;   // +4 -> 8
 
     lil_private_vol_table _vol_tables[MAX_VOL_PER_XCT];
 
     lil_private_table() {
         clear();
     }
-    ~lil_private_table(){}
+
+    ~lil_private_table() {}
 
     void clear() {
-        ::memset (this, 0, sizeof(*this));
+        ::memset(this, 0, sizeof(*this));
     }
 
     /**
@@ -234,27 +249,27 @@ public:
      * @param[in] mode lock mode
      * @param[out] table private lock table for the volume
      */
-    w_rc_t acquire_vol_table(lil_global_table *global_table, uint16_t vid,
-            lil_lock_modes_t mode, lil_private_vol_table* &table);
+    w_rc_t acquire_vol_table(lil_global_table* global_table, uint16_t vid,
+                             lil_lock_modes_t mode, lil_private_vol_table*& table);
 
     /**
      * Returns a volume lock table assuming
      */
-    w_rc_t get_vol_table_nolock(lil_global_table *global_table, uint16_t vid,
-            lil_private_vol_table* &table);
+    w_rc_t get_vol_table_nolock(lil_global_table* global_table, uint16_t vid,
+                                lil_private_vol_table*& table);
 
     /**
      * Shortcut method to acquire store and its volume lock in the same mode.
      */
-    w_rc_t acquire_vol_store_lock(lil_global_table *global_table, const StoreID &stid,
-            lil_lock_modes_t mode);
+    w_rc_t acquire_vol_store_lock(lil_global_table* global_table, const StoreID& stid,
+                                  lil_lock_modes_t mode);
 
     /**
      * Release all locks acquired by the current transaction and resets the private table.
      * This never fails or takes long time.
      * @param[in] read_lock_only if true, releases only read locks. default false.
      */
-    void   release_all_locks(lil_global_table *global_table, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
+    void release_all_locks(lil_global_table* global_table, bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
 
     /**
      * Returns a volume lock table for the given volume id.

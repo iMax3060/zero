@@ -36,8 +36,10 @@
 #define ONLY_LOCAL_TCPB
 
 #ifdef  ONLY_LOCAL_TCPB
+
 // #warning TPCB - uses only local xcts
 const int LOCAL_TPCB = 100;
+
 #else
 // Modify this value to control the percentage of remote xcts
 // The default value is 85 (15% are remote xcts)
@@ -48,8 +50,11 @@ const int LOCAL_TPCB = 85;
 
 // related to dynamic skew for load imbalance
 skewer_t b_skewer;
+
 skewer_t t_skewer;
+
 skewer_t a_skewer;
+
 bool _change_load = false;
 
 /* ------------------- */
@@ -58,52 +63,47 @@ bool _change_load = false;
 
 
 acct_update_input_t create_acct_update_input(int sf,
-                                             int specificBr, int tspread)
-{
-    assert (sf>0);
+                                             int specificBr, int tspread) {
+    assert (sf > 0);
 
     // CS TODO not used -- copy get_wh stuff from tpcc
-    (void) tspread;
+    (void)tspread;
 
     acct_update_input_t auin;
 
-    if(_change_load) {
-	auin.b_id = b_skewer.get_input();
-	auin.t_id = (auin.b_id * TPCB_TELLERS_PER_BRANCH) + t_skewer.get_input();
-	int account = a_skewer.get_input();
-	// 85 - 15 local Branch
-	if (URand(0,100)>LOCAL_TPCB) {
-	    // remote branch
-	    auin.a_id = (URand(0,sf)*TPCB_ACCOUNTS_PER_BRANCH) + account;
-	}
-	else {
-	    // local branch
-	    auin.a_id = (auin.b_id*TPCB_ACCOUNTS_PER_BRANCH) + account;
-	}
-    }
-    else {
-	// The TPC-B branches start from 0 (0..SF-1)
-	if (specificBr>0) {
-	    auin.b_id = specificBr-1;
-	}
-	else {
-	    auin.b_id = UZRand(0,sf-1);
-	}
+    if (_change_load) {
+        auin.b_id = b_skewer.get_input();
+        auin.t_id = (auin.b_id * TPCB_TELLERS_PER_BRANCH) + t_skewer.get_input();
+        int account = a_skewer.get_input();
+        // 85 - 15 local Branch
+        if (URand(0, 100) > LOCAL_TPCB) {
+            // remote branch
+            auin.a_id = (URand(0, sf) * TPCB_ACCOUNTS_PER_BRANCH) + account;
+        } else {
+            // local branch
+            auin.a_id = (auin.b_id * TPCB_ACCOUNTS_PER_BRANCH) + account;
+        }
+    } else {
+        // The TPC-B branches start from 0 (0..SF-1)
+        if (specificBr > 0) {
+            auin.b_id = specificBr - 1;
+        } else {
+            auin.b_id = UZRand(0, sf - 1);
+        }
 
-	auin.t_id = (auin.b_id * TPCB_TELLERS_PER_BRANCH) + UZRand(0,TPCB_TELLERS_PER_BRANCH-1);
+        auin.t_id = (auin.b_id * TPCB_TELLERS_PER_BRANCH) + UZRand(0, TPCB_TELLERS_PER_BRANCH - 1);
 
-	// 85 - 15 local Branch
-	if (URand(0,100)>LOCAL_TPCB) {
-	    // remote branch
-	    auin.a_id = (URand(0,sf)*TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0,TPCB_ACCOUNTS_PER_BRANCH-1);
-	}
-	else {
-	    // local branch
-	    auin.a_id = (auin.b_id*TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0,TPCB_ACCOUNTS_PER_BRANCH-1);
-	}
+        // 85 - 15 local Branch
+        if (URand(0, 100) > LOCAL_TPCB) {
+            // remote branch
+            auin.a_id = (URand(0, sf) * TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0, TPCB_ACCOUNTS_PER_BRANCH - 1);
+        } else {
+            // local branch
+            auin.a_id = (auin.b_id * TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0, TPCB_ACCOUNTS_PER_BRANCH - 1);
+        }
     }
 
-    auin.delta = URand(0,2000000) - 1000000;
+    auin.delta = URand(0, 2000000) - 1000000;
 
     return (auin);
 }
@@ -117,10 +117,9 @@ acct_update_input_t create_acct_update_input(int sf,
 
 
 populate_db_input_t create_populate_db_input(int sf,
-                                             int specificSub, int tspread)
-{
-    assert (sf>0);
-    populate_db_input_t pdbin(sf,specificSub);
+                                             int specificSub, int tspread) {
+    assert (sf > 0);
+    populate_db_input_t pdbin(sf, specificSub);
     return (pdbin);
 }
 
@@ -134,32 +133,29 @@ populate_db_input_t create_populate_db_input(int sf,
 volatile unsigned long balance = 0; // TODO: not used not, to be removed later
 
 mbench_insert_only_input_t create_mbench_insert_only_input(int sf,
-							   int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                           int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_insert_only_input_t mioin;
 
     //    atomic_inc_64_nv(&balance);
 
     // The TPC-B branches start from 0 (0..SF-1)
-    if (specificBr>0) {
-        mioin.b_id = specificBr-1;
-    }
-    else {
-        mioin.b_id = UZRand(0,sf-1);
+    if (specificBr > 0) {
+        mioin.b_id = specificBr - 1;
+    } else {
+        mioin.b_id = UZRand(0, sf - 1);
     }
 
     // local branch
-    mioin.a_id = (mioin.b_id*TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0,TPCB_ACCOUNTS_PER_BRANCH-1);
+    mioin.a_id = (mioin.b_id * TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0, TPCB_ACCOUNTS_PER_BRANCH - 1);
 
-    mioin.balance = URand(0,200000000) - 100000000;
+    mioin.balance = URand(0, 200000000) - 100000000;
 
     return (mioin);
 }
 
-void mbench_insert_only_input_t::print()
-{
+void mbench_insert_only_input_t::print() {
     // CS TODO
     // TRACE( TRACE_ALWAYS, "%d %d %.2f\n", b_id, a_id, balance);
 }
@@ -172,30 +168,27 @@ void mbench_insert_only_input_t::print()
 
 
 mbench_delete_only_input_t create_mbench_delete_only_input(int sf,
-							   int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                           int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_delete_only_input_t mdoin;
 
     // The TPC-B branches start from 0 (0..SF-1)
-    if (specificBr>0) {
-        mdoin.b_id = specificBr-1;
-    }
-    else {
-        mdoin.b_id = UZRand(0,sf-1);
+    if (specificBr > 0) {
+        mdoin.b_id = specificBr - 1;
+    } else {
+        mdoin.b_id = UZRand(0, sf - 1);
     }
 
     // local branch
-    mdoin.a_id = (mdoin.b_id*TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0,TPCB_ACCOUNTS_PER_BRANCH-1);
+    mdoin.a_id = (mdoin.b_id * TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0, TPCB_ACCOUNTS_PER_BRANCH - 1);
 
-    mdoin.balance = URand(0,2000000) - 1000000;
+    mdoin.balance = URand(0, 2000000) - 1000000;
 
     return (mdoin);
 }
 
-void mbench_delete_only_input_t::print()
-{
+void mbench_delete_only_input_t::print() {
     // CS TODO
     // TRACE( TRACE_ALWAYS, "%d %d %.2f\n", b_id, a_id, balance);
 }
@@ -209,30 +202,27 @@ void mbench_delete_only_input_t::print()
 
 
 mbench_probe_only_input_t create_mbench_probe_only_input(int sf,
-							 int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                         int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_probe_only_input_t mpoin;
 
     // The TPC-B branches start from 0 (0..SF-1)
-    if (specificBr>0) {
-        mpoin.b_id = specificBr-1;
-    }
-    else {
-        mpoin.b_id = UZRand(0,sf-1);
+    if (specificBr > 0) {
+        mpoin.b_id = specificBr - 1;
+    } else {
+        mpoin.b_id = UZRand(0, sf - 1);
     }
 
     // local branch
-    mpoin.a_id = (mpoin.b_id*TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0,TPCB_ACCOUNTS_PER_BRANCH-1);
+    mpoin.a_id = (mpoin.b_id * TPCB_ACCOUNTS_PER_BRANCH) + UZRand(0, TPCB_ACCOUNTS_PER_BRANCH - 1);
 
-    mpoin.balance = URand(0,200000000) - 100000000;
+    mpoin.balance = URand(0, 200000000) - 100000000;
 
     return (mpoin);
 }
 
-void mbench_probe_only_input_t::print()
-{
+void mbench_probe_only_input_t::print() {
     // CS TODO
     // TRACE( TRACE_ALWAYS, "%d %d %.2f\n", b_id, a_id, balance);
 }
@@ -246,9 +236,8 @@ void mbench_probe_only_input_t::print()
 
 
 mbench_insert_delete_input_t create_mbench_insert_delete_input(int sf,
-							       int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                               int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_insert_delete_input_t midin;
     mbench_insert_only_input_t mioin;
@@ -269,9 +258,8 @@ mbench_insert_delete_input_t create_mbench_insert_delete_input(int sf,
 
 
 mbench_insert_probe_input_t create_mbench_insert_probe_input(int sf,
-							     int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                             int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_insert_probe_input_t mipin;
     mbench_insert_only_input_t mioin;
@@ -292,9 +280,8 @@ mbench_insert_probe_input_t create_mbench_insert_probe_input(int sf,
 
 
 mbench_delete_probe_input_t create_mbench_delete_probe_input(int sf,
-							     int specificBr, int tspread)
-{
-    assert (sf>0);
+                                                             int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_delete_probe_input_t mdpin;
     mbench_delete_only_input_t mdoin;
@@ -302,7 +289,6 @@ mbench_delete_probe_input_t create_mbench_delete_probe_input(int sf,
     mdpin.b_id = mdoin.b_id;
     mdpin.a_id = mdoin.a_id;
     mdpin.balance = mdoin.balance;
-
 
     return (mdpin);
 }
@@ -316,9 +302,8 @@ mbench_delete_probe_input_t create_mbench_delete_probe_input(int sf,
 
 
 mbench_mix_input_t create_mbench_mix_input(int sf,
-					   int specificBr, int tspread)
-{
-    assert (sf>0);
+                                           int specificBr, int tspread) {
+    assert (sf > 0);
 
     mbench_mix_input_t mmin;
     mbench_insert_only_input_t mioin;

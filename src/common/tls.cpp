@@ -51,6 +51,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 */
 #include "tls.h"
+
 using namespace tls_tricks;
 
 #include <vector>
@@ -67,32 +68,36 @@ using namespace tls_tricks;
     }                            \
     } while(0)
 
-typedef std::vector<std::pair<void(*)(), void(*)()> > tls_function_list;
+typedef std::vector<std::pair<void (*)(), void (*)()>> tls_function_list;
 
 static tls_function_list* registered_tls(nullptr);
+
 static bool tls_manager_initialized = false;
-  
+
 void tls_manager::global_init() {
-    if(tls_manager_initialized)
-         return;
+    if (tls_manager_initialized) {
+        return;
+    }
     tls_manager_initialized = true;
     registered_tls = new tls_function_list;
 }
+
 void tls_manager::global_fini() {
-    if(tls_manager_initialized) {
-       delete registered_tls;
-       registered_tls = nullptr;
-       tls_manager_initialized = false;
-  }
+    if (tls_manager_initialized) {
+        delete registered_tls;
+        registered_tls = nullptr;
+        tls_manager_initialized = false;
+    }
 }
 
-void tls_manager::register_tls(void (*init)(), void (*fini)()) {
-  /* init the tls for the current (main) thread, then add it to the
-     pile for others which follow
-   */
-  (*init)();
-  registered_tls->push_back(std::make_pair(init, fini));
+void tls_manager::register_tls(void (* init)(), void (* fini)()) {
+    /* init the tls for the current (main) thread, then add it to the
+       pile for others which follow
+     */
+    (*init)();
+    registered_tls->push_back(std::make_pair(init, fini));
 }
+
 /**\var static __thread bool tls_manager::_thread_initialized;
  * \ingroup TLS
  */
@@ -100,18 +105,22 @@ __thread bool tls_manager::_thread_initialized(false);
 
 // called from sthread.cpp just inside sthread_t::_start()
 void tls_manager::thread_init() {
-  if(_thread_initialized)
-    return;
-  _thread_initialized = true;
-  for(tls_function_list::iterator it=registered_tls->begin(); it != registered_tls->end(); ++it)
-    (*it->first)();
+    if (_thread_initialized) {
+        return;
+    }
+    _thread_initialized = true;
+    for (tls_function_list::iterator it = registered_tls->begin(); it != registered_tls->end(); ++it) {
+        (*it->first)();
+    }
 }
 
 // called from sthread.cpp at end of sthread_t::_start()
 void tls_manager::thread_fini() {
-  if(!_thread_initialized)
-    return;
-  _thread_initialized = false;
-  for(tls_function_list::iterator it=registered_tls->begin(); it != registered_tls->end(); ++it)
-    (*it->second)();
+    if (!_thread_initialized) {
+        return;
+    }
+    _thread_initialized = false;
+    for (tls_function_list::iterator it = registered_tls->begin(); it != registered_tls->end(); ++it) {
+        (*it->second)();
+    }
 }

@@ -56,6 +56,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #ifndef __LOG_STORAGE_H
 #define __LOG_STORAGE_H
+
 #include "w_defines.h"
 
 #include "sm_options.h"
@@ -68,11 +69,14 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #include "logdef_gen.h"
 
-typedef    smlevel_0::partition_number_t partition_number_t;
+typedef smlevel_0::partition_number_t partition_number_t;
+
 typedef std::map<partition_number_t, shared_ptr<partition_t>> partition_map_t;
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 class partition_recycler_t;
@@ -85,39 +89,50 @@ class log_storage {
 
 public:
     log_storage(const sm_options&);
+
     virtual ~log_storage();
 
-    shared_ptr<partition_t>    get_partition_for_flush(lsn_t start_lsn,
-                            long start1, long end1, long start2, long end2);
-    shared_ptr<partition_t>    curr_partition() const;
+    shared_ptr<partition_t> get_partition_for_flush(lsn_t start_lsn,
+                                                    long start1, long end1, long start2, long end2);
 
-    shared_ptr<partition_t>       get_partition(partition_number_t n) const;
+    shared_ptr<partition_t> curr_partition() const;
+
+    shared_ptr<partition_t> get_partition(partition_number_t n) const;
 
     void list_partitions(std::vector<partition_number_t>& vec) const;
 
     // used by partition_t
-    skip_log*       get_skip_log()  { return _skip_log; }
+    skip_log* get_skip_log() {
+        return _skip_log;
+    }
 
-    off_t get_partition_size() const { return _partition_size; }
+    off_t get_partition_size() const {
+        return _partition_size;
+    }
 
     size_t get_byte_distance(lsn_t a, lsn_t b) const;
 
     string make_log_name(partition_number_t pnum) const;
+
     fs::path make_log_path(partition_number_t pnum) const;
+
     fs::path make_chkpt_path(lsn_t lsn) const;
 
     void add_checkpoint(lsn_t lsn);
 
     void wakeup_recycler(bool chkpt_only = false);
+
     unsigned delete_old_partitions(bool chkpt_only = false, partition_number_t older_than = 0);
 
 private:
     shared_ptr<partition_t> create_partition(partition_number_t pnum);
 
     fs::path _logpath;
+
     off_t _partition_size;
 
     partition_map_t _partitions;
+
     shared_ptr<partition_t> _curr_partition;
 
     vector<lsn_t> _checkpoints;
@@ -125,10 +140,12 @@ private:
     skip_log* _skip_log;
 
     unsigned _max_partitions;
+
     bool _delete_old_partitions;
 
     // forbid copy
     log_storage(const log_storage&);
+
     log_storage& operator=(const log_storage&);
 
     void try_delete(partition_number_t);
@@ -139,10 +156,16 @@ private:
     unique_ptr<partition_recycler_t> _recycler_thread;
 
 public:
-    enum { BLOCK_SIZE = partition_t::XFERSIZE };
+    enum {
+        BLOCK_SIZE = partition_t::XFERSIZE
+    };
+
     static const string log_prefix;
+
     static const string log_regex;
+
     static const string chkpt_prefix;
+
     static const string chkpt_regex;
 };
 

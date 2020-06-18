@@ -68,16 +68,12 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include <list>
 #include <algorithm>
 
-const char* const  latch_t::latch_mode_str[4] = { "NL", "Q", "SH", "EX" };
-
+const char* const latch_t::latch_mode_str[4] = {"NL", "Q", "SH", "EX"};
 
 latch_t::latch_t() :
-    _total_count(0)
-{
-}
+        _total_count(0) {}
 
-latch_t::~latch_t()
-{
+latch_t::~latch_t() {
 #if W_DEBUG_LEVEL > 1
     int t = _total_count;
     // do this just to get the symbol to remain
@@ -104,7 +100,6 @@ latch_t::~latch_t()
 
 #endif
 }
-
 
 /**\var static __thread latch_holder_t* latch_holder_t::thread_local_holders;
  * \brief Linked list of all latches held by this thread.
@@ -150,56 +145,74 @@ __thread latch_holder_t* latch_holder_t::thread_local_freelist(nullptr);
  * The list contents are always instances of latch_holder_t, which
  * have an internal link for creating the list.
  */
-class holder_list
-{
-    latch_holder_t* &_first;
+class holder_list {
+    latch_holder_t*& _first;
+
 public:
-    holder_list(latch_holder_t* &first) : _first(first) { }
+    holder_list(latch_holder_t*& first) : _first(first) {}
 
     /**\brief Iterator over a list of latch_holder_t structures */
     struct iterator {
         latch_holder_t* _cur;
-        public:
+
+    public:
 
         /// Construct an iterator starting with the given latch_holder_t.
-        explicit iterator(latch_holder_t* cur) : _cur(cur) { }
+        explicit iterator(latch_holder_t* cur) : _cur(cur) {}
 
         /// Get current.
-        operator latch_holder_t*() const { return _cur; }
+        operator latch_holder_t*() const {
+            return _cur;
+        }
 
         /// Get current.
-        latch_holder_t* operator->() const { return *this; }
+        latch_holder_t* operator->() const {
+            return *this;
+        }
 
         ///  Make iterator point to next.
-        iterator &operator++() { _cur = _cur->_next; return *this; }
+        iterator& operator++() {
+            _cur = _cur->_next;
+            return *this;
+        }
 
         ///  Make iterator point to next.
-        iterator operator++(int) { return ++iterator(*this); }
+        iterator operator++(int) {
+            return ++iterator(*this);
+        }
     };
 
     /// Dereferencing this iterator brings us to the first item in the list.
-    iterator begin() { return iterator(_first); }
+    iterator begin() {
+        return iterator(_first);
+    }
 
     /// Dereferencing this iterator brings us past the last item in any list.
-    iterator end() { return iterator(nullptr); }
+    iterator end() {
+        return iterator(nullptr);
+    }
 
     /// Insert h at the front of this list.
     void push_front(latch_holder_t* h) {
         h->_next = _first;
-        if(_first) _first->_prev = h;
+        if (_first) {
+            _first->_prev = h;
+        }
         h->_prev = nullptr;
         _first = h;
     }
 
     /// Remove whatever is the current item for the given iterator.
-    latch_holder_t* unlink(iterator const &it) {
-        if(it->_next)
+    latch_holder_t* unlink(iterator const& it) {
+        if (it->_next) {
             it->_next->_prev = it->_prev;
+        }
 
-        if(it->_prev)
+        if (it->_prev) {
             it->_prev->_next = it->_next;
-        else
+        } else {
             _first = it->_next;
+        }
 
         // now it's orphaned...
         return it;
@@ -219,22 +232,20 @@ public:
  *
  * \sa latch_holder_t.
  */
-class  holders_print
-{
+class holders_print {
 private:
     holder_list _holders;
-    void print(holder_list holders)
-    {
-        holder_list::iterator it=holders.begin();
-        for(; it!=holders.end() && it->_latch;  ++it)
-        {
+
+    void print(holder_list holders) {
+        holder_list::iterator it = holders.begin();
+        for (; it != holders.end() && it->_latch; ++it) {
             it->print(cerr);
         }
     }
+
 public:
-    holders_print(latch_holder_t *list)
-    : _holders(list)
-    {
+    holders_print(latch_holder_t* list)
+            : _holders(list) {
         print(_holders);
     }
 };
@@ -248,63 +259,69 @@ public:
  *
  * \sa latch_holder_t.
  */
-class holder_search
-{
+class holder_search {
 public:
     /// find holder of given latch in given list
-    static holder_list::iterator find(holder_list holders, latch_t const* l)
-    {
-        holder_list::iterator it=holders.begin();
-        for(; it!=holders.end() && it->_latch != l; ++it) ;
+    static holder_list::iterator find(holder_list holders, latch_t const* l) {
+        holder_list::iterator it = holders.begin();
+        for (; it != holders.end() && it->_latch != l; ++it) {}
         return it;
     }
 
     /// count # times we find a given latch in the list. For debugging, asserts.
-    static int count(holder_list holders, latch_t const* l)
-    {
-        holder_list::iterator it=holders.begin();
-        int c=0;
-        for(; it!=holders.end(); ++it) if(it->_latch == l) c++;
+    static int count(holder_list holders, latch_t const* l) {
+        holder_list::iterator it = holders.begin();
+        int c = 0;
+        for (; it != holders.end(); ++it) {
+            if (it->_latch == l) {
+                c++;
+            }
+        }
         return c;
     }
 
 private:
     holder_list _holders;
-    latch_holder_t* &_freelist;
+
+    latch_holder_t*& _freelist;
+
     holder_list::iterator _end;
+
     holder_list::iterator _it;
 
 public:
     /// Insert latch_holder_t for given latch if not already there.
     holder_search(latch_t const* l)
-        : _holders(latch_holder_t::thread_local_holders),
-          _freelist(latch_holder_t::thread_local_freelist),
-          _end(_holders.end()),
-          _it(find(_holders, l))
-    {
+            : _holders(latch_holder_t::thread_local_holders),
+              _freelist(latch_holder_t::thread_local_freelist),
+              _end(_holders.end()),
+              _it(find(_holders, l)) {
         // if we didn't find the latch in the list,
         // create a new latch_holder_t (with mode LATCH_NL)
         // to return, just so that the value() method always
         // returns a non-null ptr.  It might be used, might not.
-        if(_it == _end) {
+        if (_it == _end) {
             latch_holder_t* h = _freelist;
-            if(h) _freelist = h->_next;
+            if (h) {
+                _freelist = h->_next;
+            }
             // need to clear out the latch either way
-            if(h)
+            if (h) {
                 // h->latch_holder_t(); // reinit
                 h = new(h) latch_holder_t();
-            else
+            } else {
                 h = new latch_holder_t;
+            }
             _holders.push_front(h);
             _it = _holders.begin();
         }
         w_assert2(count(_holders, l) <= 1);
     }
 
-    ~holder_search()
-    {
-        if(_it == _end || _it->_mode != LATCH_NL)
+    ~holder_search() {
+        if (_it == _end || _it->_mode != LATCH_NL) {
             return;
+        }
 
         // don't hang onto it in the holders list  if it's not latched.
         latch_holder_t* h = _holders.unlink(_it);
@@ -312,45 +329,47 @@ public:
         _freelist = h;
     }
 
-    latch_holder_t* operator->() { return this->value(); }
+    latch_holder_t* operator->() {
+        return this->value();
+    }
 
-    latch_holder_t* value() { return (_it == _end)?
-        (latch_holder_t *)(nullptr) : &(*_it); }
+    latch_holder_t* value() {
+        return (_it == _end) ?
+               (latch_holder_t*)(nullptr) : &(*_it);
+    }
 }; // holder_search
 
 w_rc_t
-latch_t::latch_acquire(latch_mode_t mode, int timeout_in_ms)
-{
+latch_t::latch_acquire(latch_mode_t mode, int timeout_in_ms) {
     w_assert1(mode != LATCH_NL);
     holder_search me(this);
     return _acquire(mode, timeout_in_ms, me.value());
 }
 
 w_rc_t
-latch_t::upgrade_if_not_block(bool& would_block)
-{
-    DBGTHRD(<< " want to upgrade " << *this );
+latch_t::upgrade_if_not_block(bool& would_block) {
+    DBGTHRD(<< " want to upgrade " << *this);
     holder_search me(this);
 
     // should already hold the latch
     w_assert3(me.value() != nullptr);
 
     // already hold EX? DON'T INCREMENT THE COUNT!
-    if(me->_mode == LATCH_EX) {
+    if (me->_mode == LATCH_EX) {
         would_block = false;
         return RCOK;
     }
 
     w_rc_t rc = _acquire(LATCH_EX, timeout_t::WAIT_IMMEDIATE, me.value());
-    if(rc.is_error()) {
+    if (rc.is_error()) {
         // it never should have tried to block
         w_assert3(rc.err_num() != stTIMEOUT);
-        if(rc.err_num() != stINUSE)
+        if (rc.err_num() != stINUSE) {
             return RC_AUGMENT(rc);
+        }
 
         would_block = true;
-    }
-    else {
+    } else {
         // upgrade should not increase the lock count
         lintel::unsafe::atomic_fetch_sub(&_total_count, 1);
         me->_count--;
@@ -359,8 +378,7 @@ latch_t::upgrade_if_not_block(bool& would_block)
     return RCOK;
 }
 
-int latch_t::latch_release()
-{
+int latch_t::latch_release() {
     holder_search me(this);
     // we should already hold the latch!
     w_assert2(me.value() != nullptr);
@@ -368,36 +386,34 @@ int latch_t::latch_release()
 }
 
 w_rc_t latch_t::_acquire(latch_mode_t new_mode,
-    int timeout,
-    latch_holder_t* me)
-{
-    DBGTHRD( << "want to acquire in mode "
-            << W_ENUM(new_mode) << " " << *this
-            );
+                         int timeout,
+                         latch_holder_t* me) {
+    DBGTHRD(<< "want to acquire in mode "
+                    << W_ENUM(new_mode) << " " << *this
+           );
     w_assert2(new_mode != LATCH_NL);
     w_assert2(me);
 
     bool is_upgrade = false;
-    if(me->_latch == this)
-    {
+    if (me->_latch == this) {
         // we already hold the latch
         w_assert2(me->_mode != LATCH_NL);
         w_assert2(mode() == me->_mode);
         // note: _mode can't change while we hold the latch!
-        if(mode() == LATCH_EX) {
+        if (mode() == LATCH_EX) {
             w_assert2(num_holders() == 1);
             // once we hold it in EX all later acquires default to EX as well
             new_mode = LATCH_EX;
         } else {
             w_assert2(num_holders() >= 1);
         }
-        if(me->_mode == new_mode) {
+        if (me->_mode == new_mode) {
             DBGTHRD(<< "we already held latch in desired mode " << *this);
             lintel::unsafe::atomic_fetch_add(&_total_count, 1);// BUG_SEMANTICS_FIX
             me->_count++; // thread-local
             // fprintf(stderr, "acquire latch %p %dx in mode %s\n",
             //        this, me->_count, latch_mode_str[new_mode]);
-#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS>0
+#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS > 0
             // These are counted in bf statistics.
             // but if we don't count them here, we will get
             // a misleading impression of the wait counts
@@ -409,7 +425,7 @@ w_rc_t latch_t::_acquire(latch_mode_t new_mode,
             INC_TSTAT(latch_uncondl_nowait);
 #endif
             return RCOK;
-        } else if(new_mode == LATCH_EX && me->_mode == LATCH_SH) {
+        } else if (new_mode == LATCH_EX && me->_mode == LATCH_SH) {
             is_upgrade = true;
         }
     } else {
@@ -421,16 +437,17 @@ w_rc_t latch_t::_acquire(latch_mode_t new_mode,
 
     // have to acquire for real
 
-    if(is_upgrade) {
+    if (is_upgrade) {
         // to avoid deadlock,
         // never block on upgrade
-        if(!_lock.attempt_upgrade())
+        if (!_lock.attempt_upgrade()) {
             return RC(stINUSE);
+        }
 
         w_assert2(me->_count > 0);
         w_assert2(new_mode == LATCH_EX);
         me->_mode = new_mode;
-#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS>0
+#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS > 0
         // These are counted in bf statistics.
         // but if we don't count them here, we will get
         // a misleading impression of the wait counts
@@ -442,18 +459,18 @@ w_rc_t latch_t::_acquire(latch_mode_t new_mode,
         INC_TSTAT(latch_uncondl_nowait);
 #endif
     } else {
-        if(timeout == timeout_t::WAIT_IMMEDIATE) {
+        if (timeout == timeout_t::WAIT_IMMEDIATE) {
             INC_TSTAT(needs_latch_condl);
-            bool success = (new_mode == LATCH_SH)?
-                _lock.attempt_read() : _lock.attempt_write();
-            if(!success)
+            bool success = (new_mode == LATCH_SH) ?
+                           _lock.attempt_read() : _lock.attempt_write();
+            if (!success) {
                 return RC(stTIMEOUT);
+            }
             INC_TSTAT(latch_condl_nowait);
-        }
-        else {
+        } else {
             // forever timeout
             INC_TSTAT(needs_latch_uncondl);
-            if(new_mode == LATCH_SH) {
+            if (new_mode == LATCH_SH) {
 // NOTE: These stats are questionable in their
 // heiseneffect as well as in the fact that we might
 // not wait in the _lock.acquire_{read,write} call
@@ -461,17 +478,16 @@ w_rc_t latch_t::_acquire(latch_mode_t new_mode,
 // help us in some instances to understand where the
 // contention is, and are under compiler control for
 // this reason.
-#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS>0
+#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS > 0
                 if(_lock.attempt_read()) {
                     INC_TSTAT(latch_uncondl_nowait);
                 } else
 #endif
                 _lock.acquire_read();
-            }
-            else {
+            } else {
                 w_assert2(new_mode == LATCH_EX);
                 w_assert2(me->_count == 0);
-#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS>0
+#if defined(EXPENSIVE_LATCH_COUNTS) && EXPENSIVE_LATCH_COUNTS > 0
                 if(_lock.attempt_write()) {
                     INC_TSTAT(latch_uncondl_nowait);
                 } else
@@ -484,15 +500,13 @@ w_rc_t latch_t::_acquire(latch_mode_t new_mode,
     }
     lintel::unsafe::atomic_fetch_add(&_total_count, 1);// BUG_SEMANTICS_FIX
     me->_count++;// BUG_SEMANTICS_FIX
-    DBGTHRD(<< "acquired " << *this );
+    DBGTHRD(<< "acquired " << *this);
     return RCOK;
 }
 
-
 int
-latch_t::_release(latch_holder_t* me)
-{
-    DBGTHRD(<< "want to release " << *this );
+latch_t::_release(latch_holder_t* me) {
+    DBGTHRD(<< "want to release " << *this);
 
     w_assert2(me->_latch == this);
 
@@ -500,20 +514,21 @@ latch_t::_release(latch_holder_t* me)
     w_assert2(me->_count > 0);
 
     lintel::unsafe::atomic_fetch_sub(&_total_count, 1);
-    if(--me->_count) {
-        DBGTHRD(<< "was held multiple times -- still " << me->_count << " " << *this );
+    if (--me->_count) {
+        DBGTHRD(<< "was held multiple times -- still " << me->_count << " " << *this);
         return me->_count;
     }
 
-    if(me->_mode == LATCH_SH) {
+    if (me->_mode == LATCH_SH) {
         w_assert2(_lock.has_reader());
-        if (_lock.has_reader())
+        if (_lock.has_reader()) {
             _lock.release_read();
-    }
-    else {
+        }
+    } else {
         w_assert2(_lock.has_writer());
-        if (_lock.has_writer())
+        if (_lock.has_writer()) {
             _lock.release_write();
+        }
     }
     me->_mode = LATCH_NL;
     return 0;
@@ -527,9 +542,8 @@ void latch_t::downgrade() {
 }
 
 void
-latch_t::_downgrade(latch_holder_t* me)
-{
-    DBGTHRD(<< "want to downgrade " << *this );
+latch_t::_downgrade(latch_holder_t* me) {
+    DBGTHRD(<< "want to downgrade " << *this);
 
     w_assert3(me->_latch == this);
     w_assert3(me->_mode == LATCH_EX);
@@ -537,23 +551,20 @@ latch_t::_downgrade(latch_holder_t* me)
 
     _lock.downgrade();
     me->_mode = LATCH_SH;
-
 }
 
-void latch_holder_t::print(ostream &o) const
-{
+void latch_holder_t::print(ostream& o) const {
     o << "Holder " << latch_t::latch_mode_str[int(_mode)]
-        << " cnt=" << _count
-    << " latch:";
-    if(_latch) {
-        o  << *_latch << endl;
+      << " cnt=" << _count
+      << " latch:";
+    if (_latch) {
+        o << *_latch << endl;
     } else {
-        o  << "NULL" << endl;
+        o << "NULL" << endl;
     }
 }
 
-void latch_t::on_thread_destroy()
-{
+void latch_t::on_thread_destroy() {
     // w_assert3(!latch_holder_t::thread_local_holders);
     // latch_holder_t* freelist = latch_holder_t::thread_local_freelist;
     // while(freelist) {
@@ -569,45 +580,41 @@ void latch_t::on_thread_destroy()
 // There should never be more than one holder structure for a single
 // latch.
 int
-latch_t::held_by_me() const
-{
+latch_t::held_by_me() const {
     holder_search me(this);
-    return me.value()? me->_count : 0;
+    return me.value() ? me->_count : 0;
 }
 
 bool
 latch_t::is_mine() const {
     holder_search me(this);
-    return me.value()? (me->_mode == LATCH_EX) : false;
+    return me.value() ? (me->_mode == LATCH_EX) : false;
 }
 
 // NOTE: this is not safe, but it can be used by unit tests
 // and for debugging
-std::ostream &latch_t::print(std::ostream &out) const
-{
-    out <<    "latch(" << this << ") ";
+std::ostream& latch_t::print(std::ostream& out) const {
+    out << "latch(" << this << ") ";
     out << " held in " << latch_mode_str[int(mode())] << " mode ";
-    out << "by " << num_holders() << " threads " ;
-    out << "total " << latch_cnt() << " times " ;
+    out << "by " << num_holders() << " threads ";
+    out << "total " << latch_cnt() << " times ";
     out << endl;
     return out;
 }
 
-
-ostream& operator<<(ostream& out, const latch_t& l)
-{
+ostream& operator<<(ostream& out, const latch_t& l) {
     return l.print(out);
 }
 
 // For use in debugger:
-void print_latch(const latch_t *l)
-{
-    if(l != nullptr) l->print(cerr);
+void print_latch(const latch_t* l) {
+    if (l != nullptr) {
+        l->print(cerr);
+    }
 }
 
 // For use in debugger:
-void print_my_latches()
-{
+void print_my_latches() {
     holders_print all(latch_holder_t::thread_local_holders);
 }
 

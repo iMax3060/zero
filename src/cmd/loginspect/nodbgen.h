@@ -3,15 +3,18 @@
 
 #include "command.h"
 
-class NoDBGen : public Command
-{
+class NoDBGen : public Command {
 public:
     void setupOptions();
+
     void run();
+
 protected:
     void handlePage(fixable_page_h& p);
+
 private:
     string dbfile;
+
     string logdir;
 };
 

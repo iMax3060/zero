@@ -35,7 +35,6 @@
 
 #include "table_man.h"
 
-
 /**********************************************************************
  *
  * This file contains the in-memory sort buffer structure definition.
@@ -53,7 +52,6 @@
 
 class asc_sort_iter_impl;
 
-
 /**********************************************************************
  *
  * @class:   sort_asc_buffer_t
@@ -62,28 +60,21 @@ class asc_sort_iter_impl;
  *
  **********************************************************************/
 
-class asc_sort_buffer_t : public table_desc_t
-{
+class asc_sort_buffer_t : public table_desc_t {
 public:
 
     asc_sort_buffer_t(const size_t field_count)
-        : table_desc_t("ASC_SORT_BUF", field_count)
-    {
-    }
+            : table_desc_t("ASC_SORT_BUF", field_count) {}
 
-    ~asc_sort_buffer_t()
-    {
-    }
+    ~asc_sort_buffer_t() {}
 
     /* set the schema - accepts only fixed length */
-    void setup(const size_t index, sqltype_t type, const int len = 0)
-    {
-        assert(index<_field_count);
+    void setup(const size_t index, sqltype_t type, const int len = 0) {
+        assert(index < _field_count);
         _desc[index].setup(type, "", len);
         assert(!_desc[index].is_variable_length());
         assert(!_desc[index].allow_null());
     }
-
 }; // EOF: sort_asc_t
 
 
@@ -97,20 +88,19 @@ public:
  *
  **********************************************************************/
 
-class asc_sort_man_impl : public table_man_t<asc_sort_buffer_t>
-{
+class asc_sort_man_impl : public table_man_t<asc_sort_buffer_t> {
     friend class asc_sort_iter_impl;
 
 protected:
 
-    char*       _sort_buf;     /* memory buffer */
-    int         _tuple_size;   /* tuple size */
-    int         _tuple_count;  /* # of tuples in buffer */
-    int         _buf_size;     /* size of the buffer (in # of tuples) */
-    bool        _is_sorted;    /* shows if sorted */
-    tatas_lock  _sorted_lock;
+    char* _sort_buf;     /* memory buffer */
+    int _tuple_size;   /* tuple size */
+    int _tuple_count;  /* # of tuples in buffer */
+    int _buf_size;     /* size of the buffer (in # of tuples) */
+    bool _is_sorted;    /* shows if sorted */
+    tatas_lock _sorted_lock;
 
-    rep_row_t*  _preprow;      /* used for the tuple->format() */
+    rep_row_t* _preprow;      /* used for the tuple->format() */
 
     /* count _tuple_size and allocate buffer */
     void init();
@@ -121,33 +111,36 @@ protected:
 public:
 
     asc_sort_man_impl(asc_sort_buffer_t* aSortBufferAsc, rep_row_t* aprow)
-        : table_man_t<asc_sort_buffer_t>(aSortBufferAsc, false),
-          _sort_buf(nullptr), _tuple_size(0), _tuple_count(0), _buf_size(0),
-          _is_sorted(false), _preprow(aprow)
-    {
-    }
+            : table_man_t<asc_sort_buffer_t>(aSortBufferAsc, false),
+              _sort_buf(nullptr),
+              _tuple_size(0),
+              _tuple_count(0),
+              _buf_size(0),
+              _is_sorted(false),
+              _preprow(aprow) {}
 
-    ~asc_sort_man_impl()
-    {
-        if (_sort_buf)
-            delete [] _sort_buf;
+    ~asc_sort_man_impl() {
+        if (_sort_buf) {
+            delete[] _sort_buf;
+        }
     }
-
 
     /* add current tuple to the sort buffer */
     void add_tuple(table_row_t& atuple);
 
     /* return a sort iterator */
-    w_rc_t get_asc_sort_iter(asc_sort_iter_impl* &asc_sort_iter);
-    w_rc_t get_sort_iter(asc_sort_iter_impl* &sort_iter);
+    w_rc_t get_asc_sort_iter(asc_sort_iter_impl*& asc_sort_iter);
+
+    w_rc_t get_sort_iter(asc_sort_iter_impl*& sort_iter);
 
     /* sort tuples on the first field value */
-    void   sort();
+    void sort();
 
-    inline int count() { return (_tuple_count); }
+    inline int count() {
+        return (_tuple_count);
+    }
 
-    void   reset();
-
+    void reset();
 }; // EOF: asc_sort_man_impl
 
 
@@ -162,18 +155,20 @@ public:
  *
  **********************************************************************/
 
-class asc_sort_iter_impl
-{
+class asc_sort_iter_impl {
 private:
     asc_sort_buffer_t* psortbuf;
-    asc_sort_man_impl* 	_manager;
+
+    asc_sort_man_impl* _manager;
+
     int _index;
 
 public:
 
     asc_sort_iter_impl(asc_sort_buffer_t* psortbuf, asc_sort_man_impl* psortman)
-        : psortbuf(psortbuf), _manager(psortman), _index(0)
-    {
+            : psortbuf(psortbuf),
+              _manager(psortman),
+              _index(0) {
         assert (_manager);
         assert (psortbuf);
         W_COERCE(open_scan());
@@ -185,11 +180,14 @@ public:
     /* ------------------------------ */
 
     w_rc_t open_scan();
-    w_rc_t close_scan() { return (RCOK); };
+
+    w_rc_t close_scan() {
+        return (RCOK);
+    };
+
     w_rc_t next(bool& eof, table_row_t& tuple);
 
-    void   reset();
-
+    void reset();
 }; // EOF: asc_sort_iter_impl
 
 
@@ -211,14 +209,12 @@ public:
  *
  *********************************************************************/
 
-inline w_rc_t asc_sort_iter_impl::open_scan()
-{
+inline w_rc_t asc_sort_iter_impl::open_scan() {
     _manager->sort();
 
     _index = 0;
     return (RCOK);
 }
-
 
 /*********************************************************************
  *
@@ -228,13 +224,11 @@ inline w_rc_t asc_sort_iter_impl::open_scan()
  *
  *********************************************************************/
 
-inline w_rc_t asc_sort_iter_impl::next(bool& eof, table_row_t& tuple)
-{
+inline w_rc_t asc_sort_iter_impl::next(bool& eof, table_row_t& tuple) {
     _manager->get_sorted(_index, &tuple);
     eof = (++_index > _manager->_tuple_count);
     return (RCOK);
 }
-
 
 /*********************************************************************
  *
@@ -244,11 +238,10 @@ inline w_rc_t asc_sort_iter_impl::next(bool& eof, table_row_t& tuple)
  *
  *********************************************************************/
 
-inline void asc_sort_iter_impl::reset()
-{
+inline void asc_sort_iter_impl::reset() {
     // the sorter_manager should already be set
     assert (_manager);
-    _index=0;
+    _index = 0;
 }
 
 #endif // __SORT_H

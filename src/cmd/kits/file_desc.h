@@ -39,17 +39,16 @@
 
 using std::list;
 
-
 /******** Exported constants ********/
 
 const unsigned int MAX_FIELDNAME_LEN = 40;
 
-const unsigned int MAX_KEYDESC_LEN   = 40;
+const unsigned int MAX_KEYDESC_LEN = 40;
 
 #define  DELIM_CHAR            '|'
 #define  ROWEND_CHAR            '\r'
 
-const unsigned int COMMIT_ACTION_COUNT           = 2000;
+const unsigned int COMMIT_ACTION_COUNT = 2000;
 
 #define  MIN_SMALLINT     0
 #define  MAX_SMALLINT     1<<15

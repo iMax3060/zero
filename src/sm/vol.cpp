@@ -41,33 +41,33 @@
  * replacement for solaris gethrtime(), which is based in any case
  * on this clock:
  */
-int64_t gethrtime()
-{
+int64_t gethrtime() {
     struct timespec tsp;
     long e = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tsp);
     w_assert0(e == 0);
     // tsp.tv_sec is time_t
-    return (tsp.tv_sec * 1000* 1000 * 1000) + tsp.tv_nsec; // nanosecs
+    return (tsp.tv_sec * 1000 * 1000 * 1000) + tsp.tv_nsec; // nanosecs
 }
 
 vol_t::vol_t(const sm_options& options)
-             : _fd(-1),
-               _fake_read_latency(options.get_int_option("sm_vol_simulate_read_latency", 0)),
-               _fake_write_latency(options.get_int_option("sm_vol_simulate_write_latency", 0)),
-               _alloc_cache(nullptr), _stnode_cache(nullptr),
-               _backup_fd(-1),
-               _current_backup_lsn(lsn_t::null), _backup_write_fd(-1),
-               _log_page_reads(options.get_bool_option("sm_vol_log_reads", false)),
-               _log_page_writes(options.get_bool_option("sm_vol_log_writes", false)),
-               _prioritize_archive(true)
-{
+        : _fd(-1),
+          _fake_read_latency(options.get_int_option("sm_vol_simulate_read_latency", 0)),
+          _fake_write_latency(options.get_int_option("sm_vol_simulate_write_latency", 0)),
+          _alloc_cache(nullptr),
+          _stnode_cache(nullptr),
+          _backup_fd(-1),
+          _current_backup_lsn(lsn_t::null),
+          _backup_write_fd(-1),
+          _log_page_reads(options.get_bool_option("sm_vol_log_reads", false)),
+          _log_page_writes(options.get_bool_option("sm_vol_log_writes", false)),
+          _prioritize_archive(true) {
     string dbfile = options.get_string_option("sm_dbfile", "db");
     bool truncate = options.get_bool_option("sm_format", false);
     _use_o_sync = options.get_bool_option("sm_vol_o_sync", false);
     _use_o_direct = options.get_bool_option("sm_vol_o_direct", false);
     _readonly = options.get_bool_option("sm_vol_readonly", false);
     _prioritize_archive =
-        options.get_bool_option("sm_recovery_prioritize_archive", false);
+            options.get_bool_option("sm_recovery_prioritize_archive", false);
     _cluster_stores = options.get_bool_option("sm_vol_cluster_stores", true);
 
     _no_db_mode = options.get_bool_option("sm_no_db", false);
@@ -77,17 +77,22 @@ vol_t::vol_t(const sm_options& options)
 
     int open_flags = 0;
     open_flags |= _readonly ? O_RDONLY : O_RDWR;
-    if (truncate) { open_flags |= O_TRUNC | O_CREAT; }
-    if(_use_o_sync) { open_flags |= O_SYNC; }
-    if(_use_o_direct) { open_flags |= O_DIRECT; }
+    if (truncate) {
+        open_flags |= O_TRUNC | O_CREAT;
+    }
+    if (_use_o_sync) {
+        open_flags |= O_SYNC;
+    }
+    if (_use_o_direct) {
+        open_flags |= O_DIRECT;
+    }
 
     auto fd = open(dbfile.c_str(), open_flags, 0666 /*mode*/);
     CHECK_ERRNO(fd);
     _fd = fd;
 }
 
-vol_t::~vol_t()
-{
+vol_t::~vol_t() {
     if (_alloc_cache) {
         delete _alloc_cache;
         _alloc_cache = nullptr;
@@ -101,14 +106,12 @@ vol_t::~vol_t()
     w_assert1(_backup_fd == -1);
 }
 
-void vol_t::sync()
-{
+void vol_t::sync() {
     auto ret = fsync(_fd);
     CHECK_ERRNO(ret);
 }
 
-void vol_t::build_caches(bool truncate, chkpt_t* chkpt_info)
-{
+void vol_t::build_caches(bool truncate, chkpt_t* chkpt_info) {
     _stnode_cache = new stnode_cache_t(truncate);
     w_assert1(_stnode_cache);
     _stnode_cache->dump(cerr);
@@ -122,16 +125,19 @@ void vol_t::build_caches(bool truncate, chkpt_t* chkpt_info)
     }
 }
 
-bool vol_t::open_backup()
-{
+bool vol_t::open_backup() {
     bool useBackup = _backups.size() > 0;
-    if (!useBackup || _backup_fd >= 0) { return false; }
+    if (!useBackup || _backup_fd >= 0) {
+        return false;
+    }
 
     // mutex held by caller -- no concurrent backup being added
     string backupFile = _backups.back();
     // Using direct I/O
     int open_flags = O_RDONLY | O_SYNC;
-    if (_use_o_direct) { open_flags |= O_DIRECT; }
+    if (_use_o_direct) {
+        open_flags |= O_DIRECT;
+    }
 
     auto fd = open(backupFile.c_str(), open_flags, 0666 /*mode*/);
     CHECK_ERRNO(fd);
@@ -149,21 +155,18 @@ bool vol_t::open_backup()
     return true;
 }
 
-lsn_t vol_t::get_backup_lsn()
-{
+lsn_t vol_t::get_backup_lsn() {
     spinlock_read_critical_section cs(&_mutex);
     return _current_backup_lsn;
 }
 
-unsigned vol_t::num_backups() const
-{
+unsigned vol_t::num_backups() const {
     spinlock_read_critical_section cs(&_mutex);
     return _backups.size();
 }
 
 void vol_t::list_backups(
-    std::vector<string>& backups)
-{
+        std::vector<string>& backups) {
     spinlock_read_critical_section cs(&_mutex);
 
     for (size_t k = 0; k < _backups.size(); k++) {
@@ -171,8 +174,7 @@ void vol_t::list_backups(
     }
 }
 
-rc_t vol_t::sx_add_backup(const string& path, lsn_t backupLSN, bool redo)
-{
+rc_t vol_t::sx_add_backup(const string& path, lsn_t backupLSN, bool redo) {
     spinlock_write_critical_section cs(&_mutex);
 
     _backups.push_back(path);
@@ -188,8 +190,7 @@ rc_t vol_t::sx_add_backup(const string& path, lsn_t backupLSN, bool redo)
     return RCOK;
 }
 
-void vol_t::shutdown()
-{
+void vol_t::shutdown() {
     spinlock_write_critical_section cs(&_mutex);
 
     DBG(<<" vol_t::dismount flush=" << flush);
@@ -201,8 +202,7 @@ void vol_t::shutdown()
     _fd = -1;
 }
 
-void vol_t::close_backup()
-{
+void vol_t::close_backup() {
     if (_backup_fd > 0) {
         auto ret = close(_backup_fd);
         CHECK_ERRNO(ret);
@@ -212,9 +212,10 @@ void vol_t::close_backup()
     }
 }
 
-rc_t vol_t::alloc_a_page(PageID& shpid, StoreID stid)
-{
-    if (!_cluster_stores) { stid = 0; }
+rc_t vol_t::alloc_a_page(PageID& shpid, StoreID stid) {
+    if (!_cluster_stores) {
+        stid = 0;
+    }
     w_assert1(_alloc_cache);
     W_DO(_alloc_cache->sx_allocate_page(shpid, stid));
     INC_TSTAT(page_alloc_cnt);
@@ -222,8 +223,7 @@ rc_t vol_t::alloc_a_page(PageID& shpid, StoreID stid)
     return RCOK;
 }
 
-rc_t vol_t::deallocate_page(const PageID& pid)
-{
+rc_t vol_t::deallocate_page(const PageID& pid) {
     w_assert1(_alloc_cache);
     W_DO(_alloc_cache->sx_deallocate_page(pid));
     INC_TSTAT(page_dealloc_cnt);
@@ -231,25 +231,21 @@ rc_t vol_t::deallocate_page(const PageID& pid)
     return RCOK;
 }
 
-size_t vol_t::num_used_pages() const
-{
+size_t vol_t::num_used_pages() const {
     return _alloc_cache->get_last_allocated_pid() + 1;
 }
 
-rc_t vol_t::create_store(PageID& root_pid, StoreID& snum)
-{
+rc_t vol_t::create_store(PageID& root_pid, StoreID& snum) {
     W_DO(_alloc_cache->sx_allocate_page(root_pid));
     W_DO(_stnode_cache->sx_create_store(root_pid, snum));
     return RCOK;
 }
 
-bool vol_t::is_alloc_store(StoreID f) const
-{
+bool vol_t::is_alloc_store(StoreID f) const {
     return _stnode_cache->is_allocated(f);
 }
 
-PageID vol_t::get_store_root(StoreID f) const
-{
+PageID vol_t::get_store_root(StoreID f) const {
     return _stnode_cache->get_root_pid(f);
 }
 
@@ -260,14 +256,12 @@ PageID vol_t::get_store_root(StoreID f) const
  *  Read the page at "pnum" of the volume to the buffer "page".
  *
  *********************************************************************/
-rc_t vol_t::read_page(PageID pnum, generic_page* const buf)
-{
+rc_t vol_t::read_page(PageID pnum, generic_page* const buf) {
     return read_many_pages(pnum, buf, 1);
 }
 
 void vol_t::read_vector(PageID first_pid, unsigned count,
-        std::vector<generic_page*>& frames, bool from_backup)
-{
+                        std::vector<generic_page*>& frames, bool from_backup) {
     w_assert1(frames.size() >= count);
 
     w_assert0(count <= IOV_MAX);
@@ -312,20 +306,19 @@ void vol_t::read_vector(PageID first_pid, unsigned count,
  *  of the volume.
  *
  *********************************************************************/
-rc_t vol_t::read_many_pages(PageID first_page, generic_page* const buf, int cnt)
-{
+rc_t vol_t::read_many_pages(PageID first_page, generic_page* const buf, int cnt) {
     DBG(<< "Page read: from " << first_page << " to " << first_page + cnt);
     ADD_TSTAT(vol_reads, cnt);
 
     std::chrono::high_resolution_clock::time_point sleep_until;
-    if(_fake_read_latency.count()) {
+    if (_fake_read_latency.count()) {
         sleep_until = std::chrono::high_resolution_clock::now() + _fake_read_latency;
     }
 
     w_assert1(cnt > 0);
     size_t offset = size_t(first_page) * sizeof(generic_page);
     memset(buf, '\0', cnt * sizeof(generic_page));
-    int read_count = pread(_fd, (char *) buf, cnt * sizeof(generic_page), offset);
+    int read_count = pread(_fd, (char*)buf, cnt * sizeof(generic_page), offset);
     CHECK_ERRNO(read_count);
 
     std::this_thread::sleep_until(sleep_until);
@@ -337,11 +330,10 @@ rc_t vol_t::read_many_pages(PageID first_page, generic_page* const buf, int cnt)
     return RCOK;
 }
 
-void vol_t::read_backup(PageID first, size_t count, void* buf)
-{
+void vol_t::read_backup(PageID first, size_t count, void* buf) {
     if (_backup_fd < 0) {
         W_FATAL_MSG(eINTERNAL,
-                << "Cannot read from backup because it is not active");
+                    << "Cannot read from backup because it is not active");
     }
     w_assert0(_backup_alloc_cache);
 
@@ -367,7 +359,7 @@ void vol_t::read_backup(PageID first, size_t count, void* buf)
 
     // Short I/O is still possible because backup is only taken until last used
     // page, i.e., the file may be smaller than the total quota.
-    if (read_count < (int) actual_count) {
+    if (read_count < (int)actual_count) {
         // Actual short I/O only happens if we are not reading past last page
         w_assert0(first + count <= num_used_pages());
     }
@@ -380,8 +372,7 @@ void vol_t::read_backup(PageID first, size_t count, void* buf)
     }
 }
 
-rc_t vol_t::take_backup(string path, bool flushArchive)
-{
+rc_t vol_t::take_backup(string path, bool flushArchive) {
     // CS TODO -- use new RestoreCoordinator!
     return RC(eNOTIMPLEMENTED);
 
@@ -448,8 +439,7 @@ rc_t vol_t::take_backup(string path, bool flushArchive)
     return RCOK;
 }
 
-rc_t vol_t::write_backup(PageID first, size_t count, void* buf)
-{
+rc_t vol_t::write_backup(PageID first, size_t count, void* buf) {
     w_assert0(_backup_write_fd > 0);
     w_assert1(count > 0);
     size_t offset = size_t(first) * sizeof(generic_page);
@@ -462,7 +452,6 @@ rc_t vol_t::write_backup(PageID first, size_t count, void* buf)
     return RCOK;
 }
 
-
 /*********************************************************************
  *
  *  vol_t::write_many_pages(pnum, pages, cnt)
@@ -471,8 +460,7 @@ rc_t vol_t::write_backup(PageID first, size_t count, void* buf)
  *  of the volume.
  *
  *********************************************************************/
-rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, int cnt)
-{
+rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, int cnt) {
     if (_readonly) {
         // Write elision!
         return RCOK;
@@ -481,7 +469,7 @@ rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, i
     w_assert1(cnt > 0);
     size_t offset = size_t(first_page) * sizeof(generic_page);
 
-#if W_DEBUG_LEVEL>0
+#if W_DEBUG_LEVEL > 0
     // Doesnt work for decoupled cleaner
     // for (int i = 0; i < cnt; i++) {
     //     w_assert1(buf[i].pid == first_page + i);
@@ -489,12 +477,12 @@ rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, i
 #endif
 
     std::chrono::high_resolution_clock::time_point sleep_until;
-    if(_fake_write_latency.count()) {
+    if (_fake_write_latency.count()) {
         sleep_until = std::chrono::high_resolution_clock::now() + _fake_write_latency;
     }
 
     // do the actual write now
-    auto ret = pwrite(_fd, buf, sizeof(generic_page)*cnt, offset);
+    auto ret = pwrite(_fd, buf, sizeof(generic_page) * cnt, offset);
     CHECK_ERRNO(ret);
 
     std::this_thread::sleep_until(sleep_until);
@@ -509,14 +497,12 @@ rc_t vol_t::write_many_pages(PageID first_page, const generic_page* const buf, i
     return RCOK;
 }
 
-uint32_t vol_t::get_last_allocated_pid() const
-{
+uint32_t vol_t::get_last_allocated_pid() const {
     w_assert1(_alloc_cache);
     return _alloc_cache->get_last_allocated_pid();
 }
 
-bool vol_t::is_allocated_page(PageID pid) const
-{
+bool vol_t::is_allocated_page(PageID pid) const {
     w_assert1(_alloc_cache);
     return _alloc_cache->is_allocated(pid);
 }

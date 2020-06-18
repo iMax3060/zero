@@ -39,7 +39,7 @@
 /* internal data structures */
 #if 0
 static void trace_force_(const char* filename, int line_num, const char* function_name,
-		  char* format, ...) __attribute__((format(printf, 4, 5)));
+          char* format, ...) __attribute__((format(printf, 4, 5)));
 
 /**
  *  @def TRACE_FORCE
@@ -58,14 +58,11 @@ static void trace_force_(const char* filename, int line_num, const char* functio
 #define TRACE_FORCE(format, rest...) trace_force_(__FILE__, __LINE__, __FUNCTION__, format, ##rest)
 #endif
 
-
 static void trace_print_pthread(FILE* out_stream, pthread_t thread);
 
-
 static void trace_stream(FILE* out_stream,
-		  const char* filename, int line_num, const char* function_name,
-		  char const* format, va_list ap);
-
+                         const char* filename, int line_num, const char* function_name,
+                         char const* format, va_list ap);
 
 /**
  *  @brief Bit vector representing the current set of messages to be
@@ -102,15 +99,14 @@ static unsigned int trace_current_setting = ~0u;
  *
  *  @param ... Optional arguments referenced by the format string.
  */
-void tracer::operator()(unsigned int trace_type, char const* format, ...)
-{
+void tracer::operator()(unsigned int trace_type, char const* format, ...) {
 
     /* Print if any trace_type bits match bits in the current trace
        setting. */
     unsigned int do_trace = trace_current_setting & trace_type;
-    if ( do_trace == 0 )
+    if (do_trace == 0) {
         return;
-
+    }
 
     va_list ap;
     va_start(ap, format);
@@ -121,8 +117,6 @@ void tracer::operator()(unsigned int trace_type, char const* format, ...)
     va_end(ap);
     return;
 }
-
-
 
 /**
  *  @brief Specify the set of trace types that are currently enabled.
@@ -138,16 +132,12 @@ void trace_set(unsigned int trace_type_mask) {
     trace_current_setting = trace_type_mask;
 }
 
-
-
 /**
  *  @brief Get the set of trace types that are currently enabled.
  */
 unsigned int trace_get() {
     return trace_current_setting;
 }
-
-
 
 /* internal constants */
 
@@ -159,7 +149,7 @@ static const int FORCE_BUFFER_SIZE = 256;
 
 #if 0
 static void trace_force_(const char* filename, int line_num, const char* function_name,
-		  char* format, ...)
+          char* format, ...)
 {
 
   int function_name_len = strlen(function_name);
@@ -193,41 +183,36 @@ static void trace_force_(const char* filename, int line_num, const char* functio
  *  @return void
  */
 
-static void trace_print_pthread(FILE* out_stream, pthread_t thread)
-{
+static void trace_print_pthread(FILE* out_stream, pthread_t thread) {
 
-  /* operating system specific */
+    /* operating system specific */
 
-  /* GNU Linux */
+    /* GNU Linux */
 #if defined(linux) || defined(__linux)
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
 
-  /* detected GNU Linux */
-  /* A pthread_t is an unsigned long int. */
-  fprintf(out_stream, "%lu", thread);
-  return;
+    /* detected GNU Linux */
+    /* A pthread_t is an unsigned long int. */
+    fprintf(out_stream, "%lu", thread);
+    return;
 
 #endif
 
 
-  /* Sun Solaris */
+    /* Sun Solaris */
 #if defined(sun) || defined(__sun)
 #if defined(__SVR4) || defined(__svr4__)
 
-  /* detected Sun Solaris */
-  /* A pthread_t is an unsigned int. */
-  fprintf(out_stream, "%u", thread);
-  return;
+    /* detected Sun Solaris */
+    /* A pthread_t is an unsigned int. */
+    fprintf(out_stream, "%u", thread);
+    return;
 
 #endif
 #endif
-
 }
-
-
-
 
 /* internal data structures */
 
@@ -263,9 +248,8 @@ static pthread_mutex_t stream_mutex = thread_mutex_create();
  */
 
 static void trace_stream(FILE* out_stream,
-		  const char* filename, int line_num, const char* function_name,
-		  char const* format, va_list ap)
-{
+                         const char* filename, int line_num, const char* function_name,
+                         char const* format, va_list ap) {
 
     /* Any message we print should be prefixed by:
        .
@@ -281,11 +265,11 @@ static void trace_stream(FILE* out_stream,
 
     /* Try to print a meaningful (string) thread ID. If no ID is
        registered, just use pthread_t returned by pthread_self(). */
-    if ( this_thread != nullptr )
+    if (this_thread != nullptr) {
         fprintf(out_stream, "%s", this_thread->thread_name().data());
-    else
+    } else {
         trace_print_pthread(out_stream, pthread_self());
-
+    }
 
     fprintf(out_stream, ": %s:%d:%s: ", filename, line_num, function_name);
     vfprintf(out_stream, format, ap);

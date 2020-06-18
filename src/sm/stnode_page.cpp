@@ -8,8 +8,7 @@
 #include "alloc_cache.h"
 #include "xct_logger.h"
 
-stnode_cache_t::stnode_cache_t(bool create)
-{
+stnode_cache_t::stnode_cache_t(bool create) {
     fixable_page_h p;
     W_COERCE(p.fix_direct(stnode_page::stpid, LATCH_EX, false, create));
 
@@ -22,8 +21,7 @@ stnode_cache_t::stnode_cache_t(bool create)
     }
 }
 
-PageID stnode_cache_t::get_root_pid(StoreID store) const
-{
+PageID stnode_cache_t::get_root_pid(StoreID store) const {
     w_assert1(store < stnode_page::max);
     fixable_page_h p;
     W_COERCE(p.fix_direct(stnode_page::stpid, LATCH_SH));
@@ -31,21 +29,18 @@ PageID stnode_cache_t::get_root_pid(StoreID store) const
     return spage->get(store).root;
 }
 
-stnode_t stnode_cache_t::get_stnode(StoreID store) const
-{
+stnode_t stnode_cache_t::get_stnode(StoreID store) const {
     fixable_page_h p;
     W_COERCE(p.fix_direct(stnode_page::stpid, LATCH_SH));
     auto spage = reinterpret_cast<stnode_page*>(p.get_generic_page());
     return spage->get(store);
 }
 
-bool stnode_cache_t::is_allocated(StoreID store) const
-{
+bool stnode_cache_t::is_allocated(StoreID store) const {
     return get_stnode(store).is_used();
 }
 
-StoreID stnode_cache_t::get_min_unused_stid(stnode_page* spage) const
-{
+StoreID stnode_cache_t::get_min_unused_stid(stnode_page* spage) const {
     // Caller should hold the latch or guarantee mutual exclusion externally
 
     // Let's start from 1, not 0.  All user store ID's will begin with 1.
@@ -58,8 +53,7 @@ StoreID stnode_cache_t::get_min_unused_stid(stnode_page* spage) const
     return stnode_page::max;
 }
 
-void stnode_cache_t::get_used_stores(std::vector<StoreID>& ret) const
-{
+void stnode_cache_t::get_used_stores(std::vector<StoreID>& ret) const {
     ret.clear();
 
     fixable_page_h p;
@@ -68,13 +62,12 @@ void stnode_cache_t::get_used_stores(std::vector<StoreID>& ret) const
 
     for (size_t i = 1; i < stnode_page::max; ++i) {
         if (spage->get(i).is_used()) {
-            ret.push_back((StoreID) i);
+            ret.push_back((StoreID)i);
         }
     }
 }
 
-rc_t stnode_cache_t::sx_create_store(PageID root_pid, StoreID& snum) const
-{
+rc_t stnode_cache_t::sx_create_store(PageID root_pid, StoreID& snum) const {
     w_assert1(root_pid > 0);
 
     fixable_page_h p;
@@ -93,8 +86,7 @@ rc_t stnode_cache_t::sx_create_store(PageID root_pid, StoreID& snum) const
     return RCOK;
 }
 
-rc_t stnode_cache_t::sx_append_extent(StoreID snum, extent_id_t ext) const
-{
+rc_t stnode_cache_t::sx_append_extent(StoreID snum, extent_id_t ext) const {
     sys_xct_section_t ssx(true);
 
     fixable_page_h p;
@@ -106,8 +98,7 @@ rc_t stnode_cache_t::sx_append_extent(StoreID snum, extent_id_t ext) const
     return ssx.end_sys_xct(RCOK);
 }
 
-void stnode_cache_t::dump(std::ostream& out) const
-{
+void stnode_cache_t::dump(std::ostream& out) const {
     fixable_page_h p;
     W_COERCE(p.fix_direct(stnode_page::stpid, LATCH_SH));
     auto spage = reinterpret_cast<stnode_page*>(p.get_generic_page());
@@ -124,8 +115,7 @@ void stnode_cache_t::dump(std::ostream& out) const
     }
 }
 
-extent_id_t stnode_cache_t::get_last_extent(StoreID snum) const
-{
+extent_id_t stnode_cache_t::get_last_extent(StoreID snum) const {
     fixable_page_h p;
     W_COERCE(p.fix_direct(stnode_page::stpid, LATCH_SH));
     auto spage = reinterpret_cast<stnode_page*>(p.get_generic_page());

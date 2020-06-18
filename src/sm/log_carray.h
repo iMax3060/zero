@@ -175,15 +175,20 @@ struct CArraySlot {
     w_error_codes error;                // +sizeof(w_error_codes)
 
     /** To make this multiply of cacheline size. */
-    char            padding[32-sizeof(w_error_codes)]; // +32-sizeof(w_error_codes) -> 128
+    char padding[32 - sizeof(w_error_codes)]; // +32-sizeof(w_error_codes) -> 128
 
     /**
      * volatile accesses to make sure compiler isn't fooling us.
      * Most code anyway relies on atomic operations. These are not heavily used.
      */
-    CArraySlot volatile* vthis() { return this; }
+    CArraySlot volatile* vthis() {
+        return this;
+    }
+
     /** const version. */
-    const CArraySlot volatile* vthis() const { return this; }
+    const CArraySlot volatile* vthis() const {
+        return this;
+    }
 };
 // Doesn't compile in old Debian.
 //BOOST_STATIC_ASSERT_MSG((sizeof(CArraySlot) % CACHELINE_SIZE) == 0,
@@ -199,47 +204,49 @@ class ConsolidationArray {
 public:
     /** @param[in] active_slot_count Max number of slots that can be active at the same time */
     ConsolidationArray(int active_slot_count);
+
     ~ConsolidationArray();
 
     /** Constant numbers. */
     enum Constants {
         /** Total number of slots. */
-        ALL_SLOT_COUNT      = 256,
+        ALL_SLOT_COUNT = 256,
 
         /** Default value for max number of slots that can be active at the same time. */
-        DEFAULT_ACTIVE_SLOT_COUNT   = 3,
+        DEFAULT_ACTIVE_SLOT_COUNT = 3,
 
         /**
         * slots that are in active slots and up for grab have this carray_status_t.
         */
-        SLOT_AVAILABLE      = 0,
+        SLOT_AVAILABLE = 0,
         /**
         * slots that are in the pool but not in active slots
         * have this carray_status_t.
         */
-        SLOT_UNUSED         = -1,
+        SLOT_UNUSED = -1,
         /**
         * Once the first thread in the slot puts this as carray_status_t, other threads can no
         * longer join the slot.
         */
-        SLOT_PENDING        = -2,
+        SLOT_PENDING = -2,
         /**
         * Once the first thread acquires a buffer space and LSN, it puts this \b MINUS
         * the combined log size as the carray_status_t. All threads in the slot atomically add
         * its log size to this, making the last one notice that it is exactly SLOT_FINISHED.
         */
-        SLOT_FINISHED       = -4,
+        SLOT_FINISHED = -4,
     };
 
     /**
      * Calculate a new CArray status after joining the given log size to the existing status.
      */
-    static carray_status_t join_carray_status (carray_status_t current_status, int32_t size) {
+    static carray_status_t join_carray_status(carray_status_t current_status, int32_t size) {
         w_assert1(size >= 0);
         w_assert1(current_status >= 0);
         const carray_status_t THREAD_INCREMENT = 1L << 32;
         return current_status + size + THREAD_INCREMENT;
     }
+
     /**
      * Extract the current-total of log size in C-Array status.
      */
@@ -257,13 +264,13 @@ public:
      * @param[out] status \b atomically obtained status of the joined slot
      * @return the slot we have just joined
      */
-    CArraySlot*         join_slot(int32_t size, carray_status_t &status);
+    CArraySlot* join_slot(int32_t size, carray_status_t& status);
 
     /**
      * join the memcpy-complete queue but don't spin yet.
      * This sets the CArraySlot#me2 and CArraySlot#pred2.
      */
-    void                join_expose(CArraySlot* slot);
+    void join_expose(CArraySlot* slot);
 
     /**
      * Atomically checks if the slot has a successor slot that delegated its release to this
@@ -272,13 +279,13 @@ public:
      * See Section A.3 of Aether paper.
      * @return NULL if no one delegated, a delegated slot otherwise.
      */
-    CArraySlot*         grab_delegated_expose(CArraySlot* slot);
+    CArraySlot* grab_delegated_expose(CArraySlot* slot);
 
     /**
      * Spins until the leader of the given slot acquires log buffer.
      * @pre current thread is not the leader of the slot
      */
-    void                wait_for_leader(CArraySlot* slot);
+    void wait_for_leader(CArraySlot* slot);
 
     /**
      * Tries to delegate the buffer release of this slot to slowly-moving predecessor
@@ -286,7 +293,7 @@ public:
      * @return true if we successfully delegated our dirty work to the poor predecessor.
      * @pre current thread is the leader of the slot
      */
-    bool                wait_for_expose(CArraySlot* slot);
+    bool wait_for_expose(CArraySlot* slot);
 
     /**
      * Retire the given slot from active slot, upgrading an unused thread to an active slot.
@@ -295,30 +302,33 @@ public:
      * @pre slot->count > SLOT_AVAILABLE, in other words thte slot is
      * already owned and no other thread can disturb this change.
      */
-    void                replace_active_slot(CArraySlot* slot);
+    void replace_active_slot(CArraySlot* slot);
 
 private:
-    int                 _indexof(const CArraySlot* slot) const;
+    int _indexof(const CArraySlot* slot) const;
 
     /**
      * Clockhand of active slots. We use this to evenly distribute accesses to slots.
      * This value is not protected at all because we don't care even if it's not
      * perfectly even. We anyway atomically obtain the slot.
      */
-    int32_t             _slot_mark;
+    int32_t _slot_mark;
+
     /** Max number of slots that can be active at the same time. */
-    const int32_t       _active_slot_count;
+    const int32_t _active_slot_count;
+
     /** All slots, including available, currently used, or retired slots. */
-    CArraySlot          _all_slots[ALL_SLOT_COUNT];
+    CArraySlot _all_slots[ALL_SLOT_COUNT];
+
     /** Active slots that are (probably) up for grab or join. */
-    CArraySlot**        _active_slots;
+    CArraySlot** _active_slots;
 
     // paddings to make sure mcs_lock are in different cacheline
-    /** @cond */ char   _padding[CACHELINE_SIZE]; /** @endcond */
+    /** @cond */ char _padding[CACHELINE_SIZE]; /** @endcond */
     /**
      * \brief Lock to protect threads releasing their log buffer.
      */
-    mcs_lock            _expose_lock;
+    mcs_lock _expose_lock;
 };
 
 inline int ConsolidationArray::_indexof(const CArraySlot* info) const {

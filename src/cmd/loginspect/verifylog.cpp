@@ -5,21 +5,18 @@
 #include "alloc_cache.h"
 #include "buffer_pool.hpp"
 
-void VerifyLog::setupOptions()
-{
+void VerifyLog::setupOptions() {
     LogScannerCommand::setupOptions();
     boost::program_options::options_description opt("VerifyLog Options");
     opt.add_options()
-        ("alloc", po::value<bool>(&verify_alloc)->default_value(false)->
-         implicit_value(true), "Verify allocation of pages")
-        ("dbfile,d", po::value<string>(&dbfile)->default_value("db"),
-            "Path to DB file")
-    ;
+            ("alloc", po::value<bool>(&verify_alloc)->default_value(false)->
+                    implicit_value(true), "Verify allocation of pages")
+            ("dbfile,d", po::value<string>(&dbfile)->default_value("db"),
+             "Path to DB file");
     options.add(opt);
 }
 
-void init_alloc()
-{
+void init_alloc() {
     // _options.set_string_option("sm_dbfile", dbfile);
     // _options.set_bool_option("sm_vol_cluster_stores", true);
 
@@ -28,15 +25,16 @@ void init_alloc()
     // smlevel_0::vol->build_caches(format, chkpt_info);
 }
 
-void VerifyLog::run()
-{
-    if (verify_alloc) { init_alloc(); }
+void VerifyLog::run() {
+    if (verify_alloc) {
+        init_alloc();
+    }
 
     BaseScanner* s = getScanner();
     VerifyHandler h(merge);
     if (!merge) {
         s->openFileCallback = std::bind(&VerifyHandler::newFile, &h,
-            std::placeholders::_1);
+                                        std::placeholders::_1);
     }
     s->add_handler(&h);
     s->fork();
@@ -46,77 +44,71 @@ void VerifyLog::run()
 }
 
 VerifyHandler::VerifyHandler(bool merge)
-    : minLSN(lsn_t::null), maxLSN(lsn_t::null), lastLSN(lsn_t::null),
-    lastPID(0), count(0), merge(merge)
-{
-}
+        : minLSN(lsn_t::null),
+          maxLSN(lsn_t::null),
+          lastLSN(lsn_t::null),
+          lastPID(0),
+          count(0),
+          merge(merge) {}
 
-void VerifyHandler::newFile(const char* /*fname*/)
-{
+void VerifyHandler::newFile(const char* /*fname*/) {
     // minLSN = LogArchiver::ArchiveDirectory::parseLSN(fname, false);
     // maxLSN = LogArchiver::ArchiveDirectory::parseLSN(fname, true);
     lastLSN = lsn_t::null;
     lastPID = 0;
 }
 
-lsn_t VerifyHandler::getCurrentPageLSN(PageID pid)
-{
+lsn_t VerifyHandler::getCurrentPageLSN(PageID pid) {
     auto it = pageLSNs.find(pid);
     if (it == pageLSNs.end()) {
         return pageLSNs[pid] = lsn_t::null;
-    }
-    else {
+    } else {
         return pageLSNs[pid];
     }
 }
 
-void checkLSN(lsn_t lsn, lsn_t current, lsn_t expected)
-{
+void checkLSN(lsn_t lsn, lsn_t current, lsn_t expected) {
     if (current.is_null()) {
         return;
     }
-    if(expected != current) {
+    if (expected != current) {
         std::cout << "on " << lsn
-            << " current is " << current
-            << " but should be " << expected
-        << std::endl;
+                  << " current is " << current
+                  << " but should be " << expected
+                  << std::endl;
     }
     w_assert0(expected == current);
 }
 
-void VerifyHandler::checkAlloc(logrec_t& r)
-{
+void VerifyHandler::checkAlloc(logrec_t& r) {
     auto lsn = r.lsn();
-    PageID pid = *((PageID*) (r.data_ssx()));
+    PageID pid = *((PageID*)(r.data_ssx()));
     if (r.type() == logrec_t::t_alloc_page) {
         if (allocatedPages.find(pid) != allocatedPages.end()) {
             std::cout << "on " << lsn
-                << " alloc_page of pid " << pid
-                << " which is already allocated" << std::endl;
+                      << " alloc_page of pid " << pid
+                      << " which is already allocated" << std::endl;
             w_assert0(false);
         }
         allocatedPages.insert(pid);
-    }
-    else if (r.type() == logrec_t::t_dealloc_page) {
+    } else if (r.type() == logrec_t::t_dealloc_page) {
         if (allocatedPages.find(pid) == allocatedPages.end()) {
             std::cout << "on " << lsn
-                << " dealloc_page of pid " << pid
-                << " which is not allocated" << std::endl;
+                      << " dealloc_page of pid " << pid
+                      << " which is not allocated" << std::endl;
             w_assert0(false);
         }
         allocatedPages.erase(pid);
-    }
-    else {
+    } else {
         std::cout << "on " << lsn
-            << " update on alloc pid " << r.pid()
-            << " but invalid logrec type " << r.type_str()
-            << std::endl;
+                  << " update on alloc pid " << r.pid()
+                  << " but invalid logrec type " << r.type_str()
+                  << std::endl;
         w_assert0(false);
     }
 }
 
-void VerifyHandler::checkRedo(logrec_t& r, PageID pid, lsn_t lsn, lsn_t prev_lsn)
-{
+void VerifyHandler::checkRedo(logrec_t& r, PageID pid, lsn_t lsn, lsn_t prev_lsn) {
     lsn_t currPageLSN = getCurrentPageLSN(pid);
     checkLSN(lsn, currPageLSN, prev_lsn);
     pageLSNs[pid] = lsn;
@@ -129,8 +121,7 @@ void VerifyHandler::checkRedo(logrec_t& r, PageID pid, lsn_t lsn, lsn_t prev_lsn
     // }
 }
 
-void VerifyHandler::invoke(logrec_t& r)
-{
+void VerifyHandler::invoke(logrec_t& r) {
     w_assert0(r.valid_header());
 
     lsn_t lsn = r.lsn();
@@ -163,8 +154,7 @@ void VerifyHandler::invoke(logrec_t& r)
     count++;
 }
 
-void VerifyHandler::finalize()
-{
+void VerifyHandler::finalize() {
     cout << "Log verification complete!" << endl;
     cout << "scanned_logrecs " << count << endl;
 }

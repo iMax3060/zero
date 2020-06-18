@@ -34,7 +34,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /*  -- do not edit anything above this line --   </std-header>*/
 
-#if !defined(GNUG_BUG_14) 
+#if !defined(GNUG_BUG_14)
 
 // WARNING: due to a gcc 2.6.* bug, do not used these
 //          since there is no way to explicitly instantiate
@@ -56,7 +56,9 @@ min(const T x, const T y)
 #endif /* !__GNUC__ */
 
 #ifdef HAVE_SYS_PARAM_H
+
 #include <sys/param.h>
+
 #endif
 
 #ifndef MAX

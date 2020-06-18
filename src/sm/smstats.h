@@ -124,13 +124,11 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 
 template<typename E>
-constexpr auto enum_to_base(E e) -> typename std::underlying_type<E>::type
-{
-       return static_cast<typename std::underlying_type<E>::type>(e);
+constexpr auto enum_to_base(E e)->typename std::underlying_type<E>::type {
+    return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
-enum class sm_stat_id : size_t
-{
+enum class sm_stat_id : size_t {
     rwlock_r_wait,
     rwlock_w_wait,
     needs_latch_condl,
@@ -208,7 +206,9 @@ using sm_stats_t = std::array<long, enum_to_base(sm_stat_id::stat_max)>;
 
 // CS TODO: move this into some static class instead of global functions
 void print_sm_stats(sm_stats_t& stats, std::ostream& out);
+
 const char* get_stat_name(sm_stat_id s);
+
 const char* get_stat_expl(sm_stat_id s);
 
 /**\brief Configuration Information
@@ -230,8 +230,8 @@ struct sm_config_info_t {
     // shore-kits needs max_small_rec; shore-sm-6.0.1 initializes this field at
     // several places. Make sure Zero similarly initializes max_small_rec
     u_long max_small_rec;      // maximum number of bytes in a "small"
-                // (ie. on one page) record.  This is
-                // align(header_len)+align(body_len).
+    // (ie. on one page) record.  This is
+    // align(header_len)+align(body_len).
     u_long lg_rec_page_space;
 
     /**\brief Size in KB of buffer pool */
@@ -254,7 +254,7 @@ struct sm_config_info_t {
      * tested with logging turned off, so turning off logging is
      * not supported in this release.
      */
-    bool   logging;
+    bool logging;
 
     friend ostream& operator<<(ostream&, const sm_config_info_t& s);
 };

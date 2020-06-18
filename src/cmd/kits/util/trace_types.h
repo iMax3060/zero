@@ -57,6 +57,4 @@
 #define TRACE_RECORD_FLOW          (unsigned int)(1 << 16)
 #define TRACE_DEBUG                (unsigned int)(1 << 31)
 
-
-
 #endif // __TRACE_TYPES_H

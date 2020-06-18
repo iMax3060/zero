@@ -3,33 +3,32 @@
 #include "logarchiver.h"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 // CS TODO: LA metadata -- should be serialized on run files
 const size_t BLOCK_SIZE = 1048576;
 
-void MergeRuns::setupOptions()
-{
+void MergeRuns::setupOptions() {
     options.add_options()
-        ("indir", po::value<string>(&indir)->required(),
-            "Directory containing the runs to be merged")
-        ("outdir", po::value<string>(&outdir)->default_value(""),
-            "Directory where the merged runs will be stored (empty for same as indir)")
-        ("level", po::value<size_t>(&level)->default_value(1),
-            "Level whose runs will be merged (a run in level+1 will be created)")
-        ("fanin", po::value<size_t>(&fanin)->required(),
-            "Merge fan-in (required, larger than 1)")
-        ("bucket", po::value<size_t>(&bucketSize)->default_value(1),
-            "Size of log archive index bucket in output runs")
-        ("repl", po::value<size_t>(&replFactor)->default_value(0),
-            "Delete runs after merge to maintain given replication factor")
-    ;
+            ("indir", po::value<string>(&indir)->required(),
+             "Directory containing the runs to be merged")
+            ("outdir", po::value<string>(&outdir)->default_value(""),
+             "Directory where the merged runs will be stored (empty for same as indir)")
+            ("level", po::value<size_t>(&level)->default_value(1),
+             "Level whose runs will be merged (a run in level+1 will be created)")
+            ("fanin", po::value<size_t>(&fanin)->required(),
+             "Merge fan-in (required, larger than 1)")
+            ("bucket", po::value<size_t>(&bucketSize)->default_value(1),
+             "Size of log archive index bucket in output runs")
+            ("repl", po::value<size_t>(&replFactor)->default_value(0),
+             "Delete runs after merge to maintain given replication factor");
     Command::setupSMOptions(options);
 }
 
-void MergeRuns::run()
-{
+void MergeRuns::run() {
     if (fanin <= 1) {
         throw runtime_error("Invalid merge fan-in (must be > 1)");
     }
@@ -47,8 +46,7 @@ void MergeRuns::run()
         fs::path fspath(outdir);
         if (!fs::exists(fspath)) {
             fs::create_directories(fspath);
-        }
-        else {
+        } else {
             if (!fs::is_directory(fspath)) {
                 throw runtime_error("Provided path is not a directory!");
             }

@@ -30,7 +30,7 @@ namespace zero::buffer_pool {
                 _maxBufferpoolIndex(bufferPool->getBlockCount() - 1),
                 _coolingStageSize(std::ceil(bufferPool->getBlockCount() * cooling_stage_size_ppm * 0.000001)),
                 _coolingStage(_coolingStageSize),
-                _randomNumberGenerator(std::random_device {}()),
+                _randomNumberGenerator(std::random_device{}()),
                 _randomDistribution(1, _maxBufferpoolIndex),
                 _notEvictable(bufferPool->getBlockCount()) {
             static_assert(std::is_same_v<POINTER_SWIZZLER, SimpleSwizzling>,
@@ -50,7 +50,9 @@ namespace zero::buffer_pool {
          */
         bf_idx pickVictim() noexcept final {
             while (true) {
-                if (should_exit()) return 0; // the buffer index 0 has the semantics of null
+                if (should_exit()) {
+                    return 0;
+                } // the buffer index 0 has the semantics of null
 
                 bf_idx victimIndex = 0;
                 if (_coolingStage.length() * 2 < _coolingStageSize) {
@@ -164,7 +166,7 @@ namespace zero::buffer_pool {
                 _coolingStageLock.lock();
                 try {
                     _coolingStage.remove(idx);
-                } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u> &ex) {}
+                } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u>& ex) {}
                 _coolingStageLock.unlock();
             }
         };
@@ -235,7 +237,8 @@ namespace zero::buffer_pool {
                     bf_tree_cb_t& coolingCandidateParentControlBlock
                             = smlevel_0::bf->getControlBlock(coolingCandidateParent);
                     rc_t coolingCandidateParentLatchReturnCode
-                            = coolingCandidateParentControlBlock.latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
+                            = coolingCandidateParentControlBlock.latch().latch_acquire(LATCH_SH,
+                                                                                       timeout_t::WAIT_IMMEDIATE);
                     if (coolingCandidateParentLatchReturnCode.is_error()) {
                         coolingCandidateControlBlock.latch().latch_release();
                         continue;
@@ -248,7 +251,8 @@ namespace zero::buffer_pool {
                     general_recordid_t coolingCandidateSlotID;
                     coolingCandidateSlotID
                             = fixable_page_h::find_page_id_slot(coolingCandidateParentPage,
-                                                                POINTER_SWIZZLER::makeSwizzledPointer(coolingCandidate));
+                                                                POINTER_SWIZZLER::makeSwizzledPointer(
+                                                                        coolingCandidate));
                     w_assert1(coolingCandidateSlotID != GeneralRecordIds::INVALID);
 
                     // Unswizzle the candidate's pointer inside its parent page:
@@ -272,43 +276,41 @@ namespace zero::buffer_pool {
          * \brief   TODO
          * \details TODO
          */
-        hashtable_deque::HashtableDeque<bf_idx, 0x80000001u>             _coolingStage;
+        hashtable_deque::HashtableDeque<bf_idx, 0x80000001u> _coolingStage;
 
         /*!\var     _coolingStageSize
          * \brief   TODO
          */
-        bf_idx                                                              _coolingStageSize;
+        bf_idx _coolingStageSize;
 
         /*!\var     _coolingStageLock
          * \brief   TODO
          */
-        std::recursive_mutex                                                _coolingStageLock;
+        std::recursive_mutex _coolingStageLock;
 
         /*!\var     _notEvictable
          * \brief   TODO
          * \details TODO
          */
-        std::vector<std::atomic<bool>>                                      _notEvictable;
+        std::vector<std::atomic<bool>> _notEvictable;
 
         /*!\var     _maxBufferpoolIndex
          * \brief   TODO
          */
-        bf_idx                                                              _maxBufferpoolIndex;
+        bf_idx _maxBufferpoolIndex;
 
         /*!\var     _randomNumberGenerator
          * \brief   TODO
          * \details TODO
          */
-        splitmix32                                                          _randomNumberGenerator;
+        splitmix32 _randomNumberGenerator;
 
         /*!\var     _randomDistribution
          * \brief   TODO
          * \details TODO
          */
-        uniform_int_distribution::biased_uniform_int_distribution<bf_idx>   _randomDistribution;
-
+        uniform_int_distribution::biased_uniform_int_distribution<bf_idx> _randomDistribution;
     };
-
 } // zero::buffer_pool
 
 #endif // __ZERO_PAGE_EVICTIONER_LEAN_STORE_HPP

@@ -34,13 +34,11 @@
 #include "table_desc.h"
 #include "index_desc.h"
 
-
 #define VAR_SLOT(start, offset)   ((start)+(offset))
 #define SET_NULL_FLAG(start, offset)                            \
     (*(char*)((start)+((offset)>>3))) &= (1<<((offset)>>3))
 #define IS_NULL_FLAG(start, offset)                     \
     (*(char*)((start)+((offset)>>3)))&(1<<((offset)>>3))
-
 
 /******************************************************************
  *
@@ -51,23 +49,23 @@
  ******************************************************************/
 
 rep_row_t::rep_row_t()
-    : _dest(nullptr), _bufsz(0), _pts(nullptr)
-{ }
+        : _dest(nullptr),
+          _bufsz(0),
+          _pts(nullptr) {}
 
 rep_row_t::rep_row_t(blob_pool* apts)
-    : _dest(nullptr), _bufsz(0), _pts(apts)
-{
+        : _dest(nullptr),
+          _bufsz(0),
+          _pts(apts) {
     assert (_pts);
 }
 
-rep_row_t::~rep_row_t()
-{
+rep_row_t::~rep_row_t() {
     if (_dest) {
         _pts->destroy(_dest);
         _dest = nullptr;
     }
 }
-
 
 /******************************************************************
  *
@@ -77,8 +75,7 @@ rep_row_t::~rep_row_t()
  *
  ******************************************************************/
 
-void rep_row_t::set(const unsigned nsz)
-{
+void rep_row_t::set(const unsigned nsz) {
     if ((!_dest) || (_bufsz < nsz)) {
 
         char* tmp = _dest;
@@ -100,9 +97,8 @@ void rep_row_t::set(const unsigned nsz)
     }
 
     // in any case, clean up the buffer
-    memset (_dest, 0, nsz);
+    memset(_dest, 0, nsz);
 }
-
 
 /******************************************************************
  *
@@ -112,15 +108,11 @@ void rep_row_t::set(const unsigned nsz)
  *
  ******************************************************************/
 
-void rep_row_t::set_ts(blob_pool* apts, const unsigned nsz)
-{
+void rep_row_t::set_ts(blob_pool* apts, const unsigned nsz) {
     assert(apts);
     _pts = apts;
     set(nsz);
 }
-
-
-
 
 /******************************************************************
  *
@@ -132,20 +124,20 @@ void rep_row_t::set_ts(blob_pool* apts, const unsigned nsz)
 
 
 table_row_t::table_row_t()
-    : _ptable(nullptr),
-      _field_cnt(0), _is_setup(false),
-      _pvalues(nullptr),
-      _fixed_offset(0),_var_slot_offset(0),_var_offset(0),_null_count(0),
-      _rep(nullptr), _rep_key(nullptr)
-{
-}
+        : _ptable(nullptr),
+          _field_cnt(0),
+          _is_setup(false),
+          _pvalues(nullptr),
+          _fixed_offset(0),
+          _var_slot_offset(0),
+          _var_offset(0),
+          _null_count(0),
+          _rep(nullptr),
+          _rep_key(nullptr) {}
 
-table_row_t::~table_row_t()
-{
+table_row_t::~table_row_t() {
     freevalues();
 }
-
-
 
 /******************************************************************
  *
@@ -157,8 +149,7 @@ table_row_t::~table_row_t()
  *
  ******************************************************************/
 
-int table_row_t::setup(table_desc_t* ptd)
-{
+int table_row_t::setup(table_desc_t* ptd) {
     assert (ptd);
 
     // if it is already setup for this table just reset it
@@ -170,39 +161,42 @@ int table_row_t::setup(table_desc_t* ptd)
     // else do the normal setup
     _ptable = ptd;
     _field_cnt = ptd->field_count();
-    assert (_field_cnt>0);
+    assert (_field_cnt > 0);
     _pvalues = new field_value_t[_field_cnt];
 
-    unsigned var_count  = 0;
+    unsigned var_count = 0;
     unsigned fixed_size = 0;
 
     // setup each field and calculate offsets along the way
-    for (unsigned i=0; i<_field_cnt; i++) {
+    for (unsigned i = 0; i < _field_cnt; i++) {
         _pvalues[i].setup(ptd->desc(i));
 
         // count variable- and fixed-sized fields
-        if (_pvalues[i].is_variable_length())
+        if (_pvalues[i].is_variable_length()) {
             var_count++;
-        else
+        } else {
             fixed_size += _pvalues[i].maxsize();
+        }
 
         // count null-able fields
-        if (_pvalues[i].field_desc()->allow_null())
+        if (_pvalues[i].field_desc()->allow_null()) {
             _null_count++;
+        }
     }
 
     // offset for fixed length field values
     _fixed_offset = 0;
-    if (_null_count) _fixed_offset = ((_null_count-1) >> 3) + 1;
+    if (_null_count) {
+        _fixed_offset = ((_null_count - 1) >> 3) + 1;
+    }
     // offset for variable length field slots
     _var_slot_offset = _fixed_offset + fixed_size;
     // offset for variable length field values
-    _var_offset = _var_slot_offset + sizeof(offset_t)*var_count;
+    _var_offset = _var_slot_offset + sizeof(offset_t) * var_count;
 
     _is_setup = true;
     return (0);
 }
-
 
 /******************************************************************
  *
@@ -212,8 +206,7 @@ int table_row_t::setup(table_desc_t* ptd)
  *
  ******************************************************************/
 
-unsigned table_row_t::size() const
-{
+unsigned table_row_t::size() const {
     assert (_is_setup);
 
     unsigned size = 0;
@@ -225,23 +218,26 @@ unsigned table_row_t::size() const
      * Of course, there is a bit for each nullable field.
      */
 
-    for (unsigned i=0; i<_field_cnt; i++) {
-	if (_pvalues[i]._pfield_desc->allow_null()) {
-	    if (_pvalues[i].is_null()) continue;
-	}
-	if (_pvalues[i].is_variable_length()) {
-	    size += _pvalues[i].realsize();
-	    size += sizeof(offset_t);
-	}
-	else size += _pvalues[i].maxsize();
+    for (unsigned i = 0; i < _field_cnt; i++) {
+        if (_pvalues[i]._pfield_desc->allow_null()) {
+            if (_pvalues[i].is_null()) {
+                continue;
+            }
+        }
+        if (_pvalues[i].is_variable_length()) {
+            size += _pvalues[i].realsize();
+            size += sizeof(offset_t);
+        } else {
+            size += _pvalues[i].maxsize();
+        }
     }
-    if (_null_count) size += (_null_count >> 3) + 1;
+    if (_null_count) {
+        size += (_null_count >> 3) + 1;
+    }
     return (size);
 }
 
-
-void _load_signed_int(char* dest, char* src, size_t nbytes)
-{
+void _load_signed_int(char* dest, char* src, size_t nbytes) {
     // invert sign bit and reverse endianness
     size_t lsb = nbytes - 1;
     for (size_t i = 0; i < nbytes; i++) {
@@ -250,8 +246,7 @@ void _load_signed_int(char* dest, char* src, size_t nbytes)
     dest[lsb] ^= 0x80;
 }
 
-void table_row_t::load_key(char* data, index_desc_t* pindex)
-{
+void table_row_t::load_key(char* data, index_desc_t* pindex) {
     char buffer[8];
     char* pos = data;
     unsigned field_cnt = pindex ? pindex->field_count() : _field_cnt;
@@ -280,21 +275,21 @@ void table_row_t::load_key(char* data, index_desc_t* pindex)
             case SQL_SMALLINT: {
                 memcpy(buffer, pos, 2);
                 _load_signed_int(buffer, pos, 2);
-                field.set_smallint_value(*(int16_t*) buffer);
+                field.set_smallint_value(*(int16_t*)buffer);
                 pos += 2;
                 break;
             }
             case SQL_INT: {
                 memcpy(buffer, pos, 4);
                 _load_signed_int(buffer, pos, 4);
-                field.set_int_value(*(int32_t*) buffer);
+                field.set_int_value(*(int32_t*)buffer);
                 pos += 4;
                 break;
             }
             case SQL_LONG: {
                 memcpy(buffer, pos, 8);
                 _load_signed_int(buffer, pos, 8);
-                field.set_long_value(*(int64_t*) buffer);
+                field.set_long_value(*(int64_t*)buffer);
                 pos += 8;
                 break;
             }
@@ -308,14 +303,13 @@ void table_row_t::load_key(char* data, index_desc_t* pindex)
                         buffer[i] = pos[7 - i];
                     }
                     buffer[7] ^= 0x80;
-                }
-                else {
+                } else {
                     // otherwise invert all bits
                     for (int i = 0; i < 8; i++) {
                         buffer[i] = pos[7 - i] ^ 0x80;
                     }
                 }
-                field.set_float_value(*(double*) buffer);
+                field.set_float_value(*(double*)buffer);
                 pos += 8;
                 break;
             }
@@ -342,8 +336,7 @@ void table_row_t::load_key(char* data, index_desc_t* pindex)
     }
 }
 
-void table_row_t::load_value(char* data, index_desc_t* pindex)
-{
+void table_row_t::load_value(char* data, index_desc_t* pindex) {
     // Read the data field by field
     assert (data);
 
@@ -361,18 +354,20 @@ void table_row_t::load_value(char* data, index_desc_t* pindex)
 
     // 2. Read the data field by field
     int null_index = -1;
-    for (unsigned i=0; i<_ptable->field_count(); i++) {
+    for (unsigned i = 0; i < _ptable->field_count(); i++) {
 
         if (pindex) {
             bool skip = false;
             // skip key fields
             for (unsigned j = 0; j < pindex->field_count(); j++) {
-                if ((int) i == pindex->key_index(j)) {
+                if ((int)i == pindex->key_index(j)) {
                     skip = true;
                     break;
                 }
             }
-            if (skip) continue;
+            if (skip) {
+                continue;
+            }
         }
 
         // Check if the field can be NULL.
@@ -380,13 +375,13 @@ void table_row_t::load_value(char* data, index_desc_t* pindex)
         // and check if the bit in the null_flags bitmap is set.
         // If it is set, set the corresponding value in the tuple
         // as null, and go to the next field, ignoring the rest
-	if (_pvalues[i].field_desc()->allow_null()) {
-	    null_index++;
-	    if (IS_NULL_FLAG(data, null_index)) {
-		_pvalues[i].set_null();
-		continue;
-	    }
-	}
+        if (_pvalues[i].field_desc()->allow_null()) {
+            null_index++;
+            if (IS_NULL_FLAG(data, null_index)) {
+                _pvalues[i].set_null();
+                continue;
+            }
+        }
 
         // Check if the field is of VARIABLE length.
         // If it is, copy the offset of the value from the offset part of the
@@ -394,26 +389,24 @@ void table_row_t::load_value(char* data, index_desc_t* pindex)
         // the variable length part of the buffer (pointed by var_offset).
         // Then increase by one offset index, and offset of the pointer of the
         // next variable value
-	if (_pvalues[i].is_variable_length()) {
-	    offset_t var_len;
-	    memcpy(&var_len,  VAR_SLOT(data, var_slot_offset), sizeof(offset_t));
-            _pvalues[i].set_value(data+var_offset, var_len);
-	    var_offset += var_len;
-	    var_slot_offset += sizeof(offset_t);
-	}
-	else {
+        if (_pvalues[i].is_variable_length()) {
+            offset_t var_len;
+            memcpy(&var_len, VAR_SLOT(data, var_slot_offset), sizeof(offset_t));
+            _pvalues[i].set_value(data + var_offset, var_len);
+            var_offset += var_len;
+            var_slot_offset += sizeof(offset_t);
+        } else {
             // If it is of FIXED length, copy the data from the fixed length
             // part of the buffer (pointed by fixed_offset), and the increase
             // the fixed offset by the (fixed) size of the field
-            _pvalues[i].set_value(data+fixed_offset,
-                    _pvalues[i].maxsize());
-	    fixed_offset += _pvalues[i].maxsize();
-	}
+            _pvalues[i].set_value(data + fixed_offset,
+                                  _pvalues[i].maxsize());
+            fixed_offset += _pvalues[i].maxsize();
+        }
     }
 }
 
-void _store_signed_int(char* dest, char* src, size_t nbytes)
-{
+void _store_signed_int(char* dest, char* src, size_t nbytes) {
     // reverse endianness and invert sign bit
     size_t lsb = nbytes - 1;
     for (size_t i = 0; i < nbytes; i++) {
@@ -422,8 +415,7 @@ void _store_signed_int(char* dest, char* src, size_t nbytes)
     dest[0] ^= 0x80;
 }
 
-void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
-{
+void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex) {
     size_t req_size = 0;
     char buffer[8];
     char* pos = data;
@@ -435,7 +427,9 @@ void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
         w_assert1(field.is_setup());
 
         req_size += field.realsize();
-        if (fdesc->allow_null()) { req_size++; }
+        if (fdesc->allow_null()) {
+            req_size++;
+        }
         if (length < req_size) {
             throw runtime_error("Tuple does not fit on given buffer");
         }
@@ -446,8 +440,7 @@ void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
                 *pos = 0x00;
                 pos++;
                 continue;
-            }
-            else {
+            } else {
                 // non-null nullable fields require a 1 prefix
                 *pos = 0xFF;
                 pos++;
@@ -486,8 +479,7 @@ void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
                     for (int i = 0; i < 8; i++) {
                         pos[i] = buffer[7 - i] ^ 0xFF;
                     }
-                }
-                else {
+                } else {
                     // otherwise invert only sign bit
                     for (int i = 0; i < 8; i++) {
                         pos[i] = buffer[7 - i];
@@ -503,7 +495,7 @@ void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
                 break;
             case SQL_FIXCHAR:
             case SQL_VARCHAR:
-            // Assumption is that strings already include the terminating zero
+                // Assumption is that strings already include the terminating zero
                 field.copy_value(pos);
                 pos += field.realsize();
                 w_assert1(*(pos - 1) == 0);
@@ -514,11 +506,10 @@ void table_row_t::store_key(char* data, size_t& length, index_desc_t* pindex)
         }
     }
     length = req_size;
-    w_assert1(pos - data == (long) length);
+    w_assert1(pos - data == (long)length);
 }
 
-void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex)
-{
+void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex) {
     // 1. Get the pre-calculated offsets
 
     // current offset for fixed length field values
@@ -535,22 +526,24 @@ void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex)
     // 2. calculate the total space of the tuple
     //   (tupsize)    : total space of the tuple
 
-    int tupsize    = 0;
+    int tupsize = 0;
 
     int null_count = get_null_count();
     int fixed_size = get_var_slot_offset() - get_fixed_offset();
 
     // loop over all the variable-sized fields and add their real size (set at ::set())
-    for (unsigned i=0; i<_ptable->field_count(); i++) {
-	if (_pvalues[i].is_variable_length()) {
+    for (unsigned i = 0; i < _ptable->field_count(); i++) {
+        if (_pvalues[i].is_variable_length()) {
             // If it is of VARIABLE length, then if the value is null
             // do nothing, else add to the total tuple length the (real)
             // size of the value plus the size of an offset.
 
-            if (_pvalues[i].is_null()) continue;
+            if (_pvalues[i].is_null()) {
+                continue;
+            }
             tupsize += _pvalues[i].realsize();
             tupsize += sizeof(offset_t);
-	}
+        }
 
         // If it is of FIXED length, then increase the total tuple
         // length, as well as, the size of the fixed length part of
@@ -564,10 +557,12 @@ void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex)
 
     // In the total tuple length add the size of the bitmap that
     // shows which fields can be NULL
-    if (null_count) tupsize += (null_count >> 3) + 1;
+    if (null_count) {
+        tupsize += (null_count >> 3) + 1;
+    }
     assert (tupsize);
 
-    if ((long) length < tupsize) {
+    if ((long)length < tupsize) {
         throw runtime_error("Tuple does not fit on allocated buffer");
     }
     length = tupsize;
@@ -576,53 +571,54 @@ void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex)
 
     int null_index = -1;
     // iterate over all fields
-    for (unsigned i=0; i<_ptable->field_count(); i++) {
+    for (unsigned i = 0; i < _ptable->field_count(); i++) {
 
         // skip fields which are part of the given index
         if (pindex) {
             bool skip = false;
-            for (unsigned j=0; j<pindex->field_count(); j++) {
-                if ((int) i == pindex->key_index(j)) {
+            for (unsigned j = 0; j < pindex->field_count(); j++) {
+                if ((int)i == pindex->key_index(j)) {
                     skip = true;
                     break;
                 }
             }
-            if (skip) continue;
+            if (skip) {
+                continue;
+            }
         }
 
         // Check if the field can be NULL.
         // If it can be NULL, increase the null_index, and
         // if it is indeed NULL set the corresponding bit
-	if (_pvalues[i].field_desc()->allow_null()) {
-	    null_index++;
-	    if (_pvalues[i].is_null()) {
-		SET_NULL_FLAG(data, null_index);
-	    }
-	}
+        if (_pvalues[i].field_desc()->allow_null()) {
+            null_index++;
+            if (_pvalues[i].is_null()) {
+                SET_NULL_FLAG(data, null_index);
+            }
+        }
 
         // Check if the field is of VARIABLE length.
         // If it is, copy the field value to the variable length part of the
         // buffer, to position  (buffer + var_offset)
         // and increase the var_offset.
-	if (_pvalues[i].is_variable_length()) {
+        if (_pvalues[i].is_variable_length()) {
             _pvalues[i].copy_value(data + var_offset);
             int offset = _pvalues[i].realsize();
-	    var_offset += offset;
+            var_offset += offset;
 
             // set the offset
             offset_t len = offset;
             memcpy(VAR_SLOT(data, var_slot_offset), &len,
-                    sizeof(offset_t));
-	    var_slot_offset += sizeof(offset_t);
-	}
-	else {
+                   sizeof(offset_t));
+            var_slot_offset += sizeof(offset_t);
+        } else {
             // If it is of FIXED length, then copy the field value to the
             // fixed length part of the buffer, to position
             // (buffer + fixed_offset)
             // and increase the fixed_offset
             _pvalues[i].copy_value(data + fixed_offset);
-	    fixed_offset += _pvalues[i].maxsize();
-	}
+            fixed_offset += _pvalues[i].maxsize();
+        }
     }
 }
 
@@ -632,61 +628,55 @@ void table_row_t::store_value(char* data, size_t& length, index_desc_t* pindex)
 /* ----------------- */
 
 /* For debug use only: print the value of all the fields of the tuple */
-void table_row_t::print_values(ostream& os)
-{
+void table_row_t::print_values(ostream& os) {
     assert (_is_setup);
     //  cout << "Number of fields: " << _field_count << endl;
-    for (unsigned i=0; i<_field_cnt; i++) {
-	_pvalues[i].print_value(os);
-	if (i != _field_cnt-1) os << DELIM_CHAR;
+    for (unsigned i = 0; i < _field_cnt; i++) {
+        _pvalues[i].print_value(os);
+        if (i != _field_cnt - 1) {
+            os << DELIM_CHAR;
+        }
     }
     os << ROWEND_CHAR << endl;
 }
 
-
-
 /* For debug use only: print the tuple */
-void table_row_t::print_tuple()
-{
+void table_row_t::print_tuple() {
     assert (_is_setup);
 
     char* sbuf = nullptr;
     int sz = 0;
-    for (unsigned i=0; i<_field_cnt; i++) {
+    for (unsigned i = 0; i < _field_cnt; i++) {
         sz = _pvalues[i].get_debug_str(sbuf);
         if (sbuf) {
-            TRACE( TRACE_TRX_FLOW, "%d. %s (%d)\n", i, sbuf, sz);
-            delete [] sbuf;
+            TRACE(TRACE_TRX_FLOW, "%d. %s (%d)\n", i, sbuf, sz);
+            delete[] sbuf;
             sbuf = nullptr;
         }
     }
 }
-
 
 /* For debug use only: print the tuple without tracing */
-void table_row_t::print_tuple_no_tracing()
-{
+void table_row_t::print_tuple_no_tracing() {
     assert (_is_setup);
 
     char* sbuf = nullptr;
     int sz = 0;
-    for (unsigned i=0; i<_field_cnt; i++) {
+    for (unsigned i = 0; i < _field_cnt; i++) {
         sz = _pvalues[i].get_debug_str(sbuf);
         if (sbuf) {
-            fprintf( stderr, "%d. %s (%d)\n", i, sbuf, sz);
-            delete [] sbuf;
+            fprintf(stderr, "%d. %s (%d)\n", i, sbuf, sz);
+            delete[] sbuf;
             sbuf = nullptr;
         }
     }
 }
 
-
-
 #include <sstream>
-char const* db_pretty_print(table_row_t const* rec, int /* i=0 */, char const* /* s=0 */)
-{
+
+char const* db_pretty_print(table_row_t const* rec, int /* i=0 */, char const* /* s=0 */) {
     static char data[1024];
-    std::stringstream inout(data,stringstream::in | stringstream::out);
+    std::stringstream inout(data, stringstream::in | stringstream::out);
     //std::strstream inout(data, sizeof(data));
     ((table_row_t*)rec)->print_values(inout);
     inout << std::ends;

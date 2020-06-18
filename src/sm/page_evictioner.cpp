@@ -11,7 +11,9 @@ using namespace zero::buffer_pool;
 
 PageEvictioner::PageEvictioner(const BufferPool* bufferPool) :
         worker_thread_t(ss_m::get_options().get_int_option("sm_evictioner_interval_millisec", 1000)),
-        _evictionBatchSize(static_cast<uint_fast32_t>(bufferPool->getBlockCount() * 0.000001 * ss_m::get_options().get_int_option("sm_evictioner_batch_ratio_ppm", 10000))),
+        _evictionBatchSize(static_cast<uint_fast32_t>(bufferPool->getBlockCount() * 0.000001
+                                                      * ss_m::get_options().get_int_option(
+                                                              "sm_evictioner_batch_ratio_ppm", 10000))),
         _maintainEMLSN(ss_m::get_options().get_bool_option("sm_bf_maintain_emlsn", false)),
         _flushDirty(ss_m::get_options().get_bool_option("sm_bf_evictioner_flush_dirty_pages", false)),
         _logEvictions(ss_m::get_options().get_bool_option("sm_bf_evictioner_log_evictions", false)),
@@ -36,7 +38,7 @@ bool PageEvictioner::evictOne(bf_idx& victim) {
         if (attempts >= _maxAttempts) {
             W_FATAL_MSG(fcINTERNAL, << "Eviction got stuck!");
         } else if (!(_flushDirty && smlevel_0::bf->isNoDBMode() && smlevel_0::bf->usesWriteElision())
-                && attempts % _wakeupCleanerAttempts == 0) {
+                   && attempts % _wakeupCleanerAttempts == 0) {
             smlevel_0::bf->wakeupPageCleaner();
         }
 
@@ -232,10 +234,10 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     /* Update the victim's EMLSN in the parent page. */
     if (_maintainEMLSN && oldVictimLSN < newVictimLSN) {
         DBG3(<< "Updated EMLSN on page " << parentPageHandle.pid()
-             << ": slot=" << victimSlotID
-             << ", (child pid=" << victimPage->pid << ")"
-             << ", OldEMLSN=" << oldVictimLSN
-             << ", NewEMLSN=" << newVictimLSN);
+                     << ": slot=" << victimSlotID
+                     << ", (child pid=" << victimPage->pid << ")"
+                     << ", OldEMLSN=" << oldVictimLSN
+                     << ", NewEMLSN=" << newVictimLSN);
 
         w_assert1(parentControlBlock.latch().is_mine());
 
@@ -251,7 +253,7 @@ bool PageEvictioner::_unswizzleAndUpdateEMLSN(bf_idx victim) noexcept {
     return true;
 }
 
-void PageEvictioner::_flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noexcept {
+void PageEvictioner::_flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept {
     /* Straight-forward write -- no need to do it asynchronously or worry about any race condition. We hold the latch in
      * EX mode and the entry in the hashtable has not been removed yet. Any thread attempting to fix the victim will be
      * waiting for the latch, after which it will notice that the control block's pin count is -1, which means it must
@@ -264,7 +266,7 @@ void PageEvictioner::_flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noe
      * the victimLSN, otherwise the page is considered dirty, so simply use any LSN above that (cleanVictimLSN does not
      * have to be of a valid log record). */
     lsn_t cleanVictimLSN = victimPage->lsn + 1;
-    Logger ::log_sys<page_write_log>(victimControlBlock._pid, cleanVictimLSN, 1);
+    Logger::log_sys<page_write_log>(victimControlBlock._pid, cleanVictimLSN, 1);
 }
 
 void PageEvictioner::do_work() {

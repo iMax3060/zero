@@ -22,19 +22,27 @@ class lockid_t;
  */
 class xct_lock_entry_t {
 public:
-    xct_lock_entry_t () : prev (nullptr), next(nullptr), private_hashmap_prev(nullptr),
-        private_hashmap_next(nullptr), queue (nullptr), entry (nullptr) {}
+    xct_lock_entry_t() : prev(nullptr),
+                         next(nullptr),
+                         private_hashmap_prev(nullptr),
+                         private_hashmap_next(nullptr),
+                         queue(nullptr),
+                         entry(nullptr) {}
+
     // doubly linked list
-    xct_lock_entry_t   *prev;
-    xct_lock_entry_t   *next;
+    xct_lock_entry_t* prev;
+
+    xct_lock_entry_t* next;
 
     // another doubly linked list for XctLockHashMap
-    xct_lock_entry_t    *private_hashmap_prev;
-    xct_lock_entry_t    *private_hashmap_next;
+    xct_lock_entry_t* private_hashmap_prev;
+
+    xct_lock_entry_t* private_hashmap_next;
 
     // Corresponding object in lock queue.
-    lock_queue_t       *queue;
-    lock_queue_entry_t *entry;
+    lock_queue_t* queue;
+
+    lock_queue_entry_t* entry;
 };
 
 /**
@@ -75,6 +83,7 @@ const int XCT_LOCK_HASHMAP_SIZE = 1023;
 class XctLockHashMap {
 public:
     XctLockHashMap();
+
     ~XctLockHashMap();
 
     /**
@@ -83,24 +92,28 @@ public:
      * @return the lock mode this transaction has for the lock. ALL_N_GAP_N if not any.
      * @pre the current thread is the only thread running the transaction of this hashmap
      */
-    const okvl_mode&            get_granted_mode(uint32_t lock_id) const;
+    const okvl_mode& get_granted_mode(uint32_t lock_id) const;
 
     /** Clears hash buckets. */
-    void                        reset();
+    void reset();
 
     /** Add a new entry to this hashmap. */
-    void                        push_front(xct_lock_entry_t *link);
+    void push_front(xct_lock_entry_t* link);
+
     /** Removes the entry from this hashmap. */
-    void                        remove(xct_lock_entry_t *link);
+    void remove(xct_lock_entry_t* link);
+
 private:
 
     /**
      * Hash buckets. In each bucket, we have a doubly-linked list of xct_lock_entry_t.
      */
-    xct_lock_entry_t*           _buckets[XCT_LOCK_HASHMAP_SIZE];
+    xct_lock_entry_t* _buckets[XCT_LOCK_HASHMAP_SIZE];
 
     /** Returns the bucket index for the lock. */
-    static uint32_t _bucket_id(uint32_t lock_id) { return lock_id % XCT_LOCK_HASHMAP_SIZE; }
+    static uint32_t _bucket_id(uint32_t lock_id) {
+        return lock_id % XCT_LOCK_HASHMAP_SIZE;
+    }
 };
 
 /**
@@ -114,8 +127,9 @@ private:
 class xct_lock_info_t : private smlevel_0 {
 
 public:
-    NORET            xct_lock_info_t();
-    NORET            ~xct_lock_info_t();
+    NORET xct_lock_info_t();
+
+    NORET ~xct_lock_info_t();
 
     /// Prepare this structure for use by a new transaction.
     /// Used by the TLS agent when recycling a structure after the
@@ -123,16 +137,20 @@ public:
     xct_lock_info_t* reset_for_reuse();
 
     /// unsafe output operator, for debugging
-    friend ostream & operator<<(ostream &o, const xct_lock_info_t &x);
+    friend ostream& operator<<(ostream& o, const xct_lock_info_t& x);
 
     /// unsafe output operator, for debugging
-    ostream &        dump_locks(ostream &out) const;
+    ostream& dump_locks(ostream& out) const;
 
     /// ID of the transaction that owns this structure.
-    tid_t            tid() const { return _tid; }
+    tid_t tid() const {
+        return _tid;
+    }
 
     /// See above.
-    void             set_tid(const tid_t &t) { _tid=t; }
+    void set_tid(const tid_t& t) {
+        _tid = t;
+    }
 
     /// Each thread has a wait_map
     // atomic_thread_map_t const &get_wait_map() const { return _wait_map; }
@@ -151,33 +169,40 @@ public:
     //     DBGOUT5 (<< "initialized wait map!" << _wait_map);
     // }
 
-    xct_lock_entry_t* link_to_new_request (lock_queue_t *queue, lock_queue_entry_t *entry);
-    void remove_request (xct_lock_entry_t *entry);
+    xct_lock_entry_t* link_to_new_request(lock_queue_t* queue, lock_queue_entry_t* entry);
+
+    void remove_request(xct_lock_entry_t* entry);
 
     /** Returns the private hashmap to check already-granted locks. */
-    XctLockHashMap&     get_private_hashmap() { return _hashmap; }
+    XctLockHashMap& get_private_hashmap() {
+        return _hashmap;
+    }
+
 public:
     /*
      * List of locks acquired by this xct.
      */
-    xct_lock_entry_t *_head;
-    xct_lock_entry_t *_tail;
+    xct_lock_entry_t* _head;
+
+    xct_lock_entry_t* _tail;
 
     /**
      * Auxiliary hashmap of the locks acquired by this transaction.
      */
-    XctLockHashMap  _hashmap;
+    XctLockHashMap _hashmap;
 
     srwlock_t _shared_latch;
-    bool      _permission_to_violate;
-    lsn_t     _commit_lsn;
+
+    bool _permission_to_violate;
+
+    lsn_t _commit_lsn;
 
 private:
     // tid of the most recent transaction using this lock_info; monotonically
     // increasing.
-    tid_t           _tid;
+    tid_t _tid;
 
-    atomic_thread_map_t  _wait_map; // for dreadlocks DLD
+    atomic_thread_map_t _wait_map; // for dreadlocks DLD
 };
 
 #endif // __LOCK_X_H /*</std-footer>*/

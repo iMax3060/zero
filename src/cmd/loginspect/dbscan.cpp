@@ -3,40 +3,34 @@
 #include "allocator.h"
 #include "buffer_pool.hpp"
 
-void DBScan::setupOptions()
-{
+void DBScan::setupOptions() {
     boost::program_options::options_description opt("DBScan Options");
     opt.add_options()
-        ("dbfile,d", po::value<string>(&dbfile)->required(),
-            "Path to DB file")
-        ("pid", po::value<PageID>(&req_pid)->default_value(0),
-            "Read only this PID")
-    ;
+            ("dbfile,d", po::value<string>(&dbfile)->required(),
+             "Path to DB file")
+            ("pid", po::value<PageID>(&req_pid)->default_value(0),
+             "Read only this PID");
     options.add(opt);
 }
 
-void DBScan::handlePage(PageID pid, const generic_page& page, vol_t* vol)
-{
+void DBScan::handlePage(PageID pid, const generic_page& page, vol_t* vol) {
     cout << "PID: " << pid;
     if (vol->is_allocated_page(pid)) {
         // CS TODO
         // w_assert0(pid == page.pid);
         if (pid == page.pid) {
             cout << " Store: " << page.store
-                << " LSN: " << page.lsn;
-        }
-        else {
+                 << " LSN: " << page.lsn;
+        } else {
             cout << " MISMATCHED_PID_" << page.pid;
         }
-    }
-    else {
+    } else {
         cout << " unallocated";
     }
     cout << endl;
 }
 
-void DBScan::run()
-{
+void DBScan::run() {
     static constexpr size_t BUFSIZE = 1024;
 
     _options.set_string_option("sm_dbfile", dbfile);
@@ -58,15 +52,16 @@ void DBScan::run()
 
         while (pid <= lastPID) {
             size_t count = BUFSIZE;
-            if (pid + count > lastPID) { count = lastPID - pid + 1; }
+            if (pid + count > lastPID) {
+                count = lastPID - pid + 1;
+            }
             W_COERCE(vol->read_many_pages(pid, &buffer[0], count));
 
             for (size_t i = 0; i < count; i++) {
                 handlePage(pid++, buffer[i], vol);
             }
         }
-    }
-    else {
+    } else {
         W_COERCE(vol->read_many_pages(req_pid, &buffer[0], 1));
         handlePage(req_pid, buffer[0], vol);
     }

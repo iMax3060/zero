@@ -57,6 +57,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #ifndef __PARTITION_H
 #define __PARTITION_H
+
 #include "w_defines.h"
 
 #include "sm_base.h" // for partition_number_t (CS TODO)
@@ -69,58 +70,76 @@ class partition_t {
 public:
     typedef smlevel_0::partition_number_t partition_number_t;
 
-    enum { XFERSIZE = 8192 };
-    enum { invalid_fhdl = -1 };
+    enum {
+        XFERSIZE = 8192
+    };
+    enum {
+        invalid_fhdl = -1
+    };
 
     partition_t(log_storage*, partition_number_t);
-    virtual ~partition_t() { }
 
-    partition_number_t num() const   { return _num; }
+    virtual ~partition_t() {}
+
+    partition_number_t num() const {
+        return _num;
+    }
 
     rc_t open_for_append();
+
     rc_t open_for_read();
+
     rc_t close_for_append();
+
     rc_t close_for_read();
 
-    rc_t read(logrec_t *&r, lsn_t &ll, lsn_t* prev_lsn = nullptr);
+    rc_t read(logrec_t*& r, lsn_t& ll, lsn_t* prev_lsn = nullptr);
+
     void release_read();
 
     size_t read_block(void* buf, size_t count, off_t offset);
 
     rc_t flush(lsn_t lsn, const char* const buf, long start1, long end1,
-            long start2, long end2);
+               long start2, long end2);
 
-    bool is_open_for_read() const
-    {
+    bool is_open_for_read() const {
         return (_fhdl_rd != invalid_fhdl);
     }
 
-    bool is_open_for_append() const
-    {
+    bool is_open_for_append() const {
         return (_fhdl_app != invalid_fhdl);
     }
 
     size_t get_size(bool must_be_skip = true);
 
-    void set_size(size_t size) { _size = size; }
+    void set_size(size_t size) {
+        _size = size;
+    }
 
     rc_t prime_buffer(char* buffer, lsn_t lsn, size_t& prime_offset);
 
     void destroy();
 
 private:
-    partition_number_t    _num;
-    log_storage*          _owner;
-    long                  _size;
-    int                   _fhdl_rd;
-    int                   _fhdl_app;
-    static int            _artificial_flush_delay;  // in microseconds
-    char*                 _readbuf;
+    partition_number_t _num;
+
+    log_storage* _owner;
+
+    long _size;
+
+    int _fhdl_rd;
+
+    int _fhdl_app;
+
+    static int _artificial_flush_delay;  // in microseconds
+    char* _readbuf;
 
     size_t _max_partition_size;
+
     char* _mmap_buffer;
 
-    void             fsync_delayed(int fd);
+    void fsync_delayed(int fd);
+
     rc_t scan_for_size(bool must_be_skip);
 
     // Serialize (non-mmap) read calls, which use the same buffer

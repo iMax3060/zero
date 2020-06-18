@@ -26,7 +26,6 @@
 
 class sm_options;
 class lsn_t;
-
 class test_bf_tree;
 class bf_tree_cleaner;
 class btree_page_h;
@@ -43,10 +42,12 @@ namespace zero::buffer_pool {
         friend class ::bf_tree_cleaner; // for page cleaning
         friend class page_cleaner_decoupled; // for log-based "decoubled" page cleaning
         friend class ::GenericPageIterator;
-        friend class FreeListLowContention;
-        friend class FreeListHighContention;
-        friend class PageEvictioner;
-        template <class selector_class, class filter_class, bool filter_early> friend class PageEvictionerSelectAndFilter;
+    friend class FreeListLowContention;
+    friend class FreeListHighContention;
+    friend class PageEvictioner;
+
+        template<class selector_class, class filter_class, bool filter_early> friend
+        class PageEvictionerSelectAndFilter;
 
     public:
         /*!\fn      BufferPool()
@@ -360,10 +361,11 @@ namespace zero::buffer_pool {
          */
         bf_idx getRootIndex(StoreID store) const noexcept {
             bf_idx rootIndex = _rootPages[store];
-            if (!isValidIndex(rootIndex))
+            if (!isValidIndex(rootIndex)) {
                 return 0;
-            else
+            } else {
                 return rootIndex;
+            }
         };
 
         /*!\fn      generic_page* getPage(const bf_idx& index) noexcept
@@ -578,7 +580,7 @@ namespace zero::buffer_pool {
          * @param childSlotID The corresponding slot ID of the child within \c parentPage .
          * @param childEMLSN  The new EMLSN of the child page requested to be written in the parent page.
          */
-        void sxUpdateChildEMLSN(btree_page_h &parentPage, general_recordid_t childSlotID, lsn_t childEMLSN) const;
+        void sxUpdateChildEMLSN(btree_page_h& parentPage, general_recordid_t childSlotID, lsn_t childEMLSN) const;
 
         /*!\fn      switchParent(PageID childPID, generic_page* newParentPage) noexcept
          * \brief   Switch the parent page of a buffered B-Tree page in this buffer pool
@@ -673,7 +675,7 @@ namespace zero::buffer_pool {
          * \brief   Maximum number of pages in this buffer pool
          * \details Number of buffer pool frames available to hold pages in this buffer pool.
          */
-        bf_idx                                                      _blockCount;
+        bf_idx _blockCount;
 
         // CS TODO: concurrency???
         /*!\var     _rootPages
@@ -681,7 +683,7 @@ namespace zero::buffer_pool {
          * \details This holds for each \link stnode_t \endlink the buffer index of its root page or \c 0 if it is
          *          currently not buffered in this buffer pool.
          */
-        std::array<bf_idx, stnode_page::max>                        _rootPages;
+        std::array<bf_idx, stnode_page::max> _rootPages;
 
         /*!\var     _controlBlocks
          * \brief   Array of control blocks
@@ -689,14 +691,14 @@ namespace zero::buffer_pool {
          *          this buffer pool. The array index represents the buffer frame index.
          */
         std::vector<bf_tree_cb_t, boost::alignment::aligned_allocator<bf_tree_cb_t, sizeof(bf_tree_cb_t)>>
-                                                                    _controlBlocks;
+                _controlBlocks;
 
         /*!\var     _buffer
          * \brief   Array of buffered pages
          * \details A C-array containing up to \link _blockCount \endlink buffered pages, each in a buffer pool frame of
          *          this buffer pool. The array index represents the buffer frame index.
          */
-        generic_page*                                               _buffer;
+        generic_page* _buffer;
 
         /*!\var     _hashtable
          * \brief   Allows to locate pages by \link PageID \endlink
@@ -704,7 +706,7 @@ namespace zero::buffer_pool {
          *          frame index where it is located in. For each buffered page, it also contains the buffer frame index
          *          of its parent page (if it's a non-root B-Tree page).
          */
-        std::shared_ptr<Hashtable>                                  _hashtable;
+        std::shared_ptr<Hashtable> _hashtable;
 
         /*!\var     _freeList
          * \brief   List of unused buffer frames
@@ -713,20 +715,20 @@ namespace zero::buffer_pool {
          * \note    It could be any synchronized data structure but a queue is required for some of the page eviction
          *          strategies like CLOCK.
          */
-        std::shared_ptr<FreeListLowContention>                      _freeList;
+        std::shared_ptr<FreeListLowContention> _freeList;
 
         /*!\var     _cleaner
          * \brief   Cleans dirty pages
          * \details This is responsible to clean dirty pages (write-back changed pages) buffered in this buffer pool.
          */
-        std::shared_ptr<page_cleaner_base>                          _cleaner;
+        std::shared_ptr<page_cleaner_base> _cleaner;
 
         /*!\var     _cleanerDecoupled
          * \brief   Use log-based "decoupled" cleaner
          * \details Set if the log-based "decoupled" cleaner should be used instead of one that is based on data from
          *          the buffer pool.
          */
-        bool                                                        _cleanerDecoupled;
+        bool _cleanerDecoupled;
 
         /*!\var     _evictioner
          * \brief   Evicts pages
@@ -734,7 +736,7 @@ namespace zero::buffer_pool {
          *          unoccupied buffer frames in this buffer pool while currently not buffered pages should be added to
          *          this buffer pool.
          */
-        std::shared_ptr<PAGE_EVICTIONER>                            _evictioner;
+        std::shared_ptr<PAGE_EVICTIONER> _evictioner;
 
         /*!\var     _asyncEviction
          * \brief   Use a dedicated thread for eviction
@@ -747,13 +749,13 @@ namespace zero::buffer_pool {
          * \note    One run of the evictioner might evict many pages (batch eviction) therefore such a run might take a
          *          long time.
          */
-        bool                                                        _asyncEviction;
+        bool _asyncEviction;
 
         /*!\var     _maintainEMLSN
          * \brief   Maintain EMLSN of B-Tree pages
          * \details MG TODO
          */
-        bool                                                        _maintainEMLSN;
+        bool _maintainEMLSN;
 
         /*!\var     _localSprIter
          * \brief   Single-page-recovery iterator used for instant restart redo
@@ -761,21 +763,23 @@ namespace zero::buffer_pool {
          *
          * \see     recoverIfNeeded
          */
-        static thread_local SprIterator                             _localSprIter;
+        static thread_local SprIterator _localSprIter;
 
         using RestoreCoord = RestoreCoordinator<std::function<decltype(SegmentRestorer::bf_restore)>>;
+
         /*!\var     _restoreCoordinator
          * \brief   MG TODO
          * \details MG TODO
          */
-        std::shared_ptr<RestoreCoord>                               _restoreCoordinator;
+        std::shared_ptr<RestoreCoord> _restoreCoordinator;
 
         using BgRestorer = BackgroundRestorer<RestoreCoord, std::function<void(void)>>;
+
         /*!\var     _backgroundRestorer
          * \brief   MG TODO
          * \details MG TODO
          */
-        std::shared_ptr<BgRestorer>                                 _backgroundRestorer;
+        std::shared_ptr<BgRestorer> _backgroundRestorer;
 
         /*!\var     _useWriteElision
          * \brief   Use write elision
@@ -783,74 +787,74 @@ namespace zero::buffer_pool {
          *          from the buffer pool even though it is dirty because once the page is read again, the changes are
          *          retrieved from the log.
          */
-        bool                                                        _useWriteElision;
+        bool _useWriteElision;
 
         /*!\var     _mediaFailurePID
          * \brief   MG TODO
          * \details MG TODO
          */
-        std::atomic<PageID>                                         _mediaFailurePID;
+        std::atomic<PageID> _mediaFailurePID;
 
         /*!\var     _instantRestore
          * \brief   Use instant restore
          * \details Set if instant restore should be used by this buffer pool. MG TODO
          */
-        bool                                                        _instantRestore;
+        bool _instantRestore;
 
         /*!\var     _noDBMode
          * \brief   Use NoDB
          * \details Set if this buffer pool should be used for NoDB. MG TODO
          */
-        bool                                                        _noDBMode;
+        bool _noDBMode;
 
         /*!\var     _logFetches
          * \brief   Log page fetches
          * \details Set if page fetches from database or from the used recovery mechansim should be logged in the
          *          transactional log using log entries of type \link fetch_page_log \endlink .
          */
-        bool                                                        _logFetches;
+        bool _logFetches;
 
         /*!\var     _batchSegmentSize
          * \brief   MG TODO
          * \details MG TODO
          */
-        size_t                                                      _batchSegmentSize;
+        size_t _batchSegmentSize;
 
         /*!\var     _batchWarmup
          * \brief   MG TODO
          * \details MG TODO
          */
-        bool                                                        _batchWarmup;
+        bool _batchWarmup;
 
         /*!\var     _warmupDone
          * \brief   MG TODO
          * \details MG TODO
          */
-        bool                                                        _warmupDone;
+        bool _warmupDone;
 
         /*!\var     _warmupHitRatio
          * \brief   Hit rate of a "warm" buffer pool
          * \details At least this hit rate needs to be achieved by this buffer pool to be considered warm.
          */
-        double                                                      _warmupHitRatio;
+        double _warmupHitRatio;
 
         /*!\var     _warmupMinFixes
          * \brief   Minimum number of fixes of a "warm" buffer pool
          * \details At least this many page fixes need to be performed by this buffer pool to be considered warm.
          */
-        unsigned                                                    _warmupMinFixes;
+        unsigned _warmupMinFixes;
 
         /*!\var     _fixCount
          * \brief   MG TODO
          * \details MG TODO
          */
-        static thread_local unsigned                                _fixCount;
+        static thread_local unsigned _fixCount;
 
         /*!\var     _hitCount
          * \brief   MG TODO
          * \details MG TODO
          */
-        static thread_local unsigned                                _hitCount;
+        static thread_local unsigned _hitCount;
 
         /*!\fn      _fix(generic_page* parentPage, generic_page*& targetPage, PageID pid, latch_mode_t latchMode, bool conditional, bool virgin, bool onlyIfHit, bool doRecovery, lsn_t emlsn)
          * \brief   Fixes a page in this buffer pool
@@ -935,7 +939,6 @@ namespace zero::buffer_pool {
          * \brief   Sets this buffer pool to "warmed up"
          */
         void _setWarmupDone() noexcept;
-
     };
 
     class BufferPoolException : public std::exception {
@@ -974,11 +977,13 @@ namespace zero::buffer_pool {
         const char* what() const noexcept override {
             int whatStringLength = snprintf(nullptr, 0,
                                             "The set buffer pool size of %zdMB is too small! At least %zdMB are required.",
-                                            (_blockCount * sizeof(generic_page) + 33) / 1024 / 1024, (_minimumBlockCount * sizeof(generic_page) + 33) / 1024 / 1024);
+                                            (_blockCount * sizeof(generic_page) + 33) / 1024 / 1024,
+                                            (_minimumBlockCount * sizeof(generic_page) + 33) / 1024 / 1024);
             char* whatSentence = new char[whatStringLength + 1];
             snprintf(whatSentence, whatStringLength,
                      "The set buffer pool size of %zdMB is too small! At least %zdMB are required.",
-                     (_blockCount * sizeof(generic_page) + 33) / 1024 / 1024, (_minimumBlockCount * sizeof(generic_page) + 33) / 1024 / 1024);
+                     (_blockCount * sizeof(generic_page) + 33) / 1024 / 1024,
+                     (_minimumBlockCount * sizeof(generic_page) + 33) / 1024 / 1024);
             return whatSentence;
         };
 
@@ -1039,7 +1044,7 @@ namespace zero::buffer_pool {
                              _oldStyleException.get_message());
                 }
 
-                char** whatStringStack = new char*[_oldStyleException.get_stack_depth()];
+                char** whatStringStack = new char* [_oldStyleException.get_stack_depth()];
                 int* whatStringStackLength = new int[_oldStyleException.get_stack_depth()];
                 int whatStringStackTotalLength = 0;
                 for (int stackIndex = 0; stackIndex < _oldStyleException.get_stack_depth(); stackIndex++) {
@@ -1085,7 +1090,6 @@ namespace zero::buffer_pool {
     protected:
         w_rc_t _oldStyleException;
     };
-
 } // zero::buffer_pool
 
 /**
@@ -1102,7 +1106,7 @@ public:
     pin_for_refix_holder(bf_idx idx) :
             _idx(idx) {};
 
-    pin_for_refix_holder(pin_for_refix_holder &h) {
+    pin_for_refix_holder(pin_for_refix_holder& h) {
         steal_ownership(h);
     };
 
@@ -1135,7 +1139,6 @@ public:
     void release();
 
     bf_idx _idx;
-
 };
 
 class GenericPageIterator {
@@ -1180,7 +1183,9 @@ public:
     };
 
     generic_page* operator*() {
-        if (!_current || _current_pid >= end_pid()) { return nullptr; }
+        if (!_current || _current_pid >= end_pid()) {
+            return nullptr;
+        }
         return _current;
     };
 
@@ -1195,7 +1200,9 @@ public:
         bool success = false;
         while (!success) {
             _current_pid++;
-            if (_current_pid >= end_pid()) { return *this; }
+            if (_current_pid >= end_pid()) {
+                return *this;
+            }
             success = fix_current();
         }
 
@@ -1236,9 +1243,12 @@ public:
     };
 
     PageID _current_pid;
+
 private:
     PageID _first;
+
     PageID _count;
+
     bool _virgin;
 
     generic_page* _current;
@@ -1262,9 +1272,9 @@ private:
              * log replay is not required.
              */
             if (exception.getOldStyleException().err_num() == stINUSE
-             || exception.getOldStyleException().err_num() == stTIMEOUT) {
+                || exception.getOldStyleException().err_num() == stTIMEOUT) {
                 ERROUT(<< "failed to fix "
-                       << _current_pid);
+                               << _current_pid);
                 _current = nullptr;
                 return false;
             }
@@ -1287,7 +1297,6 @@ private:
             _fix_depth--;
         }
     };
-
 };
 
 #endif // __SM_BUFFER_POOL_HPP

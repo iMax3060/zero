@@ -96,6 +96,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "tid_t.h"
 
 #undef SM_SOURCE
+
 #include "sm.h"
 #include "lock_s.h" // define lock_base_t
 

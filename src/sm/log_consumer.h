@@ -33,15 +33,18 @@
 class LogScanner {
 public:
     bool nextLogrec(char* src, size_t& pos, logrec_t*& lr,
-            lsn_t* nextLSN = nullptr, lsn_t* stopLSN = nullptr,
-            int* lrLength = nullptr);
+                    lsn_t* nextLSN = nullptr, lsn_t* stopLSN = nullptr,
+                    int* lrLength = nullptr);
 
     bool hasPartialLogrec();
+
     void reset();
 
     LogScanner(size_t blockSize)
-        : truncCopied(0), truncMissing(0), toSkip(0), blockSize(blockSize)
-    {
+            : truncCopied(0),
+              truncMissing(0),
+              toSkip(0),
+              blockSize(blockSize) {
         // maximum logrec size = 3 pages
         truncBuf = new char[3 * log_storage::BLOCK_SIZE];
     }
@@ -72,10 +75,15 @@ public:
 
 private:
     size_t truncCopied;
+
     size_t truncMissing;
+
     size_t toSkip;
+
     const size_t blockSize;
+
     char* truncBuf;
+
     bitset<logrec_t::t_max_logrec> ignore;
 };
 
@@ -125,15 +133,23 @@ private:
  */
 struct ArchiverControl {
     pthread_mutex_t mutex;
+
     pthread_cond_t activateCond;
+
     lsn_t endLSN;
+
     bool activated;
+
     bool listening;
+
     std::atomic<bool>* shutdownFlag;
 
     ArchiverControl(std::atomic<bool>* shutdown);
+
     ~ArchiverControl();
+
     bool activate(bool wait, lsn_t lsn = lsn_t::null);
+
     bool waitForActivation();
 };
 
@@ -156,20 +172,27 @@ struct ArchiverControl {
 class ReaderThread : public log_worker_thread_t {
 protected:
     uint nextPartition;
+
     rc_t openPartition();
 
     AsyncRingBuffer* buf;
+
     int currentFd;
+
     off_t pos;
+
     lsn_t localEndLSN;
 
 public:
     virtual void do_work();
 
     ReaderThread(AsyncRingBuffer* readbuf, lsn_t startLSN);
+
     virtual ~ReaderThread() {}
 
-    size_t getBlockSize() { return buf->getBlockSize(); }
+    size_t getBlockSize() {
+        return buf->getBlockSize();
+    }
 };
 
 /** \brief Provides a record-at-a-time interface to the recovery log using
@@ -192,30 +215,41 @@ public:
 class LogConsumer {
 public:
     LogConsumer(lsn_t startLSN, size_t blockSize, bool ignore = true);
+
     virtual ~LogConsumer();
+
     void shutdown();
 
     void open(lsn_t endLSN, bool readWholeBlocks = false);
+
     bool next(logrec_t*& lr);
-    lsn_t getNextLSN() { return nextLSN; }
+
+    lsn_t getNextLSN() {
+        return nextLSN;
+    }
 
     static void initLogScanner(LogScanner* logScanner);
 
 private:
     AsyncRingBuffer* readbuf;
+
     ReaderThread* reader;
+
     LogScanner* logScanner;
 
     lsn_t nextLSN;
+
     lsn_t endLSN;
 
     char* currentBlock;
+
     size_t blockSize;
+
     size_t pos;
+
     bool readWholeBlocks;
 
     bool nextBlock();
 };
-
 
 #endif // __LOG_CONSUMER_H

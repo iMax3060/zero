@@ -42,11 +42,15 @@
 using namespace zero::buffer_pool;
 
 thread_local unsigned BufferPool::_fixCount = 0;
+
 thread_local unsigned BufferPool::_hitCount = 0;
+
 thread_local SprIterator BufferPool::_localSprIter;
 
 BufferPool::BufferPool() :
-        _blockCount((ss_m::get_options().get_int_option("sm_bufpoolsize", 8192) * 1024 * 1024 - 1) / sizeof(generic_page) + 1),
+        _blockCount(
+                (ss_m::get_options().get_int_option("sm_bufpoolsize", 8192) * 1024 * 1024 - 1) / sizeof(generic_page)
+                + 1),
         _controlBlocks(_blockCount),
         _buffer(nullptr),
         _hashtable(std::make_shared<Hashtable>(_blockCount)),
@@ -66,7 +70,7 @@ BufferPool::BufferPool() :
         _warmupHitRatio(ss_m::get_options().get_int_option("sm_bf_warmup_hit_ratio", 100)),
         _warmupMinFixes(ss_m::get_options().get_int_option("sm_bf_warmup_min_fixes", 1000000)) {
 
-    if (_blockCount < 32)  {
+    if (_blockCount < 32) {
         throw BufferPoolTooSmallException(_blockCount, 32);
     }
     _buffer = static_cast<generic_page*>(aligned_alloc(SM_PAGESIZE, static_cast<size_t>(SM_PAGESIZE) * _blockCount));
@@ -93,15 +97,15 @@ void BufferPool::postInitialize() {
         w_assert0(smlevel_0::vol->caches_ready());
         constexpr bool virginPages = true;
         auto volPages = smlevel_0::vol->num_used_pages();
-        auto segCount = volPages  / _batchSegmentSize + (volPages % _batchSegmentSize ? 1 : 0);
+        auto segCount = volPages / _batchSegmentSize + (volPages % _batchSegmentSize ? 1 : 0);
         _restoreCoordinator = std::make_shared<RestoreCoord>(_batchSegmentSize, segCount, SegmentRestorer::bf_restore,
                                                              virginPages);
     }
 
-    if(_cleanerDecoupled) {
+    if (_cleanerDecoupled) {
         w_assert0(smlevel_0::logArchiver);
         _cleaner = std::make_shared<page_cleaner_decoupled>(ss_m::get_options());
-    } else{
+    } else {
         _cleaner = std::make_shared<bf_tree_cleaner>(ss_m::get_options());
     }
     _cleaner->fork();
@@ -113,7 +117,7 @@ void BufferPool::shutdown() {
         _backgroundRestorer->stop();
     }
 
-    if(_asyncEviction && _evictioner) {
+    if (_asyncEviction && _evictioner) {
         _evictioner->stop();
     }
 
@@ -170,9 +174,9 @@ void BufferPool::fixRoot(generic_page*& targetPage, StoreID store, latch_mode_t 
             _rootPages[store] = rootIndex;
         }
     } else {                            // pointer in _rootPages (page hit)
-        w_rc_t latchStatus =  getControlBlock(rootIndex).latch().latch_acquire(latchMode,
-                                                                               conditional ? timeout_t::WAIT_IMMEDIATE
-                                                                                           : timeout_t::WAIT_FOREVER);
+        w_rc_t latchStatus = getControlBlock(rootIndex).latch().latch_acquire(latchMode,
+                                                                              conditional ? timeout_t::WAIT_IMMEDIATE
+                                                                                          : timeout_t::WAIT_FOREVER);
         if (latchStatus.is_error()) {
             throw BufferPoolOldStyleException(latchStatus);
         }
@@ -187,9 +191,9 @@ void BufferPool::fixRoot(generic_page*& targetPage, StoreID store, latch_mode_t 
     w_assert1(getControlBlock(rootIndex).latch().held_by_me());
 
     DBG(<< "Fixed root "
-        << rootIndex
-        << " with pin count "
-        << getControlBlock(rootIndex)._pin_cnt);
+                << rootIndex
+                << " with pin count "
+                << getControlBlock(rootIndex)._pin_cnt);
 }
 
 w_rc_t BufferPool::fixRootOldStyleExceptions(generic_page*& targetPage, StoreID store, latch_mode_t latchMode,
@@ -208,7 +212,7 @@ bool BufferPool::fixNonRoot(generic_page*& targetPage, generic_page* parentPage,
     return _fix(parentPage, targetPage, pid, latchMode, conditional, virgin, onlyIfHit, doRecovery, emlsn);
 }
 
-w_rc_t BufferPool::fixNonRootOldStyleExceptions(generic_page *&targetPage, generic_page *parentPage, PageID pid,
+w_rc_t BufferPool::fixNonRootOldStyleExceptions(generic_page*& targetPage, generic_page* parentPage, PageID pid,
                                                 latch_mode_t latchMode, bool conditional, bool virgin, bool onlyIfHit,
                                                 bool doRecovery, lsn_t emlsn) {
     INC_TSTAT(bf_fix_nonroot_count);
@@ -236,7 +240,7 @@ bf_idx BufferPool::pinForRefix(const generic_page* pinPage) {
     bool pinned = getControlBlock(pinIndex).pin();
     w_assert0(pinned);
     DBG(<< "Refix set pin cnt to "
-        << getControlBlock(pinIndex)._pin_cnt);
+                << getControlBlock(pinIndex)._pin_cnt);
     return pinIndex;
 }
 
@@ -254,9 +258,9 @@ void BufferPool::refixDirect(generic_page*& targetPage, bf_idx refixIndex, latch
     // refixControlBlock.pin();
 
     DBG(<< "Refix direct of "
-        << refixIndex
-        << " set pin cnt to "
-        << refixControlBlock._pin_cnt);
+                << refixIndex
+                << " set pin cnt to "
+                << refixControlBlock._pin_cnt);
 
     refixControlBlock.inc_ref_count();
     if (latchMode == LATCH_EX) {
@@ -292,7 +296,7 @@ void BufferPool::unpinForRefix(bf_idx unpinIndex) {
     _evictioner->updateOnPageUnfix(unpinIndex);
 
     DBG(<< "Unpin for refix set pin cnt to "
-        << getControlBlock(unpinIndex)._pin_cnt);
+                << getControlBlock(unpinIndex)._pin_cnt);
     w_assert1(getControlBlock(unpinIndex)._pin_cnt >= 0);
 }
 
@@ -317,9 +321,9 @@ void BufferPool::unfix(const generic_page* unfixPage, bool evict) {
         w_assert1(cb._pin_cnt >= 0);
     }
     DBG(<< "Unfixed "
-        << unfixIndex
-        << " pin count "
-        << cb._pin_cnt);
+                << unfixIndex
+                << " pin count "
+                << cb._pin_cnt);
     _evictioner->updateOnPageUnfix(unfixIndex);
     cb.latch().latch_release();
 }
@@ -359,7 +363,7 @@ void BufferPool::downgradeLatch(const generic_page* page) noexcept {
 bool BufferPool::unswizzlePagePointer(generic_page* parentPage, general_recordid_t childSlotInParentPage,
                                       PageID* childPageID) {
     if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
-        const bf_tree_cb_t &parentControlBlock = getControlBlock(getIndex(parentPage));
+        const bf_tree_cb_t& parentControlBlock = getControlBlock(getIndex(parentPage));
         // CS TODO: foster parent of a node created during a split will not have a swizzled pointer to the new node;
         // breaking the rule for now
         // if (!parentControlBlock._used || !parentControlBlock._swizzled) {
@@ -422,32 +426,32 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
 
     // We do not consider for eviction ...
     if (// ... the stnode page
-           p.tag() == t_stnode_p
-        // ... B-tree root pages (note, single-node B-tree is both root and leaf)
-        || (p.tag() == t_btree_p && p.pid() == p.root())) {
+            p.tag() == t_stnode_p
+            // ... B-tree root pages (note, single-node B-tree is both root and leaf)
+            || (p.tag() == t_btree_p && p.pid() == p.root())) {
         _evictioner->updateOnPageBlocked(indexToCheck);
         return false;
     }
     if (// ... B-tree inner (non-leaf) pages (requires unswizzling, which is not supported)
-           (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
-        // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
-        || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)) {
+            (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && !p.is_leaf())
+            // ... B-tree pages that have a foster child (requires unswizzling, which is not supported)
+            || (POINTER_SWIZZLER::usesPointerSwizzling && p.tag() == t_btree_p && p.get_foster() != 0)) {
         _evictioner->updateOnPageSwizzled(indexToCheck);
         return false;
     }
     if (// ... dirty pages, unless we're told to ignore them
-           (!ignore_dirty && controlBlockToCheck.is_dirty())) {
+            (!ignore_dirty && controlBlockToCheck.is_dirty())) {
         _evictioner->updateOnPageDirty(indexToCheck);
         return false;
     }
     if (// ... unused frames, which don't hold a valid page
-           !controlBlockToCheck._used
-        // ... frames prefetched by restore but not yet restored
-        || controlBlockToCheck.is_pinned_for_restore()) {
+            !controlBlockToCheck._used
+            // ... frames prefetched by restore but not yet restored
+            || controlBlockToCheck.is_pinned_for_restore()) {
         return false;
     }
     if (// ... pinned frames, i.e., someone required it not be evicted
-           controlBlockToCheck._pin_cnt != 0) {
+            controlBlockToCheck._pin_cnt != 0) {
         return false;
     }
 
@@ -572,7 +576,7 @@ void BufferPool::fuzzyCheckpoint(chkpt_t& checkpoint) const noexcept {
     }
 }
 
-void BufferPool::sxUpdateChildEMLSN(btree_page_h &parentPage, general_recordid_t childSlotID, lsn_t childEMLSN) const {
+void BufferPool::sxUpdateChildEMLSN(btree_page_h& parentPage, general_recordid_t childSlotID, lsn_t childEMLSN) const {
     sys_xct_section_t sxs(true); // this transaction will output only one log!
     w_rc_t startStatus = sxs.check_error_on_start();
     if (startStatus.is_error()) {
@@ -613,11 +617,11 @@ void BufferPool::switchParent(PageID childPID, generic_page* newParentPage) noex
         childIndexPair->second = newParentIndex;
 
         DBG5(<< "Parent of "
-             << childPID
-             << " updated to "
-             << newParentIndex
-             << " from "
-             << childIndexPair->second);
+                     << childPID
+                     << " updated to "
+                     << newParentIndex
+                     << " from "
+                     << childIndexPair->second);
     }
 
     // The page cannot be evicted since the first lookup because the caller latched it.
@@ -632,7 +636,7 @@ void BufferPool::setMediaFailure() noexcept {
 
     constexpr bool virginPages = false;
     constexpr bool startLocked = true;
-    auto segmentCount = volPages  / _batchSegmentSize + (volPages % _batchSegmentSize ? 1 : 0);
+    auto segmentCount = volPages / _batchSegmentSize + (volPages % _batchSegmentSize ? 1 : 0);
     _restoreCoordinator = std::make_shared<RestoreCoord>(_batchSegmentSize, segmentCount, SegmentRestorer::bf_restore,
                                                          virginPages, _instantRestore, startLocked);
 
@@ -644,17 +648,19 @@ void BufferPool::setMediaFailure() noexcept {
     // Make sure log is archived until failureLSN
     lsn_t failureLSN = Logger::log_sys<restore_begin_log>(volPages);
     ERROUT(<< "Media failure injected! Waiting for log archiver to reach LSN "
-           << failureLSN);
+                   << failureLSN);
     stopwatch_t timer;
     smlevel_0::logArchiver->archiveUntilLSN(failureLSN);
     ERROUT(<< "Failure LSN reached in "
-           << timer.time()
-           << " seconds");
+                   << timer.time()
+                   << " seconds");
 
     _restoreCoordinator->set_lsns(backupLSN, failureLSN);
     _restoreCoordinator->start();
 
-    _backgroundRestorer = std::make_shared<BgRestorer>(_restoreCoordinator, [this] { unsetMediaFailure(); });
+    _backgroundRestorer = std::make_shared<BgRestorer>(_restoreCoordinator, [this] {
+        unsetMediaFailure();
+    });
     _backgroundRestorer->fork();
     _backgroundRestorer->wakeup();
 }
@@ -985,9 +991,9 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
 
             w_assert1(pageControlBlock->latch().is_mine());
             DBG(<< "Fixed page "
-                << pid
-                << " (miss) to frame "
-                << pageIndex);
+                        << pid
+                        << " (miss) to frame "
+                        << pageIndex);
         } else {                                    // page hit
             pageControlBlock = &getControlBlock(pageIndex);
 
@@ -1030,9 +1036,9 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
             w_assert1(!doRecovery || !pageControlBlock->is_pinned_for_restore());
             w_assert1(!pageControlBlock->_check_recovery || pageControlBlock->latch().is_mine());
             DBG(<< "Fixed page "
-                << pid
-                << " (hit) to frame "
-                << pageIndex);
+                        << pid
+                        << " (hit) to frame "
+                        << pageIndex);
 
             INC_TSTAT(bf_hit_cnt);
             _hitCount++;
@@ -1072,7 +1078,7 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
         // Swizzle the pointer inside the parent page if necessary:
         if constexpr (POINTER_SWIZZLER::usesPointerSwizzling) {
             if (!pageControlBlock->_swizzled && parentPage) {
-                bf_tree_cb_t &parentControlBlock = getControlBlock(parentIndex);
+                bf_tree_cb_t& parentControlBlock = getControlBlock(parentIndex);
                 if (!parentControlBlock._swizzled) {
                     return true;
                 }
@@ -1107,13 +1113,13 @@ bool BufferPool::_fix(generic_page* parentPage, generic_page*& targetPage, PageI
                 w_assert1(pageControlBlock->_swizzled);
 
                 // Replace pointer with swizzled version:
-                PageID *childPID = fixedParentPage.child_slot_address(childSlot);
+                PageID* childPID = fixedParentPage.child_slot_address(childSlot);
                 *childPID = POINTER_SWIZZLER::makeSwizzledPointer(pageIndex);
                 _evictioner->updateOnPointerSwizzling(pageIndex);
                 w_assert1(isActiveIndex(pageIndex));
                 w_assert1(fixable_page_h::find_page_id_slot(parentPage,
                                                             POINTER_SWIZZLER::makeSwizzledPointer(pageIndex))
-                       != GeneralRecordIds::INVALID);
+                          != GeneralRecordIds::INVALID);
             }
         }
 
@@ -1126,7 +1132,8 @@ void BufferPool::_convertToDiskPage(generic_page* page) const noexcept {
         fixable_page_h fixedPage;
         fixedPage.fix_nonbufferpool_page(page);
 
-        for (general_recordid_t recordID = GeneralRecordIds::FOSTER_CHILD; recordID <= fixedPage.max_child_slot(); recordID++) {
+        for (general_recordid_t recordID = GeneralRecordIds::FOSTER_CHILD; recordID <= fixedPage.max_child_slot();
+             recordID++) {
             PageID* pid = fixedPage.child_slot_address(recordID);
             if (POINTER_SWIZZLER::isSwizzledPointer(*pid)) {
                 // CS TODO: Slot 1 (which is actually 0 in the internal page representation) is not used sometimes (I
@@ -1170,7 +1177,7 @@ void BufferPool::_deletePage(bf_idx index) noexcept {
     controlBlock._used = false; // clear _used BEFORE _dirty so that eviction thread will ignore this block.
 
     DBGOUT1(<<"delete block: remove page pid = "
-            << controlBlock._pid);
+                    << controlBlock._pid);
     _hashtable->erase(controlBlock._pid);
 
     _evictioner->updateOnPageExplicitlyUnbuffered(index);

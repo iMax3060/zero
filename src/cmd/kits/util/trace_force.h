@@ -34,12 +34,10 @@
 
 #include <cstdarg> /* for varargs */
 
-
-
 /* exported functions */
 
 void trace_force_(const char* filename, int line_num, const char* function_name,
-		  char* format, ...) __attribute__((format(printf, 4, 5)));;
+                  char* format, ...) __attribute__((format(printf, 4, 5)));;
 
 
 
@@ -61,7 +59,5 @@ void trace_force_(const char* filename, int line_num, const char* function_name,
  */
 
 #define TRACE_FORCE(format, rest...) trace_force_(__FILE__, __LINE__, __FUNCTION__, format, ##rest)
-
-
 
 #endif // __TRACE_FORCE_H

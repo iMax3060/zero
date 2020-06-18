@@ -31,7 +31,6 @@
 #ifndef __TPCC_ENV_H
 #define __TPCC_ENV_H
 
-
 #include "sm_vas.h"
 
 #include "shore_env.h"
@@ -47,14 +46,10 @@
 
 using std::map;
 
-
 namespace tpcc {
-
 
 #define TPCC_SCALING_FACTOR             100
 #define QUERIED_TPCC_SCALING_FACTOR     100
-
-
 
 /******************************************************************
  *
@@ -64,69 +59,72 @@ namespace tpcc {
  *
  ******************************************************************/
 
-struct ShoreTPCCTrxCount
-{
-    uint new_order;
-    uint payment;
-    uint order_status;
-    uint delivery;
-    uint stock_level;
+    struct ShoreTPCCTrxCount {
+        uint new_order;
 
-    uint mbench_wh;
-    uint mbench_cust;
+        uint payment;
 
-    ShoreTPCCTrxCount& operator+=(ShoreTPCCTrxCount const& rhs) {
-        new_order += rhs.new_order;
-        payment += rhs.payment;
-        order_status += rhs.order_status;
-        delivery += rhs.delivery;
-        stock_level += rhs.stock_level;
-        mbench_wh += rhs.mbench_wh;
-        mbench_cust += rhs.mbench_cust;
-	return (*this);
-    }
+        uint order_status;
 
-    ShoreTPCCTrxCount& operator-=(ShoreTPCCTrxCount const& rhs) {
-        new_order -= rhs.new_order;
-        payment -= rhs.payment;
-        order_status -= rhs.order_status;
-        delivery -= rhs.delivery;
-        stock_level -= rhs.stock_level;
-        mbench_wh -= rhs.mbench_wh;
-        mbench_cust -= rhs.mbench_cust;
-	return (*this);
-    }
+        uint delivery;
 
-    uint total() const {
-        return (new_order+payment+order_status+delivery+stock_level+
-                mbench_wh+mbench_cust);
-    }
+        uint stock_level;
 
-}; // EOF: ShoreTPCCTrxCount
+        uint mbench_wh;
+
+        uint mbench_cust;
+
+        ShoreTPCCTrxCount& operator+=(ShoreTPCCTrxCount const& rhs) {
+            new_order += rhs.new_order;
+            payment += rhs.payment;
+            order_status += rhs.order_status;
+            delivery += rhs.delivery;
+            stock_level += rhs.stock_level;
+            mbench_wh += rhs.mbench_wh;
+            mbench_cust += rhs.mbench_cust;
+            return (*this);
+        }
+
+        ShoreTPCCTrxCount& operator-=(ShoreTPCCTrxCount const& rhs) {
+            new_order -= rhs.new_order;
+            payment -= rhs.payment;
+            order_status -= rhs.order_status;
+            delivery -= rhs.delivery;
+            stock_level -= rhs.stock_level;
+            mbench_wh -= rhs.mbench_wh;
+            mbench_cust -= rhs.mbench_cust;
+            return (*this);
+        }
+
+        uint total() const {
+            return (new_order + payment + order_status + delivery + stock_level +
+                    mbench_wh + mbench_cust);
+        }
+    }; // EOF: ShoreTPCCTrxCount
 
 
 
-struct ShoreTPCCTrxStats
-{
-    ShoreTPCCTrxCount attempted;
-    ShoreTPCCTrxCount failed;
-    ShoreTPCCTrxCount deadlocked;
+    struct ShoreTPCCTrxStats {
+        ShoreTPCCTrxCount attempted;
 
-    ShoreTPCCTrxStats& operator+=(ShoreTPCCTrxStats const& other) {
-        attempted  += other.attempted;
-        failed     += other.failed;
-        deadlocked += other.deadlocked;
-        return (*this);
-    }
+        ShoreTPCCTrxCount failed;
 
-    ShoreTPCCTrxStats& operator-=(ShoreTPCCTrxStats const& other) {
-        attempted  -= other.attempted;
-        failed     -= other.failed;
-        deadlocked -= other.deadlocked;
-        return (*this);
-    }
+        ShoreTPCCTrxCount deadlocked;
 
-}; // EOF: ShoreTPCCTrxStats
+        ShoreTPCCTrxStats& operator+=(ShoreTPCCTrxStats const& other) {
+            attempted += other.attempted;
+            failed += other.failed;
+            deadlocked += other.deadlocked;
+            return (*this);
+        }
+
+        ShoreTPCCTrxStats& operator-=(ShoreTPCCTrxStats const& other) {
+            attempted -= other.attempted;
+            failed -= other.failed;
+            deadlocked -= other.deadlocked;
+            return (*this);
+        }
+    }; // EOF: ShoreTPCCTrxStats
 
 
 
@@ -139,126 +137,167 @@ struct ShoreTPCCTrxStats
  ********************************************************************/
 
 // For P-Loader
-static int const NORD_PER_UNIT = 9;
-static int const CUST_PER_UNIT = 30;
-static int const HIST_PER_UNIT = 30;
-static int const ORDERS_PER_UNIT = 30;
-static int const STOCK_PER_UNIT = 100;
-static int const UNIT_PER_WH = 1000;
-static int const UNIT_PER_DIST = 100;
-static int const ORDERS_PER_DIST = 3000;
+    static int const NORD_PER_UNIT = 9;
+
+    static int const CUST_PER_UNIT = 30;
+
+    static int const HIST_PER_UNIT = 30;
+
+    static int const ORDERS_PER_UNIT = 30;
+
+    static int const STOCK_PER_UNIT = 100;
+
+    static int const UNIT_PER_WH = 1000;
+
+    static int const UNIT_PER_DIST = 100;
+
+    static int const ORDERS_PER_DIST = 3000;
+
+    class ShoreTPCCEnv : public ShoreEnv {
+    public:
+
+        typedef std::map<pthread_t, ShoreTPCCTrxStats*> statmap_t;
+
+        class table_builder_t;
+class table_creator_t;
+
+    public:
+
+        ShoreTPCCEnv(boost::program_options::variables_map map);
+
+        virtual ~ShoreTPCCEnv();
 
 
-class ShoreTPCCEnv : public ShoreEnv
-{
-public:
+        // DB INTERFACE
 
-    typedef std::map<pthread_t, ShoreTPCCTrxStats*> statmap_t;
+        virtual int set(envVarMap* /* vars */) {
+            return (0); /* do nothing */ };
 
-    class table_builder_t;
-    class table_creator_t;
+        virtual int open() {
+            return (0); /* do nothing */ };
 
-public:
+        virtual int pause() {
+            return (0); /* do nothing */ };
 
-    ShoreTPCCEnv(boost::program_options::variables_map map);
-    virtual ~ShoreTPCCEnv();
+        virtual int resume() {
+            return (0); /* do nothing */ };
 
+        virtual w_rc_t newrun() {
+            return (RCOK); /* do nothing */ };
 
-    // DB INTERFACE
+        virtual int post_init();
 
-    virtual int set(envVarMap* /* vars */) { return(0); /* do nothing */ };
-    virtual int open() { return(0); /* do nothing */ };
-    virtual int pause() { return(0); /* do nothing */ };
-    virtual int resume() { return(0); /* do nothing */ };
-    virtual w_rc_t newrun() { return(RCOK); /* do nothing */ };
+        virtual w_rc_t load_schema();
 
-    virtual int post_init();
-    virtual w_rc_t load_schema();
+        virtual w_rc_t load_and_register_fids();
 
-    virtual w_rc_t load_and_register_fids();
+        virtual int conf();
 
-    virtual int conf();
-    virtual int start();
-    virtual int stop();
-    virtual int info() const;
-    virtual int statistics();
+        virtual int start();
 
-    int dump();
+        virtual int stop();
 
-    virtual void print_throughput(const double iQueriedSF,
-                                  const int iSpread,
-                                  const int iNumOfThreads,
-                                  const double delay);
+        virtual int info() const;
 
+        virtual int statistics();
+
+        int dump();
+
+        virtual void print_throughput(const double iQueriedSF,
+                                      const int iSpread,
+                                      const int iNumOfThreads,
+                                      const double delay);
 
 
-    // Public methods //
 
-    // --- operations over tables --- //
-    w_rc_t create_tables();
-    w_rc_t load_data();
-    w_rc_t warmup();
-    w_rc_t check_consistency();
+        // Public methods //
 
+        // --- operations over tables --- //
+        w_rc_t create_tables();
 
-    // TPCC Tables
-    DECLARE_TABLE(warehouse_t,warehouse_man_impl,warehouse);
-    DECLARE_TABLE(district_t,district_man_impl,district);
-    DECLARE_TABLE(customer_t,customer_man_impl,customer);
-    DECLARE_TABLE(history_t,history_man_impl,history);
-    DECLARE_TABLE(new_order_t,new_order_man_impl,new_order);
-    DECLARE_TABLE(order_t,order_man_impl,order);
-    DECLARE_TABLE(order_line_t,order_line_man_impl,order_line);
-    DECLARE_TABLE(item_t,item_man_impl,item);
-    DECLARE_TABLE(stock_t,stock_man_impl,stock);
+        w_rc_t load_data();
+
+        w_rc_t warmup();
+
+        w_rc_t check_consistency();
 
 
-    // --- kit trxs --- //
+        // TPCC Tables
+        DECLARE_TABLE(warehouse_t, warehouse_man_impl, warehouse);
 
-    w_rc_t run_one_xct(Request* prequest);
+        DECLARE_TABLE(district_t, district_man_impl, district);
 
-    DECLARE_TRX(new_order);
-    DECLARE_TRX(payment);
-    DECLARE_TRX(order_status);
-    DECLARE_TRX(delivery);
-    DECLARE_TRX(stock_level);
+        DECLARE_TABLE(customer_t, customer_man_impl, customer);
 
-    DECLARE_TRX(mbench_wh);
-    DECLARE_TRX(mbench_cust);
+        DECLARE_TABLE(history_t, history_man_impl, history);
 
-    // P-Loader
-    DECLARE_TRX(populate_baseline);
-    DECLARE_TRX(populate_one_unit);
+        DECLARE_TABLE(new_order_t, new_order_man_impl, new_order);
 
-    // Helper xcts
-    w_rc_t _xct_delivery_helper(const int xct_id, delivery_input_t& pdin,
-				std::vector<int>& dlist, int& d_id,
-				const bool SPLIT_TRX);
+        DECLARE_TABLE(order_t, order_man_impl, order);
 
-    // for thread-local stats
-    virtual void env_thread_init();
-    virtual void env_thread_fini();
+        DECLARE_TABLE(order_line_t, order_line_man_impl, order_line);
 
-    // stat map
-    statmap_t _statmap;
+        DECLARE_TABLE(item_t, item_man_impl, item);
 
-    // snapshot taken at the beginning of each experiment
-    ShoreTPCCTrxStats _last_stats;
-    virtual void reset_stats();
-    ShoreTPCCTrxStats _get_stats();
+        DECLARE_TABLE(stock_t, stock_man_impl, stock);
 
-    // set load imbalance and time to apply it
-    void set_skew(int area, int load, int start_imbalance, int skew_type, bool shifting);
-    void start_load_imbalance();
-    void reset_skew();
 
-    //print the current tables into files
-    w_rc_t db_print(int lines);
+        // --- kit trxs --- //
 
-    //fetch the pages of the current tables and their indexes into the buffer pool
-    virtual w_rc_t db_fetch();
+        w_rc_t run_one_xct(Request* prequest);
 
-}; // EOF ShoreTPCCEnv
+        DECLARE_TRX(new_order);
+
+        DECLARE_TRX(payment);
+
+        DECLARE_TRX(order_status);
+
+        DECLARE_TRX(delivery);
+
+        DECLARE_TRX(stock_level);
+
+        DECLARE_TRX(mbench_wh);
+
+        DECLARE_TRX(mbench_cust);
+
+        // P-Loader
+        DECLARE_TRX(populate_baseline);
+
+        DECLARE_TRX(populate_one_unit);
+
+        // Helper xcts
+        w_rc_t _xct_delivery_helper(const int xct_id, delivery_input_t& pdin,
+                                    std::vector<int>& dlist, int& d_id,
+                                    const bool SPLIT_TRX);
+
+        // for thread-local stats
+        virtual void env_thread_init();
+
+        virtual void env_thread_fini();
+
+        // stat map
+        statmap_t _statmap;
+
+        // snapshot taken at the beginning of each experiment
+        ShoreTPCCTrxStats _last_stats;
+
+        virtual void reset_stats();
+
+        ShoreTPCCTrxStats _get_stats();
+
+        // set load imbalance and time to apply it
+        void set_skew(int area, int load, int start_imbalance, int skew_type, bool shifting);
+
+        void start_load_imbalance();
+
+        void reset_skew();
+
+        //print the current tables into files
+        w_rc_t db_print(int lines);
+
+        //fetch the pages of the current tables and their indexes into the buffer pool
+        virtual w_rc_t db_fetch();
+    }; // EOF ShoreTPCCEnv
 
 };
 

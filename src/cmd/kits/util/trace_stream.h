@@ -33,14 +33,10 @@
 #include <cstdio>   /* for FILE* */
 #include <cstdarg>  /* for va_list datatype */
 
-
-
 /* exported functions */
 
 void trace_stream(FILE* out_stream,
-		  const char* filename, int line_num, const char* function_name,
-		  char* format, va_list ap);
-
-
+                  const char* filename, int line_num, const char* function_name,
+                  char* format, va_list ap);
 
 #endif // __TRACE_STREAM_H

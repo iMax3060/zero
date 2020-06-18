@@ -135,36 +135,47 @@ class w_stat_module_t; // forward
  * With this class you output the contents to an output stream,  and
  * compare two stats (equal, not-equal).
  */
-class w_stat_t 
-{
+class w_stat_t {
     friend class w_statistics_t;
-    friend class w_stat_module_t;
+friend class w_stat_module_t;
+
     /* grot */
-    friend ostream    & operator<<(ostream &out, const w_statistics_t &s);
+    friend ostream& operator<<(ostream& out, const w_statistics_t& s);
 
 protected:
     union {
-        w_base_t::base_stat_t   i;
-        w_base_t::base_float_t  f;
-    }_u;
+        w_base_t::base_stat_t i;
+        w_base_t::base_float_t f;
+    } _u;
 
 public:
     /// Initialize to zero.
-    w_stat_t() { _u.i=0; }
+    w_stat_t() {
+        _u.i = 0;
+    }
 
     /// Initialize to integer i.
-    w_stat_t(int  i) { _u.i=i; }
-    operator int() const { return _u.i; }
+    w_stat_t(int i) {
+        _u.i = i;
+    }
+
+    operator int() const {
+        return _u.i;
+    }
 
     /// Initialize to floating point i.
-    w_stat_t(w_base_t::base_float_t i) { _u.f=i; }
+    w_stat_t(w_base_t::base_float_t i) {
+        _u.f = i;
+    }
 
     /// Interpret as a floating point.
-    operator w_base_t::base_float_t() const { return _u.f; }
+    operator w_base_t::base_float_t() const {
+        return _u.f;
+    }
 
-    friend bool    operator==(const w_stat_t &, const w_stat_t &);
-    friend bool    operator!=(const w_stat_t &, const w_stat_t &);
+    friend bool operator==(const w_stat_t&, const w_stat_t&);
 
+    friend bool operator!=(const w_stat_t&, const w_stat_t&);
 };
 
 /*<std-footer incl-file-exclusion='W_STAT_H'>  -- do not edit anything below this line -- */

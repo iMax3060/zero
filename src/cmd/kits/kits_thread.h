@@ -47,38 +47,45 @@
 //using std::rand_r;
 #endif
 
-pthread_mutex_t thread_mutex_create(const pthread_mutexattr_t* attr=nullptr);
-void thread_mutex_lock(pthread_mutex_t &mutex);
-void thread_mutex_unlock(pthread_mutex_t &mutex);
-void thread_mutex_destroy(pthread_mutex_t &mutex);
+pthread_mutex_t thread_mutex_create(const pthread_mutexattr_t* attr = nullptr);
 
+void thread_mutex_lock(pthread_mutex_t& mutex);
 
-pthread_cond_t thread_cond_create(const pthread_condattr_t* attr=nullptr);
-void thread_cond_destroy(pthread_cond_t &cond);
-void thread_cond_signal(pthread_cond_t &cond);
-void thread_cond_broadcast(pthread_cond_t &cond);
-void thread_cond_wait(pthread_cond_t &cond, pthread_mutex_t &mutex);
-bool thread_cond_wait(pthread_cond_t &cond, pthread_mutex_t &mutex,
-                           struct timespec &timeout);
-bool thread_cond_wait(pthread_cond_t &cond, pthread_mutex_t &mutex,
-		      int timeout_ms);
+void thread_mutex_unlock(pthread_mutex_t& mutex);
 
-template <class T>
-T* thread_join(pthread_t tid)
-{
+void thread_mutex_destroy(pthread_mutex_t& mutex);
+
+pthread_cond_t thread_cond_create(const pthread_condattr_t* attr = nullptr);
+
+void thread_cond_destroy(pthread_cond_t& cond);
+
+void thread_cond_signal(pthread_cond_t& cond);
+
+void thread_cond_broadcast(pthread_cond_t& cond);
+
+void thread_cond_wait(pthread_cond_t& cond, pthread_mutex_t& mutex);
+
+bool thread_cond_wait(pthread_cond_t& cond, pthread_mutex_t& mutex,
+                      struct timespec& timeout);
+
+bool thread_cond_wait(pthread_cond_t& cond, pthread_mutex_t& mutex,
+                      int timeout_ms);
+
+template<class T>
+T* thread_join(pthread_t tid) {
     // the union keeps gcc happy about the "type-punned" pointer
     // access going on here. Otherwise, -O3 could break the code.
     union {
-        void *p;
-        T *v;
+        void* p;
+        T* v;
     } u;
 
-    if(pthread_join(tid, &u.p))
+    if (pthread_join(tid, &u.p)) {
         throw ThreadException(__FILE__, __LINE__, __PRETTY_FUNCTION__, "");
+    }
 
     return u.v;
 }
-
 
 /***********************************************************************
  *
@@ -93,23 +100,23 @@ T* thread_join(pthread_t tid)
  ***********************************************************************/
 
 
-struct thread_pool
-{
+struct thread_pool {
     pthread_mutex_t _lock;
+
     pthread_cond_t _cond;
-    int _max_active;		// how many can be active at a time?
-    int _active;		// how many are actually active?
+
+    int _max_active;        // how many can be active at a time?
+    int _active;        // how many are actually active?
 
     thread_pool(int max_active)
-	: _lock(thread_mutex_create()),
-	  _cond(thread_cond_create()),
-	  _max_active(max_active), _active(0)
-    {
-    }
+            : _lock(thread_mutex_create()),
+              _cond(thread_cond_create()),
+              _max_active(max_active),
+              _active(0) {}
 
     void start();
-    void stop();
 
+    void stop();
 }; // EOF: thread_pool
 
 
@@ -124,15 +131,19 @@ struct thread_pool
  *
  ***********************************************************************/
 
-class thread_t : public thread_wrapper_t
-{
+class thread_t : public thread_wrapper_t {
 private:
-    std::string        _thread_name;
-    randgen_t    _randgen;
+    std::string _thread_name;
+
+    randgen_t _randgen;
 
     void run(); /** smthread_t::fork() is going to call run() */
     thread_pool* _ppool;
-    void setuppool(thread_pool* apool) { _ppool = apool; }
+
+    void setuppool(thread_pool* apool) {
+        _ppool = apool;
+    }
+
     void setupthr();
 
 protected:
@@ -145,14 +156,15 @@ public:
      *  calls work(). That is, work() is the new entry function for
      *  thread_t instead of run().
      */
-    virtual void work()=0;
+    virtual void work() = 0;
 
-    bool delete_me() { return _delete_me; }
+    bool delete_me() {
+        return _delete_me;
+    }
 
     std::string thread_name() {
         return _thread_name;
     }
-
 
     /**
      *  @brief Returns pointer to thread_t's randgen_t object.
@@ -161,14 +173,12 @@ public:
         return &_randgen;
     }
 
-
     /**
      *  @brief Returns a pseudo-random integer between 0 and RAND_MAX.
      */
     int rand() {
         return _randgen.rand();
     }
-
 
     /**
      * Returns a pseudorandom, uniformly distributed int value between
@@ -180,12 +190,10 @@ public:
         return _randgen.rand(n);
     }
 
-    virtual ~thread_t() { }
-
+    virtual ~thread_t() {}
 
 protected:
-    thread_t(const std::string &name);
-
+    thread_t(const std::string& name);
 }; // EOF: thread_t
 
 
@@ -195,24 +203,22 @@ protected:
  *  instantiate.
  */
 
-template <class Class, class Functor>
+template<class Class, class Functor>
 class member_func_thread_t : public thread_t {
-    Class *_instance;
+    Class* _instance;
+
     Functor _func;
+
 public:
-    member_func_thread_t(Class *instance, Functor func, const std::string &thread_name)
-        : thread_t(thread_name),
-          _instance(instance),
-          _func(func)
-    {
-    }
+    member_func_thread_t(Class* instance, Functor func, const std::string& thread_name)
+            : thread_t(thread_name),
+              _instance(instance),
+              _func(func) {}
 
     virtual void work() {
         _func(_instance);
     }
 };
-
-
 
 /**
  *  @brief Helper function for running class member functions in a
@@ -220,11 +226,10 @@ public:
  *  compatible with (void).
  */
 
-template <class Return, class Class>
+template<class Return, class Class>
 thread_t* member_func_thread(Class* instance,
                              Return (Class::*mem_func)(),
-                             const std::string& thread_name)
-{
+                             const std::string& thread_name) {
     typedef std::mem_fun_t<Return, Class> Functor;
     return new member_func_thread_t<Class, Functor>(instance,
                                                     Functor(mem_func),
@@ -235,9 +240,11 @@ thread_t* member_func_thread(Class* instance,
 
 // exported functions
 
-void      thread_init(void);
+void thread_init(void);
+
 thread_t* thread_get_self(void);
-pthread_t thread_create(thread_t* t, thread_pool* p=nullptr);
+
+pthread_t thread_create(thread_t* t, thread_pool* p = nullptr);
 
 #if 0 // superceded by thread_local.h
 template<typename T>
@@ -252,36 +259,36 @@ struct thread_local {
     // we have to have two constructors instead. Yuck.
     template<class Destructor>
     thread_local(Destructor d) {
-	pthread_key_create(&_key, d);
+    pthread_key_create(&_key, d);
     }
     thread_local() {
-	pthread_key_create(&_key, nullptr);
+    pthread_key_create(&_key, nullptr);
     }
     ~thread_local() {
-	pthread_key_delete(_key);
+    pthread_key_delete(_key);
     }
 
     T* get() {
-	return reinterpret_cast<T*>(pthread_getspecific(_key));
+    return reinterpret_cast<T*>(pthread_getspecific(_key));
     }
     void set(T* val) {
-	int result = pthread_setspecific(_key, val);
-	THROW_IF(ThreadException, result);
-	if(result)
-		throw ThreadException(__FILE__, __LINE__, __PRETTY_FUNCTION__, "");
+    int result = pthread_setspecific(_key, val);
+    THROW_IF(ThreadException, result);
+    if(result)
+        throw ThreadException(__FILE__, __LINE__, __PRETTY_FUNCTION__, "");
     }
 
 
     thread_local &operator=(T* val) {
-	set(val);
-	return *this;
+    set(val);
+    return *this;
     }
     operator T*() {
-	return get();
+    return get();
     }
 };
 #endif
-extern __thread thread_pool* THREAD_POOL;
 
+extern __thread thread_pool* THREAD_POOL;
 
 #endif // __THREAD_H

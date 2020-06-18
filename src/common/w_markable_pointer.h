@@ -115,41 +115,47 @@ template<class T>
 class MarkablePointer {
 public:
     /** The lowest bit is stolen for mark for death. */
-    static const uint64_t MARK_BIT                = 0x0000000000000001LL;
+    static const uint64_t MARK_BIT = 0x0000000000000001LL;
+
     /** The original pointer uses only 17-63th bits. */
-    static const uint64_t POINTER_MASK            = 0x0000FFFFFFFFFFFELL;
+    static const uint64_t POINTER_MASK = 0x0000FFFFFFFFFFFELL;
+
     /** Bit-shift count for ABA counter. */
-    static const uint64_t STAMP_SHIFT             = 48;
+    static const uint64_t STAMP_SHIFT = 48;
+
     /** We store a stamp value in the high 16 bits. */
-    static const uint64_t STAMP_MASK              = 0xFFFF000000000000LL;
+    static const uint64_t STAMP_MASK = 0xFFFF000000000000LL;
 
     /** Empty NULL constructor. */
     MarkablePointer() : _pointer(0) {}
 
     /** Constructs with initial pointer, mark and ABA stamp. */
     MarkablePointer(T* pointer, bool mark, aba_stamp stamp = 0)
-        : _pointer(combine(pointer, mark, stamp)) {}
+            : _pointer(combine(pointer, mark, stamp)) {}
 
     /** Copy constructor. This is regular though might not be atomic. */
-    MarkablePointer(const MarkablePointer<T> &other) {
+    MarkablePointer(const MarkablePointer<T>& other) {
         operator=(other);
     }
+
     /** Copy assignment. This is regular though might not be atomic. */
-    MarkablePointer& operator=(const MarkablePointer<T> &other) {
+    MarkablePointer& operator=(const MarkablePointer<T>& other) {
         // ACCESS_ONCE semantics to make it at least regular.
-        _pointer = static_cast<const volatile uintptr_t &>(other._pointer);
+        _pointer = static_cast<const volatile uintptr_t&>(other._pointer);
         return *this;
     }
+
     /**
      * [Non-atomic] Equality operator on the contained pointer value.
      */
-    bool operator==(const MarkablePointer &other) const {
+    bool operator==(const MarkablePointer& other) const {
         return _pointer == other._pointer;
     }
+
     /**
      * [Non-atomic] Inequality operator on the contained pointer value.
      */
-    bool operator!=(const MarkablePointer &other) const {
+    bool operator!=(const MarkablePointer& other) const {
         return _pointer != other._pointer;
     }
 
@@ -157,32 +163,50 @@ public:
      * [Non-atomic] Marks the pointer for death, stashing TRUE into the pointer.
      * @see atomic_cas()
      */
-    void        set_mark(bool on) { _pointer = (_pointer & ~MARK_BIT) | (on ? MARK_BIT : 0); }
+    void set_mark(bool on) {
+        _pointer = (_pointer & ~MARK_BIT) | (on ? MARK_BIT : 0);
+    }
+
     /** [Non-atomic] Returns if the pointer is marked in the stashed boolen flag. */
-    bool        is_marked() const { return (_pointer & MARK_BIT) != 0; }
+    bool is_marked() const {
+        return (_pointer & MARK_BIT) != 0;
+    }
 
     /** [Non-atomic] Returns the ABA counter. */
-    aba_stamp   get_aba_stamp() const { return (_pointer & STAMP_MASK) >> STAMP_SHIFT; }
+    aba_stamp get_aba_stamp() const {
+        return (_pointer & STAMP_MASK) >> STAMP_SHIFT;
+    }
+
     /** [Non-atomic] Sets the ABA counter. */
-    void        set_aba_stamp(aba_stamp stamp) {
+    void set_aba_stamp(aba_stamp stamp) {
         uint64_t stamp_shifted = static_cast<uint64_t>(stamp) << STAMP_SHIFT;
         _pointer = (_pointer & (~STAMP_MASK)) | stamp_shifted;
     }
+
     /** [Non-atomic] Increase the ABA counter by one. */
-    void        increase_aba_stamp() {
+    void increase_aba_stamp() {
         _pointer += (1LL << STAMP_SHIFT);
     }
 
-
     /** [Non-atomic] Returns the original pointer without stashed value. */
-    T*          get_pointer() const { return cast_to_ptr(_pointer & POINTER_MASK); }
+    T* get_pointer() const {
+        return cast_to_ptr(_pointer & POINTER_MASK);
+    }
+
     /** [Non-atomic] Shorthand for get_pointer()->bluh. */
-    T*          operator->() const { return get_pointer(); }
+    T* operator->() const {
+        return get_pointer();
+    }
 
     /** [Non-atomic] Tells if the pointer is null. */
-    bool        is_null() const { return (_pointer & POINTER_MASK) == 0; }
+    bool is_null() const {
+        return (_pointer & POINTER_MASK) == 0;
+    }
+
     /** [Non-atomic] Returns integer representation of the pointer and stashed values. */
-    uint64_t    as_int() const { return _pointer; }
+    uint64_t as_int() const {
+        return _pointer;
+    }
 
     /**
      * \brief [Atomic] Compare and set for both pointer and mark (stashed value).
@@ -195,9 +219,9 @@ public:
      * @param[in] new_stamp if succeeds this value is set to ABA stamp
      * @return whether the CAS succeeds.
      */
-    bool                atomic_cas(T* expected_pointer, T* new_pointer,
-                       bool expected_mark, bool new_mark,
-                       aba_stamp expected_stamp, aba_stamp new_stamp);
+    bool atomic_cas(T* expected_pointer, T* new_pointer,
+                    bool expected_mark, bool new_mark,
+                    aba_stamp expected_stamp, aba_stamp new_stamp);
 
     /**
      * [Atomic] Overload to receive MarkablePointer.
@@ -205,31 +229,32 @@ public:
      * @param[in] desired if succeeds this value is set
      * @return whether the CAS succeeds.
      */
-    bool                atomic_cas(const MarkablePointer &expected,
-                                   const MarkablePointer &desired);
+    bool atomic_cas(const MarkablePointer& expected,
+                    const MarkablePointer& desired);
 
     /**
      * \brief [Atomic] Swap pointer, mark, and stamp altogether.
      * @param[in] new_ptr the value to set
      * @return old value before swap
      */
-    MarkablePointer     atomic_swap(const MarkablePointer &new_ptr);
+    MarkablePointer atomic_swap(const MarkablePointer& new_ptr);
 
     /**
      * Returns an integer value that combined the pointer and the mark to stash.
      */
-    static uintptr_t    combine(T* ptr, bool mark, aba_stamp stamp) {
-        assert((cast_to_int(ptr)  & (~POINTER_MASK)) == 0);
+    static uintptr_t combine(T* ptr, bool mark, aba_stamp stamp) {
+        assert((cast_to_int(ptr) & (~POINTER_MASK)) == 0);
         uint64_t stamp_shifted = static_cast<uint64_t>(stamp) << STAMP_SHIFT;
         return cast_to_int(ptr) | (mark ? MARK_BIT : 0) | stamp_shifted;
     }
 
     /** ISO/IEC 9899:2011 compliant way of casting a pointer to an int. */
-    static uintptr_t    cast_to_int(T* ptr) {
+    static uintptr_t cast_to_int(T* ptr) {
         return reinterpret_cast<uintptr_t>(reinterpret_cast<void*>(ptr));
     }
+
     /** ISO/IEC 9899:2011 compliant way of casting an int to a pointer. */
-    static T*           cast_to_ptr(uintptr_t ptr) {
+    static T* cast_to_ptr(uintptr_t ptr) {
         return reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
     }
 
@@ -263,37 +288,41 @@ protected:
  * \section DEP Dependency
  * This tiny class is completely header-only. To use, just include w_markable_pointer.h.
  */
-template <class NEXT>
+template<class NEXT>
 struct MarkablePointerChain {
     MarkablePointerChain() : next() {}
+
     MarkablePointerChain(const MarkablePointerChain& other)
-        : next(other.next) {}
+            : next(other.next) {}
+
     MarkablePointerChain& operator=(const MarkablePointerChain& other) {
         next = other.next;
         return *this;
     }
 
     /** Next pointer. */
-    MarkablePointer< NEXT >   next;
+    MarkablePointer<NEXT> next;
 };
 
-template <class T>
+template<class T>
 inline bool MarkablePointer<T>::atomic_cas(T* expected_pointer, T* desired_pointer,
-    bool expected_mark, bool desired_mark, aba_stamp expected_stamp, aba_stamp new_stamp) {
+                                           bool expected_mark, bool desired_mark, aba_stamp expected_stamp,
+                                           aba_stamp new_stamp) {
     uintptr_t expected = combine(expected_pointer, expected_mark, expected_stamp);
     uintptr_t desired = combine(desired_pointer, desired_mark, new_stamp);
     return lintel::unsafe::atomic_compare_exchange_strong<uintptr_t>(
-        &_pointer, &expected, desired);
-}
-template <class T>
-inline bool MarkablePointer<T>::atomic_cas(const MarkablePointer &expected,
-                                   const MarkablePointer &desired) {
-    uintptr_t expected_tmp = expected._pointer;
-    return lintel::unsafe::atomic_compare_exchange_strong<uintptr_t>(
-        &_pointer, &expected_tmp, desired._pointer);
+            &_pointer, &expected, desired);
 }
 
-template <class T>
+template<class T>
+inline bool MarkablePointer<T>::atomic_cas(const MarkablePointer& expected,
+                                           const MarkablePointer& desired) {
+    uintptr_t expected_tmp = expected._pointer;
+    return lintel::unsafe::atomic_compare_exchange_strong<uintptr_t>(
+            &_pointer, &expected_tmp, desired._pointer);
+}
+
+template<class T>
 inline MarkablePointer<T> MarkablePointer<T>::atomic_swap(const MarkablePointer<T>& new_ptr) {
     uintptr_t old = lintel::unsafe::atomic_exchange<uintptr_t>(&_pointer, new_ptr._pointer);
     MarkablePointer<T> ret;
@@ -301,14 +330,14 @@ inline MarkablePointer<T> MarkablePointer<T>::atomic_swap(const MarkablePointer<
     return ret;
 }
 
-template <class T>
-inline std::ostream& operator<<(std::ostream &o, const MarkablePointer<T> &x) {
+template<class T>
+inline std::ostream& operator<<(std::ostream& o, const MarkablePointer<T>& x) {
     o << "Markable pointer ";
     if (x.is_null()) {
         o << "<NULL>";
     } else {
         o << x.as_int() << " <marked=" << x.is_marked() << ", stamp=" << x.get_aba_stamp()
-            << ", ptr=" << *(x.get_pointer()) << ">";
+          << ", ptr=" << *(x.get_pointer()) << ">";
     }
     return o;
 }

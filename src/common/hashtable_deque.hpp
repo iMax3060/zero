@@ -480,9 +480,7 @@ namespace zero::hashtable_deque {
          *          element but the next element can be accesses using \link _directAccessDeque \endlink .
          */
         key_type _front;
-
     };
-
 } // zero::hashtable_deque
 
 #endif // __HASHTABLE_DEQUE_HPP

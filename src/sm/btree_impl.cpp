@@ -22,16 +22,14 @@
 #include "restart.h"
 #include "xct_logger.h"
 
-
 rc_t
 btree_impl::_ux_insert(
-    StoreID store,
-    const w_keystr_t&    key,
-    const cvec_t&        el)
-{
+        StoreID store,
+        const w_keystr_t& key,
+        const cvec_t& el) {
     INC_TSTAT(bt_insert_cnt);
     while (true) {
-        rc_t rc = _ux_insert_core (store, key, el);
+        rc_t rc = _ux_insert_core(store, key, el);
         if (rc.is_error() && rc.err_num() == eLOCKRETRY) {
             continue;
         }
@@ -39,20 +37,20 @@ btree_impl::_ux_insert(
     }
     return RCOK;
 }
+
 rc_t
 btree_impl::_ux_insert_core(
-    StoreID store,
-    const w_keystr_t&    key,
-    const cvec_t&        el)
-{
+        StoreID store,
+        const w_keystr_t& key,
+        const cvec_t& el) {
 
     // find the leaf (potentially) containing the key
-    btree_page_h       leaf;
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf));
-    w_assert1( leaf.is_fixed());
-    w_assert1( leaf.is_leaf());
-    w_assert1( leaf.latch_mode() == LATCH_EX);
-    w_assert1( leaf.store() == store);
+    btree_page_h leaf;
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf));
+    w_assert1(leaf.is_fixed());
+    w_assert1(leaf.is_leaf());
+    w_assert1(leaf.latch_mode() == LATCH_EX);
+    w_assert1(leaf.store() == store);
 
     bool need_lock = g_xct_does_need_lock();
 
@@ -65,7 +63,7 @@ btree_impl::_ux_insert_core(
         // found! then we just lock the key (XN)
         if (need_lock) {
             W_DO (_ux_lock_key(store, leaf, key, LATCH_EX,
-                        create_part_okvl(okvl_mode::X, key), false));
+                               create_part_okvl(okvl_mode::X, key), false));
             alreay_took_XN = true;
         }
 
@@ -77,7 +75,7 @@ btree_impl::_ux_insert_core(
         }
 
         // if the ghost record is enough spacious, we can just reuse it
-        if (leaf._is_enough_spacious_ghost (key, slot, el)) {
+        if (leaf._is_enough_spacious_ghost(key, slot, el)) {
             W_DO(leaf.replace_ghost(key, el));
             return RCOK;
         }
@@ -86,15 +84,14 @@ btree_impl::_ux_insert_core(
     // then, we need to create (or expand) a ghost record for this key as a preparation to insert.
     // first, make sure this page is enough spacious (a bit conservative test).
     while (!leaf.check_space_for_insert_leaf(key, el)
-        || (leaf.is_insertion_extremely_skewed_right()
-            && leaf.check_chance_for_norecord_split(key)))
-    {
+           || (leaf.is_insertion_extremely_skewed_right()
+               && leaf.check_chance_for_norecord_split(key))) {
         // See if there's room for the insert.
         // here, we start system transaction to split page
         PageID new_page_id;
-    DBG(<< "Insert triggering split on page:");
-    DBG(<< leaf);
-        W_DO( _sx_split_foster(leaf, new_page_id, key) );
+        DBG(<< "Insert triggering split on page:");
+        DBG(<< leaf);
+        W_DO(_sx_split_foster(leaf, new_page_id, key));
 
         // after split, should the old page contain the new tuple?
         if (!leaf.fence_contains(key)) {
@@ -103,11 +100,11 @@ btree_impl::_ux_insert_core(
             // can have any latch on the new page, so we can always get this latch
             btree_page_h another_leaf; // latch coupling
             w_assert1(leaf.get_foster() == new_page_id);
-            W_DO( another_leaf.fix_nonroot(leaf, new_page_id, LATCH_EX));
+            W_DO(another_leaf.fix_nonroot(leaf, new_page_id, LATCH_EX));
             w_assert1(another_leaf.is_fixed());
             w_assert2(another_leaf.fence_contains(key));
             leaf = another_leaf;
-            w_assert2( leaf.is_fixed());
+            w_assert2(leaf.is_fixed());
         }
     } // check for need to split
 
@@ -119,7 +116,8 @@ btree_impl::_ux_insert_core(
 
         if (need_lock) {
             W_DO(_ux_lock_range(store, leaf, key, -1, // search again because it might be split
-                LATCH_EX, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_X, true)); // this lock "goes away" once it's taken
+                                LATCH_EX, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_X,
+                                true)); // this lock "goes away" once it's taken
         }
         Logger::log_p<btree_insert_nonghost_log>(&leaf, key, el, false /*is_sys_txn*/);
 
@@ -140,12 +138,11 @@ btree_impl::_ux_insert_core(
 
 rc_t
 btree_impl::_ux_put(
-    StoreID store,
-    const w_keystr_t&    key,
-    const cvec_t&        el)
-{
+        StoreID store,
+        const w_keystr_t& key,
+        const cvec_t& el) {
     while (true) {
-        rc_t rc = _ux_put_core (store, key, el);
+        rc_t rc = _ux_put_core(store, key, el);
         if (rc.is_error() && rc.err_num() == eLOCKRETRY) {
             continue;
         }
@@ -153,12 +150,12 @@ btree_impl::_ux_put(
     }
     return RCOK;
 }
+
 rc_t
 btree_impl::_ux_put_core(
-    StoreID store,
-    const w_keystr_t&    key,
-    const cvec_t&        el)
-{
+        StoreID store,
+        const w_keystr_t& key,
+        const cvec_t& el) {
     bool need_lock;
     slotid_t slot;
     bool found;
@@ -173,19 +170,18 @@ btree_impl::_ux_put_core(
     }
 }
 
-
 rc_t
 btree_impl::_ux_get_page_and_status(StoreID store,
-                        const w_keystr_t& key,
+                                    const w_keystr_t& key,
                                     bool& need_lock, slotid_t& slot, bool& found, bool& took_XN,
                                     bool& is_ghost, btree_page_h& leaf) {
 
     // find the leaf (potentially) containing the key
     // passed in...btree_page_h       leaf;
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf));
-    w_assert1( leaf.is_fixed());
-    w_assert1( leaf.is_leaf());
-    w_assert1( leaf.latch_mode() == LATCH_EX);
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf));
+    w_assert1(leaf.is_fixed());
+    w_assert1(leaf.is_leaf());
+    w_assert1(leaf.latch_mode() == LATCH_EX);
 
     // passed in...bool need_lock
     need_lock = g_xct_does_need_lock();
@@ -207,6 +203,7 @@ btree_impl::_ux_get_page_and_status(StoreID store,
     }
     return RCOK;
 }
+
 rc_t btree_impl::_ux_insert_core_tail(StoreID store,
                                       const w_keystr_t& key, const cvec_t& el,
                                       bool& need_lock, slotid_t& slot, bool& found,
@@ -219,7 +216,7 @@ rc_t btree_impl::_ux_insert_core_tail(StoreID store,
         }
 
         // if the ghost record is enough spacious, we can just reuse it
-        if (leaf._is_enough_spacious_ghost (key, slot, el)) {
+        if (leaf._is_enough_spacious_ghost(key, slot, el)) {
             W_DO(leaf.replace_ghost(key, el));
             return RCOK;
         }
@@ -228,11 +225,11 @@ rc_t btree_impl::_ux_insert_core_tail(StoreID store,
     // then, we need to create (or expand) a ghost record for this key as a preparation to insert.
     // first, make sure this page is enough spacious (a bit conservative test).
     while (!leaf.check_space_for_insert_leaf(key, el)
-        || (leaf.is_insertion_extremely_skewed_right() && leaf.check_chance_for_norecord_split(key))) {
+           || (leaf.is_insertion_extremely_skewed_right() && leaf.check_chance_for_norecord_split(key))) {
         // See if there's room for the insert.
         // here, we start system transaction to split page
         PageID new_page_id;
-        W_DO( _sx_split_foster(leaf, new_page_id, key) );
+        W_DO(_sx_split_foster(leaf, new_page_id, key));
 
         // after split, should the old page contain the new tuple?
         if (!leaf.fence_contains(key)) {
@@ -240,11 +237,11 @@ rc_t btree_impl::_ux_insert_core_tail(StoreID store,
             // because "leaf" is EX locked beforehand, no one
             // can have any latch on the new page, so we can always get this latch
             btree_page_h another_leaf; // latch coupling
-            W_DO( another_leaf.fix_nonroot(leaf, new_page_id, LATCH_EX) );
+            W_DO(another_leaf.fix_nonroot(leaf, new_page_id, LATCH_EX));
             w_assert1(another_leaf.is_fixed());
             w_assert2(another_leaf.fence_contains(key));
             leaf = another_leaf;
-            w_assert2( leaf.is_fixed());
+            w_assert2(leaf.is_fixed());
         }
     } // check for need to split
 
@@ -256,7 +253,8 @@ rc_t btree_impl::_ux_insert_core_tail(StoreID store,
 
         if (need_lock) {
             W_DO(_ux_lock_range(store, leaf, key, -1, // search again because it might be split
-                LATCH_EX, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_X, true)); // this lock "goes away" once it's taken
+                                LATCH_EX, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_X,
+                                true)); // this lock "goes away" once it's taken
         }
 
         W_DO (_sx_reserve_ghost(leaf, key, el.size()));
@@ -271,32 +269,29 @@ rc_t btree_impl::_ux_insert_core_tail(StoreID store,
     return RCOK;
 }
 
-
-rc_t btree_impl::_sx_reserve_ghost(btree_page_h &leaf, const w_keystr_t &key, int elem_len)
-{
-    sys_xct_section_t sxs (true); // this transaction will output only one log!
+rc_t btree_impl::_sx_reserve_ghost(btree_page_h& leaf, const w_keystr_t& key, int elem_len) {
+    sys_xct_section_t sxs(true); // this transaction will output only one log!
     W_DO(sxs.check_error_on_start());
     rc_t ret = _ux_reserve_ghost_core(leaf, key, elem_len);
-    W_DO (sxs.end_sys_xct (ret));
+    W_DO (sxs.end_sys_xct(ret));
     return ret;
 }
 
-rc_t btree_impl::_ux_reserve_ghost_core(btree_page_h &leaf, const w_keystr_t &key, int elem_len) {
+rc_t btree_impl::_ux_reserve_ghost_core(btree_page_h& leaf, const w_keystr_t& key, int elem_len) {
     w_assert1 (xct()->is_sys_xct());
     w_assert1 (leaf.fence_contains(key));
 
-    w_assert1(leaf.check_space_for_insert_leaf(key.get_length_as_keystr()-leaf.get_prefix_length(), elem_len));
+    w_assert1(leaf.check_space_for_insert_leaf(key.get_length_as_keystr() - leaf.get_prefix_length(), elem_len));
 
-    Logger::log_p<btree_ghost_reserve_log> (&leaf, key, elem_len);
+    Logger::log_p<btree_ghost_reserve_log>(&leaf, key, elem_len);
     leaf.reserve_ghost(key, elem_len);
     return RCOK;
 }
 
 rc_t
-btree_impl::_ux_update(StoreID store, const w_keystr_t &key, const cvec_t &el)
-{
+btree_impl::_ux_update(StoreID store, const w_keystr_t& key, const cvec_t& el) {
     while (true) {
-        rc_t rc = _ux_update_core (store, key, el);
+        rc_t rc = _ux_update_core(store, key, el);
         if (rc.is_error() && rc.err_num() == eLOCKRETRY) {
             continue;
         }
@@ -306,26 +301,25 @@ btree_impl::_ux_update(StoreID store, const w_keystr_t &key, const cvec_t &el)
 }
 
 rc_t
-btree_impl::_ux_update_core(StoreID store, const w_keystr_t &key, const cvec_t &el)
-{
+btree_impl::_ux_update_core(StoreID store, const w_keystr_t& key, const cvec_t& el) {
     bool need_lock = g_xct_does_need_lock();
-    btree_page_h         leaf;
+    btree_page_h leaf;
 
     // find the leaf (potentially) containing the key
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
 
     w_assert3(leaf.is_fixed());
     w_assert3(leaf.is_leaf());
 
-    slotid_t       slot = -1;
-    bool            found = false;
+    slotid_t slot = -1;
+    bool found = false;
     leaf.search(key, found, slot);
 
-    if(!found) {
+    if (!found) {
         if (need_lock) {
             // re-latch mode is SH because this is "not-found" case.
             W_DO(_ux_lock_range(store, leaf, key, slot,
-                        LATCH_SH, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_S, false));
+                                LATCH_SH, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_S, false));
         }
         return RC(eNOTFOUND);
     }
@@ -340,7 +334,7 @@ btree_impl::_ux_update_core(StoreID store, const w_keystr_t &key, const cvec_t &
     // get the old data and log
     bool ghost;
     smsize_t old_element_len;
-    const char *old_element = leaf.element(slot, old_element_len, ghost);
+    const char* old_element = leaf.element(slot, old_element_len, ghost);
     // it might be ghost..
     if (ghost) {
         return RC(eNOTFOUND);
@@ -357,7 +351,7 @@ btree_impl::_ux_update_core(StoreID store, const w_keystr_t &key, const cvec_t &
         }
     }
 
-    Logger::log_p<btree_update_log> (&leaf, key, old_element, old_element_len, el);
+    Logger::log_p<btree_update_log>(&leaf, key, old_element, old_element_len, el);
 
     W_DO(leaf.replace_el_nolog(slot, el));
     return RCOK;
@@ -365,10 +359,10 @@ btree_impl::_ux_update_core(StoreID store, const w_keystr_t &key, const cvec_t &
 
 rc_t
 btree_impl::_ux_update_core_tail(StoreID store,
-                                 const w_keystr_t &key, const cvec_t &el,
+                                 const w_keystr_t& key, const cvec_t& el,
                                  bool& need_lock, slotid_t& slot, bool& found, bool& is_ghost,
                                  btree_page_h& leaf) {
-    if(!found) {
+    if (!found) {
         if (need_lock) {
             // re-latch mode is SH because this is "not-found" case.
             W_DO(_ux_lock_range(store, leaf, key, slot,
@@ -382,7 +376,7 @@ btree_impl::_ux_update_core_tail(StoreID store,
         return RC(eNOTFOUND);
     }
     smsize_t old_element_len;
-    const char *old_element = leaf.element(slot, old_element_len, is_ghost);
+    const char* old_element = leaf.element(slot, old_element_len, is_ghost);
 
     // are we expanding?
     if (old_element_len < el.size()) {
@@ -395,7 +389,7 @@ btree_impl::_ux_update_core_tail(StoreID store,
         }
     }
 
-    Logger::log_p<btree_update_log> (&leaf, key, old_element, old_element_len, el);
+    Logger::log_p<btree_update_log>(&leaf, key, old_element, old_element_len, el);
 
     W_DO(leaf.replace_el_nolog(slot, el));
     return RCOK;
@@ -403,11 +397,10 @@ btree_impl::_ux_update_core_tail(StoreID store,
 
 rc_t btree_impl::_ux_overwrite(
         StoreID store,
-        const w_keystr_t&                 key,
-        const char *el, smsize_t offset, smsize_t elen)
-{
+        const w_keystr_t& key,
+        const char* el, smsize_t offset, smsize_t elen) {
     while (true) {
-        rc_t rc = _ux_overwrite_core (store, key, el, offset, elen);
+        rc_t rc = _ux_overwrite_core(store, key, el, offset, elen);
         if (rc.is_error() && rc.err_num() == eLOCKRETRY) {
             continue;
         }
@@ -419,22 +412,21 @@ rc_t btree_impl::_ux_overwrite(
 rc_t btree_impl::_ux_overwrite_core(
         StoreID store,
         const w_keystr_t& key,
-        const char *el, smsize_t offset, smsize_t elen)
-{
+        const char* el, smsize_t offset, smsize_t elen) {
     // basically same as ux_update
     bool need_lock = g_xct_does_need_lock();
     btree_page_h leaf;
 
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
 
     w_assert3(leaf.is_fixed());
     w_assert3(leaf.is_leaf());
 
-    slotid_t slot  = -1;
-    bool     found = false;
+    slotid_t slot = -1;
+    bool found = false;
     leaf.search(key, found, slot);
 
-    if(!found) {
+    if (!found) {
         if (need_lock) {
             W_DO(_ux_lock_range(store, leaf, key, slot,
                                 LATCH_SH, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_S, false));
@@ -449,7 +441,7 @@ rc_t btree_impl::_ux_overwrite_core(
     // get the old data and log
     bool ghost;
     smsize_t old_element_len;
-    const char *old_element = leaf.element(slot, old_element_len, ghost);
+    const char* old_element = leaf.element(slot, old_element_len, ghost);
     if (ghost) {
         return RC(eNOTFOUND);
     }
@@ -457,17 +449,16 @@ rc_t btree_impl::_ux_overwrite_core(
         return RC(eRECWONTFIT);
     }
 
-    Logger::log_p<btree_overwrite_log> (&leaf, key, old_element, el, offset, elen);
+    Logger::log_p<btree_overwrite_log>(&leaf, key, old_element, el, offset, elen);
     leaf.overwrite_el_nolog(slot, offset, el, elen);
     return RCOK;
 }
 
 rc_t
-btree_impl::_ux_remove(StoreID store, const w_keystr_t &key)
-{
+btree_impl::_ux_remove(StoreID store, const w_keystr_t& key) {
     INC_TSTAT(bt_remove_cnt);
     while (true) {
-        rc_t rc = _ux_remove_core (store, key);
+        rc_t rc = _ux_remove_core(store, key);
         if (rc.is_error() && rc.err_num() == eLOCKRETRY) {
             continue;
         }
@@ -477,8 +468,7 @@ btree_impl::_ux_remove(StoreID store, const w_keystr_t &key)
 }
 
 rc_t
-btree_impl::_ux_remove_core(StoreID store, const w_keystr_t &key)
-{
+btree_impl::_ux_remove_core(StoreID store, const w_keystr_t& key) {
     // If the original insert operation was from a page split with full logging, the fence keys
     // were changed during page split, so the record we found would come from the destination
     // page, not the source page.
@@ -491,26 +481,26 @@ btree_impl::_ux_remove_core(StoreID store, const w_keystr_t &key)
     // so the 'undo' won't happen for those insertions.
 
     bool need_lock = g_xct_does_need_lock();
-    btree_page_h         leaf;
+    btree_page_h leaf;
 
     // find the leaf (potentially) containing the key
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true /*allow retry*/));
 
     w_assert3(leaf.is_fixed());
     w_assert3(leaf.is_leaf());
 
-    slotid_t       slot = -1;
-    bool            found = false;
+    slotid_t slot = -1;
+    bool found = false;
     leaf.search(key, found, slot);
 
-    if(!found) {
+    if (!found) {
         if (need_lock) {
             // re-latch mode is SH because this is "not-found" case.
             W_DO(_ux_lock_range(store, leaf, key, slot,
-                        LATCH_SH, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_S, false));
+                                LATCH_SH, create_part_okvl(okvl_mode::X, key), ALL_N_GAP_S, false));
         }
 // TODO(Restart)...
-DBGOUT3( << "&&&& _ux_remove_core - not found");
+        DBGOUT3(<< "&&&& _ux_remove_core - not found");
 
         return RC(eNOTFOUND);
     }
@@ -523,26 +513,22 @@ DBGOUT3( << "&&&& _ux_remove_core - not found");
     }
 
     // it might be already ghost..
-    if (leaf.is_ghost(slot))
-    {
+    if (leaf.is_ghost(slot)) {
         return RC(eNOTFOUND);
-    }
-    else
-    {
+    } else {
         // log first
         vector<slotid_t> slots;
         slots.push_back(slot);
-        Logger::log_p<btree_ghost_mark_log> (&leaf, slots, false /*is_sys_txn*/);
+        Logger::log_p<btree_ghost_mark_log>(&leaf, slots, false /*is_sys_txn*/);
 
         // then mark it as ghost
-        leaf.mark_ghost (slot);
+        leaf.mark_ghost(slot);
     }
     return RCOK;
 }
 
 rc_t
-btree_impl::_ux_undo_ghost_mark(StoreID store, const w_keystr_t &key)
-{
+btree_impl::_ux_undo_ghost_mark(StoreID store, const w_keystr_t& key) {
     // If the original delete operation was from a page split with full logging, the fence keys
     // were changed during page split, so the record we found would come from the destination
     // page, not the source page.
@@ -555,16 +541,16 @@ btree_impl::_ux_undo_ghost_mark(StoreID store, const w_keystr_t &key)
     // so the 'undo' won't happen for those deletions.
 
     w_assert1(key.is_regular());
-    btree_page_h         leaf;
-    W_DO( _ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true/*allow retry*/));
+    btree_page_h leaf;
+    W_DO(_ux_traverse(store, key, t_fence_contain, LATCH_EX, leaf, true/*allow retry*/));
     w_assert3(leaf.is_fixed());
     w_assert3(leaf.is_leaf());
 
-    slotid_t       slot = -1;
-    bool            found = false;
+    slotid_t slot = -1;
+    bool found = false;
     leaf.search(key, found, slot);
 
-    if(!found) {
+    if (!found) {
         return RC(eNOTFOUND);
     }
 
@@ -579,21 +565,21 @@ btree_impl::_ux_undo_ghost_mark(StoreID store, const w_keystr_t &key)
     // should be held and the original record should still be intact
     bool ghost;
     smsize_t existing_element_len;
-    const char *existing_element = leaf.element(slot, existing_element_len, ghost);
-    cvec_t el (existing_element, existing_element_len);
+    const char* existing_element = leaf.element(slot, existing_element_len, ghost);
+    cvec_t el(existing_element, existing_element_len);
 
 // TODO(Restart)...
-DBGOUT3( << "&&&& btree_impl::_ux_undo_ghost_mark - undo a remove, key: " << key);
+    DBGOUT3(<< "&&&& btree_impl::_ux_undo_ghost_mark - undo a remove, key: " << key);
 
     Logger::log_p<btree_insert_nonghost_log>(&leaf, key, el, false /*is_sys_txn*/);
 
-    leaf.unmark_ghost (slot);
+    leaf.unmark_ghost(slot);
     return RCOK;
 }
 
 okvl_mode btree_impl::create_part_okvl(
-    okvl_mode::element_lock_mode mode,
-    const w_keystr_t &key) {
+        okvl_mode::element_lock_mode mode,
+        const w_keystr_t& key) {
     okvl_mode ret;
 
     okvl_mode::part_id part = 0;
@@ -612,5 +598,7 @@ okvl_mode btree_impl::create_part_okvl(
 }
 
 uint8_t btree_impl::s_ex_need_counts[1 << btree_impl::GAC_HASH_BITS];
+
 uint8_t btree_impl::s_foster_children_counts[1 << btree_impl::GAC_HASH_BITS];
+
 queue_based_lock_t btree_impl::s_ex_need_mutex[1 << GAC_HASH_BITS];

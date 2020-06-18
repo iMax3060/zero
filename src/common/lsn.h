@@ -179,7 +179,9 @@ typedef int64_t sm_diskaddr_t;
  */
 
 typedef uint64_t lsndata_t;
+
 const lsndata_t lsndata_null = 0;
+
 const lsndata_t lsndata_max = 0xFFFFFFFFFFFFFFFF;
 
 /**\brief Log Sequence Number. See \ref LSNS.
@@ -239,71 +241,122 @@ const lsndata_t lsndata_max = 0xFFFFFFFFFFFFFFFF;
  *
  */
 class lsn_t {
-    enum { file_hwm  =    0xffff };
+    enum {
+        file_hwm = 0xffff
+    };
 public:
-    enum { PARTITION_BITS=16 };
-    enum { PARTITION_SHIFT=(64-PARTITION_BITS) };
+    enum {
+        PARTITION_BITS = 16
+    };
+    enum {
+        PARTITION_SHIFT = (64 - PARTITION_BITS)
+    };
 
     static uint64_t mask() {
         static uint64_t const ONE = 1;
-        return (ONE << PARTITION_SHIFT)-1;
+        return (ONE << PARTITION_SHIFT) - 1;
     }
 
-    lsn_t() : _data(0) { }
-    lsn_t(lsndata_t data) : _data(data) { }
+    lsn_t() : _data(0) {}
+
+    lsn_t(lsndata_t data) : _data(data) {}
 
     lsn_t(uint32_t f, sm_diskaddr_t r) :
-                _data(from_file(f) | from_rba(r)) { }
+            _data(from_file(f) | from_rba(r)) {}
 
     // copy operator
     // lsn_t(const lsn_t & other) : _data(other._data) { }
 
-    lsndata_t data()         const { return _data; }
-    void set (lsndata_t data) {_data = data;}
+    lsndata_t data() const {
+        return _data;
+    }
 
-    bool valid()             const {
-                                    // valid is essentially iff file != 0
+    void set(lsndata_t data) {
+        _data = data;
+    }
+
+    bool valid() const {
+        // valid is essentially iff file != 0
 #if W_DEBUG_LEVEL > 1
-                                    uint64_t  copy_of_data =  _data;
-                                    uint64_t  m =  mask();
-                                    bool first = copy_of_data > m;
-                                    uint64_t  f =
-                                                    to_file(copy_of_data);
-                                    bool second = (f != 0);
-                                    w_assert2(first == second);
+        uint64_t  copy_of_data =  _data;
+        uint64_t  m =  mask();
+        bool first = copy_of_data > m;
+        uint64_t  f =
+                        to_file(copy_of_data);
+        bool second = (f != 0);
+        w_assert2(first == second);
 #endif
-                                   return (_data > mask());
-                            }
+        return (_data > mask());
+    }
 
-    uint32_t hi()   const  { return file(); }
-    uint32_t file() const { return to_file(_data); }
+    uint32_t hi() const {
+        return file();
+    }
 
-    sm_diskaddr_t     lo()   const  { return rba(); }
-    sm_diskaddr_t     rba()  const { return to_rba(_data); }
+    uint32_t file() const {
+        return to_file(_data);
+    }
+
+    sm_diskaddr_t lo() const {
+        return rba();
+    }
+
+    sm_diskaddr_t rba() const {
+        return to_rba(_data);
+    }
 
     // WARNING: non-atomic read-modify-write operations!
-    void copy_rba(const lsn_t &other) {
-                _data = get_file(_data) | get_rba(other._data); }
-    void set_rba(sm_diskaddr_t &other) {
-                _data = get_file(_data) | get_rba(other); }
+    void copy_rba(const lsn_t& other) {
+        _data = get_file(_data) | get_rba(other._data);
+    }
+
+    void set_rba(sm_diskaddr_t& other) {
+        _data = get_file(_data) | get_rba(other);
+    }
 
     // WARNING: non-atomic read-modify-write operations!
-    lsn_t& advance(int amt) { _data += amt; return *this; }
+    lsn_t& advance(int amt) {
+        _data += amt;
+        return *this;
+    }
 
-    lsn_t &operator+=(long delta) { return advance(delta); }
-    lsn_t operator+(long delta) const { return lsn_t(*this).advance(delta); }
+    lsn_t& operator+=(long delta) {
+        return advance(delta);
+    }
 
-    bool operator>(const lsn_t& l) const { return l < *this; }
-    bool operator<(const lsn_t& l) const { return _data < l._data; }
-    bool operator>=(const lsn_t& l) const { return !(*this < l); }
-    bool operator<=(const lsn_t& l) const { return !(*this > l); }
-    bool operator==(const lsn_t& l) const { return _data == l._data; }
-    bool operator!=(const lsn_t& l) const { return !(*this == l); }
+    lsn_t operator+(long delta) const {
+        return lsn_t(*this).advance(delta);
+    }
+
+    bool operator>(const lsn_t& l) const {
+        return l < *this;
+    }
+
+    bool operator<(const lsn_t& l) const {
+        return _data < l._data;
+    }
+
+    bool operator>=(const lsn_t& l) const {
+        return !(*this < l);
+    }
+
+    bool operator<=(const lsn_t& l) const {
+        return !(*this > l);
+    }
+
+    bool operator==(const lsn_t& l) const {
+        return _data == l._data;
+    }
+
+    bool operator!=(const lsn_t& l) const {
+        return !(*this == l);
+    }
 
     std::string str();
 
-    bool is_null() const { return _data == 0; }
-
+    bool is_null() const {
+        return _data == 0;
+    }
 
 /*
  * This is the SM's idea of on-disk and in-structure
@@ -316,39 +369,44 @@ public:
     static const int sm_diskaddr_max;
 
     static const lsn_t null;
+
     static const lsn_t max;
 
     friend std::ostream& operator<<(std::ostream&, const lsn_t&);
 
 private:
-    lsndata_t        _data;
+    lsndata_t _data;
 
     static uint32_t to_file(uint64_t f) {
-                return (uint32_t) (f >> PARTITION_SHIFT); }
+        return (uint32_t)(f >> PARTITION_SHIFT);
+    }
 
     static uint64_t get_file(uint64_t data) {
-                return data &~ mask(); }
+        return data & ~mask();
+    }
 
     static uint64_t from_file(uint32_t data) {
-                return ((uint64_t) data) << PARTITION_SHIFT; }
+        return ((uint64_t)data) << PARTITION_SHIFT;
+    }
 
     static sm_diskaddr_t to_rba(uint64_t r) {
-                return (sm_diskaddr_t) (r & mask()); }
+        return (sm_diskaddr_t)(r & mask());
+    }
 
     static uint64_t get_rba(uint64_t data) {
-                return to_rba(data); }
+        return to_rba(data);
+    }
 
     static uint64_t from_rba(sm_diskaddr_t data) {
-                return to_rba(data); }
+        return to_rba(data);
+    }
 };
 
-inline std::ostream& operator<<(std::ostream& o, const lsn_t& l)
-{
+inline std::ostream& operator<<(std::ostream& o, const lsn_t& l) {
     return o << l.file() << '.' << l.rba();
 }
 
-inline std::istream& operator>>(std::istream& i, lsn_t& l)
-{
+inline std::istream& operator>>(std::istream& i, lsn_t& l) {
     sm_diskaddr_t d;
     char c;
     uint64_t f;
@@ -360,12 +418,12 @@ inline std::istream& operator>>(std::istream& i, lsn_t& l)
 namespace std {
     /// Hash function for lsn_t
     /// http://stackoverflow.com/q/17016175/1268568
-    template<> struct hash<lsn_t>
-    {
+    template<>
+    struct hash<lsn_t> {
         using argument_type = lsn_t;
         using result_type = std::size_t;
-        result_type operator()(argument_type const& a) const
-        {
+
+        result_type operator()(argument_type const& a) const {
             return std::hash<lsndata_t>()(a.data());
         }
     };

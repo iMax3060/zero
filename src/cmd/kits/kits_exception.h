@@ -21,7 +21,6 @@
 #define EXCEPTION2(type, arg1, arg2) \
    type(__FILE__, __LINE__, __PRETTY_FUNCTION__, std::string(arg1, arg2))
 
-
 #define THROW(type) \
    do { \
      assert(false); \
@@ -69,51 +68,38 @@
      } \
    } while (false)
 
-
-class ZappsException : public std::exception
-{
+class ZappsException : public std::exception {
 
 private:
 
-  std::string _message;
+    std::string _message;
 
 public:
-  ZappsException(const char* filename, int line_num, const char* function_name,
-                   std::string const &m) : exception()
-  {
-	  std::stringstream ss;
-      ss << filename << ":" << line_num
-            << "(" << function_name << "): "
-            << m;
-      _message = ss.str();
-  }
-  virtual const char* what() const throw()
-  {
-      return _message.data();
-  }
+    ZappsException(const char* filename, int line_num, const char* function_name,
+                   std::string const& m) : exception() {
+        std::stringstream ss;
+        ss << filename << ":" << line_num
+           << "(" << function_name << "): "
+           << m;
+        _message = ss.str();
+    }
+
+    virtual const char* what() const throw() {
+        return _message.data();
+    }
 };
 
-class QPipeException : public ZappsException
-{
+class QPipeException : public ZappsException {
 public:
-  QPipeException(const char* filename, int line_num, const char* function_name,
-                 std::string const &m) : ZappsException(filename, line_num, function_name, m)
-  {
-
-  }
+    QPipeException(const char* filename, int line_num, const char* function_name,
+                   std::string const& m) : ZappsException(filename, line_num, function_name, m) {}
 };
-
-
-
 
 class ThreadException : public ZappsException {
 public:
-	ThreadException(const char* filename, int line_num, const char* function_name,
-			std::string const &m) : ZappsException(filename, line_num, function_name, m)
-	{
-	}
+    ThreadException(const char* filename, int line_num, const char* function_name,
+                    std::string const& m) : ZappsException(filename, line_num, function_name, m) {}
 };
-
 
 #define DEFINE_EXCEPTION(Name) \
     class Name : public ZappsException { \
@@ -125,14 +111,18 @@ public:
             } \
     }
 
-inline std::string errno_to_str(int err=errno) {
+inline std::string errno_to_str(int err = errno) {
     return strerror(err);
 }
 
 DEFINE_EXCEPTION(Unreachable);
+
 DEFINE_EXCEPTION(BadAlloc);
+
 DEFINE_EXCEPTION(OutOfRange);
+
 DEFINE_EXCEPTION(FileException);
+
 DEFINE_EXCEPTION(BdbException);
 
 #ifdef __GCC

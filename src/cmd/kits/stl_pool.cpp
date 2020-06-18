@@ -33,61 +33,53 @@
 #include "util/stl_pool.h"
 #include "util/trace.h"
 
+Pool::Pool(size_t granularity, size_t size)
+        : m_granularity(granularity),
+          m_size(size),
+          m_used(0),
+          m_overflow(0) {
+    if (m_size > 0) {
+        m_storage = new char[m_size * granularity];
+        m_slots = new void* [m_size];
 
-Pool::Pool( size_t granularity, size_t size ) 
-  : m_granularity( granularity ), m_size( size ), m_used( 0 ), m_overflow( 0 )
-{
-  if( m_size > 0 )
-    {
-      m_storage = new char[m_size*granularity];
-      m_slots = new void*[m_size];
-
-      for( size_t i = 0; i < m_size; ++i )
-        m_slots[i] = reinterpret_cast<void*>( m_storage.get() + i*granularity );
+        for (size_t i = 0; i < m_size; ++i) {
+            m_slots[i] = reinterpret_cast<void*>( m_storage.get() + i * granularity );
+        }
     }
 }
 
-Pool::~Pool()
-{
-  // IP: give it 3 secs to clean
-  for (int i=0; i<3; ++i) {
-    if ((m_used == 0) && (m_overflow == 0)) {
-      break;
+Pool::~Pool() {
+    // IP: give it 3 secs to clean
+    for (int i = 0; i < 3; ++i) {
+        if ((m_used == 0) && (m_overflow == 0)) {
+            break;
+        }
+        std::cout << "~" << std::endl;
+        sleep(1);
     }
-    std::cout << "~" << std::endl;
-    sleep(1);
-  }
-  assert( m_used == 0 && m_overflow == 0 && "can't destroy a pool with outstanding allocations" );
-  //zstd::cout << m_overflow << std::endl;
+    assert(m_used == 0 && m_overflow == 0 && "can't destroy a pool with outstanding allocations");
+    //zstd::cout << m_overflow << std::endl;
 }
-	
-void* Pool::Allocate()
-{
-  if( m_used < m_size )
-    {
-      return m_slots[m_used++];
-    }
-  else
-    {
-      ++m_overflow;
-      TRACE( TRACE_TRX_FLOW, "Overflow (%d)\n", m_overflow);
-      return reinterpret_cast<void*>( new char[m_granularity] );
+
+void* Pool::Allocate() {
+    if (m_used < m_size) {
+        return m_slots[m_used++];
+    } else {
+        ++m_overflow;
+        TRACE(TRACE_TRX_FLOW, "Overflow (%d)\n", m_overflow);
+        return reinterpret_cast<void*>( new char[m_granularity] );
     }
 }
 
-void Pool::Deallocate( void* block )
-{
-  assert( block && "null pointer argument" );
-  if( IsFromPool( block ) )
-    {
-      assert( m_used > 0 && "internal error" );
-      m_slots[--m_used] = block;
-    }
-  else
-    {
-      assert( m_overflow > 0 && "internal error" );
-      delete[] reinterpret_cast<char*>( block );
-      --m_overflow;
+void Pool::Deallocate(void* block) {
+    assert(block && "null pointer argument");
+    if (IsFromPool(block)) {
+        assert(m_used > 0 && "internal error");
+        m_slots[--m_used] = block;
+    } else {
+        assert(m_overflow > 0 && "internal error");
+        delete[] reinterpret_cast<char*>( block );
+        --m_overflow;
     }
 }
 

@@ -71,8 +71,7 @@ class xct_t;
 #include "generic_page.h" // logrec size == 3 * page size
 #include "allocator.h"
 
-struct baseLogHeader
-{
+struct baseLogHeader {
     uint16_t _len;  // length of the log record
     u_char _type; // kind_t (included from logtype_gen.h)
     u_char _flags;
@@ -80,16 +79,16 @@ struct baseLogHeader
 
     // Was _pid; broke down to save 2 bytes:
     // May be used ONLY in set_pid() and pid()
-    PageID             _pid; // 4 bytes
+    PageID _pid; // 4 bytes
     /* 4 + 4=8 */
 
 
     // CS TODO: temporary placeholder for old vid
     uint16_t _fill_vid;
 
-    uint16_t             _page_tag; // tag_t 2 bytes
+    uint16_t _page_tag; // tag_t 2 bytes
     /* 8 + 4= 12 */
-    StoreID              _stid; // 4 bytes
+    StoreID _stid; // 4 bytes
     /* 12 + 4= 16*/
 
 
@@ -111,19 +110,18 @@ struct baseLogHeader
      * The page_prev_lsn is for the "primary" page.
      * \ingroup SPR
      */
-    lsn_t               _page_prv;
+    lsn_t _page_prv;
+
     /* 16+8 = 24 */
 
     bool is_valid() const;
 };
 
-struct xidChainLogHeader
-{
+struct xidChainLogHeader {
 
-
-    tid_t               _xid;      // NOT IN SINGLE-LOG SYSTEM TRANSACTION!  (xct)tid of this xct
+    tid_t _xid;      // NOT IN SINGLE-LOG SYSTEM TRANSACTION!  (xct)tid of this xct
     /* 24+8 = 32 */
-    lsn_t               _xid_prv;     // NOT IN SINGLE-LOG SYSTEM TRANSACTION! (xct)previous logrec of this xct
+    lsn_t _xid_prv;     // NOT IN SINGLE-LOG SYSTEM TRANSACTION! (xct)previous logrec of this xct
     /* 32+8 = 40 */
 };
 
@@ -149,88 +147,98 @@ public:
     friend class baseLogHeader;
 
     enum kind_t {
-	t_comment = 0,
-	t_compensate = 1,
-	t_skip = 2,
-	t_chkpt_begin = 3,
-	// t_chkpt_bf_tab = 4,
-	// t_chkpt_xct_tab = 5,
-	// t_chkpt_xct_lock = 6,
+        t_comment = 0,
+        t_compensate = 1,
+        t_skip = 2,
+        t_chkpt_begin = 3,
+        // t_chkpt_bf_tab = 4,
+        // t_chkpt_xct_tab = 5,
+        // t_chkpt_xct_lock = 6,
         t_warmup_done = 7,
         t_alloc_format = 8,
         t_evict_page = 9,
-	t_add_backup = 10,
-	t_xct_abort = 11,
+        t_add_backup = 10,
+        t_xct_abort = 11,
         t_fetch_page = 12,
-	t_xct_end = 13,
-	// t_xct_end_group = 14,
-	t_xct_latency_dump = 15,
-	t_alloc_page = 16,
-	t_dealloc_page = 17,
-	t_create_store = 18,
-	t_append_extent = 19,
-	t_loganalysis_begin = 20,
-	t_loganalysis_end = 21,
-	t_redo_done = 22,
-	t_undo_done = 23,
-	t_restore_begin = 24,
-	t_restore_segment = 25,
-	t_restore_end = 26,
-	// t_page_set_to_be_deleted = 27,
+        t_xct_end = 13,
+        // t_xct_end_group = 14,
+        t_xct_latency_dump = 15,
+        t_alloc_page = 16,
+        t_dealloc_page = 17,
+        t_create_store = 18,
+        t_append_extent = 19,
+        t_loganalysis_begin = 20,
+        t_loganalysis_end = 21,
+        t_redo_done = 22,
+        t_undo_done = 23,
+        t_restore_begin = 24,
+        t_restore_segment = 25,
+        t_restore_end = 26,
+        // t_page_set_to_be_deleted = 27,
         t_stnode_format = 27,
-	t_page_img_format = 28,
-	t_update_emlsn = 29,
-	t_btree_norec_alloc = 30,
-	t_btree_insert = 31,
-	t_btree_insert_nonghost = 32,
-	t_btree_update = 33,
-	t_btree_overwrite = 34,
-	t_btree_ghost_mark = 35,
-	t_btree_ghost_reclaim = 36,
-	t_btree_ghost_reserve = 37,
-	t_btree_foster_adopt = 38,
-	// t_btree_foster_merge = 39,
-	// t_btree_foster_rebalance = 40,
-	// t_btree_foster_rebalance_norec = 41,
-	// t_btree_foster_deadopt = 42,
-	t_btree_split = 43,
-	t_btree_compress_page = 44,
-	t_tick_sec = 45,
-	t_tick_msec = 46,
-	t_benchmark_start = 47,
-	t_page_write = 48,
-	t_page_read = 49,
-	t_max_logrec = 50
+        t_page_img_format = 28,
+        t_update_emlsn = 29,
+        t_btree_norec_alloc = 30,
+        t_btree_insert = 31,
+        t_btree_insert_nonghost = 32,
+        t_btree_update = 33,
+        t_btree_overwrite = 34,
+        t_btree_ghost_mark = 35,
+        t_btree_ghost_reclaim = 36,
+        t_btree_ghost_reserve = 37,
+        t_btree_foster_adopt = 38,
+        // t_btree_foster_merge = 39,
+        // t_btree_foster_rebalance = 40,
+        // t_btree_foster_rebalance_norec = 41,
+        // t_btree_foster_deadopt = 42,
+        t_btree_split = 43,
+        t_btree_compress_page = 44,
+        t_tick_sec = 45,
+        t_tick_msec = 46,
+        t_benchmark_start = 47,
+        t_page_write = 48,
+        t_page_read = 49,
+        t_max_logrec = 50
     };
 
-    bool             is_page_update() const;
-    bool             is_redo() const;
-    bool             is_skip() const;
-    bool             is_undo() const;
-    bool             is_cpsn() const;
-    bool             is_multi_page() const;
-    bool             is_root_page() const;
-    bool             is_logical() const;
-    bool             is_system() const;
-    bool             is_single_sys_xct() const;
-    bool             valid_header(const lsn_t & lsn_ck = lsn_t::null) const;
-    smsize_t         header_size() const;
+    bool is_page_update() const;
 
-    template <class PagePtr>
-    void             redo(PagePtr);
+    bool is_redo() const;
+
+    bool is_skip() const;
+
+    bool is_undo() const;
+
+    bool is_cpsn() const;
+
+    bool is_multi_page() const;
+
+    bool is_root_page() const;
+
+    bool is_logical() const;
+
+    bool is_system() const;
+
+    bool is_single_sys_xct() const;
+
+    bool valid_header(const lsn_t& lsn_ck = lsn_t::null) const;
+
+    smsize_t header_size() const;
+
+    template<class PagePtr>
+    void redo(PagePtr);
 
     static constexpr u_char get_logrec_cat(kind_t type);
 
     void redo();
 
-    template <class PagePtr>
-    void             undo(PagePtr);
+    template<class PagePtr>
+    void undo(PagePtr);
 
     void init_header(kind_t);
 
-    template <class PagePtr>
-    void init_page_info(const PagePtr p)
-    {
+    template<class PagePtr>
+    void init_page_info(const PagePtr p) {
         header._page_tag = p->tag();
         header._pid = p->pid();
         header._stid = p->store();
@@ -251,78 +259,109 @@ public:
         max_data_sz = max_sz - hdr_non_ssx_sz - sizeof(lsn_t)
     };
 
-       static_assert(hdr_non_ssx_sz == 40, "Wrong logrec header size");
-       static_assert(hdr_single_sys_xct_sz == 40 - 16, "Wrong logrec header size");
+    static_assert(hdr_non_ssx_sz == 40, "Wrong logrec header size");
+    static_assert(hdr_single_sys_xct_sz == 40 - 16, "Wrong logrec header size");
 
-       tid_t   tid() const;
-       StoreID        stid() const;
-       PageID         pid() const;
-       PageID         pid2() const;
+    tid_t tid() const;
+
+    StoreID stid() const;
+
+    PageID pid() const;
+
+    PageID pid2() const;
 
 public:
-    uint16_t              tag() const;
-    smsize_t             length() const;
-    const lsn_t&         undo_nxt() const;
+    uint16_t tag() const;
+
+    smsize_t length() const;
+
+    const lsn_t& undo_nxt() const;
+
     /**
      * Returns the LSN of previous log that modified this page.
      * \ingroup SPR
      */
-    const lsn_t&         page_prev_lsn() const;
-    const lsn_t&         page2_prev_lsn() const;
+    const lsn_t& page_prev_lsn() const;
+
+    const lsn_t& page2_prev_lsn() const;
+
     /**
      * Sets the LSN of previous log that modified this page.
      * \ingroup SPR
      */
-    void                 set_page_prev_lsn(const lsn_t &lsn);
-    const lsn_t&         xid_prev() const;
-    void                 set_xid_prev(const lsn_t &lsn);
-    void                 set_undo_nxt(const lsn_t &lsn);
-    void                 set_tid(tid_t tid);
-    void                 set_clr(const lsn_t& c);
-    void                 set_root_page();
-    void                 set_pid(const PageID& p);
-    kind_t               type() const;
-    const char*          type_str() const
-    {
+    void set_page_prev_lsn(const lsn_t& lsn);
+
+    const lsn_t& xid_prev() const;
+
+    void set_xid_prev(const lsn_t& lsn);
+
+    void set_undo_nxt(const lsn_t& lsn);
+
+    void set_tid(tid_t tid);
+
+    void set_clr(const lsn_t& c);
+
+    void set_root_page();
+
+    void set_pid(const PageID& p);
+
+    kind_t type() const;
+
+    const char* type_str() const {
         return get_type_str(type());
     }
-    static const char*   get_type_str(kind_t);
-    const char*          cat_str() const;
-    const char*          data() const;
-    char*                data();
-    const char*          data_ssx() const;
-    char*                data_ssx();
+
+    static const char* get_type_str(kind_t);
+
+    const char* cat_str() const;
+
+    const char* data() const;
+
+    char* data();
+
+    const char* data_ssx() const;
+
+    char* data_ssx();
+
     /** Returns the log record data as a multi-page SSX log. */
-    multi_page_log_t*           data_ssx_multi();
+    multi_page_log_t* data_ssx_multi();
+
     /** Const version */
-    const multi_page_log_t*     data_ssx_multi() const;
-    const lsn_t&         lsn_ck() const {  return *_lsn_ck(); }
-    const lsn_t&         lsn() const {  return *_lsn_ck(); }
-    const lsn_t          get_lsn_ck() const {
-                                lsn_t    tmp = *_lsn_ck();
-                                return tmp;
-                            }
-    void                 set_lsn_ck(const lsn_t &lsn_ck) {
-                                // put lsn in last bytes of data
-                                lsn_t& where = *_lsn_ck();
-                                where = lsn_ck;
-                            }
-    void                 corrupt();
+    const multi_page_log_t* data_ssx_multi() const;
+
+    const lsn_t& lsn_ck() const {
+        return *_lsn_ck();
+    }
+
+    const lsn_t& lsn() const {
+        return *_lsn_ck();
+    }
+
+    const lsn_t get_lsn_ck() const {
+        lsn_t tmp = *_lsn_ck();
+        return tmp;
+    }
+
+    void set_lsn_ck(const lsn_t& lsn_ck) {
+        // put lsn in last bytes of data
+        lsn_t& where = *_lsn_ck();
+        where = lsn_ck;
+    }
+
+    void corrupt();
 
     void remove_info_for_pid(PageID pid);
 
     // Tells whether this log record restores a full page image, meaning
     // that the previous history is not needed during log replay.
-    bool has_page_img(PageID page_id)
-    {
+    bool has_page_img(PageID page_id) {
         return
-        // CS TODO: I think the condition for norec_alloc should be == and not !=
-            (type() == logrec_t::t_btree_norec_alloc && page_id != pid())
-            || (type() == logrec_t::t_btree_split && page_id == pid())
-            || (type() == logrec_t::t_page_img_format)
-            || (type() == logrec_t::t_stnode_format)
-            || (type() == logrec_t::t_alloc_format)
-            ;
+            // CS TODO: I think the condition for norec_alloc should be == and not !=
+                (type() == logrec_t::t_btree_norec_alloc && page_id != pid())
+                || (type() == logrec_t::t_btree_split && page_id == pid())
+                || (type() == logrec_t::t_page_img_format)
+                || (type() == logrec_t::t_stnode_format)
+                || (type() == logrec_t::t_alloc_format);
     }
 
     friend ostream& operator<<(ostream&, logrec_t&);
@@ -331,35 +370,35 @@ protected:
 
     enum category_t {
         /** should not happen. */
-        t_bad_cat   = 0x00,
+        t_bad_cat = 0x00,
         /** System log record: not transaction- or page-related; no undo/redo */
-        t_system    = 0x01,
+        t_system = 0x01,
         /** log with UNDO action? */
-        t_undo      = 0x02,
+        t_undo = 0x02,
         /** log with REDO action? */
-        t_redo      = 0x04,
+        t_redo = 0x04,
         /** log for multi pages? */
-        t_multi     = 0x08,
+        t_multi = 0x08,
         /**
          * is the UNDO logical? If so, do not fix the page for undo.
          * Irrelevant if not an undoable log record.
          */
-        t_logical   = 0x10,
+        t_logical = 0x10,
 
         /** log by system transaction which is fused with begin/commit record. */
-        t_single_sys_xct    = 0x80
+        t_single_sys_xct = 0x80
     };
 
     enum flag_t {
         // If this logrec is a CLR
-        t_cpsn          = 0x01,
+        t_cpsn = 0x01,
         // If this logrec refers to a root page (in a general sense, a root is
         // any page which cannot be recovered by SPR because no other page
         // points to it
-        t_root_page     = 0x02
+        t_root_page = 0x02
     };
 
-    u_char             cat() const;
+    u_char cat() const;
 
     baseLogHeader header;
 
@@ -372,18 +411,18 @@ protected:
      * Always use data_ssx() to get the pointer because it starts
      * from 16 bytes ahead. See comments about single-log system transaction.
     */
-    char            _data[max_sz - sizeof(baseLogHeader) - sizeof(xidChainLogHeader)];
-
+    char _data[max_sz - sizeof(baseLogHeader) - sizeof(xidChainLogHeader)];
 
     // The last sizeof(lsn_t) bytes of data are used for
     // recording the lsn.
     // Should always be aligned to 8 bytes.
-    lsn_t*            _lsn_ck() {
+    lsn_t* _lsn_ck() {
         w_assert3(alignon(header._len, 8));
         char* this_ptr = reinterpret_cast<char*>(this);
         return reinterpret_cast<lsn_t*>(this_ptr + header._len - sizeof(lsn_t));
     }
-    const lsn_t*            _lsn_ck() const {
+
+    const lsn_t* _lsn_ck() const {
         w_assert3(alignon(header._len, 8));
         const char* this_ptr = reinterpret_cast<const char*>(this);
         return reinterpret_cast<const lsn_t*>(this_ptr + header._len - sizeof(lsn_t));
@@ -392,15 +431,17 @@ protected:
 public:
     // overloaded new/delete operators for tailored memory management
     void* operator new(size_t);
+
     void operator delete(void*, size_t);
 
     // CS: apparently we have to define placement new as well if the standard
     // new is overloaded
-    void* operator new(size_t, void* p) { return p; }
+    void* operator new(size_t, void* p) {
+        return p;
+    }
 };
 
-inline bool baseLogHeader::is_valid() const
-{
+inline bool baseLogHeader::is_valid() const {
     return (_len >= sizeof(baseLogHeader)
             && _type < logrec_t::t_max_logrec
             && _len <= sizeof(logrec_t));
@@ -424,37 +465,36 @@ struct multi_page_log_t {
      * _page_prv for another page touched by the operation.
      * \ingroup SPR
      */
-    lsn_t       _page2_prv; // +8
+    lsn_t _page2_prv; // +8
 
     /** Page ID of another page touched by the operation. */
-    PageID     _page2_pid; // +4
+    PageID _page2_pid; // +4
 
     /** for alignment only. */
-    uint32_t    _fill4;    // +4.
+    uint32_t _fill4;    // +4.
 
-    multi_page_log_t(PageID page2_pid) : _page2_prv(lsn_t::null), _page2_pid(page2_pid) {
-    }
+    multi_page_log_t(PageID page2_pid) : _page2_prv(lsn_t::null),
+                                         _page2_pid(page2_pid) {}
 };
 
 // for single-log system transaction, we use tid/_xid_prev as data area!
-inline const char*  logrec_t::data() const
-{
+inline const char* logrec_t::data() const {
     return _data;
 }
-inline char*  logrec_t::data()
-{
+
+inline char* logrec_t::data() {
     return _data;
 }
-inline const char*  logrec_t::data_ssx() const
-{
+
+inline const char* logrec_t::data_ssx() const {
     return _data - sizeof(xidChainLogHeader);
 }
-inline char*  logrec_t::data_ssx()
-{
+
+inline char* logrec_t::data_ssx() {
     return _data - sizeof(xidChainLogHeader);
 }
-inline smsize_t logrec_t::header_size() const
-{
+
+inline smsize_t logrec_t::header_size() const {
     if (is_single_sys_xct()) {
         return hdr_single_sys_xct_sz;
     } else {
@@ -463,58 +503,51 @@ inline smsize_t logrec_t::header_size() const
 }
 
 inline PageID
-logrec_t::pid() const
-{
+logrec_t::pid() const {
     return header._pid;
 }
 
 inline StoreID
-logrec_t::stid() const
-{
+logrec_t::stid() const {
     return header._stid;
 }
 
-inline PageID logrec_t::pid2() const
-{
-    if (!is_multi_page()) { return 0; }
+inline PageID logrec_t::pid2() const {
+    if (!is_multi_page()) {
+        return 0;
+    }
 
     const multi_page_log_t* multi_log = reinterpret_cast<const multi_page_log_t*> (data_ssx());
     return multi_log->_page2_pid;
 }
 
 inline void
-logrec_t::set_pid(const PageID& p)
-{
+logrec_t::set_pid(const PageID& p) {
     header._pid = p;
 }
 
 inline void
-logrec_t::set_tid(tid_t tid)
-{
+logrec_t::set_tid(tid_t tid) {
     xidInfo._xid = tid;
 }
 
 inline void
-logrec_t::set_undo_nxt(const lsn_t& undo_nxt)
-{
+logrec_t::set_undo_nxt(const lsn_t& undo_nxt) {
     xidInfo._xid_prv = undo_nxt;
 }
 
 inline uint16_t
-logrec_t::tag() const
-{
+logrec_t::tag() const {
     return header._page_tag;
 }
 
 inline smsize_t
-logrec_t::length() const
-{
+logrec_t::length() const {
     return header._len;
 }
 
 inline const lsn_t&
-logrec_t::undo_nxt() const
-{
+logrec_t::undo_nxt() const {
     // To shrink log records,
     // we've taken out _undo_nxt and
     // overloaded _xid_prev.
@@ -523,61 +556,56 @@ logrec_t::undo_nxt() const
 }
 
 inline const lsn_t&
-logrec_t::page_prev_lsn() const
-{
+logrec_t::page_prev_lsn() const {
     // What do we need to assert in order to make sure there IS a page_prv?
     return header._page_prv;
 }
 
 inline const lsn_t&
-logrec_t::page2_prev_lsn() const
-{
-    if (!is_multi_page()) { return lsn_t::null; }
+logrec_t::page2_prev_lsn() const {
+    if (!is_multi_page()) {
+        return lsn_t::null;
+    }
     return data_ssx_multi()->_page2_prv;
 }
+
 inline void
-logrec_t::set_page_prev_lsn(const lsn_t &lsn)
-{
+logrec_t::set_page_prev_lsn(const lsn_t& lsn) {
     // What do we need to assert in order to make sure there IS a page_prv?
     header._page_prv = lsn;
 }
 
-inline tid_t logrec_t::tid() const
-{
+inline tid_t logrec_t::tid() const {
     if (is_single_sys_xct()) {
-        return tid_t {0};
+        return tid_t{0};
     }
     return xidInfo._xid;
 }
 
 inline const lsn_t&
-logrec_t::xid_prev() const
-{
+logrec_t::xid_prev() const {
     w_assert1(!is_single_sys_xct()); // otherwise this part is in data area!
     return xidInfo._xid_prv;
 }
+
 inline void
-logrec_t::set_xid_prev(const lsn_t &lsn)
-{
+logrec_t::set_xid_prev(const lsn_t& lsn) {
     w_assert1(!is_single_sys_xct()); // otherwise this part is in data area!
     xidInfo._xid_prv = lsn;
 }
 
 inline logrec_t::kind_t
-logrec_t::type() const
-{
-    return (kind_t) header._type;
+logrec_t::type() const {
+    return (kind_t)header._type;
 }
 
 inline u_char
-logrec_t::cat() const
-{
+logrec_t::cat() const {
     return get_logrec_cat(static_cast<logrec_t::kind_t>(header._type));
 }
 
 inline void
-logrec_t::set_clr(const lsn_t& c)
-{
+logrec_t::set_clr(const lsn_t& c) {
     w_assert0(!is_single_sys_xct()); // CLR shouldn't be output in this case
     header._flags |= t_cpsn;
 
@@ -589,20 +617,17 @@ logrec_t::set_clr(const lsn_t& c)
 }
 
 inline void
-logrec_t::set_root_page()
-{
+logrec_t::set_root_page() {
     header._flags |= t_root_page;
 }
 
 inline bool
-logrec_t::is_system() const
-{
+logrec_t::is_system() const {
     return (cat() & t_system) != 0;
 }
 
 inline bool
-logrec_t::is_redo() const
-{
+logrec_t::is_redo() const {
     return (cat() & t_redo) != 0;
 }
 
@@ -610,34 +635,28 @@ inline bool logrec_t::is_multi_page() const {
     return (cat() & t_multi) != 0;
 }
 
-
 inline bool
-logrec_t::is_skip() const
-{
+logrec_t::is_skip() const {
     return type() == t_skip;
 }
 
 inline bool
-logrec_t::is_undo() const
-{
+logrec_t::is_undo() const {
     return (cat() & t_undo) != 0;
 }
 
 inline bool
-logrec_t::is_cpsn() const
-{
+logrec_t::is_cpsn() const {
     return (header._flags & t_cpsn) != 0;
 }
 
 inline bool
-logrec_t::is_root_page() const
-{
+logrec_t::is_root_page() const {
     return (header._flags & t_root_page) != 0;
 }
 
 inline bool
-logrec_t::is_page_update() const
-{
+logrec_t::is_page_update() const {
     // CS: I have no idea why a compensation log record is not considered a
     // page update. In fact every check of in_page_update() is or'ed with
     // is_cpsn()
@@ -645,14 +664,12 @@ logrec_t::is_page_update() const
 }
 
 inline bool
-logrec_t::is_logical() const
-{
+logrec_t::is_logical() const {
     return (cat() & t_logical) != 0;
 }
 
 inline bool
-logrec_t::is_single_sys_xct() const
-{
+logrec_t::is_single_sys_xct() const {
     return (cat() & t_single_sys_xct) != 0;
 }
 
@@ -660,60 +677,103 @@ inline multi_page_log_t* logrec_t::data_ssx_multi() {
     w_assert1(is_multi_page());
     return reinterpret_cast<multi_page_log_t*>(data_ssx());
 }
+
 inline const multi_page_log_t* logrec_t::data_ssx_multi() const {
     w_assert1(is_multi_page());
     return reinterpret_cast<const multi_page_log_t*>(data_ssx());
 }
 
-constexpr u_char logrec_t::get_logrec_cat(kind_t type)
-{
+constexpr u_char logrec_t::get_logrec_cat(kind_t type) {
     switch (type) {
-	case t_comment : return t_system;
-	case t_tick_sec : return t_system;
-	case t_tick_msec : return t_system;
-	case t_benchmark_start : return t_system;
-	case t_page_write : return t_system;
-	case t_page_read : return t_system;
-	case t_skip : return t_system;
-	case t_chkpt_begin : return t_system;
-	case t_loganalysis_begin : return t_system;
-	case t_loganalysis_end : return t_system;
-	case t_redo_done : return t_system;
-	case t_undo_done : return t_system;
-        case t_warmup_done: return t_system;
-	case t_restore_begin : return t_system;
-	case t_restore_segment : return t_system;
-	case t_restore_end : return t_system;
-	case t_xct_latency_dump : return t_system;
-	case t_add_backup : return t_system;
-	case t_evict_page : return t_system;
-	case t_fetch_page : return t_system;
+        case t_comment :
+            return t_system;
+        case t_tick_sec :
+            return t_system;
+        case t_tick_msec :
+            return t_system;
+        case t_benchmark_start :
+            return t_system;
+        case t_page_write :
+            return t_system;
+        case t_page_read :
+            return t_system;
+        case t_skip :
+            return t_system;
+        case t_chkpt_begin :
+            return t_system;
+        case t_loganalysis_begin :
+            return t_system;
+        case t_loganalysis_end :
+            return t_system;
+        case t_redo_done :
+            return t_system;
+        case t_undo_done :
+            return t_system;
+        case t_warmup_done:
+            return t_system;
+        case t_restore_begin :
+            return t_system;
+        case t_restore_segment :
+            return t_system;
+        case t_restore_end :
+            return t_system;
+        case t_xct_latency_dump :
+            return t_system;
+        case t_add_backup :
+            return t_system;
+        case t_evict_page :
+            return t_system;
+        case t_fetch_page :
+            return t_system;
 
-	case t_compensate : return t_logical;
-	case t_xct_abort : return t_logical;
-	case t_xct_end : return t_logical;
+        case t_compensate :
+            return t_logical;
+        case t_xct_abort :
+            return t_logical;
+        case t_xct_end :
+            return t_logical;
 
-	case t_alloc_page : return t_redo|t_single_sys_xct;
-	case t_stnode_format : return t_redo|t_single_sys_xct;
-	case t_alloc_format : return t_redo|t_single_sys_xct;
-	case t_dealloc_page : return t_redo|t_single_sys_xct;
-	case t_create_store : return t_redo|t_single_sys_xct;
-	case t_append_extent : return t_redo|t_single_sys_xct;
-	case t_page_img_format : return t_redo | t_undo;
-	case t_update_emlsn : return t_redo|t_single_sys_xct;
-	case t_btree_norec_alloc : return t_redo|t_multi|t_single_sys_xct;
-	case t_btree_insert : return t_redo|t_undo|t_logical;
-	case t_btree_insert_nonghost : return t_redo|t_undo|t_logical;
-	case t_btree_update : return t_redo|t_undo|t_logical;
-	case t_btree_overwrite : return t_redo|t_undo|t_logical;
-	case t_btree_ghost_mark : return t_redo|t_undo|t_logical;
-	case t_btree_ghost_reclaim : return t_redo|t_single_sys_xct;
-	case t_btree_ghost_reserve : return t_redo|t_single_sys_xct;
-	case t_btree_foster_adopt : return t_redo|t_multi|t_single_sys_xct;
-	case t_btree_split : return t_redo|t_multi|t_single_sys_xct;
-	case t_btree_compress_page : return t_redo|t_single_sys_xct;
+        case t_alloc_page :
+            return t_redo | t_single_sys_xct;
+        case t_stnode_format :
+            return t_redo | t_single_sys_xct;
+        case t_alloc_format :
+            return t_redo | t_single_sys_xct;
+        case t_dealloc_page :
+            return t_redo | t_single_sys_xct;
+        case t_create_store :
+            return t_redo | t_single_sys_xct;
+        case t_append_extent :
+            return t_redo | t_single_sys_xct;
+        case t_page_img_format :
+            return t_redo | t_undo;
+        case t_update_emlsn :
+            return t_redo | t_single_sys_xct;
+        case t_btree_norec_alloc :
+            return t_redo | t_multi | t_single_sys_xct;
+        case t_btree_insert :
+            return t_redo | t_undo | t_logical;
+        case t_btree_insert_nonghost :
+            return t_redo | t_undo | t_logical;
+        case t_btree_update :
+            return t_redo | t_undo | t_logical;
+        case t_btree_overwrite :
+            return t_redo | t_undo | t_logical;
+        case t_btree_ghost_mark :
+            return t_redo | t_undo | t_logical;
+        case t_btree_ghost_reclaim :
+            return t_redo | t_single_sys_xct;
+        case t_btree_ghost_reserve :
+            return t_redo | t_single_sys_xct;
+        case t_btree_foster_adopt :
+            return t_redo | t_multi | t_single_sys_xct;
+        case t_btree_split :
+            return t_redo | t_multi | t_single_sys_xct;
+        case t_btree_compress_page :
+            return t_redo | t_single_sys_xct;
 
-        default: return t_bad_cat;
+        default:
+            return t_bad_cat;
     }
 }
 
@@ -740,7 +800,7 @@ public:
         }
 #else
 #define LOGREC_ACCOUNTING_PRINT
-#define LOGREC_ACCOUNT(x,y)
+#define LOGREC_ACCOUNT(x, y)
 #define LOGREC_ACCOUNT_END_XCT(y)
 #endif
 

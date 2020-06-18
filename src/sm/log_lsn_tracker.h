@@ -24,6 +24,7 @@
 class PoorMansOldestLsnTracker {
 public:
     PoorMansOldestLsnTracker(uint32_t buckets);
+
     ~PoorMansOldestLsnTracker();
 
     /**
@@ -31,12 +32,14 @@ public:
      * @param[in] xct_id Some integer to identify the transaction. Probably pointer value
      * of xct_t. Anything works as far as it's well random.
      */
-    void                enter(uint64_t xct_id, const lsn_t &curr_lsn);
+    void enter(uint64_t xct_id, const lsn_t& curr_lsn);
+
     /**
      * Remove the LSN for the transaction. This must be called after enter().
      * No barrier taken. others will eventually see and being conservative is fine.
      */
-    void                leave(uint64_t xct_id);
+    void leave(uint64_t xct_id);
+
     /**
      * Scan all buckets and return the oldest LSN. It might return a \e conservative value
      * because the observed transaction might go away while scanning. Regarding
@@ -47,13 +50,19 @@ public:
      * and take a bucket we already scan, it's surely more than curr_lsn!
      * @return Oldest active LSN. If there is no active transaction, curr_lsn.
      */
-    lsn_t               get_oldest_active_lsn(lsn_t curr_lsn);
+    lsn_t get_oldest_active_lsn(lsn_t curr_lsn);
+
     /** Returns the value of previous get_oldest_active_lsn() call. This is quick. */
-    lsn_t               get_oldest_active_lsn_cache() const { return _cache; }
+    lsn_t get_oldest_active_lsn_cache() const {
+        return _cache;
+    }
+
 private:
-    uint32_t            _buckets;
-    lsndata_t*          _low_water_marks;
-    lsn_t               _cache;
+    uint32_t _buckets;
+
+    lsndata_t* _low_water_marks;
+
+    lsn_t _cache;
 };
 
 #endif // __LOG_LSN_TRACKER_H

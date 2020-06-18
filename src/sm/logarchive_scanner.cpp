@@ -13,32 +13,33 @@ const size_t IO_ALIGN = 512;
 
 thread_local std::vector<MergeInput> ArchiveScan::_mergeInputVector;
 
-bool mergeInputCmpGt(const MergeInput& a, const MergeInput& b)
-{
-    if (a.keyPID != b.keyPID) { return a.keyPID > b.keyPID; }
+bool mergeInputCmpGt(const MergeInput& a, const MergeInput& b) {
+    if (a.keyPID != b.keyPID) {
+        return a.keyPID > b.keyPID;
+    }
     return a.keyLSN > b.keyLSN;
 }
 
 ArchiveScan::ArchiveScan(std::shared_ptr<ArchiveIndex> archIndex)
-    : archIndex(archIndex), prevLSN(lsn_t::null), prevPID(0), singlePage(false)
-{
+        : archIndex(archIndex),
+          prevLSN(lsn_t::null),
+          prevPID(0),
+          singlePage(false) {
     clear();
 }
 
-void ArchiveScan::open(PageID startPID, PageID endPID, lsn_t startLSN, lsn_t endLSN)
-{
+void ArchiveScan::open(PageID startPID, PageID endPID, lsn_t startLSN, lsn_t endLSN) {
     w_assert0(archIndex);
     clear();
     auto& inputs = _mergeInputVector;
 
     archIndex->probe(inputs, startPID, endPID, startLSN, endLSN);
 
-    singlePage = (endPID == startPID+1);
+    singlePage = (endPID == startPID + 1);
 
     heapBegin = inputs.begin();
     auto it = inputs.rbegin();
-    while (it != inputs.rend())
-    {
+    while (it != inputs.rend()) {
         if (it->open(startPID)) {
             auto lr = it->logrec();
             it++;
@@ -48,8 +49,7 @@ void ArchiveScan::open(PageID startPID, PageID endPID, lsn_t startLSN, lsn_t end
                 ADD_TSTAT(la_img_trimmed, heapBegin - inputs.begin());
                 break;
             }
-        }
-        else {
+        } else {
             std::advance(it, 1);
             inputs.erase(it.base());
         }
@@ -59,13 +59,11 @@ void ArchiveScan::open(PageID startPID, PageID endPID, lsn_t startLSN, lsn_t end
     std::make_heap(heapBegin, heapEnd, mergeInputCmpGt);
 }
 
-bool ArchiveScan::finished()
-{
+bool ArchiveScan::finished() {
     return heapBegin == heapEnd;
 }
 
-void ArchiveScan::clear()
-{
+void ArchiveScan::clear() {
     auto& inputs = _mergeInputVector;
     for (auto it : inputs) {
         archIndex->closeScan(it.runFile->runid);
@@ -77,21 +75,20 @@ void ArchiveScan::clear()
     prevPID = 0;
 }
 
-bool ArchiveScan::next(logrec_t*& lr)
-{
-    if (finished()) { return false; }
+bool ArchiveScan::next(logrec_t*& lr) {
+    if (finished()) {
+        return false;
+    }
 
     if (singlePage) {
         if (!heapBegin->finished()) {
             lr = heapBegin->logrec();
             heapBegin->next();
-        }
-        else {
+        } else {
             heapBegin++;
             return next(lr);
         }
-    }
-    else {
+    } else {
         std::pop_heap(heapBegin, heapEnd, mergeInputCmpGt);
         auto top = std::prev(heapEnd);
         if (!top->finished()) {
@@ -99,40 +96,35 @@ bool ArchiveScan::next(logrec_t*& lr)
             w_assert1(lr->lsn() == top->keyLSN && lr->pid() == top->keyPID);
             top->next();
             std::push_heap(heapBegin, heapEnd, mergeInputCmpGt);
-        }
-        else {
+        } else {
             heapEnd--;
             return next(lr);
         }
     }
 
     w_assert1(prevLSN.is_null() || lr->pid() > prevPID ||
-            lr->has_page_img(lr->pid()) || lr->page_prev_lsn() == prevLSN);
+              lr->has_page_img(lr->pid()) || lr->page_prev_lsn() == prevLSN);
     prevLSN = lr->lsn();
     prevPID = lr->pid();
 
     return true;
 }
 
-ArchiveScan::~ArchiveScan()
-{
+ArchiveScan::~ArchiveScan() {
     clear();
 }
 
-void ArchiveScan::dumpHeap()
-{
+void ArchiveScan::dumpHeap() {
     for (auto it = heapBegin; it != heapEnd; it++) {
         std::cout << *(it->logrec()) << std::endl;
     }
 }
 
-logrec_t* MergeInput::logrec()
-{
+logrec_t* MergeInput::logrec() {
     return reinterpret_cast<logrec_t*>(runFile->getOffset(pos));
 }
 
-bool MergeInput::open(PageID startPID)
-{
+bool MergeInput::open(PageID startPID) {
     if (!finished()) {
         auto lr = logrec();
         keyLSN = lr->lsn();
@@ -150,8 +142,7 @@ bool MergeInput::open(PageID startPID)
                 return false;
             }
         }
-    }
-    else {
+    } else {
         INC_TSTAT(la_wasted_read);
         return false;
     }
@@ -160,15 +151,15 @@ bool MergeInput::open(PageID startPID)
     return true;
 }
 
-bool MergeInput::finished()
-{
-    if (!runFile || runFile->length == 0) { return true; }
+bool MergeInput::finished() {
+    if (!runFile || runFile->length == 0) {
+        return true;
+    }
     auto lr = logrec();
     return lr->type() == logrec_t::t_skip || (endPID != 0 && lr->pid() >= endPID);
 }
 
-void MergeInput::next()
-{
+void MergeInput::next() {
     w_assert1(!finished());
     pos += logrec()->length();
     w_assert1(logrec()->valid_header());

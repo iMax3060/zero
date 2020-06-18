@@ -23,15 +23,15 @@
 #include "vol.h"
 #include "xct_logger.h"
 
-rc_t btree_impl::_sx_norec_alloc(btree_page_h &page, PageID &new_page_id) {
+rc_t btree_impl::_sx_norec_alloc(btree_page_h& page, PageID& new_page_id) {
     sys_xct_section_t sxs(true);
     W_DO(sxs.check_error_on_start());
     rc_t ret = _ux_norec_alloc_core(page, new_page_id);
-    W_DO (sxs.end_sys_xct (ret));
+    W_DO (sxs.end_sys_xct(ret));
     return ret;
 }
 
-rc_t btree_impl::_ux_norec_alloc_core(btree_page_h &page, PageID &new_page_id) {
+rc_t btree_impl::_ux_norec_alloc_core(btree_page_h& page, PageID& new_page_id) {
     // This is called only in REDO-only SSX, so no compensation logging. Just apply.
     w_assert1 (xct()->is_single_log_sys_xct());
     w_assert1 (page.latch_mode() == LATCH_EX);
@@ -43,7 +43,7 @@ rc_t btree_impl::_ux_norec_alloc_core(btree_page_h &page, PageID &new_page_id) {
 
     if (rc.is_error()) {
         // if failed for any reason, we release the allocated page.
-        W_DO(smlevel_0::vol ->deallocate_page(new_page_id));
+        W_DO(smlevel_0::vol->deallocate_page(new_page_id));
         return rc;
     }
 
@@ -65,7 +65,7 @@ rc_t btree_impl::_ux_norec_alloc_core(btree_page_h &page, PageID &new_page_id) {
 
     Logger::log_p<btree_norec_alloc_log>(&page, &new_page, new_page_id, fence, chain_high);
     DBGOUT3(<< "btree_impl::_ux_norec_alloc_core, fence=" << fence << ", old-LSN="
-        << old_lsn << ", new-LSN=" << page.get_page_lsn() << ", PID=" << new_page_id);
+                    << old_lsn << ", new-LSN=" << page.get_page_lsn() << ", PID=" << new_page_id);
 
     // initialize as an empty child:
     new_page.format_steal(page.get_page_lsn(), new_page_id, page.store(),
@@ -86,8 +86,7 @@ rc_t btree_impl::_ux_norec_alloc_core(btree_page_h &page, PageID &new_page_id) {
 }
 
 rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
-        const w_keystr_t& triggering_key)
-{
+                                  const w_keystr_t& triggering_key) {
     sys_xct_section_t sxs(true);
     W_DO(sxs.check_error_on_start());
 
@@ -106,9 +105,9 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
      */
     btree_page_h new_page;
     rc_t rc = new_page.fix_nonroot(page, new_page_id,
-            LATCH_EX, false, true);
+                                   LATCH_EX, false, true);
     if (rc.is_error()) {
-        W_DO(smlevel_0::vol ->deallocate_page(new_page_id));
+        W_DO(smlevel_0::vol->deallocate_page(new_page_id));
         return rc;
     }
 
@@ -121,7 +120,7 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
     int move_count = 0;
     w_keystr_t split_key;
     W_DO(new_page.format_foster_child(page, new_page_id, triggering_key, split_key,
-            move_count));
+                                      move_count));
     w_assert0(move_count > 0);
     // DBG5(<< "NEW FOSTER CHILD " << new_page);
 
@@ -136,7 +135,7 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
     w_keystr_t new_chain;
     new_page.copy_chain_fence_high_key(new_chain);
     bool foster_set =
-        page.set_foster_child(new_page_id, split_key, new_chain);
+            page.set_foster_child(new_page_id, split_key, new_chain);
     w_assert0(foster_set);
 
     /*
@@ -150,8 +149,7 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
 
     // set parent pointer for children that moved to new page
     int max_slot = new_page.max_child_slot();
-    for (general_recordid_t i = GeneralRecordIds::FOSTER_CHILD; i <= max_slot; ++i)
-    {
+    for (general_recordid_t i = GeneralRecordIds::FOSTER_CHILD; i <= max_slot; ++i) {
         // CS TODO: Slot 1 (which is actually 0 in the internal page
         // representation) is not used when inserting into an empty node (see
         // my comment on btree_page_h.cpp::insert_nonghost), so in *some*
@@ -159,7 +157,7 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
         // below. Because of this great design feature, switch_parent has to
         // cope with an invalid page.
         smlevel_0::bf->switchParent(*new_page.child_slot_address(i),
-                new_page.get_generic_page());
+                                    new_page.get_generic_page());
     }
 
     /*
@@ -172,18 +170,18 @@ rc_t btree_impl::_sx_split_foster(btree_page_h& page, PageID& new_page_id,
     // hint for subsequent accesses
     increase_forster_child(page.pid());
 
-    W_DO (sxs.end_sys_xct (RCOK));
+    W_DO (sxs.end_sys_xct(RCOK));
 
     DBG1(<< "Split page " << page.pid() << " into " << new_page_id);
 
     return RCOK;
 }
 
-rc_t btree_impl::_sx_split_if_needed (btree_page_h &page, const w_keystr_t &new_key) {
+rc_t btree_impl::_sx_split_if_needed(btree_page_h& page, const w_keystr_t& new_key) {
     bool need_split =
-        !page.check_space_for_insert_node(new_key)
-        || (page.is_insertion_extremely_skewed_right()
-            && page.check_chance_for_norecord_split(new_key));
+            !page.check_space_for_insert_node(new_key)
+            || (page.is_insertion_extremely_skewed_right()
+                && page.check_chance_for_norecord_split(new_key));
     if (!need_split) {
         return RCOK; // easy
     }
@@ -204,14 +202,13 @@ rc_t btree_impl::_sx_split_if_needed (btree_page_h &page, const w_keystr_t &new_
     return RCOK;
 }
 
-rc_t btree_impl::_sx_adopt_foster_all (btree_page_h &root, bool recursive)
-{
+rc_t btree_impl::_sx_adopt_foster_all(btree_page_h& root, bool recursive) {
     W_DO(_sx_adopt_foster_all_core(root, true, recursive));
     return RCOK;
 }
-rc_t btree_impl::_sx_adopt_foster_all_core (
-    btree_page_h &parent, bool is_root, bool recursive)
-{
+
+rc_t btree_impl::_sx_adopt_foster_all_core(
+        btree_page_h& parent, bool is_root, bool recursive) {
     // TODO this should use the improved tree-walk-through
     // See jira ticket:60 "Tree walk-through without more than 2 pages latched" (originally trac ticket:62)
     w_assert1 (xct()->is_sys_xct());
@@ -229,18 +226,18 @@ rc_t btree_impl::_sx_adopt_foster_all_core (
                 W_DO(_sx_adopt_foster_all_core(child, false, true));
             }
         }
-
     }
     // after all adopts, if this parent is the root and has foster,
     // let's grow the tree
-    if  (is_root && parent.get_foster()) {
+    if (is_root && parent.get_foster()) {
         W_DO(_sx_grow_tree(parent));
         W_DO(_sx_adopt_foster_sweep(parent));
     }
     w_assert3(parent.is_consistent(true, true));
     return RCOK;
 }
-rc_t btree_impl::_sx_adopt_foster (btree_page_h &parent, btree_page_h &child) {
+
+rc_t btree_impl::_sx_adopt_foster(btree_page_h& parent, btree_page_h& child) {
     w_keystr_t new_child_key;
     child.copy_fence_high_key(new_child_key);
     W_DO(_sx_split_if_needed(parent, new_child_key));
@@ -249,15 +246,15 @@ rc_t btree_impl::_sx_adopt_foster (btree_page_h &parent, btree_page_h &child) {
     sys_xct_section_t sxs(true);
     W_DO(sxs.check_error_on_start());
     rc_t ret = _ux_adopt_foster_core(parent, child, new_child_key);
-    W_DO (sxs.end_sys_xct (ret));
+    W_DO (sxs.end_sys_xct(ret));
 
     DBG(<< "Adopted " << child.pid() << " into " << parent.pid());
 
     return ret;
 }
-rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &child,
-    const w_keystr_t &new_child_key)
-{
+
+rc_t btree_impl::_ux_adopt_foster_core(btree_page_h& parent, btree_page_h& child,
+                                       const w_keystr_t& new_child_key) {
     w_assert1 (smthread_t::xct()->is_single_log_sys_xct());
     w_assert1 (parent.is_fixed());
     w_assert1 (parent.latch_mode() == LATCH_EX);
@@ -276,9 +273,9 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
     }
 
     lsn_t child_emlsn = child.get_foster_emlsn();
-    Logger::log_p<btree_foster_adopt_log> (&parent, &child, new_child_pid, child_emlsn, new_child_key);
-    _ux_adopt_foster_apply_parent (parent, new_child_pid, child_emlsn, new_child_key);
-    _ux_adopt_foster_apply_child (child);
+    Logger::log_p<btree_foster_adopt_log>(&parent, &child, new_child_pid, child_emlsn, new_child_key);
+    _ux_adopt_foster_apply_parent(parent, new_child_pid, child_emlsn, new_child_key);
+    _ux_adopt_foster_apply_child(child);
 
     // Switch parent of newly adopted child
     // CS TODO: I'm not sure we can do this because we don't hold a latch on new_child_pid
@@ -289,9 +286,8 @@ rc_t btree_impl::_ux_adopt_foster_core (btree_page_h &parent, btree_page_h &chil
     return RCOK;
 }
 
-rc_t btree_impl::_sx_opportunistic_adopt_foster (btree_page_h &parent,
-                                                      btree_page_h &child, bool &pushedup)
-{
+rc_t btree_impl::_sx_opportunistic_adopt_foster(btree_page_h& parent,
+                                                btree_page_h& child, bool& pushedup) {
     w_assert1 (parent.is_fixed());
     w_assert1 (parent.is_node());
     w_assert1 (child.is_fixed());
@@ -302,7 +298,7 @@ rc_t btree_impl::_sx_opportunistic_adopt_foster (btree_page_h &parent,
     // we start from parent because EX latch on child is assured to be available in this order
     if (!parent.upgrade_latch_conditional()) {
         DBGOUT1(<< "opportunistic_adopt gave it up because of parent. "
-                << parent.pid() << ". do nothing.");
+                        << parent.pid() << ". do nothing.");
         increase_ex_need(parent.pid()); // give a hint to subsequent accesses
         return RCOK;
     }
@@ -321,9 +317,8 @@ rc_t btree_impl::_sx_opportunistic_adopt_foster (btree_page_h &parent,
     return RCOK;
 }
 
-rc_t btree_impl::_sx_adopt_foster_sweep_approximate (btree_page_h &parent,
-                                                             PageID surely_need_child_pid)
-{
+rc_t btree_impl::_sx_adopt_foster_sweep_approximate(btree_page_h& parent,
+                                                    PageID surely_need_child_pid) {
     w_assert1 (parent.is_fixed());
     w_assert1 (parent.latch_mode() == LATCH_EX);
     w_assert1 (parent.is_node());
@@ -349,7 +344,7 @@ rc_t btree_impl::_sx_adopt_foster_sweep_approximate (btree_page_h &parent,
             if (child.get_foster() == 0) {
                 continue; // no foster. just ignore
             }
-            W_DO(_sx_adopt_foster (parent, child));
+            W_DO(_sx_adopt_foster(parent, child));
         }
         // go on to foster-child of this parent, if exists
         if (parent.get_foster() == 0) {
@@ -365,8 +360,7 @@ rc_t btree_impl::_sx_adopt_foster_sweep_approximate (btree_page_h &parent,
     return RCOK;
 }
 
-rc_t btree_impl::_sx_adopt_foster_sweep (btree_page_h &parent_arg)
-{
+rc_t btree_impl::_sx_adopt_foster_sweep(btree_page_h& parent_arg) {
     btree_page_h parent = parent_arg; // because it might be switched below
     w_assert1 (parent.is_fixed());
     w_assert1 (parent.latch_mode() == LATCH_EX);
@@ -383,7 +377,7 @@ rc_t btree_impl::_sx_adopt_foster_sweep (btree_page_h &parent_arg)
             if (!child.upgrade_latch_conditional()) {
                 continue; // then give up. no hurry.
             }
-            W_DO(_sx_adopt_foster (parent, child));
+            W_DO(_sx_adopt_foster(parent, child));
         }
         // go on to foster-child of this parent, if exists
         if (parent.get_foster() == 0) {
@@ -396,9 +390,9 @@ rc_t btree_impl::_sx_adopt_foster_sweep (btree_page_h &parent_arg)
     return RCOK;
 }
 
-void btree_impl::_ux_adopt_foster_apply_parent (btree_page_h &parent,
-    PageID new_child_pid, lsn_t new_child_emlsn, const w_keystr_t &new_child_key)
-{
+void btree_impl::_ux_adopt_foster_apply_parent(btree_page_h& parent,
+                                               PageID new_child_pid, lsn_t new_child_emlsn,
+                                               const w_keystr_t& new_child_key) {
     w_assert1 (parent.is_fixed());
     w_assert1 (parent.latch_mode() == LATCH_EX);
     w_assert1 (parent.is_node());
@@ -406,7 +400,7 @@ void btree_impl::_ux_adopt_foster_apply_parent (btree_page_h &parent,
     w_assert1 (parent.fence_contains(new_child_key));
 
     // where to insert?
-    bool     key_found;
+    bool key_found;
     slotid_t slot_to_insert;
     parent.search(new_child_key, key_found, slot_to_insert);
     w_assert1(!key_found);
@@ -419,8 +413,8 @@ void btree_impl::_ux_adopt_foster_apply_parent (btree_page_h &parent,
 
     // DBG(<< "AFTER ADOPTION " << parent);
 }
-void btree_impl::_ux_adopt_foster_apply_child (btree_page_h &child)
-{
+
+void btree_impl::_ux_adopt_foster_apply_child(btree_page_h& child) {
     w_assert1 (child.is_fixed());
     w_assert1 (child.latch_mode() == LATCH_EX);
     // just clears up foster and chain-fence-high

@@ -67,18 +67,14 @@ ShoreEnv* _g_shore_env = nullptr;
  *
  ********************************************************************/
 
-void env_stats_t::print_env_stats() const
-{
-    TRACE( TRACE_STATISTICS, "===============================\n");
-    TRACE( TRACE_STATISTICS, "Database transaction statistics\n");
-    TRACE( TRACE_STATISTICS, "Attempted: %d\n", _ntrx_att);
-    TRACE( TRACE_STATISTICS, "Committed: %d\n", _ntrx_com);
-    TRACE( TRACE_STATISTICS, "Aborted  : %d\n", (_ntrx_att-_ntrx_com));
-    TRACE( TRACE_STATISTICS, "===============================\n");
+void env_stats_t::print_env_stats() const {
+    TRACE(TRACE_STATISTICS, "===============================\n");
+    TRACE(TRACE_STATISTICS, "Database transaction statistics\n");
+    TRACE(TRACE_STATISTICS, "Attempted: %d\n", _ntrx_att);
+    TRACE(TRACE_STATISTICS, "Committed: %d\n", _ntrx_com);
+    TRACE(TRACE_STATISTICS, "Aborted  : %d\n", (_ntrx_att - _ntrx_com));
+    TRACE(TRACE_STATISTICS, "===============================\n");
 }
-
-
-
 
 /********************************************************************
  *
@@ -90,28 +86,33 @@ void env_stats_t::print_env_stats() const
  ********************************************************************/
 
 ShoreEnv::ShoreEnv(po::variables_map& vm)
-    : db_iface(),
-      _pssm(nullptr),
-      _initialized(false), _init_mutex(thread_mutex_create()),
-      _loaded(false), _load_mutex(thread_mutex_create()),
-      _statmap_mutex(thread_mutex_create()),
-      _last_stats_mutex(thread_mutex_create()),
-      _vol_mutex(thread_mutex_create()),
-      _worker_cnt(0),
-      _measure(MST_UNDEF),
-      _insert_freq(0),_delete_freq(0),_probe_freq(100),
-      _chkpt_freq(0),
-      _enable_archiver(false), _enable_merger(false),
-      _activation_delay(0),
-      _crash_delay(0),
-      _bAlarmSet(false),
-      _start_imbalance(0),
-      _skew_type(SKEW_NONE),
-      stop_benchmark(false),
-      _request_pool(sizeof(trx_request_t)),
-      _bUseELR(false),
-      _bUseFlusher(false)
-      // _logger(nullptr)
+        : db_iface(),
+          _pssm(nullptr),
+          _initialized(false),
+          _init_mutex(thread_mutex_create()),
+          _loaded(false),
+          _load_mutex(thread_mutex_create()),
+          _statmap_mutex(thread_mutex_create()),
+          _last_stats_mutex(thread_mutex_create()),
+          _vol_mutex(thread_mutex_create()),
+          _worker_cnt(0),
+          _measure(MST_UNDEF),
+          _insert_freq(0),
+          _delete_freq(0),
+          _probe_freq(100),
+          _chkpt_freq(0),
+          _enable_archiver(false),
+          _enable_merger(false),
+          _activation_delay(0),
+          _crash_delay(0),
+          _bAlarmSet(false),
+          _start_imbalance(0),
+          _skew_type(SKEW_NONE),
+          stop_benchmark(false),
+          _request_pool(sizeof(trx_request_t)),
+          _bUseELR(false),
+          _bUseFlusher(false)
+// _logger(nullptr)
 {
     optionValues = vm;
 
@@ -121,10 +122,10 @@ ShoreEnv::ShoreEnv(po::variables_map& vm)
     _last_sm_stats.fill(0);
 }
 
-
-ShoreEnv::~ShoreEnv()
-{
-    if (dbc()!=DBC_STOPPED) stop();
+ShoreEnv::~ShoreEnv() {
+    if (dbc() != DBC_STOPPED) {
+        stop();
+    }
 
     pthread_mutex_destroy(&_init_mutex);
     pthread_mutex_destroy(&_statmap_mutex);
@@ -136,21 +137,17 @@ ShoreEnv::~ShoreEnv()
     pthread_mutex_destroy(&_queried_mutex);
 }
 
-
-bool ShoreEnv::is_initialized()
-{
+bool ShoreEnv::is_initialized() {
     CRITICAL_SECTION(cs, _init_mutex);
     return (_initialized);
 }
 
-bool ShoreEnv::is_loaded()
-{
+bool ShoreEnv::is_loaded() {
     CRITICAL_SECTION(cs, _load_mutex);
     return (_loaded);
 }
 
-w_rc_t ShoreEnv::load()
-{
+w_rc_t ShoreEnv::load() {
 
     // 1. lock the loading status and the scaling factor
     CRITICAL_SECTION(load_cs, _load_mutex);
@@ -183,7 +180,7 @@ w_rc_t ShoreEnv::load()
 
     // 5. Print stats, join checkpointer, and return
     time_t tstop = time(nullptr);
-    TRACE( TRACE_ALWAYS, "Loading finished in (%d) secs...\n", (tstop - tstart));
+    TRACE(TRACE_ALWAYS, "Loading finished in (%d) secs...\n", (tstop - tstart));
 
     // if (_chkpt_freq > 0) {
     //     chk->set_active(false);
@@ -194,7 +191,6 @@ w_rc_t ShoreEnv::load()
     return RCOK;
 }
 
-
 /********************************************************************
  *
  *  @fn:    Related to Scaling and querying factor
@@ -204,43 +200,35 @@ w_rc_t ShoreEnv::load()
  *
  ********************************************************************/
 
-void ShoreEnv::set_qf(const double aQF)
-{
-    if ((aQF>0) && (aQF<=_scaling_factor)) {
-        TRACE( TRACE_ALWAYS, "New Queried Factor: %.1f\n", aQF);
+void ShoreEnv::set_qf(const double aQF) {
+    if ((aQF > 0) && (aQF <= _scaling_factor)) {
+        TRACE(TRACE_ALWAYS, "New Queried Factor: %.1f\n", aQF);
         _queried_factor = aQF;
-    }
-    else {
-        TRACE( TRACE_ALWAYS, "Invalid queried factor input: %.1f\n", aQF);
+    } else {
+        TRACE(TRACE_ALWAYS, "Invalid queried factor input: %.1f\n", aQF);
     }
 }
 
-double ShoreEnv::get_qf() const
-{
+double ShoreEnv::get_qf() const {
     return (_queried_factor);
 }
 
-
-void ShoreEnv::set_sf(const double aSF)
-{
+void ShoreEnv::set_sf(const double aSF) {
     if (aSF > 0.0) {
-        TRACE( TRACE_ALWAYS, "New Scaling factor: %.1f\n", aSF);
+        TRACE(TRACE_ALWAYS, "New Scaling factor: %.1f\n", aSF);
         _scaling_factor = aSF;
-    }
-    else {
-        TRACE( TRACE_ALWAYS, "Invalid scaling factor input: %.1f\n", aSF);
+    } else {
+        TRACE(TRACE_ALWAYS, "Invalid scaling factor input: %.1f\n", aSF);
     }
 }
 
-double ShoreEnv::get_sf() const
-{
+double ShoreEnv::get_sf() const {
     return (_scaling_factor);
 }
 
-void ShoreEnv::print_sf() const
-{
-    TRACE( TRACE_ALWAYS, "Scaling Factor = (%.1f)\n", get_sf());
-    TRACE( TRACE_ALWAYS, "Queried Factor = (%.1f)\n", get_qf());
+void ShoreEnv::print_sf() const {
+    TRACE(TRACE_ALWAYS, "Scaling Factor = (%.1f)\n", get_sf());
+    TRACE(TRACE_ALWAYS, "Queried Factor = (%.1f)\n", get_qf());
 }
 
 // void ShoreEnv::log_insert(kits_logger_t::logrec_kind_t kind)
@@ -259,31 +247,27 @@ void ShoreEnv::print_sf() const
  *  @brief: Set the insert/delete/probe frequencies
  *
  ********************************************************************/
-void ShoreEnv::set_freqs(int insert_freq, int delete_freq, int probe_freq, int update_freq)
-{
-    assert ((insert_freq>=0) && (insert_freq<=100));
-    assert ((delete_freq>=0) && (delete_freq<=100));
-    assert ((probe_freq>=0) && (probe_freq<=100));
-    assert ((update_freq>=0) && (update_freq<=100));
+void ShoreEnv::set_freqs(int insert_freq, int delete_freq, int probe_freq, int update_freq) {
+    assert ((insert_freq >= 0) && (insert_freq <= 100));
+    assert ((delete_freq >= 0) && (delete_freq <= 100));
+    assert ((probe_freq >= 0) && (probe_freq <= 100));
+    assert ((update_freq >= 0) && (update_freq <= 100));
     _insert_freq = insert_freq;
     _delete_freq = delete_freq;
     _probe_freq = probe_freq;
     _update_freq = update_freq;
 }
 
-void ShoreEnv::set_chkpt_freq(int chkpt_freq)
-{
+void ShoreEnv::set_chkpt_freq(int chkpt_freq) {
     _chkpt_freq = chkpt_freq;
 }
 
-void ShoreEnv::set_archiver_opts(bool enable_archiver, bool enable_merger)
-{
+void ShoreEnv::set_archiver_opts(bool enable_archiver, bool enable_merger) {
     _enable_archiver = enable_archiver;
     _enable_merger = enable_merger;
 }
 
-void ShoreEnv::set_crash_delay(int crash_delay)
-{
+void ShoreEnv::set_crash_delay(int crash_delay) {
     _crash_delay = crash_delay;
 }
 
@@ -293,38 +277,37 @@ void ShoreEnv::set_crash_delay(int crash_delay)
  *  @brief: Set the load imbalance and the time to start it
  *
  ********************************************************************/
-void ShoreEnv::set_skew(int area, int load, int start_imbalance, int skew_type, bool)
-{
-    (void) area;
-    (void) load;
-    assert ((load>=0) && (load<=100));
-    assert (start_imbalance>0);
-    assert((area>0) && (area<100));
+void ShoreEnv::set_skew(int area, int load, int start_imbalance, int skew_type, bool) {
+    (void)area;
+    (void)load;
+    assert ((load >= 0) && (load <= 100));
+    assert (start_imbalance > 0);
+    assert((area > 0) && (area < 100));
 
     _start_imbalance = start_imbalance;
 
-    if (skew_type <= 0)
-        skew_type = URand(1,10);
-    if(skew_type < 6) {
-    // 1. Keep the initial skew (no changes)
-    _skew_type = SKEW_NORMAL;
-    TRACE( TRACE_ALWAYS, "SKEW_NORMAL\n");
-    } else if(skew_type < 9) {
-    // 2. Change the area of the initial skew after some random duration
-    _skew_type = SKEW_DYNAMIC;
-    TRACE( TRACE_ALWAYS, "SKEW_DYNAMIC\n");
-    } else if(skew_type < 11) {
-    // 3. Change the initial skew randomly after some random duration
-    // (a) The new skew can be like the old one but in another spot
-    // (b) The skew can be omitted for sometime and
-    // (c) The percentages might be changed
-    _skew_type = SKEW_CHAOTIC;
-    TRACE( TRACE_ALWAYS, "SKEW_CHAOTIC\n");
+    if (skew_type <= 0) {
+        skew_type = URand(1, 10);
+    }
+    if (skew_type < 6) {
+        // 1. Keep the initial skew (no changes)
+        _skew_type = SKEW_NORMAL;
+        TRACE(TRACE_ALWAYS, "SKEW_NORMAL\n");
+    } else if (skew_type < 9) {
+        // 2. Change the area of the initial skew after some random duration
+        _skew_type = SKEW_DYNAMIC;
+        TRACE(TRACE_ALWAYS, "SKEW_DYNAMIC\n");
+    } else if (skew_type < 11) {
+        // 3. Change the initial skew randomly after some random duration
+        // (a) The new skew can be like the old one but in another spot
+        // (b) The skew can be omitted for sometime and
+        // (c) The percentages might be changed
+        _skew_type = SKEW_CHAOTIC;
+        TRACE(TRACE_ALWAYS, "SKEW_CHAOTIC\n");
     } else {
-    assert(0); // More cases can be added as wanted
+        assert(0); // More cases can be added as wanted
     }
 }
-
 
 /********************************************************************
  *
@@ -332,15 +315,13 @@ void ShoreEnv::set_skew(int area, int load, int start_imbalance, int skew_type, 
  *  @brief: reset the load imbalance and the time to start it if necessary
  *
  ********************************************************************/
-void ShoreEnv::start_load_imbalance()
-{
+void ShoreEnv::start_load_imbalance() {
     // @note: pin: can change these boundaries depending on preference
-    if(_skew_type == SKEW_DYNAMIC || _skew_type == SKEW_CHAOTIC) {
-    _start_imbalance = URand(10,30);
-    _bAlarmSet = false;
+    if (_skew_type == SKEW_DYNAMIC || _skew_type == SKEW_CHAOTIC) {
+        _start_imbalance = URand(10, 30);
+        _bAlarmSet = false;
     }
 }
-
 
 /********************************************************************
  *
@@ -348,12 +329,10 @@ void ShoreEnv::start_load_imbalance()
  *  @brief: Set the flags to stop the load imbalance
  *
  ********************************************************************/
-void ShoreEnv::reset_skew()
-{
+void ShoreEnv::reset_skew() {
     _start_imbalance = 0;
     _bAlarmSet = false;
 }
-
 
 /********************************************************************
  *
@@ -363,18 +342,15 @@ void ShoreEnv::reset_skew()
  *
  ********************************************************************/
 
-uint ShoreEnv::upd_worker_cnt()
-{
+uint ShoreEnv::upd_worker_cnt() {
     // update worker thread cnt
 
     _worker_cnt = optionValues["threads"].as<int>();
     return (_worker_cnt);
 }
 
-
-trx_worker_t* ShoreEnv::worker(const uint idx)
-{
-    return (_workers[idx%_worker_cnt]);
+trx_worker_t* ShoreEnv::worker(const uint idx) {
+    return (_workers[idx % _worker_cnt]);
 }
 
 
@@ -397,43 +373,40 @@ trx_worker_t* ShoreEnv::worker(const uint idx)
  *
  *********************************************************************/
 
-int ShoreEnv::init()
-{
-    CRITICAL_SECTION(cs,_init_mutex);
+int ShoreEnv::init() {
+    CRITICAL_SECTION(cs, _init_mutex);
     if (_initialized) {
-        std::cerr<< "Already initialized" << std::endl;
+        std::cerr << "Already initialized" << std::endl;
         return (0);
     }
 
     // Set sys params
     if (_set_sys_params()) {
-        TRACE( TRACE_ALWAYS, "Problem in setting system parameters\n");
+        TRACE(TRACE_ALWAYS, "Problem in setting system parameters\n");
         return (1);
     }
 
 
     // Apply configuration to the storage manager
     if (configure_sm()) {
-        TRACE( TRACE_ALWAYS, "Error configuring Shore\n");
+        TRACE(TRACE_ALWAYS, "Error configuring Shore\n");
         return (2);
     }
 
     // Load the database schema
     if (load_schema().is_error()) {
-        TRACE( TRACE_ALWAYS, "Error loading the database schema\n");
+        TRACE(TRACE_ALWAYS, "Error loading the database schema\n");
         return (3);
     }
 
     // Update partitioning information
     if (update_partitioning().is_error()) {
-        TRACE( TRACE_ALWAYS, "Error updating the partitioning info\n");
+        TRACE(TRACE_ALWAYS, "Error updating the partitioning info\n");
         return (4);
     }
 
-
     return (0);
 }
-
 
 /*********************************************************************
  *
@@ -446,35 +419,34 @@ int ShoreEnv::init()
  *
  *********************************************************************/
 
-int ShoreEnv::start()
-{
+int ShoreEnv::start() {
     // Start the storage manager
     if (start_sm()) {
-        TRACE( TRACE_ALWAYS, "Error starting Shore database\n");
+        TRACE(TRACE_ALWAYS, "Error starting Shore database\n");
         return (5);
     }
 
     if (!_clobber) {
-    // Cache fids at the kits side
-    W_COERCE(db()->begin_xct());
-    W_COERCE(load_and_register_fids());
-    W_COERCE(db()->commit_xct());
-    // Call the (virtual) post-initialization function
+        // Cache fids at the kits side
+        W_COERCE(db()->begin_xct());
+        W_COERCE(load_and_register_fids());
+        W_COERCE(db()->commit_xct());
+        // Call the (virtual) post-initialization function
         if (int rval = post_init()) {
-            TRACE( TRACE_ALWAYS, "Error in Shore post-init\n");
+            TRACE(TRACE_ALWAYS, "Error in Shore post-init\n");
             return (rval);
         }
     }
 
     // if we reached this point the environment is properly initialized
     _initialized = true;
-    TRACE( TRACE_DEBUG, "ShoreEnv initialized\n");
+    TRACE(TRACE_DEBUG, "ShoreEnv initialized\n");
 
     upd_worker_cnt();
 
     assert (_workers.empty());
 
-    TRACE( TRACE_ALWAYS, "Starting (%s)\n", _sysname.c_str());
+    TRACE(TRACE_ALWAYS, "Starting (%s)\n", _sysname.c_str());
     info();
 
     // read from env params the loopcnt
@@ -485,9 +457,9 @@ int ShoreEnv::start()
 #endif
 
     WorkerPtr aworker;
-    for (uint i=0; i<_worker_cnt; i++) {
+    for (uint i = 0; i < _worker_cnt; i++) {
 
-        aworker = new Worker(this,std::string("work-%d", i), _bUseSLI);
+        aworker = new Worker(this, std::string("work-%d", i), _bUseSLI);
         _workers.push_back(aworker);
 
         aworker->init(lc);
@@ -496,8 +468,6 @@ int ShoreEnv::start()
     }
     return (0);
 }
-
-
 
 /*********************************************************************
  *
@@ -509,20 +479,18 @@ int ShoreEnv::start()
  *
  *********************************************************************/
 
-int ShoreEnv::stop()
-{
+int ShoreEnv::stop() {
     // Check if initialized
     CRITICAL_SECTION(cs, _init_mutex);
 
-    if (dbc() == DBC_STOPPED)
-    {
+    if (dbc() == DBC_STOPPED) {
         // Already stopped
-        TRACE( TRACE_ALWAYS, "(%s) already stopped\n",
-               _sysname.c_str());
+        TRACE(TRACE_ALWAYS, "(%s) already stopped\n",
+              _sysname.c_str());
         return (0);
     }
 
-    TRACE( TRACE_ALWAYS, "Stopping (%s)\n", _sysname.c_str());
+    TRACE(TRACE_ALWAYS, "Stopping (%s)\n", _sysname.c_str());
     info();
 
     if (!_initialized) {
@@ -531,10 +499,10 @@ int ShoreEnv::stop()
     }
 
     // Stop workers
-    int i=0;
+    int i = 0;
     for (WorkerIt it = _workers.begin(); it != _workers.end(); ++it) {
         i++;
-        TRACE( TRACE_DEBUG, "Stopping worker (%d)\n", i);
+        TRACE(TRACE_DEBUG, "Stopping worker (%d)\n", i);
         if (*it) {
             (*it)->stop();
             (*it)->join();
@@ -554,8 +522,6 @@ int ShoreEnv::stop()
     return (0);
 }
 
-
-
 /*********************************************************************
  *
  *  @fn:     close
@@ -566,14 +532,12 @@ int ShoreEnv::stop()
  *
  *********************************************************************/
 
-int ShoreEnv::close()
-{
-    TRACE( TRACE_ALWAYS, "Closing (%s)\n", _sysname.c_str());
+int ShoreEnv::close() {
+    TRACE(TRACE_ALWAYS, "Closing (%s)\n", _sysname.c_str());
 
     // First stop the environment
     int r = stop();
-    if (r != 0)
-    {
+    if (r != 0) {
         // If it returned != 0 then error occured
         return (r);
     }
@@ -587,7 +551,6 @@ int ShoreEnv::close()
     return (0);
 }
 
-
 /********************************************************************
  *
  *  @fn:    statistics
@@ -596,8 +559,7 @@ int ShoreEnv::close()
  *
  ********************************************************************/
 
-int ShoreEnv::statistics()
-{
+int ShoreEnv::statistics() {
     CRITICAL_SECTION(cs, _init_mutex);
     if (!_initialized) {
         cerr << "Environment not initialized..." << endl;
@@ -628,12 +590,11 @@ int ShoreEnv::statistics()
  *
  ********************************************************************/
 
-int ShoreEnv::close_sm()
-{
-    TRACE( TRACE_ALWAYS, "Closing Shore storage manager...\n");
+int ShoreEnv::close_sm() {
+    TRACE(TRACE_ALWAYS, "Closing Shore storage manager...\n");
 
     if (!_pssm) {
-        TRACE( TRACE_ALWAYS, "sm already closed...\n");
+        TRACE(TRACE_ALWAYS, "sm already closed...\n");
         return (1);
     }
 
@@ -656,10 +617,10 @@ int ShoreEnv::close_sm()
  *  @brief:  Set flag in sm to execute a filthy shutdown
  *
  ********************************************************************/
- void ShoreEnv::set_sm_shudown_filthy(bool filthy)
- {
-     _pssm->set_shutdown_filthy(filthy);
- }
+void ShoreEnv::set_sm_shudown_filthy(bool filthy) {
+    _pssm->set_shutdown_filthy(filthy);
+}
+
 /********************************************************************
  *
  *  @fn:     gatherstats_sm
@@ -670,8 +631,7 @@ int ShoreEnv::close_sm()
 
 static sm_stats_t oldstats;
 
-void ShoreEnv::gatherstats_sm(ostream &stream)
-{
+void ShoreEnv::gatherstats_sm(ostream& stream) {
     // sm_du_stats_t stats;
     // memset(&stats, 0, sizeof(stats));
 
@@ -689,28 +649,27 @@ void ShoreEnv::gatherstats_sm(ostream &stream)
     _last_sm_stats = stats;
 }
 
-size_t ShoreEnv::get_total_pages_to_recover()
-{
+size_t ShoreEnv::get_total_pages_to_recover() {
     return smlevel_0::recovery->get_chkpt()->buf_tab.size();
 }
 
-size_t ShoreEnv::get_dirty_page_count()
-{
+size_t ShoreEnv::get_dirty_page_count() {
     return smlevel_0::recovery->get_dirty_page_count();
 }
 
-bool ShoreEnv::has_log_analysis_finished()
-{
+bool ShoreEnv::has_log_analysis_finished() {
     bool hasFinished = false;
-    if (smlevel_0::recovery)
+    if (smlevel_0::recovery) {
         hasFinished = smlevel_0::recovery->hasLogAnalysisFinished();
+    }
     return hasFinished;
 }
 
-void ShoreEnv::wait_for_warmup()
-{
+void ShoreEnv::wait_for_warmup() {
     while (true) {
-        if (ss_m::bf->isWarmupDone()) { break; }
+        if (ss_m::bf->isWarmupDone()) {
+            break;
+        }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
@@ -725,9 +684,8 @@ void ShoreEnv::wait_for_warmup()
  *
  ********************************************************************/
 
-int ShoreEnv::configure_sm()
-{
-    TRACE( TRACE_DEBUG, "Configuring Shore...\n");
+int ShoreEnv::configure_sm() {
+    TRACE(TRACE_DEBUG, "Configuring Shore...\n");
 
     upd_worker_cnt();
     Command::setSMOptions(_popts, optionValues);
@@ -735,8 +693,6 @@ int ShoreEnv::configure_sm()
     // If we reached this point the sm is configured correctly
     return (0);
 }
-
-
 
 /******************************************************************
  *
@@ -752,18 +708,17 @@ int ShoreEnv::configure_sm()
  *
  ******************************************************************/
 int /*shore::*/ssm_max_small_rec;
-sm_config_info_t  sm_config_info;
 
-int ShoreEnv::start_sm()
-{
-    TRACE( TRACE_DEBUG, "Starting Shore...\n");
+sm_config_info_t sm_config_info;
+
+int ShoreEnv::start_sm() {
+    TRACE(TRACE_DEBUG, "Starting Shore...\n");
 
     if (_initialized == false) {
         _pssm = new ss_m(_popts);
         // _logger = new kits_logger_t(_pssm);
-    }
-    else {
-        TRACE( TRACE_DEBUG, "Shore already started...\n");
+    } else {
+        TRACE(TRACE_DEBUG, "Shore already started...\n");
         return (1);
     }
 
@@ -784,8 +739,7 @@ int ShoreEnv::start_sm()
 
         // set that the database is not loaded
         _loaded = false;
-    }
-    else {
+    } else {
         // if didn't clobber then the db is already loaded
         CRITICAL_SECTION(cs, _load_mutex);
 
@@ -802,13 +756,11 @@ int ShoreEnv::start_sm()
         // "speculate" that the database is loaded
         _loaded = true;
     }
-    
+
 
     // If we reached this point the sm has started correctly
     return (0);
 }
-
-
 
 /*********************************************************************
  *
@@ -821,14 +773,12 @@ int ShoreEnv::start_sm()
  *
  *********************************************************************/
 
-int ShoreEnv::checkpoint()
-{
+int ShoreEnv::checkpoint() {
     _pssm->checkpoint();
     return 0;
 }
 
-void ShoreEnv::activate_archiver()
-{
+void ShoreEnv::activate_archiver() {
     if (_enable_archiver) {
         _pssm->activate_archiver();
     }
@@ -840,13 +790,11 @@ void ShoreEnv::activate_archiver()
  *
  ******************************************************************/
 
-unsigned ShoreEnv::get_trx_att() const
-{
+unsigned ShoreEnv::get_trx_att() const {
     return (*&_env_stats._ntrx_att);
 }
 
-unsigned ShoreEnv::get_trx_com() const
-{
+unsigned ShoreEnv::get_trx_com() const {
     return (*&_env_stats._ntrx_com);
 }
 
@@ -865,15 +813,10 @@ unsigned ShoreEnv::get_trx_com() const
  *
  ******************************************************************/
 
-int ShoreEnv::_set_sys_params()
-{
+int ShoreEnv::_set_sys_params() {
     _activation_delay = optionValues["activation_delay"].as<uint>();
     return (0);
 }
-
-
-
-
 
 /******************************************************************
  *
@@ -887,16 +830,14 @@ int ShoreEnv::_set_sys_params()
  *
  ******************************************************************/
 
-int ShoreEnv::restart()
-{
-    TRACE( TRACE_DEBUG, "Restarting (%s)...\n", _sysname.c_str());
+int ShoreEnv::restart() {
+    TRACE(TRACE_DEBUG, "Restarting (%s)...\n", _sysname.c_str());
     stop();
     conf();
     _set_sys_params();
     start();
-    return(0);
+    return (0);
 }
-
 
 /******************************************************************
  *
@@ -906,55 +847,50 @@ int ShoreEnv::restart()
  *
  ******************************************************************/
 
-int ShoreEnv::conf()
-{
-    TRACE( TRACE_DEBUG, "ShoreEnv configuration\n");
+int ShoreEnv::conf() {
+    TRACE(TRACE_DEBUG, "ShoreEnv configuration\n");
     // Print storage manager options
-    BOOST_FOREACH(const po::variables_map::value_type& pair, optionValues)
-    {
-        const std::string& key = pair.first;
-        try {
-            cout<< "[" << key << "] = "<< optionValues[key].as<int>()<<endl;
-        }
-        catch(boost::bad_any_cast const& e) {
-            try {
-                cout<< "[" << key << "] = "<< optionValues[key].as<bool>()<<endl;
-            }
-            catch (boost::bad_any_cast const& e) {
-                try {
-                    cout<< "[" << key << "] = "<< optionValues[key].as<string>()<<endl;
-                }
-                catch (boost::bad_any_cast const& e) {
+    BOOST_FOREACH(const po::variables_map::value_type& pair, optionValues) {
+                    const std::string& key = pair.first;
                     try {
-                        cout<< "[" << key << "] = "<< optionValues[key].as<unsigned>()<<endl;
+                        cout << "[" << key << "] = " << optionValues[key].as<int>() << endl;
                     }
                     catch (boost::bad_any_cast const& e) {
                         try {
-                            cout<< "[" << key << "] = "<< optionValues[key].as<uint>()<<endl;
+                            cout << "[" << key << "] = " << optionValues[key].as<bool>() << endl;
                         }
                         catch (boost::bad_any_cast const& e) {
-                            continue;
+                            try {
+                                cout << "[" << key << "] = " << optionValues[key].as<string>() << endl;
+                            }
+                            catch (boost::bad_any_cast const& e) {
+                                try {
+                                    cout << "[" << key << "] = " << optionValues[key].as<unsigned>() << endl;
+                                }
+                                catch (boost::bad_any_cast const& e) {
+                                    try {
+                                        cout << "[" << key << "] = " << optionValues[key].as<uint>() << endl;
+                                    }
+                                    catch (boost::bad_any_cast const& e) {
+                                        continue;
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            }
-        }
-    };
+                };
     return (0);
 }
 
-int ShoreEnv::dump()
-{
-    TRACE( TRACE_DEBUG, "~~~~~~~~~~~~~~~~~~~~~\n");
-    TRACE( TRACE_DEBUG, "Dumping Shore Data\n");
+int ShoreEnv::dump() {
+    TRACE(TRACE_DEBUG, "~~~~~~~~~~~~~~~~~~~~~\n");
+    TRACE(TRACE_DEBUG, "Dumping Shore Data\n");
 
-    TRACE( TRACE_ALWAYS, "Not implemented...\n");
+    TRACE(TRACE_ALWAYS, "Not implemented...\n");
 
-    TRACE( TRACE_DEBUG, "~~~~~~~~~~~~~~~~~~~~~\n");
+    TRACE(TRACE_DEBUG, "~~~~~~~~~~~~~~~~~~~~~\n");
     return (0);
 }
-
-
 
 /******************************************************************
  *
@@ -964,11 +900,9 @@ int ShoreEnv::dump()
  *
  ******************************************************************/
 
-void ShoreEnv::setAsynchCommit(const bool bAsynch)
-{
+void ShoreEnv::setAsynchCommit(const bool bAsynch) {
     _asynch_commit = bAsynch;
 }
-
 
 #if 0
 

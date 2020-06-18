@@ -18,24 +18,23 @@ const static int IO_BLOCK_COUNT = 8; // total buffer = 8MB
     }
 
 ArchiverControl::ArchiverControl(std::atomic<bool>* shutdownFlag)
-    : endLSN(lsn_t::null), activated(false), listening(false), shutdownFlag(shutdownFlag)
-{
+        : endLSN(lsn_t::null),
+          activated(false),
+          listening(false),
+          shutdownFlag(shutdownFlag) {
     DO_PTHREAD(pthread_mutex_init(&mutex, nullptr));
     DO_PTHREAD(pthread_cond_init(&activateCond, nullptr));
 }
 
-ArchiverControl::~ArchiverControl()
-{
+ArchiverControl::~ArchiverControl() {
     DO_PTHREAD(pthread_mutex_destroy(&mutex));
     DO_PTHREAD(pthread_cond_destroy(&activateCond));
 }
 
-bool ArchiverControl::activate(bool wait, lsn_t lsn)
-{
+bool ArchiverControl::activate(bool wait, lsn_t lsn) {
     if (wait) {
         DO_PTHREAD(pthread_mutex_lock(&mutex));
-    }
-    else {
+    } else {
         if (pthread_mutex_trylock(&mutex) != 0) {
             return false;
         }
@@ -67,11 +66,10 @@ bool ArchiverControl::activate(bool wait, lsn_t lsn)
     return activated;
 }
 
-bool ArchiverControl::waitForActivation()
-{
+bool ArchiverControl::waitForActivation() {
     // WARNING: mutex must be held by caller!
     listening = true;
-    while(!activated) {
+    while (!activated) {
         struct timespec timeout;
         smthread_t::timeout_to_timespec(100, timeout); // 100ms
         int code = pthread_cond_timedwait(&activateCond, &mutex, &timeout);
@@ -89,17 +87,18 @@ bool ArchiverControl::waitForActivation()
 }
 
 ReaderThread::ReaderThread(AsyncRingBuffer* readbuf, lsn_t startLSN)
-    :
-      log_worker_thread_t(-1 /* interval_ms */),
-      buf(readbuf), currentFd(-1), pos(0), localEndLSN(0)
-{
+        :
+        log_worker_thread_t(-1 /* interval_ms */),
+        buf(readbuf),
+        currentFd(-1),
+        pos(0),
+        localEndLSN(0) {
     // position initialized to startLSN
     pos = startLSN.lo();
     nextPartition = startLSN.hi();
 }
 
-rc_t ReaderThread::openPartition()
-{
+rc_t ReaderThread::openPartition() {
     if (currentFd != -1) {
         auto ret = ::close(currentFd);
         CHECK_ERRNO(ret);
@@ -117,7 +116,9 @@ rc_t ReaderThread::openPartition()
     struct stat stat;
     auto ret = ::fstat(fd, &stat);
     CHECK_ERRNO(ret);
-    if (stat.st_size == 0) { return RC(eEOF); }
+    if (stat.st_size == 0) {
+        return RC(eEOF);
+    }
     off_t partSize = stat.st_size;
 
     /*
@@ -127,8 +128,7 @@ rc_t ReaderThread::openPartition()
      */
     if (localEndLSN.hi() == nextPartition) {
         w_assert0(partSize >= localEndLSN.lo());
-    }
-    else {
+    } else {
         w_assert1(partSize > 0);
     }
 
@@ -139,8 +139,7 @@ rc_t ReaderThread::openPartition()
     return RCOK;
 }
 
-void ReaderThread::do_work()
-{
+void ReaderThread::do_work() {
     auto blockSize = getBlockSize();
     // copy endLSN into local var to avoid it changing in-between steps below
     localEndLSN = getEndLSN();
@@ -158,11 +157,10 @@ void ReaderThread::do_work()
      * by the activate method, which takes the startLSN as parameter.
      */
 
-    while(true) {
+    while (true) {
         unsigned currPartition =
-            currentFd == -1 ? nextPartition : nextPartition - 1;
-        if (localEndLSN.hi() == currPartition && pos >= localEndLSN.lo())
-        {
+                currentFd == -1 ? nextPartition : nextPartition - 1;
+        if (localEndLSN.hi() == currPartition && pos >= localEndLSN.lo()) {
             /*
              * The requested endLSN is within a block which was already
              * read. Stop and wait for next activation, which must start
@@ -172,7 +170,7 @@ void ReaderThread::do_work()
              */
             pos = localEndLSN.lo();
             DBGTHRD(<< "Reader thread reached endLSN -- sleeping."
-                    << " New pos = " << pos);
+                            << " New pos = " << pos);
             break;
         }
 
@@ -185,10 +183,9 @@ void ReaderThread::do_work()
         char* dest = buf->producerRequest();
         if (!dest) {
             W_FATAL_MSG(fcINTERNAL,
-                    << "Error requesting block on reader thread");
+                        << "Error requesting block on reader thread");
             break;
         }
-
 
         if (currentFd == -1) {
             W_COERCE(openPartition());
@@ -209,14 +206,14 @@ void ReaderThread::do_work()
             CHECK_ERRNO(bytesRead);
             if (bytesRead == 0) {
                 W_FATAL_MSG(fcINTERNAL,
-                        << "Error reading from partition "
-                        << nextPartition - 1);
+                            << "Error reading from partition "
+                                    << nextPartition - 1);
             }
         }
 
         DBGTHRD(<< "Read block " << (void*) dest << " from fpos " << pos <<
-                " with size " << bytesRead << " into blockPos "
-                << blockPos);
+                        " with size " << bytesRead << " into blockPos "
+                        << blockPos);
         w_assert0(bytesRead > 0);
 
         pos += bytesRead;
@@ -225,9 +222,10 @@ void ReaderThread::do_work()
 }
 
 LogConsumer::LogConsumer(lsn_t startLSN, size_t blockSize, bool ignore)
-    : nextLSN(startLSN), endLSN(lsn_t::null), currentBlock(nullptr),
-    blockSize(blockSize)
-{
+        : nextLSN(startLSN),
+          endLSN(lsn_t::null),
+          currentBlock(nullptr),
+          blockSize(blockSize) {
     DBGTHRD(<< "Starting log archiver at LSN " << nextLSN);
 
     // pos must be set to the correct offset within a block
@@ -237,12 +235,13 @@ LogConsumer::LogConsumer(lsn_t startLSN, size_t blockSize, bool ignore)
     reader = new ReaderThread(readbuf, startLSN);
     logScanner = new LogScanner(blockSize);
 
-    if(ignore) { initLogScanner(logScanner); }
+    if (ignore) {
+        initLogScanner(logScanner);
+    }
     reader->fork();
 }
 
-LogConsumer::~LogConsumer()
-{
+LogConsumer::~LogConsumer() {
     if (!readbuf->isFinished()) {
         shutdown();
     }
@@ -250,8 +249,7 @@ LogConsumer::~LogConsumer()
     delete readbuf;
 }
 
-void LogConsumer::initLogScanner(LogScanner* logScanner)
-{
+void LogConsumer::initLogScanner(LogScanner* logScanner) {
     // CS TODO use flags to filter -- there's gotta be a better way than this
     logScanner->setIgnore(logrec_t::t_comment);
     logScanner->setIgnore(logrec_t::t_compensate);
@@ -267,16 +265,14 @@ void LogConsumer::initLogScanner(LogScanner* logScanner)
     logScanner->setIgnore(logrec_t::t_page_write);
 }
 
-void LogConsumer::shutdown()
-{
+void LogConsumer::shutdown() {
     if (!readbuf->isFinished()) {
         readbuf->set_finished();
         reader->stop();
     }
 }
 
-void LogConsumer::open(lsn_t endLSN, bool readWholeBlocks)
-{
+void LogConsumer::open(lsn_t endLSN, bool readWholeBlocks) {
     this->endLSN = endLSN;
     this->readWholeBlocks = readWholeBlocks;
 
@@ -285,8 +281,7 @@ void LogConsumer::open(lsn_t endLSN, bool readWholeBlocks)
     nextBlock();
 }
 
-bool LogConsumer::nextBlock()
-{
+bool LogConsumer::nextBlock() {
     if (currentBlock) {
         readbuf->consumerRelease();
         DBGTHRD(<< "Released block for replacement " << (void*) currentBlock);
@@ -316,17 +311,18 @@ bool LogConsumer::nextBlock()
     return true;
 }
 
-bool LogConsumer::next(logrec_t*& lr)
-{
+bool LogConsumer::next(logrec_t*& lr) {
     w_assert1(nextLSN <= endLSN);
 
     if (!currentBlock) {
-        if (!nextBlock()) { return false; }
+        if (!nextBlock()) {
+            return false;
+        }
     }
 
     int lrLength = 0;
     bool scanned = logScanner->nextLogrec(currentBlock, pos, lr, &nextLSN,
-            &endLSN, &lrLength);
+                                          &endLSN, &lrLength);
 
     bool stopReading = nextLSN == endLSN;
     if (!scanned && readWholeBlocks && !stopReading) {
@@ -341,7 +337,7 @@ bool LogConsumer::next(logrec_t*& lr)
          * not enough bytes left on the block to tell the length).
          */
         stopReading = endLSN.hi() == nextLSN.hi() &&
-            (lrLength <= 0 || (endLSN.lo() - nextLSN.lo() < lrLength));
+                      (lrLength <= 0 || (endLSN.lo() - nextLSN.lo() < lrLength));
     }
 
     if (!scanned && stopReading) {
@@ -385,13 +381,11 @@ bool LogConsumer::next(logrec_t*& lr)
     return true;
 }
 
-bool LogScanner::hasPartialLogrec()
-{
+bool LogScanner::hasPartialLogrec() {
     return truncMissing > 0;
 }
 
-void LogScanner::reset()
-{
+void LogScanner::reset() {
     truncMissing = 0;
 }
 
@@ -405,9 +399,8 @@ void LogScanner::reset()
  * Method loops until any in-block skipping is completed.
  */
 bool LogScanner::nextLogrec(char* src, size_t& pos, logrec_t*& lr, lsn_t* nextLSN,
-        lsn_t* stopLSN, int* lrLength)
-{
-tryagain:
+                            lsn_t* stopLSN, int* lrLength) {
+    tryagain:
     if (nextLSN && stopLSN && *stopLSN == *nextLSN) {
         return false;
     }
@@ -418,27 +411,27 @@ tryagain:
         return false;
     }
 
-    lr = (logrec_t*) (src + pos);
+    lr = (logrec_t*)(src + pos);
 
     if (truncMissing > 0) {
         // finish up the trunc logrec from last block
         DBG5(<< "Reading partial log record -- missing: "
-                << truncMissing << " of " << truncCopied + truncMissing);
+                     << truncMissing << " of " << truncCopied + truncMissing);
         w_assert1(truncMissing <= remaining);
         memcpy(truncBuf + truncCopied, src + pos, truncMissing);
         pos += truncMissing;
-        lr = (logrec_t*) truncBuf;
+        lr = (logrec_t*)truncBuf;
         truncCopied += truncMissing;
         truncMissing = 0;
         w_assert1(truncCopied == lr->length());
     }
-    // we need at least two bytes to read the length
+        // we need at least two bytes to read the length
     else if (remaining == 1 || lr->length() > remaining) {
         // remainder of logrec must be read from next block
         w_assert0(remaining < sizeof(baseLogHeader) || lr->valid_header());
         DBG5(<< "Log record with length "
-                << (remaining > 1 ? lr->length() : -1)
-                << " does not fit in current block of " << remaining);
+                     << (remaining > 1 ? lr->length() : -1)
+                     << " does not fit in current block of " << remaining);
         w_assert0(remaining <= sizeof(logrec_t));
         memcpy(truncBuf, src + pos, remaining);
         truncCopied = remaining;
@@ -453,12 +446,12 @@ tryagain:
     }
 
     // assertions to check consistency of logrec
-#if W_DEBUG_LEVEL >=1
+#if W_DEBUG_LEVEL >= 1
     // TODO add assert macros with DBG message
     if (nextLSN != nullptr && !lr->valid_header(*nextLSN)) {
         DBGTHRD(<< "Unexpected LSN in scanner at pos " << pos
-                << " : " << lr->lsn_ck()
-                << " expected " << *nextLSN);
+                        << " : " << lr->lsn_ck()
+                        << " expected " << *nextLSN);
     }
 #endif
 
@@ -476,7 +469,7 @@ tryagain:
     if (ignore[lr->type()]) {
         // if logrec was assembled from truncation, pos was already
         // incremented, and skip is not necessary
-        if ((void*) lr == (void*) truncBuf) {
+        if ((void*)lr == (void*)truncBuf) {
             goto tryagain;
         }
         // DBGTHRD(<< "Found " << lr->type_str() << " on " << lr->lsn_ck()
@@ -492,8 +485,7 @@ tryagain:
             //DBGTHRD(<< "In-block skip for replacement, new pos = " << pos);
             toSkip = 0;
             goto tryagain;
-        }
-        else {
+        } else {
             DBGTHRD(<< "Skipping to next block until " << toSkip);
             toSkip -= remaining;
             return false;
@@ -501,7 +493,7 @@ tryagain:
     }
 
     // if logrec was assembled from truncation, pos was already incremented
-    if ((void*) lr != (void*) truncBuf) {
+    if ((void*)lr != (void*)truncBuf) {
         pos += lr->length();
     }
 

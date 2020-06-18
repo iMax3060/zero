@@ -82,6 +82,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #ifdef VERSION
 #undef VERSION
 #endif
+
 #include "shore-config.h"
 #include "shore.def"
 
@@ -98,7 +99,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 // #endif
 
 // now ZERO_INIT is set according to W_DEBUG_LEVEL.
-#if W_DEBUG_LEVEL>0
+#if W_DEBUG_LEVEL > 0
 #define ZERO_INIT 1 /* for valgrind/purify */
 #endif
 
@@ -136,26 +137,23 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /* ARCH_LP64 not defined */
 #endif
 
-
 #if SM_PAGESIZE > 32768 * 8
 #error SM does not support pages this large.
 #endif
 
-
 #include <sys/types.h>
+
 using namespace std;
 
 // avoid nasty bus errors...
 template<class T>
-static inline T* aligned_cast(char const* ptr)
-{
-  // bump the pointer up to the next proper alignment (always a power of 2)
-  size_t val = (size_t) ptr;
-  val += __alignof__(T) - 1;
-  val &= -__alignof__(T);
-  return (T*) val;
+static inline T* aligned_cast(char const* ptr) {
+    // bump the pointer up to the next proper alignment (always a power of 2)
+    size_t val = (size_t)ptr;
+    val += __alignof__(T) - 1;
+    val &= -__alignof__(T);
+    return (T*)val;
 }
-
 
 /** \brief constructs a blob of N bytes.
 *
@@ -165,10 +163,13 @@ static inline T* aligned_cast(char const* ptr)
 */
 template<int N>
 class allocaN {
-  char _buf[N+__alignof__(double)];
+    char _buf[N + __alignof__(double)];
+
 public:
-  operator void*() { return aligned_cast<double>(_buf); }
-  // no destructor because we don't know what's going on...
+    operator void*() {
+        return aligned_cast<double>(_buf);
+    }
+    // no destructor because we don't know what's going on...
 };
 
 /**

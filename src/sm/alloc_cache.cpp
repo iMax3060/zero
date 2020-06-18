@@ -11,14 +11,12 @@
 #include "xct_logger.h"
 
 alloc_cache_t::alloc_cache_t(stnode_cache_t& stcache, bool virgin, bool clustered)
-    : stcache(stcache)
-{
+        : stcache(stcache) {
     if (virgin) {
         PageID pid;
         W_COERCE(sx_allocate_page(pid, 0 /* stid */));
         w_assert1(pid == stnode_page::stpid);
-    }
-    else if (clustered) {
+    } else if (clustered) {
         vector<StoreID> stores;
         stcache.get_used_stores(stores);
 
@@ -29,22 +27,20 @@ alloc_cache_t::alloc_cache_t(stnode_cache_t& stcache, bool virgin, bool clustere
             extent_id_t ext = stcache.get_last_extent(s);
             W_COERCE(load_alloc_page(s, ext));
         }
-    }
-    else {
+    } else {
         last_alloc_page.resize(1, 0);
         extent_id_t ext = stcache.get_last_extent(0);
         W_COERCE(load_alloc_page(0, ext));
     }
 }
 
-rc_t alloc_cache_t::load_alloc_page(StoreID stid, extent_id_t ext)
-{
+rc_t alloc_cache_t::load_alloc_page(StoreID stid, extent_id_t ext) {
     spinlock_write_critical_section cs(&_latch);
 
     PageID alloc_pid = ext * extent_size;
     fixable_page_h p;
     W_DO(p.fix_direct(alloc_pid, LATCH_SH, false, false));
-    alloc_page* page = (alloc_page*) p.get_generic_page();
+    alloc_page* page = (alloc_page*)p.get_generic_page();
 
     auto last_set = page->get_last_set_bit();
 
@@ -53,41 +49,38 @@ rc_t alloc_cache_t::load_alloc_page(StoreID stid, extent_id_t ext)
     return RCOK;
 }
 
-PageID alloc_cache_t::get_last_allocated_pid(StoreID s) const
-{
+PageID alloc_cache_t::get_last_allocated_pid(StoreID s) const {
     spinlock_read_critical_section cs(&_latch);
     return last_alloc_page[s];
 }
 
-PageID alloc_cache_t::get_last_allocated_pid() const
-{
+PageID alloc_cache_t::get_last_allocated_pid() const {
     spinlock_read_critical_section cs(&_latch);
     return _get_last_allocated_pid_internal();
 }
 
-PageID alloc_cache_t::_get_last_allocated_pid_internal() const
-{
+PageID alloc_cache_t::_get_last_allocated_pid_internal() const {
     PageID max = 0;
     for (auto p : last_alloc_page) {
-        if (p > max) { max = p; }
+        if (p > max) {
+            max = p;
+        }
     }
     return max;
 }
 
-bool alloc_cache_t::is_allocated(PageID pid)
-{
+bool alloc_cache_t::is_allocated(PageID pid) {
     extent_id_t ext = pid / extent_size;
 
     PageID alloc_pid = ext * extent_size;
     fixable_page_h p;
     W_COERCE(p.fix_direct(alloc_pid, LATCH_SH, false, false));
-    alloc_page* page = (alloc_page*) p.get_generic_page();
+    alloc_page* page = (alloc_page*)p.get_generic_page();
 
     return page->get_bit(pid - alloc_pid);
 }
 
-rc_t alloc_cache_t::sx_allocate_page(PageID& pid, StoreID stid)
-{
+rc_t alloc_cache_t::sx_allocate_page(PageID& pid, StoreID stid) {
     sys_xct_section_t ssx(true);
 
     // get pid and update last_alloc_page in critical section
@@ -145,8 +138,7 @@ rc_t alloc_cache_t::sx_allocate_page(PageID& pid, StoreID stid)
     return RCOK;
 }
 
-rc_t alloc_cache_t::sx_format_alloc_page(PageID alloc_pid)
-{
+rc_t alloc_cache_t::sx_format_alloc_page(PageID alloc_pid) {
     w_assert1(alloc_pid % extent_size == 0);
 
     sys_xct_section_t ssx(true);
@@ -163,15 +155,14 @@ rc_t alloc_cache_t::sx_format_alloc_page(PageID alloc_pid)
     return RCOK;
 }
 
-rc_t alloc_cache_t::sx_deallocate_page(PageID pid)
-{
+rc_t alloc_cache_t::sx_deallocate_page(PageID pid) {
     w_assert1(pid % extent_size > 0);
 
     // Just unset the corresponding bit in the alloc page
     fixable_page_h p;
     PageID alloc_pid = pid - (pid % extent_size);
     W_DO(p.fix_direct(alloc_pid, LATCH_EX, false, false));
-    alloc_page* page = (alloc_page*) p.get_generic_page();
+    alloc_page* page = (alloc_page*)p.get_generic_page();
     w_assert1(page->get_bit(pid - alloc_pid));
     page->unset_bit(pid - alloc_pid);
     Logger::log_p<dealloc_page_log>(&p, pid);

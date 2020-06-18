@@ -18,12 +18,12 @@ typedef w_base_t::base_stat_t base_stat_t;
 struct btree_lf_stats_t;
 struct btree_int_stats_t;
 
-     /*
-     * When this page belongs to a foster chain, we need to store
-     * high-fence of right-most sibling in every sibling to do
-     * batch-verification with bitmaps.  @see
-     * btree_impl::_ux_verify_volume()
-     */
+/*
+* When this page belongs to a foster chain, we need to store
+* high-fence of right-most sibling in every sibling to do
+* batch-verification with bitmaps.  @see
+* btree_impl::_ux_verify_volume()
+*/
 
 class btree_page_h;
 
@@ -36,38 +36,59 @@ class btree_page_h;
  */
 class btrec_t {
 public:
-    NORET            btrec_t()        {};
-    NORET            btrec_t(const btree_page_h& page, slotid_t slot);
-    NORET            ~btrec_t()        {};
+    NORET btrec_t() {};
+    NORET btrec_t(const btree_page_h& page, slotid_t slot);
+
+    NORET ~btrec_t() {};
 
     /// Load up a reference to the tuple at slot in "page".
-    btrec_t&           set(const btree_page_h& page, slotid_t slot);
+    btrec_t& set(const btree_page_h& page, slotid_t slot);
 
-    smsize_t           elen() const    { return _elem.size(); }
+    smsize_t elen() const {
+        return _elem.size();
+    }
 
-    const w_keystr_t&  key() const    { return _key; }
-    const cvec_t&      elem() const     { return _elem; }
+    const w_keystr_t& key() const {
+        return _key;
+    }
+
+    const cvec_t& elem() const {
+        return _elem;
+    }
+
     /// returns the opaque version
-    PageID            child() const    { return _child; }
-    const lsn_t&       child_emlsn() const { return _child_emlsn; }
-    bool               is_ghost_record() const { return _ghost_record; }
+    PageID child() const {
+        return _child;
+    }
+
+    const lsn_t& child_emlsn() const {
+        return _child_emlsn;
+    }
+
+    bool is_ghost_record() const {
+        return _ghost_record;
+    }
 
 private:
     friend class btree_page_h;
 
-    bool            _ghost_record;
-    w_keystr_t      _key;
-    PageID         _child;  // opaque pointer
+    bool _ghost_record;
+
+    w_keystr_t _key;
+
+    PageID _child;  // opaque pointer
     /**
      * Expected child LSN for the _child (only in interior node).
      * \ingroup SPR
      */
-    lsn_t           _child_emlsn;
-    cvec_t          _elem;
+    lsn_t _child_emlsn;
+
+    cvec_t _elem;
 
     // disabled
-    NORET            btrec_t(const btrec_t&);
-    btrec_t&         operator=(const btrec_t&);
+    NORET btrec_t(const btrec_t&);
+
+    btrec_t& operator=(const btrec_t&);
 };
 
 inline NORET
@@ -75,13 +96,12 @@ btrec_t::btrec_t(const btree_page_h& page, slotid_t slot) {
     set(page, slot);
 }
 
-
 class btree_impl;
-template <class T> class btree_ghost_t;
+
+template<class T>
+class btree_ghost_t;
 class btree_ghost_mark_log;
 class btree_ghost_reclaim_log;
-
-
 
 /**
  * \brief Page handle for B-Tree data page.
@@ -165,32 +185,35 @@ class btree_ghost_reclaim_log;
  */
 class btree_page_h : public fixable_page_h {
     friend class btree_impl;
-    template <class T> friend class btree_ghost_t;
+
+    template<class T> friend
+    class btree_ghost_t;
     friend class btree_ghost_mark_log;
     friend class btree_ghost_reclaim_log;
-    template <class T> friend class page_img_format_t;
+
+    template<class T> friend
+    class page_img_format_t;
     friend class btree_split_log;
 
-    btree_page* page() const { return reinterpret_cast<btree_page*>(_pp); }
-
+    btree_page* page() const {
+        return reinterpret_cast<btree_page*>(_pp);
+    }
 
     enum {
         data_sz = btree_page::data_sz,
-        hdr_sz  = btree_page::hdr_sz,
+        hdr_sz = btree_page::hdr_sz,
     };
 
     // Used for page rebalance log record generation purpose
-    union record_info_int16_convert
-    {
-        char    c[sizeof(int16_t)];// int16 = 2 bytes, enough for max. record size in current implementation
-        int16_t is_ghost:1,        // 1 = ghost, 0 = non-ghost
-                len:15;            // record length
+    union record_info_int16_convert {
+        char c[sizeof(int16_t)];// int16 = 2 bytes, enough for max. record size in current implementation
+        int16_t is_ghost : 1,        // 1 = ghost, 0 = non-ghost
+        len : 15;            // record length
     };
 
     // Used for page rebalance log record generation purpose
-    union record_info_shpid_convert
-    {
-        char	c[sizeof(PageID)];// int32 = 4 bytes
+    union record_info_shpid_convert {
+        char c[sizeof(PageID)];// int32 = 4 bytes
         PageID i;
     };
 
@@ -200,8 +223,11 @@ public:
     // ======================================================================
 
     btree_page_h() {}
+
     btree_page_h(const btree_page_h& p) : fixable_page_h(p) {}
+
     ~btree_page_h() {}
+
     btree_page_h& operator=(btree_page_h& p) {
         fixable_page_h::operator=(p);
         w_assert1(_pp->tag == t_btree_p);
@@ -213,53 +239,67 @@ public:
     //   BEGIN: Header Get/Set functions
     // ======================================================================
 
-    PageID                     btree_root() const { return page()->btree_root;}
-    smsize_t                    used_space()  const;
+    PageID btree_root() const {
+        return page()->btree_root;
+    }
+
+    smsize_t used_space() const;
 
     // Total usable space on page
-    smsize_t                     usable_space()  const;
-
-
-
+    smsize_t usable_space() const;
 
     /// Returns 1 if leaf, >1 if non-leaf.
-    int               level() const;
+    int level() const;
+
     /// Returns left-most ptr (used only in non-leaf nodes).
-    PageID        pid0() const;
+    PageID pid0() const;
+
     /// Returns left-most opaque pointer (used only in non-leaf nodes).
-    PageID        pid0_opaqueptr() const;
+    PageID pid0_opaqueptr() const;
+
     /// Returns root page; used for recovery
-    PageID           root() const;
+    PageID root() const;
 
     /// Is associated page a leaf?
-    bool         is_leaf() const;
+    bool is_leaf() const;
+
     /// Returns if this page is NOT a leaf
-    bool             is_node() const;
+    bool is_node() const;
+
     /**
     *    return true if this node is the lowest interior node,     *
     *    i.e., the parent of a leaf.  Used to tell how we should   *
     *    latch a child page : EX or SH                             *
     */
-    bool             is_leaf_parent() const;
+    bool is_leaf_parent() const;
 
     /// Returns ID of B-link page (0 if not linked).
-    PageID         get_foster() const;
+    PageID get_foster() const;
+
     /// Returns opaque pointer of B-link page (0 if not linked).
-    PageID         get_foster_opaqueptr() const;
+    PageID get_foster_opaqueptr() const;
 
     /// Returns the prefix which is removed from all entries in this page.
     const char* get_prefix_key() const;
+
     /// Returns the length of prefix key (0 means no prefix compression).
-    int16_t           get_prefix_length() const;
+    int16_t get_prefix_length() const;
+
     /// Returns the low fence key, which is same OR smaller than all entries in this page and its descendants.
-    const char*  get_fence_low_key() const;
+    const char* get_fence_low_key() const;
+
     /// Returns the length of low fence key.
-    int16_t           get_fence_low_length() const;
+    int16_t get_fence_low_length() const;
+
     /// Constructs w_keystr_t object containing the low-fence key of this page.
-    void                copy_fence_low_key(w_keystr_t &buffer) const
-    { buffer.construct_from_keystr(get_fence_low_key(), get_fence_low_length()); }
+    void copy_fence_low_key(w_keystr_t& buffer) const {
+        buffer.construct_from_keystr(get_fence_low_key(), get_fence_low_length());
+    }
+
     /// Returns if the low-fence key is infimum.
-    bool              is_fence_low_infimum() const { return get_fence_low_key()[0] == SIGN_NEGINF;}
+    bool is_fence_low_infimum() const {
+        return get_fence_low_key()[0] == SIGN_NEGINF;
+    }
 
     /**
      * Returns the high fence key (without prefix), which is larger
@@ -267,63 +307,80 @@ public:
      * don't provide get_fence_high_key() with prefix because the page
      * eliminates prefix from fence-high.
      */
-    const char*       get_fence_high_key_noprefix() const;
+    const char* get_fence_high_key_noprefix() const;
+
     /// Returns the length of high fence key with prefix.
-    int16_t           get_fence_high_length() const;
+    int16_t get_fence_high_length() const;
+
     /// Returns the length of high fence key without prefix.
-    int16_t           get_fence_high_length_noprefix() const {
+    int16_t get_fence_high_length_noprefix() const {
         return get_fence_high_length() - get_prefix_length();
     }
+
     /// Constructs w_keystr_t object containing the low-fence key of this page.
-    void                copy_fence_high_key(w_keystr_t &buffer) const {
+    void copy_fence_high_key(w_keystr_t& buffer) const {
         buffer.construct_from_keystr(get_prefix_key(), get_prefix_length(),
                                      get_fence_high_key_noprefix(),
                                      get_fence_high_length_noprefix());
     }
+
     /// Returns if the high-fence key is supremum.
-    bool              is_fence_high_supremum() const { return get_prefix_length() == 0 && get_fence_high_key_noprefix()[0] == SIGN_POSINF;}
+    bool is_fence_high_supremum() const {
+        return get_prefix_length() == 0 && get_fence_high_key_noprefix()[0] == SIGN_POSINF;
+    }
 
     /// Returns the high fence key of foster chain.
-    const char*  get_chain_fence_high_key() const;
+    const char* get_chain_fence_high_key() const;
+
     /// Returns the length of high fence key of foster chain.
-    int16_t           get_chain_fence_high_length() const;
+    int16_t get_chain_fence_high_length() const;
+
     /// Constructs w_keystr_t object containing the low-fence key of this page.
-    void                copy_chain_fence_high_key(w_keystr_t &buffer) const {
+    void copy_chain_fence_high_key(w_keystr_t& buffer) const {
         buffer.construct_from_keystr(get_chain_fence_high_key(), get_chain_fence_high_length());
     }
+
     /**
      * Returns if the given key can exist in the range specified by fence keys,
      * which is low-fence <= key < high-fence.
      */
-    bool              fence_contains(const w_keystr_t &key) const;
+    bool fence_contains(const w_keystr_t& key) const;
+
     /**
      * Return value : 0 if equal.
      * : <0 if key < fence-low.
      * : >0 if key > fence-low.
      */
-    int                 compare_with_fence_low (const w_keystr_t &key) const;
+    int compare_with_fence_low(const w_keystr_t& key) const;
+
     /// overload for char*.
-    int                 compare_with_fence_low (const char* key, size_t key_len) const;
+    int compare_with_fence_low(const char* key, size_t key_len) const;
+
     /// used when the prefix part is already checked key/key_len must be WITHOUT prefix.
-    int                 compare_with_fence_low_noprefix (const char* key, size_t key_len) const;
+    int compare_with_fence_low_noprefix(const char* key, size_t key_len) const;
+
     /**
      * Return value : 0 if equal.
      * : <0 if key < fence-high.
      * : >0 if key > fence-high.
      */
-    int                 compare_with_fence_high (const w_keystr_t &key) const;
+    int compare_with_fence_high(const w_keystr_t& key) const;
+
     /// overload for char*.
-    int                 compare_with_fence_high (const char* key, size_t key_len) const;
+    int compare_with_fence_high(const char* key, size_t key_len) const;
+
     /// used when the prefix part is already checked key/key_len must be WITHOUT prefix.
-    int                 compare_with_fence_high_noprefix (const char* key, size_t key_len) const;
+    int compare_with_fence_high_noprefix(const char* key, size_t key_len) const;
+
     /**
      * Return value : 0 if equal.
      * : <0 if key < fence-high.
      * : >0 if key > fence-high.
      */
-    int                 compare_with_chain_fence_high (const w_keystr_t &key) const;
+    int compare_with_chain_fence_high(const w_keystr_t& key) const;
+
     /// overload for char*.
-    int                 compare_with_chain_fence_high (const char* key, size_t key_len) const;
+    int compare_with_chain_fence_high(const char* key, size_t key_len) const;
     // no 'noprefix' version because chain_fence_high might not share the prefix!
 
     /**
@@ -345,9 +402,9 @@ public:
      * \author Caetano Sauer
      */
     rc_t format_foster_child(btree_page_h& parent, const PageID& new_page_id,
-            const w_keystr_t& triggering_key,
-            w_keystr_t& split_key, // OUT: actual split key
-            int& move_count);
+                             const w_keystr_t& triggering_key,
+                             w_keystr_t& split_key, // OUT: actual split key
+                             int& move_count);
 
     /** \brief Sets the given page ID as foster child of this page
      *
@@ -358,7 +415,7 @@ public:
      * \author Caetano Sauer
      */
     bool set_foster_child(PageID foster_child_pid,
-        const w_keystr_t& new_fence_high, const w_keystr_t& child_fence_chain);
+                          const w_keystr_t& new_fence_high, const w_keystr_t& child_fence_chain);
 
     void delete_range(int from, int to);
 
@@ -383,79 +440,79 @@ public:
      * @param[in] log_it            Should we log this change?
      * ...
      */
-    rc_t format_steal(lsn_t                new_lsn,
-                      const PageID&        pid,
-                      StoreID               store,
-                      PageID              root,
-                      int                  level,
-                      PageID              pid0,
-                      lsn_t                pid0_emlsn,
-                      PageID              foster,
-                      lsn_t                foster_emlsn,
-                      const w_keystr_t&    fence_low,
-                      const w_keystr_t&    fence_high,
-                      const w_keystr_t&    chain_fence_high,
-                      bool                 log_it = true,
-                      btree_page_h*        steal_src1 = nullptr,
-                      int                  steal_from1 = 0,
-                      int                  steal_to1 = 0,
-                      btree_page_h*        steal_src2 = nullptr,
-                      int                  steal_from2 = 0,
-                      int                  steal_to2 = 0,
-                      bool                 steal_src2_pid0 = false,
-                      const bool           full_logging = false,  // True if doing full logging for record movement
-                      const bool           log_src_1 = false,     // Use only if full_logging = true
-                                                                  // True if log movements from src1
-                                                                  // False if log movements from src2
-                      const bool           ghost = false          // When _init the page, should the fence key record be a ghost
-        );
+    rc_t format_steal(lsn_t new_lsn,
+                      const PageID& pid,
+                      StoreID store,
+                      PageID root,
+                      int level,
+                      PageID pid0,
+                      lsn_t pid0_emlsn,
+                      PageID foster,
+                      lsn_t foster_emlsn,
+                      const w_keystr_t& fence_low,
+                      const w_keystr_t& fence_high,
+                      const w_keystr_t& chain_fence_high,
+                      bool log_it = true,
+                      btree_page_h* steal_src1 = nullptr,
+                      int steal_from1 = 0,
+                      int steal_to1 = 0,
+                      btree_page_h* steal_src2 = nullptr,
+                      int steal_from2 = 0,
+                      int steal_to2 = 0,
+                      bool steal_src2_pid0 = false,
+                      const bool full_logging = false,  // True if doing full logging for record movement
+                      const bool log_src_1 = false,     // Use only if full_logging = true
+            // True if log movements from src1
+            // False if log movements from src2
+                      const bool ghost = false          // When _init the page, should the fence key record be a ghost
+                     );
 
     /// Steal records from steal_src.  Called by format_steal.
     void _steal_records(btree_page_h* steal_src,
-                        int           steal_from,
-                        int           steal_to,
-                        const bool    full_logging);
+                        int steal_from,
+                        int steal_to,
+                        const bool full_logging);
 
     // Set the node fence keys, no change in data and other page information except record count (if move out)
     // A special function used by Single-Page-Recovery REDO operation for page rebalance and page merge
     // when full logging is on (no minimal logging), set the page fence key before the
     // fully logged actual record movements
-    rc_t init_fence_keys(const bool set_low, const w_keystr_t &low,
-                           const bool set_high, const w_keystr_t &high,
-                           const bool set_chain, const w_keystr_t &chain_fence_high,
-                           const bool set_pid0, const PageID new_pid0,
-                           const bool set_emlsn, const lsn_t new_pid0_emlsn,
-                           const bool set_foster, const PageID foster_pid0,
-                           const bool set_foster_emlsn, const lsn_t foster_emlsn,
-                           const int remove_count = 0);
+    rc_t init_fence_keys(const bool set_low, const w_keystr_t& low,
+                         const bool set_high, const w_keystr_t& high,
+                         const bool set_chain, const w_keystr_t& chain_fence_high,
+                         const bool set_pid0, const PageID new_pid0,
+                         const bool set_emlsn, const lsn_t new_pid0_emlsn,
+                         const bool set_foster, const PageID foster_pid0,
+                         const bool set_foster_emlsn, const lsn_t foster_emlsn,
+                         const int remove_count = 0);
 
     /**
      * Called when we did a split from this page but didn't move any record to new page.
      * This method can't be undone.  Use this only for REDO-only system transactions.
      */
-    rc_t norecord_split (PageID foster, lsn_t foster_emlsn,
-                         const w_keystr_t& fence_high,
-                         const w_keystr_t& chain_fence_high);
+    rc_t norecord_split(PageID foster, lsn_t foster_emlsn,
+                        const w_keystr_t& fence_high,
+                        const w_keystr_t& chain_fence_high);
 
     /// Returns if whether we can do norecord insert now.
-    bool                 check_chance_for_norecord_split(const w_keystr_t& key_to_insert) const;
+    bool check_chance_for_norecord_split(const w_keystr_t& key_to_insert) const;
 
 
     // ======================================================================
     //   BEGIN: Public record access functions
     // ======================================================================
 
-     /// Returns the number of records in this page.
-    int             nrecs() const;
+    /// Returns the number of records in this page.
+    int nrecs() const;
 
-     /// Returns the number of ghosts records in this page.
-    int             nghosts() const;
+    /// Returns the number of ghosts records in this page.
+    int nghosts() const;
 
     /// Returns if the specified record is a ghost record.
-    bool            is_ghost(slotid_t slot) const;
+    bool is_ghost(slotid_t slot) const;
 
     /// Retrieves key from given record #
-    void            get_key(slotid_t slot,  w_keystr_t &key) const;
+    void get_key(slotid_t slot, w_keystr_t& key) const;
 
     /**
      * Return pointer to, length of element of given record.  Also
@@ -463,7 +520,7 @@ public:
      *
      * @pre we are a leaf page
      */
-    const char*     element(int slot, smsize_t &len, bool &ghost) const;
+    const char* element(int slot, smsize_t& len, bool& ghost) const;
 
     /**
      * Attempt to copy element of given record to provided buffer
@@ -475,13 +532,13 @@ public:
      *
      * @pre we are a leaf page
      */
-    bool            copy_element(int slot, char *out_buffer, smsize_t &len, bool &ghost) const;
+    bool copy_element(int slot, char* out_buffer, smsize_t& len, bool& ghost) const;
 
     /// Return the (non-opaque) child pointer of record in slot.
-    PageID       child(slotid_t slot) const;
-    /// Return the opaque child pointer of record in slot.
-    PageID       child_opaqueptr(slotid_t slot) const;
+    PageID child(slotid_t slot) const;
 
+    /// Return the opaque child pointer of record in slot.
+    PageID child_opaqueptr(slotid_t slot) const;
 
     /**
      * Returns a pointer to given page pointer (e.g., PageID).
@@ -501,37 +558,35 @@ public:
      */
     PageID* page_pointer_address(int offset);
 
-
     /**
      * Returns physical space used by the record currently in the
      * given slot (including padding and other overhead due to that
      * slot being occupied).
      */
-    size_t              get_rec_space(int slot) const;
-
+    size_t get_rec_space(int slot) const;
 
     // Determine the prefix length for a page rebalance operation
     int16_t calculate_prefix_length(int16_t existing_prefix_len,  // Existing prefix length
-                                      w_keystr_t low_key,           // New low fence
-                                      w_keystr_t high_key);         // New high fence
+                                    w_keystr_t low_key,           // New low fence
+                                    w_keystr_t high_key);         // New high fence
 
     // Copy the specified number of records into provided buffer (no ghost)
     // each record must be reconstructed back to the original format (key+data)
     // Assumption - this function is for page split and page merge purpose,
     // therefore copy the last 'rec_count' records in the page, in page merge case
     // 'rec_count' == nrecs()
-    rc_t copy_records(const int       rec_count,          // In: number of records to copy
-                         char            *data_buffer,       // Out: caller provided data buffer
-                         smsize_t        &len);              // In: buffer size
-                                                             // out: data length
+    rc_t copy_records(const int rec_count,          // In: number of records to copy
+                      char* data_buffer,       // Out: caller provided data buffer
+                      smsize_t& len);              // In: buffer size
+    // out: data length
 
     // Function to insert records into a page, this is used for page rebalance purpose only
     // while the incoming buffer contains all the record data plus whatever extra information
     // per record
     rc_t insert_records_dest_redo(const int16_t prefix_len,      // In: source page prefix length
-                                      const int32_t move_count,      //In: how many records to insert
-                                      const int16_t record_data_len, // In: total length of data with extra info
-                                      const char *record_data);      // In: Data buffer
+                                  const int32_t move_count,      //In: how many records to insert
+                                  const int16_t record_data_len, // In: total length of data with extra info
+                                  const char* record_data);      // In: Data buffer
 
 
     // ======================================================================
@@ -545,10 +600,10 @@ public:
      * inserted.  Note in the latter case that return_slot may be
      * nrecs().
      */
-    void            search(const w_keystr_t& key,
-                           bool&             found_key,
-                           slotid_t&         return_slot) const {
-        search((const char*) key.buffer_as_keystr(), key.get_length_as_keystr(), found_key, return_slot);
+    void search(const w_keystr_t& key,
+                bool& found_key,
+                slotid_t& return_slot) const {
+        search((const char*)key.buffer_as_keystr(), key.get_length_as_keystr(), found_key, return_slot);
     }
 
     /**
@@ -558,9 +613,8 @@ public:
      * inserted.  Note in the latter case that return_slot may be
      * nrecs().
      */
-    void            search(const char *key_raw, size_t key_raw_len,
-                           bool& found_key, slotid_t& return_slot) const;
-
+    void search(const char* key_raw, size_t key_raw_len,
+                bool& found_key, slotid_t& return_slot) const;
 
     /**
      * Search for given key in this interior node, determining which
@@ -579,8 +633,8 @@ public:
      *
      * @pre this is an interior node
      */
-    void            search_node(const w_keystr_t& key,
-                                slotid_t&         return_slot) const;
+    void search_node(const w_keystr_t& key,
+                     slotid_t& return_slot) const;
 
 
     // ======================================================================
@@ -593,10 +647,11 @@ public:
      * @param[in] child child pointer to add
      * @param[in] child_emlsn Expected child LSN of the pointed page
      */
-    rc_t            insert_node(const w_keystr_t&   key,
-                                slotid_t            slot,
-                                PageID             child,
-                                const lsn_t&        child_emlsn);
+    rc_t insert_node(const w_keystr_t& key,
+                     slotid_t slot,
+                     PageID child,
+                     const lsn_t& child_emlsn);
+
     /**
      * Mark the given slot to be a ghost record.
      * If the record is already a ghost, does nothing.
@@ -604,7 +659,7 @@ public:
      * This function itself does NOT log, so the caller is responsible for it.
      * @see defrag()
      */
-    void                        mark_ghost(slotid_t slot);
+    void mark_ghost(slotid_t slot);
 
     /**
      * Un-Mark the given slot to be a regular record.
@@ -612,7 +667,7 @@ public:
      * This is only used by delete (UNDO).
      * This function itself does NOT log, so the caller is responsible for it.
      */
-    void                        unmark_ghost(slotid_t slot);
+    void unmark_ghost(slotid_t slot);
 
     /**
      * Replace an existing ghost record to insert the given tuple.
@@ -620,7 +675,7 @@ public:
      * @param[in] key inserted key
      * @param[in] elem record data
      */
-    rc_t            replace_ghost(const w_keystr_t &key, const cvec_t &elem, bool redo = false);
+    rc_t replace_ghost(const w_keystr_t& key, const cvec_t& elem, bool redo = false);
 
     /**
      * \brief Replaces the special fence record with the given new data,
@@ -630,25 +685,26 @@ public:
      * Also, this method may defrag the page to squeeze out space for the fence keys
      * if needed (returns eRECWONTFIT if it still doesn't fit).
      */
-    rc_t            replace_fence_rec_nolog_may_defrag(const w_keystr_t& low,
-        const w_keystr_t& high, const w_keystr_t& chain, int new_prefix_length= -1);
+    rc_t replace_fence_rec_nolog_may_defrag(const w_keystr_t& low,
+                                            const w_keystr_t& high, const w_keystr_t& chain,
+                                            int new_prefix_length = -1);
 
     /** @see replace_fence_rec_nolog_may_defrag(). */
-    rc_t            replace_fence_rec_nolog_no_defrag(const w_keystr_t& low,
-        const w_keystr_t& high, const w_keystr_t& chain, int new_prefix_length);
+    rc_t replace_fence_rec_nolog_no_defrag(const w_keystr_t& low,
+                                           const w_keystr_t& high, const w_keystr_t& chain, int new_prefix_length);
 
     /**
      *  Remove the slot and up-shift slots after the hole to fill it up.
      * @param slot the slot to remove.
      */
-    rc_t            remove_shift_nolog(slotid_t slot);
+    rc_t remove_shift_nolog(slotid_t slot);
 
     /**
      * Replaces the given slot with the new data.  key is not changed.
      * If we need to expand the record and the page doesn't have
      * enough space, eRECWONTFIT is thrown.
      */
-    rc_t            replace_el_nolog(slotid_t slot, const cvec_t &elem);
+    rc_t replace_el_nolog(slotid_t slot, const cvec_t& elem);
 
     /**
      * Similar to replace_el_nolog(), but this overwrites specific
@@ -656,8 +712,8 @@ public:
      * so it's simpler, faster and can't throw error.
      *
      */
-    void            overwrite_el_nolog(slotid_t slot, smsize_t offset,
-                                       const char *new_el, smsize_t elen);
+    void overwrite_el_nolog(slotid_t slot, smsize_t offset,
+                            const char* new_el, smsize_t elen);
 
     /**
      * Creates a dummy ghost record with the given key and element
@@ -665,11 +721,12 @@ public:
      * This is used by insertion (its nested system transaction).
      * This function itself does NOT log, so the caller is responsible for it.
      */
-    void             reserve_ghost(const w_keystr_t &key, size_t element_length) {
-        reserve_ghost((const char *)key.buffer_as_keystr(), key.get_length_as_keystr(), element_length);
+    void reserve_ghost(const w_keystr_t& key, size_t element_length) {
+        reserve_ghost((const char*)key.buffer_as_keystr(), key.get_length_as_keystr(), element_length);
     }
+
     // to make it slightly faster.  not a neat kind of optimization
-    void             reserve_ghost(const char *key_raw, size_t key_raw_len, size_t element_length);
+    void reserve_ghost(const char* key_raw, size_t key_raw_len, size_t element_length);
 
     /**
      * Creates a non-ghost record with the given key and data.
@@ -683,25 +740,27 @@ public:
      * @pre the page has enough space to insert the record. The caller must make sure this
      * is the case.
      */
-    void             insert_nonghost(const w_keystr_t &key, const cvec_t &elem);
+    void insert_nonghost(const w_keystr_t& key, const cvec_t& elem);
 
     /**
      * Tell if the slot is a ghost record and enough spacious to store the
      * given key/data.
      */
-    bool            _is_enough_spacious_ghost(
-        const w_keystr_t &key, slotid_t slot,
-        const cvec_t&        el);
+    bool _is_enough_spacious_ghost(
+            const w_keystr_t& key, slotid_t slot,
+            const cvec_t& el);
 
     /**
      * Returns if there is enough free space to accomodate the
      * given new record.
      * @return true if there is free space
      */
-    bool           check_space_for_insert_leaf(const w_keystr_t &trunc_key, const cvec_t &el);
-    bool           check_space_for_insert_leaf(size_t trunc_key_length, size_t element_length);
+    bool check_space_for_insert_leaf(const w_keystr_t& trunc_key, const cvec_t& el);
+
+    bool check_space_for_insert_leaf(size_t trunc_key_length, size_t element_length);
+
     /// for intermediate node (no element).
-    bool           check_space_for_insert_node(const w_keystr_t &key);
+    bool check_space_for_insert_node(const w_keystr_t& key);
 
     /**
      * \brief Suggests a new fence key, assuming this page is being split.
@@ -715,14 +774,17 @@ public:
      * the new right sibling steal the entires
      * @param[in] triggering_key the key to be inserted after this split.  used to determine split policy.
      */
-    void                 suggest_fence_for_split(
-                             w_keystr_t &mid, slotid_t& right_begins_from, const w_keystr_t &triggering_key) const;
-    /// For recovering the separator key from boundary place.  @see suggest_fence_for_split().
-    w_keystr_t           recalculate_fence_for_split(slotid_t right_begins_from) const;
+    void suggest_fence_for_split(
+            w_keystr_t& mid, slotid_t& right_begins_from, const w_keystr_t& triggering_key) const;
 
-    bool                 is_insertion_extremely_skewed_right() const;
-    bool                 is_insertion_skewed_right() const;
-    bool                 is_insertion_skewed_left()  const;
+    /// For recovering the separator key from boundary place.  @see suggest_fence_for_split().
+    w_keystr_t recalculate_fence_for_split(slotid_t right_begins_from) const;
+
+    bool is_insertion_extremely_skewed_right() const;
+
+    bool is_insertion_skewed_right() const;
+
+    bool is_insertion_skewed_left() const;
 
 
     // ======================================================================
@@ -739,22 +801,23 @@ public:
      * 'logically' no changes.
      * Context: System transaction.
      */
-    rc_t                         defrag(const bool full_logging_redo = false);
+    rc_t defrag(const bool full_logging_redo = false);
 
     /**
      * \brief Compress page by trying to expand the prefix and truncate keys
      * even further
      */
     rc_t compress(const w_keystr_t& low, const w_keystr_t& high,
-            const w_keystr_t& chain, bool redo = false);
+                  const w_keystr_t& chain, bool redo = false);
 
     /// stats for leaf nodes.
-    rc_t             leaf_stats(btree_lf_stats_t& btree_lf);
+    rc_t leaf_stats(btree_lf_stats_t& btree_lf);
+
     /// stats for interior nodes.
-    rc_t             int_stats(btree_int_stats_t& btree_int);
+    rc_t int_stats(btree_int_stats_t& btree_int);
 
     /// Debugs out the contents of this page.
-    void             print(bool print_elem=false);
+    void print(bool print_elem = false);
 
     /**
      * Checks integrity of this page.
@@ -768,12 +831,14 @@ public:
      * records and integrity of space offset.  setting this to true makes this function expensive.
      * @return true if this page is in a consistent state
      */
-    bool             is_consistent (bool check_keyorder = false, bool check_space = false) const;
+    bool is_consistent(bool check_keyorder = false, bool check_space = false) const;
 
     /** Returns the pointer to Expected Child LSN of pid0, foster-child, or real child. \ingroup SPR */
-    lsn_t*         emlsn_address(general_recordid_t pos);
+    lsn_t* emlsn_address(general_recordid_t pos);
+
     /** Returns the Expected Child LSN of pid0, foster-child, or real child. */
-    const lsn_t&   get_emlsn_general(general_recordid_t pos) const;
+    const lsn_t& get_emlsn_general(general_recordid_t pos) const;
+
     /**
      * \brief Sets the Expected Child LSN of pid0, foster-child, or real child.
      * \ingroup SPR
@@ -781,13 +846,13 @@ public:
      * This method is not protected by exclusive latch but still safe because EMLSN are not
      * viewed/updated by multi threads.
      */
-    void           set_emlsn_general(general_recordid_t pos, const lsn_t &lsn);
+    void set_emlsn_general(general_recordid_t pos, const lsn_t& lsn);
 
     /** Returns the Expected Child LSN of foster-child. \ingroup SPR */
-    const lsn_t&   get_foster_emlsn() const;
+    const lsn_t& get_foster_emlsn() const;
 
     /** Returns the Expected Child LSN of pid0. \ingroup SPR */
-    const lsn_t&   get_pid0_emlsn() const;
+    const lsn_t& get_pid0_emlsn() const;
 
     /*
      * The combined sizes of the key (i.e., the number of actual data
@@ -797,8 +862,7 @@ public:
      * the page and entry metadata.  See sm_config_info_t and
      * ss_m::config_info.
      */
-    static smsize_t         max_entry_size;
-
+    static smsize_t max_entry_size;
 
 private:
     // ======================================================================
@@ -807,11 +871,11 @@ private:
 
     /// A field to hold a B-tree key length
     typedef uint16_t key_length_t;
+
     enum _internal {
         /** Maximum key length allows in B-tree pages. */
         max_key_length = (1 << (sizeof(key_length_t) * 8 - 1)) - 1,
     };
-
 
     /**
      * Pack a node record's information into out, suitable for use
@@ -824,10 +888,11 @@ private:
      * Be \b VERY careful because both data in trunk_key and emlsn are stored as references.
      * You must keep the original variables until the resulting cvec_t gets out of scope.
      */
-    void _pack_node_record(cvec_t& out, const cvec_t& trunc_key, const lsn_t &emlsn) const;
+    void _pack_node_record(cvec_t& out, const cvec_t& trunc_key, const lsn_t& emlsn) const;
 
     /// type of scratch space needed by _pack_leaf_record
     typedef key_length_t pack_scratch_t;
+
     /**
      * Pack a leaf record's information into out, suitable for use
      * with insert_item.
@@ -843,6 +908,7 @@ private:
     void _pack_leaf_record(cvec_t& out, pack_scratch_t& out_scratch,
                            const cvec_t& trunc_key,
                            const char* element, size_t element_len) const;
+
     /**
      * Pack a leaf record's key information *only* into out, suitable
      * for use with insert_item with variable-size--data length
@@ -889,7 +955,6 @@ private:
      */
     size_t _predict_leaf_data_length(int trunc_key_length, int element_length) const;
 
-
     /**
      * \brief Poor man's normalized key type.
      *
@@ -900,6 +965,7 @@ private:
 
     /// Returns the value of poor-man's normalized key for the given key string WITHOUT prefix.
     poor_man_key _extract_poor_man_key(const void* trunc_key, size_t trunc_key_len) const;
+
     /// Returns the value of poor-man's normalized key for the given key string WITHOUT prefix.
     poor_man_key _extract_poor_man_key(const cvec_t& trunc_key) const;
 
@@ -920,14 +986,14 @@ private:
      *
      * @pre we are a leaf node
      */
-    const char*     _leaf_key_noprefix(slotid_t slot,  size_t &len) const;
+    const char* _leaf_key_noprefix(slotid_t slot, size_t& len) const;
 
     /**
      * Retrieves the key WITHOUT prefix of specified slot in an interior node
      *
      * @pre we are an interior node
      */
-    const char*     _node_key_noprefix(slotid_t slot,  size_t &len) const;
+    const char* _node_key_noprefix(slotid_t slot, size_t& len) const;
 
     /**
      * Calculate offset within slot's variable-sized data to its
@@ -939,7 +1005,7 @@ private:
     size_t _element_offset(int slot) const;
 
     /// returns compare(specified-key, key_noprefix)
-    int _compare_key_noprefix(slotid_t slot, const void *key_noprefix, size_t key_len) const;
+    int _compare_key_noprefix(slotid_t slot, const void* key_noprefix, size_t key_len) const;
 
     /// compare slot slot's key with given key (as key_noprefix,key_len,poor tuple)
     /// result <0 if slot's key is before given key
@@ -950,13 +1016,13 @@ private:
     // ======================================================================
 
     /// internal method used from is_consistent() to check keyorder correctness.
-    bool             _is_consistent_keyorder() const;
+    bool _is_consistent_keyorder() const;
 
     /// checks if the poor-man's normalized keys are valid.
-    bool             _is_consistent_poormankey() const;
+    bool _is_consistent_poormankey() const;
 
     /// Given the place to insert, update btree_consecutive_skewed_insertions.
-    void             _update_btree_consecutive_skewed_insertions(slotid_t slot);
+    void _update_btree_consecutive_skewed_insertions(slotid_t slot);
 
     /**
      * Returns if there is enough free space to accomodate the given
@@ -968,16 +1034,15 @@ private:
     /**
      * Initialize the whole image of this page as an empty page.
      */
-    void            _init(lsn_t lsn, PageID page_id, StoreID store,
-        PageID root_pid, PageID pid0, lsn_t pid0_emlsn,
-        PageID foster_pid, lsn_t foster_emlsn, int16_t btree_level,
-        const w_keystr_t &low, const w_keystr_t &high,
-        const w_keystr_t &chain_fence_high, const bool ghost);
+    void _init(lsn_t lsn, PageID page_id, StoreID store,
+               PageID root_pid, PageID pid0, lsn_t pid0_emlsn,
+               PageID foster_pid, lsn_t foster_emlsn, int16_t btree_level,
+               const w_keystr_t& low, const w_keystr_t& high,
+               const w_keystr_t& chain_fence_high, const bool ghost);
 
 public:
     friend std::ostream& operator<<(std::ostream& os, btree_page_h& b);
 };
-
 
 /**
  * \brief Specialized variant of btree_page_h that borrows a B-tree
@@ -994,93 +1059,117 @@ class borrowed_btree_page_h : public btree_page_h {
 
 public:
     borrowed_btree_page_h(fixable_page_h* source) :
-        btree_page_h(), _source(source)
-    {
+            btree_page_h(),
+            _source(source) {
         w_assert1(_source->_pp != nullptr);
-        _pp                 = _source->get_generic_page();
+        _pp = _source->get_generic_page();
         _bufferpool_managed = _source->_bufferpool_managed;
-        _mode               = _source->_mode;
-        _Q_ticket           = _source->_Q_ticket;
-        _source->_mode      = LATCH_NL;
+        _mode = _source->_mode;
+        _Q_ticket = _source->_Q_ticket;
+        _source->_mode = LATCH_NL;
     }
 
     ~borrowed_btree_page_h() {
         w_assert1(_source->_pp == _pp);
         w_assert1(_source->_mode == LATCH_NL);
-        _source->_mode     = _mode;
+        _source->_mode = _mode;
         _source->_Q_ticket = _Q_ticket;
 
         // prevent superclass destructor from trying to unfix us in the bufferpool:
         _bufferpool_managed = false;
-        _mode               = LATCH_NL;
+        _mode = LATCH_NL;
     }
 };
 
-
 /** btree leaf pages. */
 struct btree_lf_stats_t {
-    base_stat_t        hdr_bs;            /* page header (overhead) */
-    base_stat_t        key_bs;            /* space used for keys      */
-    base_stat_t        data_bs;           /* space for data associated to keys */
-    base_stat_t        entry_overhead_bs; /* e.g., slot header, padding for alignment */
-    base_stat_t        unused_bs;
-    base_stat_t        entry_cnt;
-    base_stat_t        unique_cnt;        /* number of unique entries */
+    base_stat_t hdr_bs;            /* page header (overhead) */
+    base_stat_t key_bs;            /* space used for keys      */
+    base_stat_t data_bs;           /* space for data associated to keys */
+    base_stat_t entry_overhead_bs; /* e.g., slot header, padding for alignment */
+    base_stat_t unused_bs;
 
-    NORET              btree_lf_stats_t() {clear();}
-    void               add(const btree_lf_stats_t& stats);
-    void               clear();
-    w_rc_t             audit() const;
-    base_stat_t        total_bytes() const;
-    void               print(ostream&, const char *) const;/* pretty print */
-    friend ostream&    operator<<(ostream&, const btree_lf_stats_t& s);
+    base_stat_t entry_cnt;
+
+    base_stat_t unique_cnt;        /* number of unique entries */
+
+    NORET btree_lf_stats_t() {
+        clear();
+    }
+
+    void add(const btree_lf_stats_t& stats);
+
+    void clear();
+
+    w_rc_t audit() const;
+
+    base_stat_t total_bytes() const;
+
+    void print(ostream&, const char*) const;/* pretty print */
+    friend ostream& operator<<(ostream&, const btree_lf_stats_t& s);
 };
 
 /** btree interior pages. */
 struct btree_int_stats_t {
-    base_stat_t        used_bs;
-    base_stat_t        unused_bs;
+    base_stat_t used_bs;
 
-    NORET              btree_int_stats_t() {clear();}
-    void               add(const btree_int_stats_t& stats);
-    void               clear();
-    w_rc_t             audit() const;
-    base_stat_t        total_bytes() const;
-    void               print(ostream&, const char *) const;/* pretty print */
-    friend ostream&    operator<<(ostream&, const btree_int_stats_t& s);
+    base_stat_t unused_bs;
+
+    NORET btree_int_stats_t() {
+        clear();
+    }
+
+    void add(const btree_int_stats_t& stats);
+
+    void clear();
+
+    w_rc_t audit() const;
+
+    base_stat_t total_bytes() const;
+
+    void print(ostream&, const char*) const;/* pretty print */
+    friend ostream& operator<<(ostream&, const btree_int_stats_t& s);
 };
 
 // returns by bulk load and
 // btree_m::get_du_statistics
 struct btree_stats_t {
-    btree_lf_stats_t    leaf_pg;  // byte counts for leaf pages
-    btree_int_stats_t    int_pg;   // byte counts for interior pages
+    btree_lf_stats_t leaf_pg;  // byte counts for leaf pages
+    btree_int_stats_t int_pg;   // byte counts for interior pages
 
-    base_stat_t     leaf_pg_cnt; // level-1 pages found by tree traversal
-    base_stat_t     int_pg_cnt;  // level>1 pages found by tree traversal
-    base_stat_t     unlink_pg_cnt; // pages allocated but not accounted-for
-                                // in a tree traversal; allocated count is
-                                // found by first_page/next_page traversal
-                                // of the store's extents
-                    // Given the way this is computed, it would be
-                    // pretty hard to fail an audit.
-                    // It would be nice if unlinked pages could be
-                    // accounted-for in another way for a meaningful audit.
-                     /* unlinked pages are empty and
-                    // will be freed the next
-                    // time they are encountered
-                    // during a traversal
-                    */
-    base_stat_t     unalloc_pg_cnt; // pages not-allocated by extent-traversal
-    base_stat_t     level_cnt;    /* number of levels in btree */
+    base_stat_t leaf_pg_cnt; // level-1 pages found by tree traversal
+    base_stat_t int_pg_cnt;  // level>1 pages found by tree traversal
+    base_stat_t unlink_pg_cnt; // pages allocated but not accounted-for
+    // in a tree traversal; allocated count is
+    // found by first_page/next_page traversal
+    // of the store's extents
+    // Given the way this is computed, it would be
+    // pretty hard to fail an audit.
+    // It would be nice if unlinked pages could be
+    // accounted-for in another way for a meaningful audit.
+    /* unlinked pages are empty and
+   // will be freed the next
+   // time they are encountered
+   // during a traversal
+   */
+    base_stat_t unalloc_pg_cnt; // pages not-allocated by extent-traversal
+    base_stat_t level_cnt;    /* number of levels in btree */
 
-    NORET           btree_stats_t() {clear();}
-    void            add(const btree_stats_t& stats);
-    void            clear();
-    w_rc_t          audit() const;
-    base_stat_t     total_bytes() const;
-    base_stat_t     alloc_pg_cnt() const;
-    void            print(ostream&, const char *) const;/* pretty print */
+    NORET btree_stats_t() {
+        clear();
+    }
+
+    void add(const btree_stats_t& stats);
+
+    void clear();
+
+    w_rc_t audit() const;
+
+    base_stat_t total_bytes() const;
+
+    base_stat_t alloc_pg_cnt() const;
+
+    void print(ostream&, const char*) const;/* pretty print */
     friend ostream& operator<<(ostream&, const btree_stats_t& s);
 };
 
@@ -1109,7 +1198,7 @@ inline bool btree_page_h::is_leaf_parent() const {
 }
 
 inline bool btree_page_h::is_node() const {
-    return ! is_leaf();
+    return !is_leaf();
 }
 
 inline PageID btree_page_h::get_foster_opaqueptr() const {
@@ -1119,12 +1208,15 @@ inline PageID btree_page_h::get_foster_opaqueptr() const {
 inline int16_t btree_page_h::get_prefix_length() const {
     return page()->btree_prefix_length;
 }
+
 inline int16_t btree_page_h::get_fence_low_length() const {
     return page()->btree_fence_low_length;
 }
+
 inline int16_t btree_page_h::get_fence_high_length() const {
     return page()->btree_fence_high_length;
 }
+
 inline int16_t btree_page_h::get_chain_fence_high_length() const {
     return page()->btree_chain_fence_high_length;
 }
@@ -1132,12 +1224,15 @@ inline int16_t btree_page_h::get_chain_fence_high_length() const {
 inline const char* btree_page_h::get_fence_low_key() const {
     return page()->item_data(0);
 }
+
 inline const char* btree_page_h::get_fence_high_key_noprefix() const {
     return page()->item_data(0) + get_fence_low_length();
 }
+
 inline const char* btree_page_h::get_chain_fence_high_key() const {
     return page()->item_data(0) + get_fence_low_length() + get_fence_high_length_noprefix();
 }
+
 inline const char* btree_page_h::get_prefix_key() const {
     return get_fence_low_key(); // same thing.  only the length differs.
 }
@@ -1150,45 +1245,52 @@ inline int btree_page_h::nghosts() const {
     return page()->number_of_ghosts();
 }
 
-inline int btree_page_h::compare_with_fence_low (const w_keystr_t &key) const {
+inline int btree_page_h::compare_with_fence_low(const w_keystr_t& key) const {
     return key.compare_keystr(get_fence_low_key(), get_fence_low_length());
 }
-inline int btree_page_h::compare_with_fence_low (const char* key, size_t key_len) const {
-    return w_keystr_t::compare_bin_str (key, key_len, get_fence_low_key(), get_fence_low_length());
-}
-inline int btree_page_h::compare_with_fence_low_noprefix (const char* key, size_t key_len) const {
-    return w_keystr_t::compare_bin_str (key, key_len, get_fence_low_key() + get_prefix_length(), get_fence_low_length() - get_prefix_length());
+
+inline int btree_page_h::compare_with_fence_low(const char* key, size_t key_len) const {
+    return w_keystr_t::compare_bin_str(key, key_len, get_fence_low_key(), get_fence_low_length());
 }
 
-inline int btree_page_h::compare_with_fence_high (const w_keystr_t &key) const {
-    return compare_with_fence_high ((const char*) key.buffer_as_keystr(), key.get_length_as_keystr());
+inline int btree_page_h::compare_with_fence_low_noprefix(const char* key, size_t key_len) const {
+    return w_keystr_t::compare_bin_str(key, key_len, get_fence_low_key() + get_prefix_length(),
+                                       get_fence_low_length() - get_prefix_length());
 }
-inline int btree_page_h::compare_with_fence_high (const char* key, size_t key_len) const {
+
+inline int btree_page_h::compare_with_fence_high(const w_keystr_t& key) const {
+    return compare_with_fence_high((const char*)key.buffer_as_keystr(), key.get_length_as_keystr());
+}
+
+inline int btree_page_h::compare_with_fence_high(const char* key, size_t key_len) const {
     size_t prefix_len = get_prefix_length();
     if (prefix_len > key_len) {
-        return w_keystr_t::compare_bin_str (key, key_len, get_prefix_key(), key_len);
+        return w_keystr_t::compare_bin_str(key, key_len, get_prefix_key(), key_len);
     } else {
         // first, compare with prefix part
-        int ret = w_keystr_t::compare_bin_str (key, prefix_len, get_prefix_key(), prefix_len);
+        int ret = w_keystr_t::compare_bin_str(key, prefix_len, get_prefix_key(), prefix_len);
         if (ret != 0) {
             return ret;
         }
         // then, compare with suffix part
-        return w_keystr_t::compare_bin_str (key + prefix_len, key_len - prefix_len,
-            get_fence_high_key_noprefix(), get_fence_high_length_noprefix());
+        return w_keystr_t::compare_bin_str(key + prefix_len, key_len - prefix_len,
+                                           get_fence_high_key_noprefix(), get_fence_high_length_noprefix());
     }
 }
-inline int btree_page_h::compare_with_fence_high_noprefix (const char* key, size_t key_len) const {
-    return w_keystr_t::compare_bin_str (key, key_len, get_fence_high_key_noprefix(), get_fence_high_length_noprefix());
+
+inline int btree_page_h::compare_with_fence_high_noprefix(const char* key, size_t key_len) const {
+    return w_keystr_t::compare_bin_str(key, key_len, get_fence_high_key_noprefix(), get_fence_high_length_noprefix());
 }
 
-inline int btree_page_h::compare_with_chain_fence_high (const w_keystr_t &key) const {
+inline int btree_page_h::compare_with_chain_fence_high(const w_keystr_t& key) const {
     return key.compare_keystr(get_chain_fence_high_key(), get_chain_fence_high_length());
 }
-inline int btree_page_h::compare_with_chain_fence_high (const char* key, size_t key_len) const {
-    return w_keystr_t::compare_bin_str (key, key_len, get_chain_fence_high_key(), get_chain_fence_high_length());
+
+inline int btree_page_h::compare_with_chain_fence_high(const char* key, size_t key_len) const {
+    return w_keystr_t::compare_bin_str(key, key_len, get_chain_fence_high_key(), get_chain_fence_high_length());
 }
-inline bool btree_page_h::fence_contains(const w_keystr_t &key) const {
+
+inline bool btree_page_h::fence_contains(const w_keystr_t& key) const {
     // fence-low is inclusive
     if (compare_with_fence_low(key) < 0) {
         return false;
@@ -1204,13 +1306,14 @@ inline bool btree_page_h::is_insertion_extremely_skewed_right() const {
     // this means completely pre-sorted insertion like bulk loading.
     int ins = page()->btree_consecutive_skewed_insertions;
     return ins > 50
-        || ins > nrecs() * 9 / 10
-        || (ins > 1 && ins >= nrecs() - 1)
-        ;
+           || ins > nrecs() * 9 / 10
+           || (ins > 1 && ins >= nrecs() - 1);
 }
+
 inline bool btree_page_h::is_insertion_skewed_right() const {
     return page()->btree_consecutive_skewed_insertions > 5;
 }
+
 inline bool btree_page_h::is_insertion_skewed_left() const {
     return page()->btree_consecutive_skewed_insertions < -5;
 }
@@ -1219,10 +1322,8 @@ inline PageID btree_page_h::child_opaqueptr(slotid_t slot) const {
     w_assert1(is_node());
     w_assert1(slot >= 0);
     w_assert1(slot < nrecs());
-    return page()->item_child(slot+1);
+    return page()->item_child(slot + 1);
 }
-
-
 
 inline PageID* btree_page_h::page_pointer_address(int offset) {
     if (offset == -2) {
@@ -1230,28 +1331,24 @@ inline PageID* btree_page_h::page_pointer_address(int offset) {
     }
 
     w_assert1(!is_leaf());
-    w_assert1(-2<offset && offset<nrecs());
+    w_assert1(-2 < offset && offset < nrecs());
 
     if (offset == -1) {
         return &page()->btree_pid0;
     }
 
     // CS TODO: why +1 here? what happens when offset == 0?
-    return &page()->item_child(offset+1);
+    return &page()->item_child(offset + 1);
 }
-
-
 
 inline size_t btree_page_h::get_rec_space(int slot) const {
-    w_assert1(slot>=0);
+    w_assert1(slot >= 0);
     return page()->item_space(slot + 1);
 }
-
 
 inline bool btree_page_h::is_ghost(slotid_t slot) const {
     return page()->is_ghost(slot + 1);
 }
-
 
 inline smsize_t
 btree_page_h::used_space() const {
@@ -1269,7 +1366,7 @@ btree_page_h::usable_space() const {
 // ======================================================================
 
 inline void btree_page_h::_pack_node_record(cvec_t& out, const cvec_t& trunc_key,
-    const lsn_t &emlsn) const {
+                                            const lsn_t& emlsn) const {
     w_assert1(!is_leaf());
     out.put(trunc_key);
     out.put(&emlsn, sizeof(lsn_t));
@@ -1282,6 +1379,7 @@ inline void btree_page_h::_pack_leaf_record_prefix(cvec_t& out, pack_scratch_t& 
     out.put(&out_scratch, sizeof(out_scratch));
     out.put(trunc_key);
 }
+
 inline void btree_page_h::_pack_leaf_record(cvec_t& out, pack_scratch_t& out_scratch,
                                             const cvec_t& trunc_key,
                                             const char* element, size_t element_len) const {
@@ -1290,9 +1388,9 @@ inline void btree_page_h::_pack_leaf_record(cvec_t& out, pack_scratch_t& out_scr
 }
 
 inline int btree_page_h::_pack_fence_rec(cvec_t& out, const w_keystr_t& low,
-                                  const w_keystr_t& high,
-                                  const w_keystr_t& chain,
-                                  int new_prefix_len) const {
+                                         const w_keystr_t& high,
+                                         const w_keystr_t& chain,
+                                         int new_prefix_len) const {
     int prefix_len;
     if (new_prefix_len >= 0) {
         w_assert1(low.common_leading_bytes(high) >= (size_t)new_prefix_len);
@@ -1303,7 +1401,7 @@ inline int btree_page_h::_pack_fence_rec(cvec_t& out, const w_keystr_t& low,
 
     out.put(low);
     // eliminate prefix part from high:
-    out.put((const char*)high.buffer_as_keystr()     + prefix_len,
+    out.put((const char*)high.buffer_as_keystr() + prefix_len,
             high.get_length_as_keystr() - prefix_len);
     if (!chain.is_constructed()) {
         // If chain-high is not set, we don't need to put it here. However,
@@ -1338,16 +1436,18 @@ inline btree_page_h::poor_man_key btree_page_h::_extract_poor_man_key(const void
         return deserialize16_ho(trunc_key);
     }
 }
+
 inline btree_page_h::poor_man_key btree_page_h::_extract_poor_man_key(const cvec_t& trunc_key) const {
     char start[2];
     trunc_key.copy_to(start, 2);
     return _extract_poor_man_key(start, trunc_key.size());
 }
+
 inline btree_page_h::poor_man_key
 btree_page_h::_extract_poor_man_key(const void* key_with_prefix, size_t key_len_with_prefix,
                                     size_t prefix_len) const {
     w_assert1(prefix_len <= key_len_with_prefix);
-    return _extract_poor_man_key (((const char*)key_with_prefix) + prefix_len, key_len_with_prefix - prefix_len);
+    return _extract_poor_man_key(((const char*)key_with_prefix) + prefix_len, key_len_with_prefix - prefix_len);
 }
 
 
@@ -1356,30 +1456,30 @@ btree_page_h::_extract_poor_man_key(const void* key_with_prefix, size_t key_len_
 // ======================================================================
 
 inline btree_page_h::poor_man_key btree_page_h::_poor(int slot) const {
-    w_assert1(slot>=0);
-    return page()->item_poor(slot+1);
+    w_assert1(slot >= 0);
+    return page()->item_poor(slot + 1);
 }
 
-inline const char* btree_page_h::_leaf_key_noprefix(slotid_t slot,  size_t &len) const {
+inline const char* btree_page_h::_leaf_key_noprefix(slotid_t slot, size_t& len) const {
     w_assert1(is_leaf());
-    w_assert1(slot>=0);
+    w_assert1(slot >= 0);
 
-    key_length_t* data = (key_length_t*)page()->item_data(slot+1);
+    key_length_t* data = (key_length_t*)page()->item_data(slot + 1);
     len = *data++;
     return (const char*)data;
 }
 
-inline const char* btree_page_h::_node_key_noprefix(slotid_t slot,  size_t &len) const {
+inline const char* btree_page_h::_node_key_noprefix(slotid_t slot, size_t& len) const {
     w_assert1(is_node());
-    w_assert1(slot>=0);
+    w_assert1(slot >= 0);
 
-    len = page()->item_length(slot+1) - sizeof(lsn_t);
-    return page()->item_data(slot+1);
+    len = page()->item_length(slot + 1) - sizeof(lsn_t);
+    return page()->item_data(slot + 1);
 }
 
 inline size_t btree_page_h::_element_offset(int slot) const {
     w_assert1(is_leaf());
-    w_assert1(slot>=0);
+    w_assert1(slot >= 0);
 
     size_t key_noprefix_length;
     (void)_leaf_key_noprefix(slot, key_noprefix_length);
@@ -1387,10 +1487,10 @@ inline size_t btree_page_h::_element_offset(int slot) const {
     return key_noprefix_length + sizeof(key_length_t);
 }
 
-inline int btree_page_h::_compare_key_noprefix(slotid_t slot, const void *key_noprefix,
+inline int btree_page_h::_compare_key_noprefix(slotid_t slot, const void* key_noprefix,
                                                size_t key_len) const {
-    size_t      curkey_len;
-    const char *curkey;
+    size_t curkey_len;
+    const char* curkey;
     if (is_leaf()) {
         curkey = _leaf_key_noprefix(slot, curkey_len);
     } else {
@@ -1432,6 +1532,7 @@ inline void btree_page_h::set_emlsn_general(general_recordid_t pos, const lsn_t&
 inline const lsn_t& btree_page_h::get_foster_emlsn() const {
     return page()->btree_foster_emlsn;
 }
+
 inline const lsn_t& btree_page_h::get_pid0_emlsn() const {
     return page()->btree_pid0_emlsn;
 }

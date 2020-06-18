@@ -18,46 +18,41 @@
 #include "lock.h"
 #include "sm.h"
 
-bt_cursor_t::bt_cursor_t(StoreID store, bool forward)
-{
+bt_cursor_t::bt_cursor_t(StoreID store, bool forward) {
     w_keystr_t infimum, supremum;
     infimum.construct_neginfkey();
     supremum.construct_posinfkey();
-    _init (store, infimum, true, supremum,  true, forward);
+    _init(store, infimum, true, supremum, true, forward);
 }
 
 bt_cursor_t::bt_cursor_t(
-    StoreID store,
-    const w_keystr_t& bound, bool inclusive,
-    bool              forward)
-{
+        StoreID store,
+        const w_keystr_t& bound, bool inclusive,
+        bool forward) {
     w_keystr_t termination;
     if (forward) {
         termination.construct_posinfkey();
-        _init (store, bound, inclusive, termination,  true, forward);
-    }
-    else {
+        _init(store, bound, inclusive, termination, true, forward);
+    } else {
         termination.construct_neginfkey();
-        _init (store, termination, true, bound,  inclusive, forward);
+        _init(store, termination, true, bound, inclusive, forward);
     }
 }
 
 bt_cursor_t::bt_cursor_t(
-    StoreID store,
-    const w_keystr_t& lower, bool lower_inclusive,
-    const w_keystr_t& upper, bool upper_inclusive,
-    bool              forward)
-{
-    _init (store, lower, lower_inclusive,
-        upper,  upper_inclusive, forward);
+        StoreID store,
+        const w_keystr_t& lower, bool lower_inclusive,
+        const w_keystr_t& upper, bool upper_inclusive,
+        bool forward) {
+    _init(store, lower, lower_inclusive,
+          upper, upper_inclusive, forward);
 }
 
 void bt_cursor_t::_init(
-    StoreID store,
-    const w_keystr_t& lower, bool lower_inclusive,
-    const w_keystr_t& upper, bool upper_inclusive,
-    bool              forward)
-{
+        StoreID store,
+        const w_keystr_t& lower, bool lower_inclusive,
+        const w_keystr_t& upper, bool upper_inclusive,
+        bool forward) {
     _lower = lower;
     _upper = upper;
 
@@ -77,9 +72,7 @@ void bt_cursor_t::_init(
     _ex_lock = g_xct_does_ex_lock_for_select();
 }
 
-
-void bt_cursor_t::close()
-{
+void bt_cursor_t::close() {
     _eof = true;
     _first_time = false;
     _elen = 0;
@@ -97,7 +90,7 @@ void bt_cursor_t::_release_current_page() {
     }
 }
 
-void bt_cursor_t::_set_current_page(btree_page_h &page) {
+void bt_cursor_t::_set_current_page(btree_page_h& page) {
     if (_pid != 0) {
         _release_current_page();
     }
@@ -124,10 +117,10 @@ rc_t bt_cursor_t::_locate_first() {
     // loop because btree_impl::_ux_lock_key might return eLOCKRETRY
     while (true) {
         // find the leaf (potentially) containing the key
-        const w_keystr_t &key = _forward ? _lower : _upper;
+        const w_keystr_t& key = _forward ? _lower : _upper;
         btree_page_h leaf;
         bool found = false;
-        W_DO( btree_impl::_ux_traverse(_store, key, btree_impl::t_fence_contain, LATCH_SH, leaf));
+        W_DO(btree_impl::_ux_traverse(_store, key, btree_impl::t_fence_contain, LATCH_SH, leaf));
         w_assert3 (leaf.fence_contains(key));
         _set_current_page(leaf);
 
@@ -137,7 +130,7 @@ rc_t bt_cursor_t::_locate_first() {
         // then find the tuple in the page
         leaf.search(key, found, _slot);
 
-        const okvl_mode *mode = nullptr;
+        const okvl_mode* mode = nullptr;
         if (found) {
             // exact match!
             _key = key;
@@ -198,7 +191,7 @@ rc_t bt_cursor_t::_locate_first() {
             }
         }
         if (_needs_lock && !mode->is_empty()) {
-            rc_t rc = btree_impl::_ux_lock_key (_store, leaf, _key, LATCH_SH, *mode, false);
+            rc_t rc = btree_impl::_ux_lock_key(_store, leaf, _key, LATCH_SH, *mode, false);
             if (rc.is_error()) {
                 if (rc.err_num() == eLOCKRETRY) {
                     continue;
@@ -212,8 +205,7 @@ rc_t bt_cursor_t::_locate_first() {
     return RCOK;
 }
 
-rc_t bt_cursor_t::_check_page_update(btree_page_h &p)
-{
+rc_t bt_cursor_t::_check_page_update(btree_page_h& p) {
     // was the page changed?
     if (_pid != p.pid() || p.get_page_lsn() != _lsn) {
         // check if the page still contains the key we are based on
@@ -223,23 +215,23 @@ rc_t bt_cursor_t::_check_page_update(btree_page_h &p)
             p.search(_key, found, _slot);
         } else {
             // we have to re-locate the page
-            W_DO( btree_impl::_ux_traverse(_store, _key, btree_impl::t_fence_contain, LATCH_SH, p));
+            W_DO(btree_impl::_ux_traverse(_store, _key, btree_impl::t_fence_contain, LATCH_SH, p));
             p.search(_key, found, _slot);
         }
         w_assert1(found || !_needs_lock
-            || (!_forward && !_upper_inclusive && !_dont_move_next)); // see _locate_first
+                  || (!_forward && !_upper_inclusive && !_dont_move_next)); // see _locate_first
         _set_current_page(p);
     }
     return RCOK;
 }
 
-w_rc_t bt_cursor_t::_refix_current_key(btree_page_h &p) {
+w_rc_t bt_cursor_t::_refix_current_key(btree_page_h& p) {
     while (true) {
         w_rc_t fix_rt = p.refix_direct(_pid_bfidx._idx, LATCH_SH);
         if (!fix_rt.is_error()) {
             break; // mostly no error.
         }
-        if(fix_rt.err_num() != eBF_DIRECTFIX_SWIZZLED_PTR) {
+        if (fix_rt.err_num() != eBF_DIRECTFIX_SWIZZLED_PTR) {
             return fix_rt; // unexpected error code
         }
 
@@ -252,15 +244,14 @@ w_rc_t bt_cursor_t::_refix_current_key(btree_page_h &p) {
     return RCOK;
 }
 
-rc_t bt_cursor_t::next()
-{
+rc_t bt_cursor_t::next() {
     if (!is_valid()) {
         return RCOK; // EOF
     }
 
     if (_first_time) {
         _first_time = false;
-        W_DO(_locate_first ());
+        W_DO(_locate_first());
         if (_eof) {
             return RCOK;
         }
@@ -290,12 +281,11 @@ rc_t bt_cursor_t::next()
     w_assert3(_slot < p.nrecs());
 
     // get the current slot's values
-    W_DO( _make_rec(p) );
+    W_DO(_make_rec(p));
     return RCOK;
 }
 
-rc_t bt_cursor_t::_find_next(btree_page_h &p, bool &eof)
-{
+rc_t bt_cursor_t::_find_next(btree_page_h& p, bool& eof) {
     while (true) {
         if (_dont_move_next) {
             _dont_move_next = false;
@@ -315,12 +305,11 @@ rc_t bt_cursor_t::_find_next(btree_page_h &p, bool &eof)
     return RCOK;
 }
 
-rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
-{
+rc_t bt_cursor_t::_advance_one_slot(btree_page_h& p, bool& eof) {
     w_assert1(p.is_fixed());
     w_assert1(_slot <= p.nrecs());
 
-    if(_forward) {
+    if (_forward) {
         ++_slot;
     } else {
         --_slot;
@@ -375,10 +364,11 @@ rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
 
             // take lock for the fence key
             if (_needs_lock) {
-                lockid_t lid (_store, (const unsigned char*) neighboring_fence.buffer_as_keystr(), neighboring_fence.get_length_as_keystr());
+                lockid_t lid(_store, (const unsigned char*)neighboring_fence.buffer_as_keystr(),
+                             neighboring_fence.get_length_as_keystr());
                 okvl_mode lock_mode;
                 if (only_low_fence_exact_match) {
-                    lock_mode = _ex_lock ? ALL_X_GAP_N: ALL_S_GAP_N;
+                    lock_mode = _ex_lock ? ALL_X_GAP_N : ALL_S_GAP_N;
                 } else {
                     lock_mode = _ex_lock ? ALL_X_GAP_X : ALL_S_GAP_S;
                 }
@@ -398,7 +388,7 @@ rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
         // take lock on the next key.
         // NOTE: until we get locks, we aren't sure the key really becomes
         // the next key. So, we use the temporary variable _tmp_next_key_buf.
-        const okvl_mode *mode = nullptr;
+        const okvl_mode* mode = nullptr;
         {
             p.get_key(_slot, _tmp_next_key_buf);
             if (_forward) {
@@ -424,8 +414,8 @@ rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
             }
         }
         if (_needs_lock && !mode->is_empty()) {
-            rc_t rc = btree_impl::_ux_lock_key (_store, p, _tmp_next_key_buf,
-                    LATCH_SH, *mode, false);
+            rc_t rc = btree_impl::_ux_lock_key(_store, p, _tmp_next_key_buf,
+                                               LATCH_SH, *mode, false);
             if (rc.is_error()) {
                 if (rc.err_num() == eLOCKRETRY) {
                     W_DO(_check_page_update(p));
@@ -442,14 +432,13 @@ rc_t bt_cursor_t::_advance_one_slot(btree_page_h &p, bool &eof)
     return RCOK;
 }
 
-rc_t bt_cursor_t::_make_rec(const btree_page_h& page)
-{
+rc_t bt_cursor_t::_make_rec(const btree_page_h& page) {
     // Copy the record to buffer
     bool ghost;
     _elen = sizeof(_elbuf);
     page.copy_element(_slot, _elbuf, _elen, ghost);
 
-#if W_DEBUG_LEVEL>0
+#if W_DEBUG_LEVEL > 0
     w_assert1(_elen <= sizeof(_elbuf));
     // this should have been skipped at _advance_one_slot()
     w_assert1(!ghost);

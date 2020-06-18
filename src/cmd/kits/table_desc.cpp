@@ -35,10 +35,12 @@
 #include "w_key.h"
 
 table_desc_t::table_desc_t(const char* name, int fieldcnt)
-    : _name(name), _field_count(fieldcnt), _db(nullptr), _primary_idx(nullptr),
-    _maxsize(0)
-{
-    assert (fieldcnt>0);
+        : _name(name),
+          _field_count(fieldcnt),
+          _db(nullptr),
+          _primary_idx(nullptr),
+          _maxsize(0) {
+    assert (fieldcnt > 0);
 
     pthread_mutex_init(&_fschema_mutex, nullptr);
 
@@ -46,10 +48,9 @@ table_desc_t::table_desc_t(const char* name, int fieldcnt)
     _desc = new field_desc_t[fieldcnt];
 }
 
-table_desc_t::~table_desc_t()
-{
+table_desc_t::~table_desc_t() {
     if (_desc) {
-        delete [] _desc;
+        delete[] _desc;
         _desc = nullptr;
     }
 
@@ -80,8 +81,7 @@ table_desc_t::~table_desc_t()
  *
  *********************************************************************/
 
-w_rc_t table_desc_t::create_physical_table(ss_m* db)
-{
+w_rc_t table_desc_t::create_physical_table(ss_m* db) {
     assert (db);
     _db = db;
 
@@ -95,8 +95,6 @@ w_rc_t table_desc_t::create_physical_table(ss_m* db)
     return (RCOK);
 }
 
-
-
 /*********************************************************************
  *
  *  @fn:    create_physical_index
@@ -105,8 +103,7 @@ w_rc_t table_desc_t::create_physical_table(ss_m* db)
  *
  *********************************************************************/
 
-w_rc_t table_desc_t::create_physical_index(ss_m* db, index_desc_t* index)
-{
+w_rc_t table_desc_t::create_physical_index(ss_m* db, index_desc_t* index) {
     // Create all the indexes of the table
     StoreID stid = 0;
 
@@ -118,12 +115,12 @@ w_rc_t table_desc_t::create_physical_index(ss_m* db, index_desc_t* index)
     w_keystr_t kstr;
     kstr.construct_regularkey(index->name().c_str(), index->name().length());
     W_DO(db->create_assoc(get_catalog_stid(), kstr,
-                vec_t(&stid, sizeof(StoreID))));
+                          vec_t(&stid, sizeof(StoreID))));
 
     // Print info
-    TRACE( TRACE_STATISTICS, "%s %d (%s)\n",
-           index->name().c_str(), stid,
-           (index->is_unique() ? "unique" : "no unique"));
+    TRACE(TRACE_STATISTICS, "%s %d (%s)\n",
+          index->name().c_str(), stid,
+          (index->is_unique() ? "unique" : "no unique"));
 
     return (RCOK);
 }
@@ -146,19 +143,18 @@ bool table_desc_t::create_index_desc(const char* name,
                                      const unsigned* fields,
                                      const unsigned num,
                                      const bool unique,
-                                     const bool primary)
-{
+                                     const bool primary) {
     index_desc_t* p_index = new index_desc_t(this, name, num, fields,
                                              unique, primary);
 
     // check the validity of the index
-    for (unsigned i=0; i<num; i++)  {
+    for (unsigned i = 0; i < num; i++) {
         assert(fields[i] < _field_count);
 
         // only the last field in the index can be variable lengthed
         // IP: I am not sure if still only the last field in the index can be variable lengthed
 
-        if (_desc[fields[i]].is_variable_length() && i != num-1) {
+        if (_desc[fields[i]].is_variable_length() && i != num - 1) {
             assert(false);
         }
     }
@@ -166,28 +162,25 @@ bool table_desc_t::create_index_desc(const char* name,
     // add as primary
     if (p_index->is_unique() && p_index->is_primary()) {
         _primary_idx = p_index;
-    }
-    else {
+    } else {
         _indexes.push_back(p_index);
     }
 
     return true;
 }
 
-
 bool table_desc_t::create_primary_idx_desc(const unsigned* fields,
-                                           const unsigned num)
-{
+                                           const unsigned num) {
 
     index_desc_t* p_index = new index_desc_t(this,
-            _name, num, fields, true, true);
+                                             _name, num, fields, true, true);
 
     // check the validity of the index
-    for (unsigned i=0; i<num; i++) {
+    for (unsigned i = 0; i < num; i++) {
         assert(fields[i] < _field_count);
 
         // only the last field in the index can be variable lengthed
-        if (_desc[fields[i]].is_variable_length() && i != num-1) {
+        if (_desc[fields[i]].is_variable_length() && i != num - 1) {
             assert(false);
         }
     }
@@ -198,17 +191,14 @@ bool table_desc_t::create_primary_idx_desc(const unsigned* fields,
     return (true);
 }
 
-
 // Returns the stid of the primary index. If no primary index exists it
 // returns the stid of the table
-StoreID table_desc_t::get_primary_stid()
-{
+StoreID table_desc_t::get_primary_stid() {
     w_assert0(_primary_idx);
     return _primary_idx->stid();
 }
 
-w_rc_t table_desc_t::load_stids()
-{
+w_rc_t table_desc_t::load_stids() {
     w_assert0(_db);
     StoreID cat_stid = get_catalog_stid();
     W_DO(_primary_idx->load_stid(_db, cat_stid));
@@ -224,11 +214,10 @@ w_rc_t table_desc_t::load_stids()
 
 
 // For debug use only: print the description for all the field
-void table_desc_t::print_desc(ostream& os)
-{
+void table_desc_t::print_desc(ostream& os) {
     os << "Schema for table " << _name << endl;
     os << "Numer of fields: " << _field_count << endl;
-    for (unsigned i=0; i<_field_count; i++) {
-	_desc[i].print_desc(os);
+    for (unsigned i = 0; i < _field_count; i++) {
+        _desc[i].print_desc(os);
     }
 }

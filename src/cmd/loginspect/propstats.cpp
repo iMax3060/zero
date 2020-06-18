@@ -31,20 +31,19 @@ public:
     std::unordered_set<PageID> static_pids;
 
     PropStatsHandler(size_t psize)
-        : psize(psize), page_writes(0), commits(0), updates(0)
-    {
-    }
+            : psize(psize),
+              page_writes(0),
+              commits(0),
+              updates(0) {}
 
-    virtual void initialize()
-    {
+    virtual void initialize() {
         out() << "# dirty_pages redo_length page_writes xct_end updates pages_static" << endl;
     }
 
     // CS TODO
     static constexpr bool track_rec_lsn = false;
 
-    bool is_static_store(StoreID store)
-    {
+    bool is_static_store(StoreID store) {
         /*
          * TPC-C store IDs:
          * 2 - warehouse
@@ -60,21 +59,22 @@ public:
          * 12 - stock
          */
         return !(
-            store == 6 ||
-            store == 8 ||
-            store == 9 ||
-            store == 10
-            );
+                store == 6 ||
+                store == 8 ||
+                store == 9 ||
+                store == 10
+        );
     }
 
-    void process_page_write(PageID pid, lsn_t clean_lsn, StoreID store)
-    {
+    void process_page_write(PageID pid, lsn_t clean_lsn, StoreID store) {
         if (track_rec_lsn) {
             // Delete updates with lsn < clean_lsn
             auto& vec = page_lsns[pid];
             size_t i = 0;
             while (i < vec.size()) {
-                if (vec[i] >= clean_lsn) { break; }
+                if (vec[i] >= clean_lsn) {
+                    break;
+                }
                 i++;
             }
 
@@ -86,8 +86,7 @@ public:
         chkpt.mark_page_clean(pid, clean_lsn);
     }
 
-    void mark_dirty(PageID pid, lsn_t lsn, StoreID store)
-    {
+    void mark_dirty(PageID pid, lsn_t lsn, StoreID store) {
         if (track_rec_lsn) {
             auto& vec = page_lsns[pid];
             vec.push_back(lsn);
@@ -99,8 +98,7 @@ public:
         chkpt.mark_page_dirty(pid, lsn, lsn);
     }
 
-    virtual void invoke(logrec_t& r)
-    {
+    virtual void invoke(logrec_t& r) {
         // Dump stats on each tick log record
         if (r.type() == logrec_t::t_tick_sec || r.type() == logrec_t::t_tick_msec) {
             dumpStats(r.lsn());
@@ -110,8 +108,7 @@ public:
         if (r.is_redo()) {
             // Ignore metadata pages
             if (r.pid() % alloc_cache_t::extent_size == 0 ||
-                    r.pid() == stnode_page::stpid)
-            {
+                r.pid() == stnode_page::stpid) {
                 return;
             }
 
@@ -122,17 +119,16 @@ public:
                 mark_dirty(r.pid2(), r.lsn(), r.stid());
             }
             updates++;
-        }
-        else if (r.type() == logrec_t::t_page_write) {
+        } else if (r.type() == logrec_t::t_page_write) {
             char* pos = r.data();
 
-            PageID pid = *((PageID*) pos);
+            PageID pid = *((PageID*)pos);
             pos += sizeof(PageID);
 
-            lsn_t clean_lsn = *((lsn_t*) pos);
+            lsn_t clean_lsn = *((lsn_t*)pos);
             pos += sizeof(lsn_t);
 
-            uint32_t count = *((uint32_t*) pos);
+            uint32_t count = *((uint32_t*)pos);
             PageID end = pid + count;
 
             while (pid < end) {
@@ -141,38 +137,40 @@ public:
             }
 
             page_writes += count;
-        }
-        else if (r.type() == logrec_t::t_evict_page) {
+        } else if (r.type() == logrec_t::t_evict_page) {
             PageID pid = *(reinterpret_cast<PageID*>(r.data_ssx()));
             bool was_dirty = *(reinterpret_cast<bool*>(r.data_ssx() + sizeof(PageID)));
             if (!was_dirty) {
                 chkpt.buf_tab.erase(pid);
-                if (track_rec_lsn) { page_lsns[pid].clear(); }
+                if (track_rec_lsn) {
+                    page_lsns[pid].clear();
+                }
             }
-        }
-        else if (r.type() == logrec_t::t_xct_end) {
+        } else if (r.type() == logrec_t::t_xct_end) {
             commits++;
         }
     }
 
-    void dumpStats(lsn_t lsn)
-    {
+    void dumpStats(lsn_t lsn) {
         lsn_t min_rec_lsn = lsn_t::max;
         if (track_rec_lsn) {
             for (auto e : page_lsns) {
                 if (e.second.size() > 0) {
                     lsn_t rec = e.second[0];
-                    if (rec < min_rec_lsn) { min_rec_lsn = rec; }
+                    if (rec < min_rec_lsn) {
+                        min_rec_lsn = rec;
+                    }
                 }
             }
         }
-        if (min_rec_lsn == lsn_t::max) { min_rec_lsn = lsn_t::null; }
+        if (min_rec_lsn == lsn_t::max) {
+            min_rec_lsn = lsn_t::null;
+        }
 
         size_t redo_length = 0;
         if (min_rec_lsn.hi() == lsn.hi()) {
             redo_length = lsn.lo() - min_rec_lsn.lo();
-        }
-        else if (min_rec_lsn != lsn_t::null) {
+        } else if (min_rec_lsn != lsn_t::null) {
             w_assert0(lsn > min_rec_lsn);
             size_t rest = lsn.lo() + psize - min_rec_lsn.lo();
             redo_length = psize * (lsn.hi() - min_rec_lsn.hi()) + rest;
@@ -191,12 +189,12 @@ public:
         }
 
         out() << "" << dirty_page_count
-            << " " << redo_length / 1048576
-            << " " << page_writes
-            << " " << commits
-            << " " << updates
-            << " " << pages_static
-            << endl;
+              << " " << redo_length / 1048576
+              << " " << page_writes
+              << " " << commits
+              << " " << updates
+              << " " << pages_static
+              << endl;
 
         page_writes = 0;
         commits = 0;
@@ -210,18 +208,16 @@ public:
     // in each page write operation
     vector<size_t> consecutive_writes;
 
-    virtual void initialize()
-    {
+    virtual void initialize() {
         out() << "# write_size frequency" << endl;
     }
 
-    virtual void invoke(logrec_t& r)
-    {
+    virtual void invoke(logrec_t& r) {
         if (r.type() == logrec_t::t_page_write) {
             char* pos = r.data();
             pos += sizeof(PageID);
             pos += sizeof(lsn_t);
-            uint32_t count = *((uint32_t*) pos);
+            uint32_t count = *((uint32_t*)pos);
 
             if (consecutive_writes.size() <= count) {
                 consecutive_writes.resize(count + 1);
@@ -230,27 +226,23 @@ public:
         }
     }
 
-    virtual void finalize()
-    {
+    virtual void finalize() {
         for (unsigned i = 0; i < consecutive_writes.size(); i++) {
             out() << i << " " << consecutive_writes[i] << endl;
         }
     };
 };
 
-void PropStats::setupOptions()
-{
+void PropStats::setupOptions() {
     LogScannerCommand::setupOptions();
     boost::program_options::options_description opt("PropStats Options");
     opt.add_options()
-        ("psize", po::value<size_t>(&psize)->default_value(1024*1024*1024),
-            "Size of log partitions (to calculate REDO length)")
-    ;
+            ("psize", po::value<size_t>(&psize)->default_value(1024 * 1024 * 1024),
+             "Size of log partitions (to calculate REDO length)");
     options.add(opt);
 }
 
-void PropStats::run()
-{
+void PropStats::run() {
     BaseScanner* s = getScanner();
 
     PropStatsHandler h1{psize};

@@ -57,17 +57,16 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "lsn.h"
 
 const lsn_t lsn_t::null(0, 0);
+
 const lsn_t lsn_t::max(lsn_t::file_hwm, lsn_t::mask());
 
-std::string lsn_t::str()
-{
+std::string lsn_t::str() {
     stringstream ss;
     ss << *this;
     return ss.str();
 }
 
 // to use in gdb
-void print_lsn(lsn_t lsn)
-{
+void print_lsn(lsn_t lsn) {
     std::cout << lsn.file() << "." << lsn.rba() << std::endl;
 }

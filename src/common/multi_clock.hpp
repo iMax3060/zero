@@ -49,7 +49,8 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
     class MultiHandedClock {
     public:
         /*!\fn      MultiHandedClock(key_type entryCount)
@@ -221,10 +222,10 @@ namespace zero::multi_clock {
             static_assert(clock < clock_count);
             if (!isValidIndex(index)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, index);
+                                                            invalid_clock_index>(this, index);
             } else if (isContainedIndex(index)) {
                 throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, index);
+                                                                invalid_clock_index>(this, index);
             } else {
                 if (isEmpty<clock>()) {
                     _hands[clock] = index;
@@ -260,10 +261,10 @@ namespace zero::multi_clock {
         void addBefore(const key_type& inside, const key_type& newEntry) {
             if (isValidIndex(newEntry)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                            invalid_clock_index>(this, newEntry);
             } else if (isValidIndex(inside)) {
-            throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                    invalid_clock_index>(this, inside);
+                throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
+                                                            invalid_clock_index>(this, inside);
             } else if (isContainedIndex(newEntry)) {
                 throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
                                                                 invalid_clock_index>(this, newEntry);
@@ -299,16 +300,16 @@ namespace zero::multi_clock {
         void addBefore(const key_type& inside, key_type&& newEntry) {
             if (isValidIndex(newEntry)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                            invalid_clock_index>(this, newEntry);
             } else if (isValidIndex(inside)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                            invalid_clock_index>(this, inside);
             } else if (isContainedIndex(newEntry)) {
                 throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                                invalid_clock_index>(this, newEntry);
             } else if (!isContainedIndex(inside)) {
                 MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                      invalid_clock_index>(this, inside);
             } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._before = _clocks[inside]._before;
@@ -338,16 +339,16 @@ namespace zero::multi_clock {
         void addAfter(const key_type& inside, const key_type& newEntry) {
             if (isValidIndex(newEntry)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                            invalid_clock_index>(this, newEntry);
             } else if (isValidIndex(inside)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                            invalid_clock_index>(this, inside);
             } else if (isContainedIndex(newEntry)) {
                 throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                                invalid_clock_index>(this, newEntry);
             } else if (!isContainedIndex(inside)) {
                 MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                      invalid_clock_index>(this, inside);
             } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._after = _clocks[inside]._after;
@@ -377,16 +378,16 @@ namespace zero::multi_clock {
         void addAfter(const key_type& inside, const key_type&& newEntry) {
             if (isValidIndex(newEntry)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                            invalid_clock_index>(this, newEntry);
             } else if (isValidIndex(inside)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                            invalid_clock_index>(this, inside);
             } else if (isContainedIndex(newEntry)) {
                 throw MultiHandedClockAlreadyContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, newEntry);
+                                                                invalid_clock_index>(this, newEntry);
             } else if (!isContainedIndex(inside)) {
                 MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, inside);
+                                                      invalid_clock_index>(this, inside);
             } else {
                 w_assert1(_sizes[_clockMembership[inside]] >= 1);
                 _clocks[newEntry]._after = _clocks[inside]._after;
@@ -436,7 +437,7 @@ namespace zero::multi_clock {
         void remove(const key_type& index) {
             if (!isValidIndex(index)) {
                 throw MultiHandedClockInvalidIndexException<key_type, value_type, clock_count, invalid_index,
-                        invalid_clock_index>(this, index);
+                                                            invalid_clock_index>(this, index);
             } else if (!isContainedIndex(index)) {
                 throw MultiHandedClockNotContainedException<key_type, value_type, clock_count, invalid_index,
                                                             invalid_clock_index>(this, index);
@@ -699,13 +700,13 @@ namespace zero::multi_clock {
          *          \link MultiHandedClock \endlink is initialized, it allocates memory to hold this many entries. This
          *          also specifies the highest key that is allowed in the clocks (\c _entryCount \c - \c 1 ).
          */
-        key_type                            _entryCount;
+        key_type _entryCount;
 
         /*!\var     _values
          * \brief   Values
          * \details Holds the values corresponding the keys. The corresponding key is the index of this array.
          */
-        std::vector<value_type>             _values;
+        std::vector<value_type> _values;
 
         /*!\var     _clocks
          * \brief   Clocks
@@ -713,30 +714,28 @@ namespace zero::multi_clock {
          *          contained in here). The \link IndexPair \endlink stored at index \c i contains the indexes within
          *          the same clock after \c i and before \c i .
          */
-        std::vector<IndexPair>              _clocks;
+        std::vector<IndexPair> _clocks;
 
         /*!\var     _clockMembership
          * \brief   Membership of indexes to clocks
          * \details This array specifies for each index in the domain to which clock it belongs. If an index is not part
          *          of a clock, the template parameter \c invalid_clock_index is used.
          */
-        std::vector<ClockIndex>             _clockMembership;
+        std::vector<ClockIndex> _clockMembership;
 
         /*!\var     _hands
          * \brief   Clock hands
          * \details Contains the clock hands of the clocks. Therefore it contains the index of each clock's head. If a
          *          clock is empty, this contains the template parameter \c invalid_index .
          */
-        std::array<key_type, clock_count>   _hands;
+        std::array<key_type, clock_count> _hands;
 
         /*!\var     _sizes
          * \brief   Number of elements in the clocks
          * \details Contains for each clock the number of elements this clock currently has.
          */
-        std::array<key_type, clock_count>   _sizes;
-
+        std::array<key_type, clock_count> _sizes;
     };
-    
 } // zero::multi_clock
 
 #endif // __MULTI_CLOCK_HPP

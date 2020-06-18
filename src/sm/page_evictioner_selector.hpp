@@ -177,8 +177,7 @@ namespace zero::buffer_pool {
         /*!\var     _maxBufferpoolIndex
          * \brief   The maximum buffer frame index
          */
-        bf_idx          _maxBufferpoolIndex;
-
+        bf_idx _maxBufferpoolIndex;
     };
 
     /*!\class   PageEvictionerSelectorQuasiFIFOLowContention
@@ -202,7 +201,7 @@ namespace zero::buffer_pool {
      *
      * \note See the function specifications for more details about the implementation.
      */
-    template <uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
+    template<uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
     class PageEvictionerSelectorQuasiFIFOLowContention : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorQuasiFIFOLowContention(const BufferPool* bufferPool)
@@ -233,7 +232,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (!currentlyCheckingRetryList) {   // This thread checked the front of the _initialList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _initialList.size())
-                     || _retryList.empty()) {       // Check again the front of the _initialList:
+                        || _retryList.empty()) {       // Check again the front of the _initialList:
                         _initialList.pop(selected);
                         retriedBufferIndexes++;
                         if (_notExplicitlyEvictedList[selected].test_and_set()) {
@@ -253,7 +252,7 @@ namespace zero::buffer_pool {
                     }
                 } else {                            // This thread checked the front of the _retryList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _retryList.size())
-                     || _initialList.empty()) {     // Check again the front of the _retryList:
+                        || _initialList.empty()) {     // Check again the front of the _retryList:
                         _retryList.pop(selected);
                         retriedBufferIndexes++;
                         if (_notExplicitlyEvictedList[selected].test_and_set()) {
@@ -409,20 +408,19 @@ namespace zero::buffer_pool {
          * \details Explicitly evicted buffer frames still in either \link _initialList \endlink or
          *          \link _retryList \endlink have this flag unset.
          */
-        std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
+        std::vector<std::atomic_flag> _notExplicitlyEvictedList;
 
         /*!\var     _retryListCheck
          * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _initialList \endlink
          */
-        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+        static constexpr double _retryListCheck = retry_list_check_ppm * 0.000001;
 
         /*!\var     _initialListCheck
          * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _retryList \endlink
          */
-        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
-
+        static constexpr double _initialListCheck = initial_list_check_ppm * 0.000001;
     };
 
     /*!\class   PageEvictionerSelectorQuasiFIFOHighContention
@@ -446,7 +444,7 @@ namespace zero::buffer_pool {
      *
      * \note See the function specifications for more details about the implementation.
      */
-    template <uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
+    template<uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
     class PageEvictionerSelectorQuasiFIFOHighContention : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorQuasiFIFOHighContention(const BufferPool* bufferPool)
@@ -481,7 +479,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (!currentlyCheckingRetryList) {               // This thread checked the front of the _initialList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _approximateInitialListLength)
-                     || _approximateRetryListLength == 0) {
+                        || _approximateRetryListLength == 0) {
                         if (_initialList.try_pop(selected)) {  // Check again the front of the _initialList
                             _approximateInitialListLength--;
                             retriedBufferIndexes++;
@@ -510,7 +508,7 @@ namespace zero::buffer_pool {
                     }
                 } else {                                        // This thread checked the front of the _retryList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _approximateRetryListLength)
-                     || _approximateInitialListLength == 0) {
+                        || _approximateInitialListLength == 0) {
                         if (_retryList.try_pop(selected)) {    // Check again the front of the _retryList
                             _approximateRetryListLength--;
                             retriedBufferIndexes++;
@@ -662,12 +660,12 @@ namespace zero::buffer_pool {
          * \note    This might also contain explicitly evicted buffer frames (currently not in use or reused) at
          *          arbitrary positions.
          */
-        rigtorp::MPMCQueue<bf_idx>      _initialList;
+        rigtorp::MPMCQueue<bf_idx> _initialList;
 
         /*!\var     _approximateInitialListLength
          * \brief   Approximate length of the \link _initialList \endlink (not synchronized)
          */
-        atomic_bf_idx                   _approximateInitialListLength;
+        atomic_bf_idx _approximateInitialListLength;
 
         /*!\var     _retryList
          * \brief   Queue of buffer frames currently last selected for eviction
@@ -678,32 +676,31 @@ namespace zero::buffer_pool {
          * \note    This might also contain explicitly evicted buffer frames (currently not in use or reused) at
          *          arbitrary positions.
          */
-        rigtorp::MPMCQueue<bf_idx>      _retryList;
+        rigtorp::MPMCQueue<bf_idx> _retryList;
 
         /*!\var     _approximateRetryListLength
          * \brief   Approximate length of the \link _initialList \endlink (not synchronized)
          */
-        atomic_bf_idx                   _approximateRetryListLength;
+        atomic_bf_idx _approximateRetryListLength;
 
         /*!\var     _notExplicitlyEvictedList
          * \brief   Flags not explicitly buffer frames
          * \details Explicitly evicted buffer frames still in either \link _initialList \endlink or
          *          \link _retryList \endlink have this flag unset.
          */
-        std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
+        std::vector<std::atomic_flag> _notExplicitlyEvictedList;
 
         /*!\var     _retryListCheck
          * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _initialList \endlink
          */
-        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+        static constexpr double _retryListCheck = retry_list_check_ppm * 0.000001;
 
         /*!\var     _initialListCheck
          * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _retryList \endlink
          */
-        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
-
+        static constexpr double _initialListCheck = initial_list_check_ppm * 0.000001;
     };
 
     /*!\class   PageEvictionerSelectorQuasiFILOLowContention
@@ -726,7 +723,7 @@ namespace zero::buffer_pool {
      *
      * \note See the function specifications for more details about the implementation.
      */
-    template <uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
+    template<uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t initial_list_check_ppm/* = 10000*/>
     class PageEvictionerSelectorQuasiFILOLowContention : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorQuasiFILOLowContention(const BufferPool* bufferPool)
@@ -757,7 +754,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (!currentlyCheckingRetryList) {   // This thread checked the front of the _retryList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_initialListCheck * _initialList.size())
-                     || _retryList.empty()) {       // Check again the front of the _initialList:
+                        || _retryList.empty()) {       // Check again the front of the _initialList:
                         _initialList.pop(selected);
                         retriedBufferIndexes++;
                         if (_notExplicitlyEvictedList[selected].test_and_set()) {
@@ -778,7 +775,7 @@ namespace zero::buffer_pool {
                     }
                 } else {                            // This thread checked the front of the _initialList last:
                     if (retriedBufferIndexes < static_cast<bf_idx>(_retryListCheck * _retryList.size())
-                     || _initialList.empty()) {     // Check again the front of the _retryList:
+                        || _initialList.empty()) {     // Check again the front of the _retryList:
                         _retryList.pop(selected);
                         retriedBufferIndexes++;
                         if (_notExplicitlyEvictedList[selected].test_and_set()) {
@@ -934,20 +931,19 @@ namespace zero::buffer_pool {
          * \details Explicitly evicted buffer frames still in either \link _initialList \endlink or
          *          \link _retryList \endlink have this flag unset.
          */
-        std::vector<std::atomic_flag>   _notExplicitlyEvictedList;
+        std::vector<std::atomic_flag> _notExplicitlyEvictedList;
 
         /*!\var     _retryListCheck
          * \brief   The fraction of the \link _retryList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _initialList \endlink
          */
-        static constexpr double         _retryListCheck = retry_list_check_ppm * 0.000001;
+        static constexpr double _retryListCheck = retry_list_check_ppm * 0.000001;
 
         /*!\var     _initialListCheck
          * \brief   The fraction of the \link _initialList \endlink queue selected by a thread before selecting buffer
          *          frames from the \link _retryList \endlink
          */
-        static constexpr double         _initialListCheck = initial_list_check_ppm * 0.000001;
-
+        static constexpr double _initialListCheck = initial_list_check_ppm * 0.000001;
     };
 
     /*!\class   PageEvictionerSelectorLRU
@@ -1158,13 +1154,12 @@ namespace zero::buffer_pool {
         /*!\var     _lruList
          * \brief   Queue of recently referenced buffer frame indexes (most recent in the back)
          */
-        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _lruList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0> _lruList;
 
         /*!\var     _lruListLock
          * \brief   Latch protecting the \link _lruList \endlink from concurrent manipulations
          */
-        std::recursive_mutex                                _lruListLock;
-
+        std::recursive_mutex _lruListLock;
     };
 
     /*!\class   PageEvictionerSelectorSLRU
@@ -1179,7 +1174,7 @@ namespace zero::buffer_pool {
      *
      * @tparam protected_block_ppm The fraction (in PPM) of buffer frames that fit into the protected segment.
      */
-    template <bf_idx protected_block_ppm/* = 10000*/>
+    template<bf_idx protected_block_ppm/* = 10000*/>
     class PageEvictionerSelectorSLRU : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorSLRU(const BufferPool* bufferPool)
@@ -1434,23 +1429,22 @@ namespace zero::buffer_pool {
         /*!\var     _protectedLRUList
          * \brief   The protected segment sorted according to reference recency
          */
-        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _protectedLRUList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0> _protectedLRUList;
 
         /*!\var     _probationaryLRUList
          * \brief   The probationary segment sorted according to reference recency
          */
-        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _probationaryLRUList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0> _probationaryLRUList;
 
         /*!\var     _protectedBlockCount
          * \brief   Maximum number of buffer frame indexes in the protected segment
          */
-        const bf_idx                                        _protectedBlockCount;
+        const bf_idx _protectedBlockCount;
 
         /*!\var     _lruListLock
          * \brief   Protects the protected and probationary segments from concurrent manupulations
          */
-        std::recursive_mutex                                _lruListLock;
-
+        std::recursive_mutex _lruListLock;
     };
 
     /*!\class   PageEvictionerSelectorLRUK
@@ -1466,7 +1460,7 @@ namespace zero::buffer_pool {
      * @tparam k             The number of last references considered per buffer frame.
      * @tparam on_page_unfix Count the unfix of a page as a reference instead of the fix.
      */
-    template <size_t k/* = 2*/, bool on_page_unfix/* = false*/>
+    template<size_t k/* = 2*/, bool on_page_unfix/* = false*/>
     class PageEvictionerSelectorLRUK : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorLRUK(const BufferPool* bufferPool)
@@ -1672,19 +1666,18 @@ namespace zero::buffer_pool {
         /*!\var     _lruList
          * \brief   At most _k_ page references per buffer frame index (most recent in the back)
          */
-        zero::hashtable_deque::HashtableDeque<uint64_t, 0>  _lruList;
+        zero::hashtable_deque::HashtableDeque<uint64_t, 0> _lruList;
 
         /*!\var     _frameReferences
          * \brief   Last used page reference numbers per buffer frame index
          */
-        std::vector<size_t>                                 _frameReferences;
+        std::vector<size_t> _frameReferences;
 
         /*!\var     _lruListLock
          * \brief   Latch protecting the \link _lruList \endlink and \link _frameReferences \endlink from concurrent
          *          manipulations
          */
-        std::recursive_mutex                                _lruListLock;
-
+        std::recursive_mutex _lruListLock;
     };
 
     /*!\class   PageEvictionerSelectorQuasiMRU
@@ -1710,7 +1703,7 @@ namespace zero::buffer_pool {
      *
      * \note See the function specifications for more details about the implementation.
      */
-    template <uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t mru_list_check_ppm/* = 10000*/>
+    template<uint32_t retry_list_check_ppm/* = 1000000*/, uint32_t mru_list_check_ppm/* = 10000*/>
     class PageEvictionerSelectorQuasiMRU : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorQuasiMRU(const BufferPool* bufferPool)
@@ -1741,7 +1734,7 @@ namespace zero::buffer_pool {
             bf_idx selected;
             if (currentlyCheckingRetryList) {       // This thread checked the front of the _retryList last:
                 if (retriedBufferIndexes < static_cast<bf_idx>(retry_list_check_ppm * 0.000001 * _retryList.length())
-                 || _mruList.length() == 0) {    // Check again the front of the _retryList:
+                    || _mruList.length() == 0) {    // Check again the front of the _retryList:
                     _mruListLock.lock();
                     _retryList.popFromFront(selected);
                     retriedBufferIndexes++;
@@ -1755,7 +1748,7 @@ namespace zero::buffer_pool {
                 }
             } else {                                // This thread checked the front of the _initialList last:
                 if (retriedBufferIndexes < static_cast<bf_idx>(mru_list_check_ppm * 0.000001 * _mruList.length())
-                  || _retryList.length() == 0) {  // Check again the front of the _initialList:
+                    || _retryList.length() == 0) {  // Check again the front of the _initialList:
                     _mruListLock.lock();
                     _mruList.popFromFront(selected);
                     retriedBufferIndexes++;
@@ -1957,13 +1950,13 @@ namespace zero::buffer_pool {
          * \details Stack of the recently referenced buffer frame indexes without those already found not evictable
          *          during eviction.
          */
-        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _mruList;
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0> _mruList;
 
         /*!\var     _mruListLock
          * \brief   Latch protecting the \link _mruList \endlink and the \link _retryList \endlink from concurrent
          *          manipulations
          */
-        std::recursive_mutex                                _mruListLock;
+        std::recursive_mutex _mruListLock;
 
         /*!\var     _retryList
          * \brief   Queue of buffer frames currently last selected for eviction
@@ -1971,8 +1964,7 @@ namespace zero::buffer_pool {
          *          evictable during eviction. The front of the queue is the buffer frame index that was the last found
          *          to be not evictable during eviction.
          */
-        zero::hashtable_deque::HashtableDeque<bf_idx, 0>    _retryList;
-
+        zero::hashtable_deque::HashtableDeque<bf_idx, 0> _retryList;
     };
 
     /*!\class   PageEvictionerSelectorTimestampLRU
@@ -1985,7 +1977,7 @@ namespace zero::buffer_pool {
      *                              buffer frames before one thread starts the process of re-sorting the other list
      *                              based on the most recent timestamps of page references.
      */
-    template <bf_idx resort_threshold_ppm/* = 750000*/>
+    template<bf_idx resort_threshold_ppm/* = 750000*/>
     class PageEvictionerSelectorTimestampLRU : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorTimestampLRU(const BufferPool* bufferPool)
@@ -2021,7 +2013,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (_useLRUList0) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
                         _useLRUList1 = true;
@@ -2037,7 +2029,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lruList0[checkThis]) == _timestampsLive[std::get<0>(_lruList0[checkThis])]) {
+                            if (std::get<1>(_lruList0[checkThis])
+                                == _timestampsLive[std::get<0>(_lruList0[checkThis])]) {
                                 return std::get<0>(_lruList0[checkThis]);
                             } else {
                                 continue;
@@ -2046,7 +2039,7 @@ namespace zero::buffer_pool {
                     }
                 } else if (_useLRUList1) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList0);
                         _useLRUList0 = true;
@@ -2062,7 +2055,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lruList1[checkThis]) == _timestampsLive[std::get<0>(_lruList1[checkThis])]) {
+                            if (std::get<1>(_lruList1[checkThis])
+                                == _timestampsLive[std::get<0>(_lruList1[checkThis])]) {
                                 return std::get<0>(_lruList1[checkThis]);
                             } else {
                                 continue;
@@ -2198,7 +2192,7 @@ namespace zero::buffer_pool {
          *          contained page. The index of the page reference timestamps corresponding to buffer frame \c n is
          *          \c n .
          */
-        std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>>                     _timestampsLive;
+        std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>> _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2206,7 +2200,7 @@ namespace zero::buffer_pool {
          *          timestamps of most recent references at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>              _lruList0;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList0;
 
         /*!\var     _lruList1
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2214,34 +2208,34 @@ namespace zero::buffer_pool {
          *          timestamps of most recent references at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>              _lruList1;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
          */
-        atomic_bf_idx                                                                                   _lastChecked;
+        atomic_bf_idx _lastChecked;
 
         /*!\var     _useLRUList0
          * \brief   \link _lruList0 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                               _useLRUList0;
+        std::atomic<bool> _useLRUList0;
 
         /*!\var     _useLRUList1
          * \brief   \link _lruList1 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                               _useLRUList1;
+        std::atomic<bool> _useLRUList1;
 
         /*!\var     _sortingInProgress
          * \brief   One thread currently sorts one of the lists if set
          */
-        std::atomic_flag                                                                                _sortingInProgress;
+        std::atomic_flag _sortingInProgress;
 
         /*!\var     _waitForSorted
          * \brief   Manages a queue for the sorting process
          * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
-        std::mutex                                                                                      _waitForSorted;
+        std::mutex _waitForSorted;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
@@ -2250,7 +2244,8 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        inline void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+        inline void sort(
+                std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
                 into[index] = std::make_tuple(index, _timestampsLive[index].load());
             }
@@ -2263,7 +2258,6 @@ namespace zero::buffer_pool {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
-
     };
 
     /*!\class   PageEvictionerSelectorTimestampLRUK
@@ -2278,7 +2272,7 @@ namespace zero::buffer_pool {
      *                              based on the most recent timestamps of page references.
      * @tparam on_page_unfix        Count the unfix of a page as a reference instead of the fix.
      */
-    template <size_t k/* = 2*/, bf_idx resort_threshold_ppm/* = 750000*/, bool on_page_unfix/* = false*/>
+    template<size_t k/* = 2*/, bf_idx resort_threshold_ppm/* = 750000*/, bool on_page_unfix/* = false*/>
     class PageEvictionerSelectorTimestampLRUK : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorTimestampLRUK(const BufferPool* bufferPool)
@@ -2316,7 +2310,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (_useLRUList0) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList1);
                         _useLRUList1 = true;
@@ -2333,7 +2327,8 @@ namespace zero::buffer_pool {
                             continue;
                         } else {
                             if (std::get<1>(_lruList0[checkThis])
-                             == _timestampsLive[std::get<0>(_lruList0[checkThis])][_timestampsLiveOldestTimestamp[std::get<0>(_lruList0[checkThis])] % k]) {
+                                == _timestampsLive[std::get<0>(_lruList0[checkThis])][
+                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList0[checkThis])] % k]) {
                                 return std::get<0>(_lruList0[checkThis]);
                             } else {
                                 continue;
@@ -2342,7 +2337,7 @@ namespace zero::buffer_pool {
                     }
                 } else if (_useLRUList1) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lruList0);
                         _useLRUList0 = true;
@@ -2359,7 +2354,8 @@ namespace zero::buffer_pool {
                             continue;
                         } else {
                             if (std::get<1>(_lruList1[checkThis])
-                             == _timestampsLive[std::get<0>(_lruList1[checkThis])][_timestampsLiveOldestTimestamp[std::get<0>(_lruList1[checkThis])] % k]) {
+                                == _timestampsLive[std::get<0>(_lruList1[checkThis])][
+                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList1[checkThis])] % k]) {
                                 return std::get<0>(_lruList1[checkThis]);
                             } else {
                                 continue;
@@ -2519,7 +2515,7 @@ namespace zero::buffer_pool {
          *          oldest timestamp for each buffer frame. The index of the oldest timestamp index corresponding to
          *          buffer frame \c n is \c n .
          */
-        std::vector<size_t>                                                                         _timestampsLiveOldestTimestamp;
+        std::vector<size_t> _timestampsLiveOldestTimestamp;
 
         /*!\var     _timestampsLive
          * \brief   _k_ most recent page reference timestamps for the buffer frames
@@ -2528,7 +2524,7 @@ namespace zero::buffer_pool {
          *          \link _timestampsLiveOldestTimestamp \endlink. The index of the page reference timestamps
          *          corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::array<std::atomic<std::chrono::high_resolution_clock::duration::rep>, k>>  _timestampsLive;
+        std::vector<std::array<std::atomic<std::chrono::high_resolution_clock::duration::rep>, k>> _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2536,7 +2532,7 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>          _lruList0;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList0;
 
         /*!\var     _lruList1
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2544,34 +2540,34 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>          _lruList1;
+        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
          */
-        atomic_bf_idx                                                                               _lastChecked;
+        atomic_bf_idx _lastChecked;
 
         /*!\var     _useLRUList0
          * \brief   \link _lruList0 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                           _useLRUList0;
+        std::atomic<bool> _useLRUList0;
 
         /*!\var     _useLRUList1
          * \brief   \link _lruList1 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                                                                           _useLRUList1;
+        std::atomic<bool> _useLRUList1;
 
         /*!\var     _sortingInProgress
          * \brief   One thread currently sorts one of the lists if set
          */
-        std::atomic_flag                                                                            _sortingInProgress;
+        std::atomic_flag _sortingInProgress;
 
         /*!\var     _waitForSorted
          * \brief   Manages a queue for the sorting process
          * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
-        std::mutex                                                                                  _waitForSorted;
+        std::mutex _waitForSorted;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
@@ -2581,9 +2577,11 @@ namespace zero::buffer_pool {
          *
          * @param into The list of buffer frame indexes to sort into.
          */
-        inline void sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+        inline void sort(
+                std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
-                into[index] = std::make_tuple(index, _timestampsLive[index][_timestampsLiveOldestTimestamp[index] % k].load());
+                into[index] = std::make_tuple(index,
+                                              _timestampsLive[index][_timestampsLiveOldestTimestamp[index] % k].load());
             }
 
             std::sort(/*std::parallel::par,*/
@@ -2594,7 +2592,6 @@ namespace zero::buffer_pool {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
-
     };
 
     /*!\class   PageEvictionerSelectorLFU
@@ -2607,7 +2604,7 @@ namespace zero::buffer_pool {
      *                              buffer frames before one thread starts the process of re-sorting the other list
      *                              based on the most recent reference counters of buffer frames.
      */
-    template <bf_idx resort_threshold_ppm/* = 750000*/>
+    template<bf_idx resort_threshold_ppm/* = 750000*/>
     class PageEvictionerSelectorLFU : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorLFU(const BufferPool* bufferPool)
@@ -2625,7 +2622,7 @@ namespace zero::buffer_pool {
                 _useLFUList1(false) {
             _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
             _frequenciesLive[0] = std::numeric_limits<uint64_t>::max(); // The buffer index 0 cannot be used and is not
-                                                                        // allowed to selected for eviction!
+            // allowed to selected for eviction!
         };
 
         /*!\fn      select() noexcept
@@ -2646,7 +2643,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (_useLFUList0) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList1);
                         _useLFUList1 = true;
@@ -2662,7 +2659,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lfuList0[checkThis]) == _frequenciesLive[std::get<0>(_lfuList0[checkThis])]) {
+                            if (std::get<1>(_lfuList0[checkThis])
+                                == _frequenciesLive[std::get<0>(_lfuList0[checkThis])]) {
                                 return std::get<0>(_lfuList0[checkThis]);
                             } else {
                                 continue;
@@ -2671,7 +2669,7 @@ namespace zero::buffer_pool {
                     }
                 } else if (_useLFUList1) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList0);
                         _useLFUList0 = true;
@@ -2687,7 +2685,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lfuList1[checkThis]) == _frequenciesLive[std::get<0>(_lfuList1[checkThis])]) {
+                            if (std::get<1>(_lfuList1[checkThis])
+                                == _frequenciesLive[std::get<0>(_lfuList1[checkThis])]) {
                                 return std::get<0>(_lfuList1[checkThis]);
                             } else {
                                 continue;
@@ -2813,7 +2812,7 @@ namespace zero::buffer_pool {
          * \details This array contains for each buffer frame the reference frequency of the contained page. The index
          *          of the page reference timestamps corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::atomic<uint64_t>>              _frequenciesLive;
+        std::vector<std::atomic<uint64_t>> _frequenciesLive;
 
         /*!\var     _lfuList0
          * \brief   List of buffer frame indexes sorted by page reference frequency
@@ -2821,7 +2820,7 @@ namespace zero::buffer_pool {
          *          reference frequencies of the buffer frames at the time when this list was created. Each entry also
          *          contains the reference frequency that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList0;
+        std::vector<std::tuple<bf_idx, uint64_t>> _lfuList0;
 
         /*!\var     _lfuList1
          * \brief   List of buffer frame indexes sorted by page reference frequency
@@ -2829,34 +2828,34 @@ namespace zero::buffer_pool {
          *          reference frequencies of the buffer frames at the time when this list was created. Each entry also
          *          contains the reference frequency that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList1;
+        std::vector<std::tuple<bf_idx, uint64_t>> _lfuList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
          */
-        atomic_bf_idx                                   _lastChecked;
+        atomic_bf_idx _lastChecked;
 
         /*!\var     _useLFUList0
          * \brief   \link _lfuList0 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                               _useLFUList0;
+        std::atomic<bool> _useLFUList0;
 
         /*!\var     _useLFUList1
          * \brief   \link _lfuList1 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                               _useLFUList1;
+        std::atomic<bool> _useLFUList1;
 
         /*!\var     _sortingInProgress
          * \brief   One thread currently sorts one of the lists if set
          */
-        std::atomic_flag                                _sortingInProgress;
+        std::atomic_flag _sortingInProgress;
 
         /*!\var     _waitForSorted
          * \brief   Manages a queue for the sorting process
          * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
-        std::mutex                                      _waitForSorted;
+        std::mutex _waitForSorted;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to reference frequencies
@@ -2878,7 +2877,6 @@ namespace zero::buffer_pool {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
-
     };
 
     /*!\class   PageEvictionerSelectorLFUDA
@@ -2894,7 +2892,7 @@ namespace zero::buffer_pool {
      *                              buffer frames before one thread starts the process of re-sorting the other list
      *                              based on the most recent reference counters of buffer frames.
      */
-    template <bf_idx resort_threshold_ppm/* = 750000*/>
+    template<bf_idx resort_threshold_ppm/* = 750000*/>
     class PageEvictionerSelectorLFUDA : public PageEvictionerSelector {
     public:
         /*!\fn      PageEvictionerSelectorLFUDA(const BufferPool* bufferPool)
@@ -2913,7 +2911,7 @@ namespace zero::buffer_pool {
                 _useLFUList1(false) {
             _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
             _frequenciesLive[0] = std::numeric_limits<uint64_t>::max(); // The buffer index 0 cannot be used and is not
-                                                                        // allowed to selected for eviction!
+            // allowed to selected for eviction!
         };
 
         /*!\fn      select() noexcept
@@ -2934,7 +2932,7 @@ namespace zero::buffer_pool {
             while (true) {
                 if (_useLFUList0) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList1);
                         _useLFUList1 = true;
@@ -2950,7 +2948,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lfuList0[checkThis]) == _frequenciesLive[std::get<0>(_lfuList0[checkThis])]) {
+                            if (std::get<1>(_lfuList0[checkThis])
+                                == _frequenciesLive[std::get<0>(_lfuList0[checkThis])]) {
                                 _ageFactor = std::get<1>(_lfuList0[checkThis]);
                                 return std::get<0>(_lfuList0[checkThis]);
                             } else {
@@ -2960,7 +2959,7 @@ namespace zero::buffer_pool {
                     }
                 } else if (_useLFUList1) {
                     if (_lastChecked > static_cast<bf_idx>(resort_threshold_ppm * 0.000001 * (_maxBufferpoolIndex - 1))
-                     && !_sortingInProgress.test_and_set()) {
+                        && !_sortingInProgress.test_and_set()) {
                         _waitForSorted.lock();
                         sort(_lfuList0);
                         _useLFUList0 = true;
@@ -2976,7 +2975,8 @@ namespace zero::buffer_pool {
                             _waitForSorted.unlock();
                             continue;
                         } else {
-                            if (std::get<1>(_lfuList1[checkThis]) == _frequenciesLive[std::get<0>(_lfuList1[checkThis])]) {
+                            if (std::get<1>(_lfuList1[checkThis])
+                                == _frequenciesLive[std::get<0>(_lfuList1[checkThis])]) {
                                 _ageFactor = std::get<1>(_lfuList1[checkThis]);
                                 return std::get<0>(_lfuList1[checkThis]);
                             } else {
@@ -3103,7 +3103,7 @@ namespace zero::buffer_pool {
          * \details This array contains for each buffer frame the reference counter of the contained page. The index of
          *          the page reference timestamps corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::atomic<uint64_t>>              _frequenciesLive;
+        std::vector<std::atomic<uint64_t>> _frequenciesLive;
 
         /*!\var     _lfuList0
          * \brief   List of buffer frame indexes sorted by page reference counter
@@ -3111,7 +3111,7 @@ namespace zero::buffer_pool {
          *          page reference counters of the buffer frames at the time when this list was created. Each entry also
          *          contains the reference counts that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList0;
+        std::vector<std::tuple<bf_idx, uint64_t>> _lfuList0;
 
         /*!\var     _lfuList1
          * \brief   List of buffer frame indexes sorted by page reference counter
@@ -3119,39 +3119,39 @@ namespace zero::buffer_pool {
          *          page reference counters of the buffer frames at the time when this list was created. Each entry also
          *          contains the reference counts that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, uint64_t>>       _lfuList1;
+        std::vector<std::tuple<bf_idx, uint64_t>> _lfuList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
          */
-        atomic_bf_idx                                   _lastChecked;
+        atomic_bf_idx _lastChecked;
 
         /*!\var     _ageFactor
          * \brief   The age factor (reference counter of last selected buffer frame)
          */
-        std::atomic<uint64_t>                           _ageFactor;
+        std::atomic<uint64_t> _ageFactor;
 
         /*!\var     _useLFUList0
          * \brief   \link _lfuList0 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                               _useLFUList0;
+        std::atomic<bool> _useLFUList0;
 
         /*!\var     _useLFUList1
          * \brief   \link _lfuList1 \endlink is most recently sorted list if set
          */
-        std::atomic<bool>                               _useLFUList1;
+        std::atomic<bool> _useLFUList1;
 
         /*!\var     _sortingInProgress
          * \brief   One thread currently sorts one of the lists if set
          */
-        std::atomic_flag                                _sortingInProgress;
+        std::atomic_flag _sortingInProgress;
 
         /*!\var     _waitForSorted
          * \brief   Manages a queue for the sorting process
          * \details If the currently sorted list was completely checked and if the sorting is currently in progress,
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
-        std::mutex                                      _waitForSorted;
+        std::mutex _waitForSorted;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to page reference counters
@@ -3173,7 +3173,6 @@ namespace zero::buffer_pool {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
-
     };
 
     /*!\class   PageEvictionerSelectorLRDV1
@@ -3214,14 +3213,15 @@ namespace zero::buffer_pool {
             while (true) {
                 for (bf_idx index = 1; index <= _maxBufferpoolIndex; index++) {
                     if ((static_cast<double>(_frameReferences[index])
-                       / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
-                      < minLRDReferenceDensity) {
+                         / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
+                        < minLRDReferenceDensity) {
                         if (!_frameAlreadySelected[index].test_and_set()) {
                             _frameAlreadySelected[minLRDIndex].clear();
                             minLRDIndex = index;
                             minLRDReferences = _frameReferences[index];
                             minLRDReferenceDensity = static_cast<double>(_frameReferences[index])
-                                                   / static_cast<double>(_globalReferences - _frameFirstReferenced[index]);
+                                                     / static_cast<double>(_globalReferences
+                                                                           - _frameFirstReferenced[index]);
                         }
                     }
                 }
@@ -3359,30 +3359,29 @@ namespace zero::buffer_pool {
         /*!\var     _frameReferences
          * \brief   Reference counters for the buffer frames
          */
-        std::vector<std::atomic<uint64_t>>      _frameReferences;
+        std::vector<std::atomic<uint64_t>> _frameReferences;
 
         /*!\var     _frameFirstReferenced
          * \brief   Times of first reference of the buffer frames
          */
-        std::vector<std::atomic<uint64_t>>      _frameFirstReferenced;
+        std::vector<std::atomic<uint64_t>> _frameFirstReferenced;
 
         /*!\var     _frameAlreadySelected
          * \brief   Whether a buffer frame index was already selected by one thread
          */
-        std::vector<std::atomic_flag>           _frameAlreadySelected;
+        std::vector<std::atomic_flag> _frameAlreadySelected;
 
         /*!\var     _globalReferences
          * \brief   Global reference counter
          */
-        std::atomic<uint64_t>                   _globalReferences;
-
+        std::atomic<uint64_t> _globalReferences;
     };
 
     struct AgingFunction {
         virtual void operator()(std::atomic<uint64_t>& referenceCount) noexcept = 0;
     };
 
-    template <uint64_t subtrahend/* = 10*/>
+    template<uint64_t subtrahend/* = 10*/>
     struct AgingFunctionSubtraction : public AgingFunction {
         inline void operator()(std::atomic<uint64_t>& referenceCount) noexcept final {
             if (referenceCount > subtrahend) {
@@ -3393,7 +3392,7 @@ namespace zero::buffer_pool {
         }
     };
 
-    template <uint64_t factor_ppm/* = 750000*/>
+    template<uint64_t factor_ppm/* = 750000*/>
     struct AgingFunctionMultiplication : public AgingFunction {
         inline void operator()(std::atomic<uint64_t>& referenceCount) noexcept final {
             referenceCount = static_cast<uint64_t>(factor_ppm * 0.000001 * referenceCount);
@@ -3415,7 +3414,7 @@ namespace zero::buffer_pool {
      * @tparam aging_function  The aging function which is used to reduce the influence of old page references. It has
      *                         to be of type \link AgingFunction \endlink.
      */
-    template <uint64_t aging_frequency/* = 10*/, class aging_function>
+    template<uint64_t aging_frequency/* = 10*/, class aging_function>
     class PageEvictionerSelectorLRDV2 : public PageEvictionerSelector {
         static_assert(std::is_base_of<AgingFunction, aging_function>::value,
                       "'selector_class' is not of type 'AgingFunction'!");
@@ -3432,8 +3431,7 @@ namespace zero::buffer_pool {
                 _frameFirstReferenced(bufferPool->getBlockCount()),
                 _frameAlreadySelected(bufferPool->getBlockCount()),
                 _globalReferences(0),
-                _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {
-        };
+                _agingFrequency(aging_frequency * bufferPool->getBlockCount()) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -3451,14 +3449,15 @@ namespace zero::buffer_pool {
             while (true) {
                 for (bf_idx index = 1; index <= _maxBufferpoolIndex; index++) {
                     if ((static_cast<double>(_frameReferences[index])
-                       / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
-                      < minLRDReferenceDensity) {
+                         / static_cast<double>(_globalReferences - _frameFirstReferenced[index]))
+                        < minLRDReferenceDensity) {
                         if (!_frameAlreadySelected[index].test_and_set()) {
                             _frameAlreadySelected[minLRDIndex].clear();
                             minLRDIndex = index;
                             minLRDReferences = _frameReferences[index];
                             minLRDReferenceDensity = static_cast<double>(_frameReferences[index])
-                                                   / static_cast<double>(_globalReferences - _frameFirstReferenced[index]);
+                                                     / static_cast<double>(_globalReferences
+                                                                           - _frameFirstReferenced[index]);
                         }
                     }
                 }
@@ -3486,7 +3485,9 @@ namespace zero::buffer_pool {
             _frameReferences[idx]++;
             if (_globalReferences++ % _agingFrequency == 0) {
                 std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
-                              [this](std::atomic<uint64_t>& referenceCount){_agingFunction(referenceCount);});
+                                                      [this](std::atomic<uint64_t>& referenceCount) {
+                                                          _agingFunction(referenceCount);
+                                                      });
             }
         };
 
@@ -3515,7 +3516,9 @@ namespace zero::buffer_pool {
             _frameFirstReferenced[idx] = _globalReferences++;
             if (_frameFirstReferenced[idx] % _agingFrequency == 0) {
                 std::for_each(/*std::parallel::par, */_frameReferences.begin(), _frameReferences.end(),
-                              [this](std::atomic<uint64_t>& referenceCount){_agingFunction(referenceCount);});
+                                                      [this](std::atomic<uint64_t>& referenceCount) {
+                                                          _agingFunction(referenceCount);
+                                                      });
             }
             _frameReferences[idx] = 1;
             _frameAlreadySelected[idx].clear();
@@ -3606,35 +3609,33 @@ namespace zero::buffer_pool {
         /*!\var     _frameReferences
          * \brief   Reference counters for the buffer frames
          */
-        std::vector<std::atomic<uint64_t>>      _frameReferences;
+        std::vector<std::atomic<uint64_t>> _frameReferences;
 
         /*!\var     _frameFirstReferenced
          * \brief   Times of first reference of the buffer frames
          */
-        std::vector<std::atomic<uint64_t>>      _frameFirstReferenced;
+        std::vector<std::atomic<uint64_t>> _frameFirstReferenced;
 
         /*!\var     _frameAlreadySelected
          * \brief   Whether a buffer frame index was already selected by one thread
          */
-        std::vector<std::atomic_flag>           _frameAlreadySelected;
+        std::vector<std::atomic_flag> _frameAlreadySelected;
 
         /*!\var     _globalReferences
          * \brief   Global reference counter
          */
-        std::atomic<uint64_t>                   _globalReferences;
+        std::atomic<uint64_t> _globalReferences;
 
         /*!\var     _agingFrequency
          * \brief   Global page references between aging runs
          */
-        uint64_t                                _agingFrequency;
+        uint64_t _agingFrequency;
 
         /*!\var     _agingFunction
          * \brief   Instance of the aging function
          */
-        aging_function                          _agingFunction;
-
+        aging_function _agingFunction;
     };
-
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_SELECTOR_HPP

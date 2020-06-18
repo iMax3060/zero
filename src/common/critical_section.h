@@ -88,7 +88,7 @@ struct critical_section;
  */
 template<class Lock>
 struct critical_section<Lock*&> : public critical_section<Lock&> {
-    critical_section<Lock*&>(Lock* mutex) : critical_section<Lock&>(*mutex) { }
+    critical_section<Lock*&>(Lock* mutex) : critical_section<Lock&>(*mutex) {}
 };
 
 /*
@@ -116,7 +116,7 @@ struct critical_section<Lock*&> : public critical_section<Lock&> {
  *   - applies the Release command upon destruction.
  *
  */
-#define SPECIALIZE_CS(Lock,Extra,ExtraInit,Acquire,Release) \
+#define SPECIALIZE_CS(Lock, Extra, ExtraInit, Acquire, Release) \
 template<>  struct critical_section<Lock&> { \
 critical_section(Lock &mutex) \
     : _mutex(&mutex)          \
@@ -144,8 +144,7 @@ private:                      \
 
 // I undef-ed this and found all occurrances of CRITICAL_SECTION with this.
 // and hand-checked them.
-SPECIALIZE_CS(pthread_mutex_t, int _dummy,  (_dummy=0), 
-    pthread_mutex_lock(_mutex), pthread_mutex_unlock(_mutex));
-
+SPECIALIZE_CS(pthread_mutex_t, int _dummy, (_dummy = 0),
+              pthread_mutex_lock(_mutex), pthread_mutex_unlock(_mutex));
 
 #endif // __CRITICAL_SECTION_H </std-footer>*/

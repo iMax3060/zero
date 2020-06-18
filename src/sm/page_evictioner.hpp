@@ -41,6 +41,7 @@ namespace zero::buffer_pool {
          *          depends on its corresponding buffer pool and there can only be one buffer pool per Zero instance.
          */
         PageEvictioner(const PageEvictioner&) = delete;
+
         /*!\fn      operator=(const PageEvictioner&)
          * \brief   Explicitly deleted assignment operator of an abstract page evictioner
          * \details The assignment operator of an abstract page evictioner is explicitly removed because a page
@@ -209,39 +210,39 @@ namespace zero::buffer_pool {
          * \brief   Pointer swizzling used in the buffer pool
          * \details Set if the \link BufferPool \endlink uses pointer swizzling for page references.
          */
-        static constexpr bool     _enabledSwizzling = POINTER_SWIZZLER::usesPointerSwizzling;
+        static constexpr bool _enabledSwizzling = POINTER_SWIZZLER::usesPointerSwizzling;
 
         /*!\var     _maintainEMLSN
          * \brief   Maintain the page's EMLSNs on eviction
          * \details Set if the EMLSNs of the pages should be maintained.
          */
-        const bool                _maintainEMLSN;
+        const bool _maintainEMLSN;
 
         /*!\var     _flushDirty
          * \brief   Flush dirty pages
          * \details Set if dirty pages should be flushed when they get evicted from the buffer pool.
          */
-        const bool                _flushDirty;
+        const bool _flushDirty;
 
         /*!\var     _logEvictions
          * \brief   Log page evictions
          * \details Set if a log record should be created for each eviction of a page.
          */
-        const bool                _logEvictions;
+        const bool _logEvictions;
 
         /*!\var     _evictionBatchSize
          * \brief   Target value of free buffer frames
          * \details Once page evictioning is started, it runs till there are this many free buffer frames in the
          *          \link BufferPool \endlink.
          */
-        const uint_fast32_t       _evictionBatchSize;
+        const uint_fast32_t _evictionBatchSize;
 
         /*!\var     _maxAttempts
          * \brief   Maximum number of unsuccessful picks of eviction victims
          * \details Maximum number of picks of pages in a row that cannot be evicted before an error
          *          (\"Eviction got stuck!\") is thrown.
          */
-        const uint_fast32_t       _maxAttempts;
+        const uint_fast32_t _maxAttempts;
 
         /*!\var     _wakeupCleanerAttempts
          * \brief   Number of unsuccessful picks of eviction victims before waking up the page cleaner
@@ -250,7 +251,7 @@ namespace zero::buffer_pool {
          *
          * \remark  Dirty pages that need to get cleaned are a typical reason for stuck page evictions.
          */
-        const uint_fast32_t       _wakeupCleanerAttempts = 42;
+        const uint_fast32_t _wakeupCleanerAttempts = 42;
 
     protected:
         /*!\fn      _doEviction(bf_idx victim) noexcept
@@ -273,7 +274,7 @@ namespace zero::buffer_pool {
          * @param victim The index of the buffer frame from which the page should be evicted.
          * @return       Returns \c true if the page could successfully be evicted, otherwise \c false .
          */
-        bool                _doEviction(bf_idx victim) noexcept;
+        bool _doEviction(bf_idx victim) noexcept;
 
     private:
         /*!\fn      _unswizzleAndUpdateEMLSN(bf_idx victim) noexcept
@@ -286,7 +287,7 @@ namespace zero::buffer_pool {
          * @return       \c true if the updates to the parent page were successfully completed and not required,
          *               \c false otherwise.
          */
-        bool                _unswizzleAndUpdateEMLSN(bf_idx victim) noexcept;
+        bool _unswizzleAndUpdateEMLSN(bf_idx victim) noexcept;
 
         /*!\fn      _flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept
          * \brief   Flush the specified page
@@ -298,7 +299,7 @@ namespace zero::buffer_pool {
          * @param victimControlBlock The control block that corresponds to the buffer frame whose contained page gets
          *                           flushed.
          */
-        void                _flushDirtyPage(const bf_tree_cb_t &victimControlBlock) noexcept;
+        void _flushDirtyPage(const bf_tree_cb_t& victimControlBlock) noexcept;
 
         /*!\fn      do_work() override
          * \brief   Function evicting pages in the eviction thread
@@ -306,9 +307,8 @@ namespace zero::buffer_pool {
          *          terminates the eviction thread) and evicts pages as long as there are not
          *          \link _evictionBatchSize \endlink free buffer frames in the \link BufferPool \endlink.
          */
-        void                do_work() override;
+        void do_work() override;
     };
-
 } // zero::buffer_pool
 
 #endif // __ZERO_SM_PAGE_EVICTIONER_HPP

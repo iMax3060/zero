@@ -38,8 +38,11 @@ union qnode_status {
     } individual;
     int64_t _combined;
 };
+
 const qnode_status QNODE_IDLE = {{0, 0}};
+
 const qnode_status QNODE_WAITING = {{1, 0}};
+
 const qnode_status QNODE_DELEGATED = {{1, 1}};
 
 /**\brief An MCS queuing spinlock.
@@ -57,55 +60,73 @@ const qnode_status QNODE_DELEGATED = {{1, 1}};
 */
 struct mcs_lock {
     struct qnode;
+
     struct qnode {
-        qnode*  _next;
+        qnode* _next;
+
         qnode_status _status;
+
         // int32_t _waiting;
         // int32_t _delegated;
-        qnode volatile* vthis() { return this; }
+        qnode volatile* vthis() {
+            return this;
+        }
     };
+
     struct ext_qnode {
         qnode _node;
+
         mcs_lock* _held;
-        operator qnode*() { return &_node; }
+
+        operator qnode*() {
+            return &_node;
+        }
     };
+
 #define MCS_EXT_QNODE_INITIALIZER {{NULL,false},NULL}
 #define MCS_EXT_QNODE_INITIALIZE(x) \
 { (x)._node._next = NULL; (x)._node._waiting = 0; (x)._node._delegated = 0; (x)._held = NULL; }
+
     qnode* _tail;
-    mcs_lock() : _tail(nullptr) { }
+
+    mcs_lock() : _tail(nullptr) {}
 
     /* This spinning occurs whenever there are critical sections ahead
        of us.
     */
     void spin_on_waiting(qnode* me) {
-        while(me->vthis()->_status.individual._waiting);
+        while (me->vthis()->_status.individual._waiting) {}
     }
+
     /* Only acquire the lock if it is free...
      */
     bool attempt(ext_qnode* me) {
-        if(attempt((qnode*) me)) {
+        if (attempt((qnode*)me)) {
             me->_held = this;
             return true;
         }
         return false;
     }
+
     bool attempt(qnode* me) {
         me->_next = nullptr;
         me->_status.individual._waiting = 1;
         // lock held?
         qnode* null_cas_tmp = nullptr;
-        if(!lintel::unsafe::atomic_compare_exchange_strong<qnode*>(
-            &_tail, &null_cas_tmp, (qnode*) me))
+        if (!lintel::unsafe::atomic_compare_exchange_strong<qnode*>(
+                &_tail, &null_cas_tmp, (qnode*)me)) {
             return false;
+        }
         lintel::atomic_thread_fence(lintel::memory_order_acquire);
         return true;
     }
+
     // return true if the lock was free
     void* acquire(ext_qnode* me) {
         me->_held = this;
-        return acquire((qnode*) me);
+        return acquire((qnode*)me);
     }
+
     void* acquire(qnode* me) {
         return __unsafe_end_acquire(me, __unsafe_begin_acquire(me));
     }
@@ -114,17 +135,18 @@ struct mcs_lock {
         me->_next = nullptr;
         me->_status.individual._waiting = 1;
         qnode* pred = lintel::unsafe::atomic_exchange<qnode*>(&_tail, me);
-        if(pred) {
+        if (pred) {
             pred->_next = me;
         }
         return pred;
     }
+
     void* __unsafe_end_acquire(qnode* me, qnode* pred) {
-        if(pred) {
+        if (pred) {
             spin_on_waiting(me);
         }
         lintel::atomic_thread_fence(lintel::memory_order_acquire);
-        return (void*) pred;
+        return (void*)pred;
     }
 
     /* This spinning only occurs when we are at _tail and catch a
@@ -134,33 +156,47 @@ struct mcs_lock {
     */
     qnode* spin_on_next(qnode* me) {
         qnode* next;
-        while(!(next=me->vthis()->_next));
+        while (!(next = me->vthis()->_next)) {}
         return next;
     }
-    void release(ext_qnode *me) { 
+
+    void release(ext_qnode* me) {
         w_assert1(is_mine(me));
-        me->_held = 0; release((qnode*) me); 
+        me->_held = 0;
+        release((qnode*)me);
     }
-    void release(ext_qnode &me) { w_assert1(is_mine(&me)); release(&me); }
-    void release(qnode &me) { release(&me); }
+
+    void release(ext_qnode& me) {
+        w_assert1(is_mine(&me));
+        release(&me);
+    }
+
+    void release(qnode& me) {
+        release(&me);
+    }
+
     void release(qnode* me) {
         lintel::atomic_thread_fence(lintel::memory_order_release);
 
         qnode* next;
-        if(!(next=me->_next)) {
+        if (!(next = me->_next)) {
             qnode* me_cas_tmp = me;
-            if(me == _tail &&
-                lintel::unsafe::atomic_compare_exchange_strong<qnode*>(&_tail, &me_cas_tmp, (qnode*) nullptr)) {
+            if (me == _tail &&
+                lintel::unsafe::atomic_compare_exchange_strong<qnode*>(&_tail, &me_cas_tmp, (qnode*)nullptr)) {
                 return;
             }
             next = spin_on_next(me);
         }
         next->_status.individual._waiting = 0;
     }
+
     // bool is_mine(qnode* me) { return me->_held == this; }
-    bool is_mine(ext_qnode* me) { return me->_held == this; }
+    bool is_mine(ext_qnode* me) {
+        return me->_held == this;
+    }
 };
 
 /** Used to keep mcs_lock in its own cacheline. */
 const size_t CACHELINE_MCS_PADDING = CACHELINE_SIZE - sizeof(mcs_lock);
+
 #endif // __MCS_LOCK_H

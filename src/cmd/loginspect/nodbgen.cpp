@@ -5,27 +5,23 @@
 #include "xct_logger.h"
 #include "log_core.h"
 
-void NoDBGen::setupOptions()
-{
+void NoDBGen::setupOptions() {
     boost::program_options::options_description opt("NoDBGen Options");
     opt.add_options()
-        ("dbfile,d", po::value<string>(&dbfile)->required(),
-            "Path to DB file")
-        ("l,logdir", po::value<string>(&logdir)->required(),
-            "Path to log directory")
-    ;
+            ("dbfile,d", po::value<string>(&dbfile)->required(),
+             "Path to DB file")
+            ("l,logdir", po::value<string>(&logdir)->required(),
+             "Path to log directory");
     options.add(opt);
 }
 
-void NoDBGen::handlePage(fixable_page_h& p)
-{
-    sys_xct_section_t sx {false};
+void NoDBGen::handlePage(fixable_page_h& p) {
+    sys_xct_section_t sx{false};
     Logger::log_p<page_img_format_log>(&p);
     sx.end_sys_xct(RCOK);
 }
 
-void NoDBGen::run()
-{
+void NoDBGen::run() {
     _options.set_string_option("sm_dbfile", dbfile);
     _options.set_string_option("sm_logdir", logdir);
     _options.set_bool_option("sm_vol_cluster_stores", true);
@@ -50,7 +46,7 @@ void NoDBGen::run()
 
     while (pid <= lastPID) {
         if (pid % onePercent == 0) {
-            std::cout << "Pages processed: " << pid / onePercent << "%"  << std::endl;
+            std::cout << "Pages processed: " << pid / onePercent << "%" << std::endl;
         }
 
         if (vol->is_allocated_page(pid)) {

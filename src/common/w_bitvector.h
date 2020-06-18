@@ -59,29 +59,39 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *
  */
 template<int BIT_COUNT>
-class w_bitvector_t 
-{
+class w_bitvector_t {
 public:
-    enum { BITS = BIT_COUNT };
+    enum {
+        BITS = BIT_COUNT
+    };
+
     typedef uint64_t Word;
+
 private:
-    enum { BITS_PER_WORD=8*sizeof(Word) };
-    enum { WORDS = (BITS+BITS_PER_WORD-1)/BITS_PER_WORD };
+    enum {
+        BITS_PER_WORD = 8 * sizeof(Word)
+    };
+    enum {
+        WORDS = (BITS + BITS_PER_WORD - 1) / BITS_PER_WORD
+    };
+
     uint64_t data[WORDS];
 
 public:
 
-    w_bitvector_t() { clear(); }
+    w_bitvector_t() {
+        clear();
+    }
 
     /// return size in bits
-    int num_bits() const { 
+    int num_bits() const {
         return BIT_COUNT;
     }
 
     /// return size in words (unsigned long)
-    int num_words() const { 
-        int n= sizeof(data)/sizeof(data[0]); 
-        w_assert1(n==WORDS);
+    int num_words() const {
+        int n = sizeof(data) / sizeof(data[0]);
+        w_assert1(n == WORDS);
         return n;
     }
 
@@ -91,8 +101,7 @@ public:
      * merged.
      * Return true if this entire bitmap is found in the other.
      */
-    bool overlap(w_bitvector_t &merged, const w_bitvector_t &other)  const
-    {
+    bool overlap(w_bitvector_t& merged, const w_bitvector_t& other) const {
         return words_overlap(merged, other) == num_words();
     }
 
@@ -103,16 +112,16 @@ public:
      * Return the number of words in which this bitmap is found in
      * the other bitmap.  
      */
-    int words_overlap(w_bitvector_t &merged, const w_bitvector_t &other)  const
-    {
-        const uint64_t *mine=&data[0];
-        const uint64_t *theirs=&other.data[0];
-        uint64_t *newvec=&merged.data[0];
+    int words_overlap(w_bitvector_t& merged, const w_bitvector_t& other) const {
+        const uint64_t* mine = &data[0];
+        const uint64_t* theirs = &other.data[0];
+        uint64_t* newvec = &merged.data[0];
 
-        int matches=0;
-        for(int i=0; i < num_words(); i++)
-        {
-            if (*mine == (*mine & *theirs)) matches++;
+        int matches = 0;
+        for (int i = 0; i < num_words(); i++) {
+            if (*mine == (*mine & *theirs)) {
+                matches++;
+            }
             *newvec = (*mine | *theirs);
             newvec++;
             mine++;
@@ -120,36 +129,37 @@ public:
         }
         return matches;
     }
+
     /**
      * Returns if all ON-bits in subset are also ON in this bitmap.
      */
-    bool contains (const w_bitvector_t &subset) const
-    {
-        for(int i = 0; i < WORDS; ++i) {
+    bool contains(const w_bitvector_t& subset) const {
+        for (int i = 0; i < WORDS; ++i) {
             if ((data[i] & subset.data[i]) != subset.data[i]) {
                 return false;
             }
         }
         return true;
     }
+
     /**
      * Updates this bitmap by taking OR with the given bitmap.
      */
-    void merge (const w_bitvector_t &added)
-    {
-        for(int i = 0; i < WORDS; ++i) {
+    void merge(const w_bitvector_t& added) {
+        for (int i = 0; i < WORDS; ++i) {
             data[i] |= added.data[i];
         }
     }
 
-    ostream &print(ostream &o) const 
-    {
+    ostream& print(ostream& o) const {
         {
-            const char *sep="";
+            const char* sep = "";
             o << "{";
-            for(int i=0; i < BITS; i++) 
-            {
-                if(is_set(i)) { o << sep << i; sep="."; }
+            for (int i = 0; i < BITS; i++) {
+                if (is_set(i)) {
+                    o << sep << i;
+                    sep = ".";
+                }
             }
             o << "}";
         }
@@ -170,23 +180,26 @@ public:
 
     /// clear all bits
     void clear() {
-        for(int i=0; i < WORDS; i++)
+        for (int i = 0; i < WORDS; i++) {
             data[i] = 0;
+        }
     }
 
     /// true if all bits are clear
     bool is_empty() const {
         Word hash = 0;
-        for(int i=0; i < WORDS; i++)
+        for (int i = 0; i < WORDS; i++) {
             hash |= data[i];
+        }
         return hash == 0;
     }
 
     int num_bits_set() const {
-        int j=0;
-        for(int i=0; i < BITS; i++) 
-        {
-            if(is_set(i)) j++;
+        int j = 0;
+        for (int i = 0; i < BITS; i++) {
+            if (is_set(i)) {
+                j++;
+            }
         }
         return j;
     }
@@ -197,45 +210,52 @@ public:
     }
 
     /// copy operator
-    void copy(const w_bitvector_t &other)  {
-        for(int i=0; i < WORDS; i++)
+    void copy(const w_bitvector_t& other) {
+        for (int i = 0; i < WORDS; i++) {
             data[i] = other.data[i];
+        }
     }
 
 #define BIT_VECTOR_PROLOGUE(idx)        \
     w_assert1(idx < BITS);                \
     Word wdex = idx / BITS_PER_WORD;        \
     Word bdex = idx % BITS_PER_WORD
-    
+
     /// Should use is_set()
     Word get_bit(Word idx) const {
         BIT_VECTOR_PROLOGUE(idx);
         return (data[wdex] >> bdex) & 0x1;
     }
+
     /// true if bit at index idx is set
     bool is_set(Word idx) const {
         return (get_bit(idx) == 0x1);
     }
-    /// set bit at index idx 
+
+    /// set bit at index idx
     void set_bit(Word idx) {
         BIT_VECTOR_PROLOGUE(idx);
         data[wdex] |= (1ul << bdex);
     }
-    /// clear bit at index idx 
+
+    /// clear bit at index idx
     void clear_bit(Word idx) {
         BIT_VECTOR_PROLOGUE(idx);
         data[wdex] &= ~(1ul << bdex);
     }
+
 #undef BIT_VECTOR_PROLOGUE
 };
 
-template <int BIT_COUNT> ostream &operator<<(ostream &o, const w_bitvector_t <BIT_COUNT> &t)
-{
-    const char *sep="";
+template<int BIT_COUNT>
+ostream& operator<<(ostream& o, const w_bitvector_t<BIT_COUNT>& t) {
+    const char* sep = "";
     o << "{";
-    for(int i=0; i < BIT_COUNT; i++) 
-    {
-        if(t.is_set(i)) { o << sep << i; sep="."; }
+    for (int i = 0; i < BIT_COUNT; i++) {
+        if (t.is_set(i)) {
+            o << sep << i;
+            sep = ".";
+        }
     }
     o << "}";
     return o;

@@ -6,7 +6,9 @@
 #include <unordered_map>
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 #include "basics.h"
@@ -18,45 +20,51 @@ class RunRecycler;
 
 struct RunId {
     lsn_t beginLSN;
+
     lsn_t endLSN;
+
     unsigned level;
 
-    bool operator==(const RunId& other) const
-    {
+    bool operator==(const RunId& other) const {
         return beginLSN == other.beginLSN && endLSN == other.endLSN
-            && level == other.level;
+               && level == other.level;
     }
 };
 
 // Controls access to a single run file through mmap
-struct RunFile
-{
+struct RunFile {
     RunId runid;
+
     int fd;
+
     int refcount;
+
     char* data;
+
     size_t length;
 
-    RunFile() : fd(-1), refcount(0), data(nullptr), length(0)
-    {
-    }
+    RunFile() : fd(-1),
+                refcount(0),
+                data(nullptr),
+                length(0) {}
 
-    char* getOffset(off_t offset) const { return data + offset; }
+    char* getOffset(off_t offset) const {
+        return data + offset;
+    }
 };
 
-namespace std
-{
+namespace std {
     /// Hash function for RunId objects
     /// http://stackoverflow.com/q/17016175/1268568
-    template<> struct hash<RunId>
-    {
+    template<>
+    struct hash<RunId> {
         using argument_type = RunId;
         using result_type = std::size_t;
-        result_type operator()(argument_type const& a) const
-        {
-            result_type const h1 ( std::hash<lsn_t>()(a.beginLSN) );
-            result_type const h2 ( std::hash<lsn_t>()(a.endLSN) );
-            result_type const h3 ( std::hash<unsigned>()(a.level) );
+
+        result_type operator()(argument_type const& a) const {
+            result_type const h1(std::hash<lsn_t>()(a.beginLSN));
+            result_type const h2(std::hash<lsn_t>()(a.endLSN));
+            result_type const h3(std::hash<unsigned>()(a.level));
             return ((h1 ^ (h2 << 1)) >> 1) ^ (h3 << 1);
         }
     };
@@ -86,6 +94,7 @@ namespace std
 class ArchiveIndex {
 public:
     ArchiveIndex(const sm_options& options);
+
     virtual ~ArchiveIndex();
 
     struct BlockEntry {
@@ -100,6 +109,7 @@ public:
 
     struct RunInfo {
         lsn_t firstLSN;
+
         // lastLSN must be equal to firstLSN of the following run.  We keep
         // it redundantly so that index probes don't have to look beyond
         // the last finished run. We used to keep a global lastLSN field in
@@ -113,64 +123,87 @@ public:
 
         std::vector<BlockEntry> entries;
 
-        bool operator<(const RunInfo& other) const
-        {
+        bool operator<(const RunInfo& other) const {
             return firstLSN < other.firstLSN;
         }
     };
 
-    size_t getBlockSize() const { return blockSize; }
-    std::string getArchDir() const { return archdir; }
+    size_t getBlockSize() const {
+        return blockSize;
+    }
+
+    std::string getArchDir() const {
+        return archdir;
+    }
 
     lsn_t getLastLSN();
+
     lsn_t getLastLSN(unsigned level);
+
     lsn_t getFirstLSN(unsigned level);
 
     // run generation methods
     rc_t openNewRun(unsigned level);
+
     rc_t append(char* data, size_t length, unsigned level);
+
     rc_t closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPID = 0);
 
     // run scanning methods
     RunFile* openForScan(const RunId& runid);
+
     void closeScan(const RunId& runid);
+
     rc_t readBlock(int fd, char* buf, size_t& offset, size_t readSize = 0);
 
     void listFiles(std::vector<std::string>& list, int level = -1);
+
     void listFileStats(std::list<RunId>& list, int level = -1);
+
     void deleteRuns(unsigned replicationFactor = 0);
 
     size_t getSkipLogrecSize() const;
 
     static bool parseRunFileName(string fname, RunId& fstats);
+
     static size_t getFileSize(int fd);
 
-    void newBlock(const vector<pair<PageID, size_t> >& buckets, unsigned level);
+    void newBlock(const vector<pair<PageID, size_t>>& buckets, unsigned level);
 
     rc_t finishRun(lsn_t first, lsn_t last, PageID maxPID,
-            int fd, off_t offset, unsigned level);
+                   int fd, off_t offset, unsigned level);
 
-    template <class Input>
+    template<class Input>
     void probe(std::vector<Input>&, PageID, PageID, lsn_t startLSN,
-            lsn_t endLSN = lsn_t::null);
+               lsn_t endLSN = lsn_t::null);
 
     void getBlockCounts(RunFile*, size_t* indexBlocks, size_t* dataBlocks);
+
     void loadRunInfo(RunFile*, const RunId&);
+
     void startNewRun(unsigned level);
 
-    unsigned getMaxLevel() const { return maxLevel; }
-    size_t getBucketSize() { return bucketSize; }
+    unsigned getMaxLevel() const {
+        return maxLevel;
+    }
+
+    size_t getBucketSize() {
+        return bucketSize;
+    }
+
     size_t getRunCount(unsigned level) {
-        if (level > maxLevel) { return 0; }
+        if (level > maxLevel) {
+            return 0;
+        }
         return runs[level].size();
     }
 
     void dumpIndex(ostream& out);
+
     void dumpIndex(ostream& out, const RunId& runid);
 
-    template <class OutputIter>
-    void listRunsNonOverlapping(OutputIter out)
-    {
+    template<class OutputIter>
+    void listRunsNonOverlapping(OutputIter out) {
         auto level = maxLevel;
         auto startLSN = lsn_t::null;
 
@@ -179,7 +212,7 @@ public:
         while (level > 0) {
             auto index = findRun(startLSN, level);
 
-            while ((int) index <= lastFinished[level]) {
+            while ((int)index <= lastFinished[level]) {
                 auto& run = runs[level][index];
                 out = RunId{run.firstLSN, run.lastLSN, level};
                 startLSN = run.lastLSN;
@@ -193,18 +226,24 @@ public:
 private:
 
     void appendNewRun(unsigned level);
+
     size_t findRun(lsn_t lsn, unsigned level);
+
     // binary search
     size_t findEntry(RunInfo* run, PageID pid,
-            int from = -1, int to = -1);
+                     int from = -1, int to = -1);
+
     rc_t serializeRunInfo(RunInfo&, int fd, off_t);
 
     lsn_t roundToEndLSN(lsn_t lsn, unsigned level);
 
 private:
     std::string archdir;
+
     std::vector<int> appendFd;
+
     std::vector<off_t> appendPos;
+
     size_t blockSize;
 
     fs::path archpath;
@@ -236,24 +275,28 @@ private:
 
     /// Cache for open files (for scans only)
     std::unordered_map<RunId, RunFile> _open_files;
+
     mutable srwlock_t _open_file_mutex;
 
     bool directIO;
 
     fs::path make_run_path(lsn_t begin, lsn_t end, unsigned level = 1) const;
+
     fs::path make_current_run_path(unsigned level) const;
 
 public:
     const static string RUN_PREFIX;
+
     const static string CURR_RUN_PREFIX;
+
     const static string run_regex;
+
     const static string current_regex;
 };
 
-template <class Input>
+template<class Input>
 void ArchiveIndex::probe(std::vector<Input>& inputs,
-        PageID startPID, PageID endPID, lsn_t startLSN, lsn_t endLSN)
-{
+                         PageID startPID, PageID endPID, lsn_t startLSN, lsn_t endLSN) {
     spinlock_read_critical_section cs(&_mutex);
 
     Input input;
@@ -264,12 +307,14 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
     while (level > 0) {
         size_t index = findRun(startLSN, level);
 
-        while ((int) index <= lastFinished[level]) {
+        while ((int)index <= lastFinished[level]) {
             auto& run = runs[level][index];
             index++;
             startLSN = run.lastLSN;
 
-            if (!endLSN.is_null() && startLSN >= endLSN) { return; }
+            if (!endLSN.is_null() && startLSN >= endLSN) {
+                return;
+            }
 
             if (startPID > run.maxPID) {
                 continue;
@@ -279,9 +324,8 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
                 size_t entryBegin = findEntry(&run, startPID);
 
                 // CS TODO this if could just be run.entris[entryBEgin].pid >= endPID
-                if (bucketSize == 1 && startPID == endPID-1 &&
-                        run.entries[entryBegin].pid != startPID)
-                {
+                if (bucketSize == 1 && startPID == endPID - 1 &&
+                    run.entries[entryBegin].pid != startPID) {
                     // With bucket size one, we know precisely which PIDs are contained
                     // in this run, so what we have is a filter with 100% precision
                     continue;
@@ -289,7 +333,7 @@ void ArchiveIndex::probe(std::vector<Input>& inputs,
 
                 input.pos = run.entries[entryBegin].offset;
                 input.runFile =
-                    openForScan(RunId{run.firstLSN, run.lastLSN, level});
+                        openForScan(RunId{run.firstLSN, run.lastLSN, level});
                 w_assert1(input.pos < input.runFile->length);
                 inputs.push_back(input);
             }

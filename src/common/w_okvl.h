@@ -125,7 +125,7 @@ struct okvl_mode {
     okvl_mode();
 
     /** Copy constructor. */
-    okvl_mode (const okvl_mode &r);
+    okvl_mode(const okvl_mode& r);
 
     /** Copy constructor. */
     okvl_mode& operator=(const okvl_mode& r);
@@ -137,7 +137,9 @@ struct okvl_mode {
     okvl_mode(part_id part, element_lock_mode partition_mode);
 
     element_lock_mode get_partition_mode(part_id partition) const;
+
     element_lock_mode get_key_mode() const;
+
     element_lock_mode get_gap_mode() const;
 
     /** Returns whether the lock modes are completely empty (all NULL modes).*/
@@ -166,8 +168,10 @@ struct okvl_mode {
 
     /** Sets an individual partition mode (and its intent mode on key). */
     void set_partition_mode(part_id partition, element_lock_mode mode);
+
     /** Sets the key mode. */
     void set_key_mode(element_lock_mode mode);
+
     /** Sets the gap mode. */
     void set_gap_mode(element_lock_mode mode);
 
@@ -175,10 +179,10 @@ struct okvl_mode {
     void clear();
 
     /** Returns whether _this_ granted mode allows the _given_ requested mode. */
-    bool is_compatible_request(const okvl_mode &requested) const;
+    bool is_compatible_request(const okvl_mode& requested) const;
 
     /** Returns whether _this_ requested mode can be allowed by the _given_ granted mode. */
-    bool is_compatible_grant(const okvl_mode &granted) const;
+    bool is_compatible_grant(const okvl_mode& granted) const;
 
     /**
      * Returns whether this mode is \e implied by the given mode.
@@ -188,14 +192,15 @@ struct okvl_mode {
      * but this function does not check it to be efficient.
      * Do not use this method if it matters.
      */
-    bool is_implied_by(const okvl_mode &superset) const;
+    bool is_implied_by(const okvl_mode& superset) const;
 
     /** operator overloads. */
     bool operator==(const okvl_mode& r) const;
+
     bool operator!=(const okvl_mode& r) const;
 
     /** Static function to tell whether the two modes are compatible. */
-    static bool is_compatible(const okvl_mode &requested, const okvl_mode &granted);
+    static bool is_compatible(const okvl_mode& requested, const okvl_mode& granted);
 
     /** Static function to check if two element lock modes are compatible. */
     static bool is_compatible_element(element_lock_mode requested, element_lock_mode granted);
@@ -217,12 +222,18 @@ struct okvl_mode {
 
 private:
     /** We speed up comparisons by batching multiple lock modes into this size. */
-    enum const_values_enum { WORD_SIZE = sizeof(uint64_t), };
+    enum const_values_enum {
+        WORD_SIZE = sizeof(uint64_t),
+    };
+
     /** Tells if we can apply the common 64bit-batching technique for the given partition. */
-    static bool _can_batch64 (part_id part);
+    static bool _can_batch64(part_id part);
+
     /** Returns the 64bit-batched lock modes for the given partition. */
-    uint64_t    _get_batch64 (part_id part) const;
+    uint64_t _get_batch64(part_id part) const;
+
     /** Returns the 64bit-batched lock modes for the given partition. */
-    uint64_t&   _get_batch64_ref (part_id part);
+    uint64_t& _get_batch64_ref(part_id part);
 };
+
 #endif // __W_OKVL_H

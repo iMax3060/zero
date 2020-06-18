@@ -45,32 +45,32 @@
 
 inline void test_alignment(void const* ptr, int align) {
     union {
-	void const* p;
-	size_t i;
+        void const* p;
+        size_t i;
     } u;
     u.p = ptr;
 
-    (void) u;
-    (void) align;
+    (void)u;
+    (void)align;
 
     // make sure the requested alignment is a power of 2
     assert((align & -align) == align);
 
     // make sure the pointer is properly aligned
-    assert(((align-1) & u.i) == 0);
+    assert(((align - 1) & u.i) == 0);
 }
 
 template<class T>
 inline T* aligned_cast(void const* ptr) {
     union {
-	void const* p;
-	T* t;
-	size_t i;
+        void const* p;
+        T* t;
+        size_t i;
     } u;
     u.p = ptr;
 
     // make sure the pointer is properly aligned
-    assert(((alignmentof(T)-1) & u.i) == 0);
+    assert(((alignmentof(T) - 1) & u.i) == 0);
     return u.t;
 }
 
@@ -90,7 +90,7 @@ inline T* aligned_cast(void const* ptr) {
  * what "null" and "action" are)
  *
  */
-template <typename T>
+template<typename T>
 class guard {
 private:
     T* _ptr;
@@ -99,8 +99,9 @@ private:
     // Specialize this function as necessary
 
     void action(T* ptr) {
-        if (ptr)
-        delete ptr;
+        if (ptr) {
+            delete ptr;
+        }
     }
 
 
@@ -113,14 +114,11 @@ private:
 
 public:
 
-    guard(T* ptr=nullptr)
-        : _ptr(ptr)
-    {
-    }
-    guard(guard &other)
-        : _ptr(other.release())
-    {
-    }
+    guard(T* ptr = nullptr)
+            : _ptr(ptr) {}
+
+    guard(guard& other)
+            : _ptr(other.release()) {}
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * WARNING:
@@ -138,15 +136,18 @@ public:
      * independently creates two guards for the same pointer (not much
      * we can do about that).
      */
-    guard(guard const &);
-    guard &operator =(const guard &);
+    guard(guard const&);
+
+    guard& operator=(const guard&);
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    guard &operator =(guard &other) {
+    guard& operator=(guard& other) {
         assign(other.release());
         return *this;
     }
-    guard &operator =(T* ptr) {
+
+    guard& operator=(T* ptr) {
         assign(ptr);
         return *this;
     }
@@ -154,27 +155,31 @@ public:
     operator T*() {
         return get();
     }
+
     operator T const*() const {
         return get();
     }
 
-    T &operator *() {
-        return *get();
-    }
-    T const &operator *() const {
+    T& operator*() {
         return *get();
     }
 
-    T* operator ->() {
+    T const& operator*() const {
+        return *get();
+    }
+
+    T* operator->() {
         return get();
     }
-    T const* operator ->() const {
+
+    T const* operator->() const {
         return get();
     }
 
     T* get() {
         return _ptr;
     }
+
     T const* get() const {
         return _ptr;
     }
@@ -207,19 +212,18 @@ public:
 
 private:
     void assign(T* ptr) {
-        if(_ptr && _ptr != ptr)
+        if (_ptr && _ptr != ptr) {
             action(_ptr);
+        }
         _ptr = ptr;
     }
-
 };
 
 template<>
 inline void guard<FILE>::action(FILE* ptr) {
-    if(fclose(ptr))
+    if (fclose(ptr))
         TRACE(TRACE_ALWAYS, "fclose failed");
 }
-
 
 /**
  * @brief A generic pointer guard base class. An action will be
@@ -242,7 +246,7 @@ inline void guard<FILE>::action(FILE* ptr) {
  * int*.
  *
  */
-template <class T, class Impl>
+template<class T, class Impl>
 class guard_base_t {
 protected:
     mutable T _obj;
@@ -256,19 +260,18 @@ public:
     static T null_value() {
         return nullptr;
     }
-    static bool different(const T &a, const T &b) {
+
+    static bool different(const T& a, const T& b) {
         return a != b;
     }
 
     guard_base_t(T obj)
-        : _obj(obj)
-    {
-    }
-    guard_base_t(const guard_base_t &other)
-        : _obj(other.release())
-    {
-    }
-    guard_base_t &operator =(const guard_base_t &other) {
+            : _obj(obj) {}
+
+    guard_base_t(const guard_base_t& other)
+            : _obj(other.release()) {}
+
+    guard_base_t& operator=(const guard_base_t& other) {
         assign(other.release());
         return *this;
     }
@@ -309,78 +312,71 @@ public:
 
 protected:
     void assign(T obj) const {
-        if(Impl::different(_obj, obj)) {
+        if (Impl::different(_obj, obj)) {
             // free the old object and set it NULL
             Impl::guard_action(_obj);
             _obj = obj;
         }
     }
-
 };
 
-template <typename T, typename Impl>
+template<typename T, typename Impl>
 struct pointer_guard_base_t : guard_base_t<T*, Impl> {
     typedef guard_base_t<T*, Impl> Base;
+
     pointer_guard_base_t(T* ptr)
-        : Base(ptr)
-    {
-    }
-    T &operator *() const {
+            : Base(ptr) {}
+
+    T& operator*() const {
         return *Base::get();
     }
+
     operator T*() const {
         return Base::get();
     }
-    T* operator ->() const {
+
+    T* operator->() const {
         return Base::get();
     }
 };
-
 
 /**
  * @brief Ensures that a pointer allocated with a call to operator
  * new() gets deleted
  */
-template <class T>
-struct pointer_guard_t : pointer_guard_base_t<T, pointer_guard_t<T> > {
-    pointer_guard_t(T* ptr=nullptr)
-        : pointer_guard_base_t<T, pointer_guard_t<T> >(ptr)
-    {
-    }
+template<class T>
+struct pointer_guard_t : pointer_guard_base_t<T, pointer_guard_t<T>> {
+    pointer_guard_t(T* ptr = nullptr)
+            : pointer_guard_base_t<T, pointer_guard_t<T>>(ptr) {}
+
     static void guard_action(T* ptr) {
         delete ptr;
     }
 };
 
-
-
 /**
  * @brief Ensures that an array allocated with a call to operator
  * new() gets deleted
  */
-template <class T>
-struct array_guard_t : pointer_guard_base_t<T, array_guard_t<T> > {
-    array_guard_t(T *ptr=nullptr)
-        : pointer_guard_base_t<T, array_guard_t<T> >(ptr)
-    {
-    }
-    static void guard_action(T *ptr) {
-        delete [] ptr;
+template<class T>
+struct array_guard_t : pointer_guard_base_t<T, array_guard_t<T>> {
+    array_guard_t(T* ptr = nullptr)
+            : pointer_guard_base_t<T, array_guard_t<T>>(ptr) {}
+
+    static void guard_action(T* ptr) {
+        delete[] ptr;
     }
 };
-
-
 
 /**
  * @brief Ensures that a file gets closed
  */
 struct file_guard_t : pointer_guard_base_t<FILE, file_guard_t> {
-    file_guard_t(FILE *ptr=nullptr)
-        : pointer_guard_base_t<FILE, file_guard_t>(ptr)
-    {
-    }
-    static void guard_action(FILE *ptr) {
-        if(ptr && fclose(ptr)) {
+    file_guard_t(FILE* ptr = nullptr)
+            : pointer_guard_base_t<FILE, file_guard_t>(ptr) {}
+
+    static void guard_action(FILE* ptr) {
+        if (ptr && fclose(ptr)) {
             TRACE(TRACE_ALWAYS,
                   "fclose failed in guard destructor");
         }
@@ -392,17 +388,16 @@ struct file_guard_t : pointer_guard_base_t<FILE, file_guard_t> {
  */
 struct fd_guard_t : guard_base_t<int, fd_guard_t> {
     fd_guard_t(int fd)
-        : guard_base_t<int, fd_guard_t>(fd)
-    {
-    }
+            : guard_base_t<int, fd_guard_t>(fd) {}
+
     static void guard_action(int fd) {
-        if(fd >= 0 && close(fd))
+        if (fd >= 0 && close(fd))
             TRACE(TRACE_ALWAYS, "close() failed in guard destructor");
     }
+
     static int null_value() {
         return -1;
     }
 };
-
 
 #endif // __GUARD_H

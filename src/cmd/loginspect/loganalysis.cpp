@@ -4,26 +4,23 @@
 #include "logarchiver.h"
 #include "chkpt.h"
 
-void LogAnalysis::setupOptions()
-{
+void LogAnalysis::setupOptions() {
     LogScannerCommand::setupOptions();
     options.add_options()
-        ("printPages", po::value<bool>(&printPages)
-            ->default_value(false)->implicit_value(true),
-            "Print dirty page table")
-        ("takeChkpt", po::value<bool>(&takeChkpt)
-            ->default_value(false)->implicit_value(true),
-            "Take checkpoint after log analysis")
-        ("full", po::value<bool>(&fullScan)
-            ->default_value(false),
-            "Perform full log scan to collect dirty page and active \
+            ("printPages", po::value<bool>(&printPages)
+                     ->default_value(false)->implicit_value(true),
+             "Print dirty page table")
+            ("takeChkpt", po::value<bool>(&takeChkpt)
+                     ->default_value(false)->implicit_value(true),
+             "Take checkpoint after log analysis")
+            ("full", po::value<bool>(&fullScan)
+                     ->default_value(false),
+             "Perform full log scan to collect dirty page and active \
             transactions, ignoring checkpoints. Useful to check correctness \
-            of checkpoint and log analysis")
-    ;
+            of checkpoint and log analysis");
 }
 
-void LogAnalysis::run()
-{
+void LogAnalysis::run() {
     start_base();
     start_log(logdir);
 
@@ -39,9 +36,8 @@ void LogAnalysis::run()
 
     cout << "chkpt_t active transactions: " << chkpt.xct_tab.size() << endl;
 
-    for(xct_tab_t::const_iterator it = chkpt.xct_tab.begin();
-                            it != chkpt.xct_tab.end(); ++it)
-    {
+    for (xct_tab_t::const_iterator it = chkpt.xct_tab.begin();
+         it != chkpt.xct_tab.end(); ++it) {
         cout << it->first << " ";
     }
     cout << endl;
@@ -50,12 +46,11 @@ void LogAnalysis::run()
     cout << "chkpt_t dirty pages: " << chkpt.buf_tab.size() << endl;
 
     if (printPages) {
-        for(buf_tab_t::const_iterator it = chkpt.buf_tab.begin();
-                it != chkpt.buf_tab.end(); ++it)
-        {
+        for (buf_tab_t::const_iterator it = chkpt.buf_tab.begin();
+             it != chkpt.buf_tab.end(); ++it) {
             cout << it->first << " REC " << it->second.rec_lsn
-                << " PAGE " << it->second.page_lsn
-                << " CLEAN " << it->second.clean_lsn << endl;
+                 << " PAGE " << it->second.page_lsn
+                 << " CLEAN " << it->second.clean_lsn << endl;
         }
         cout << endl;
         cout << endl;
@@ -111,12 +106,9 @@ void LogAnalysis::run()
 }
 
 LogAnalysisHandler::LogAnalysisHandler()
-    : xctCount(0)
-{
-}
+        : xctCount(0) {}
 
-void LogAnalysisHandler::invoke(logrec_t& r)
-{
+void LogAnalysisHandler::invoke(logrec_t& r) {
     if (!r.tid() == 0) {
         if (r.is_page_update() || r.is_cpsn()) {
             activeTAs.insert(r.tid());
@@ -124,8 +116,7 @@ void LogAnalysisHandler::invoke(logrec_t& r)
     }
 
     if (r.type() == logrec_t::t_xct_end ||
-            r.type() == logrec_t::t_xct_abort)
-    {
+        r.type() == logrec_t::t_xct_abort) {
         activeTAs.erase(r.tid());
         xctCount++;
     }
@@ -138,8 +129,8 @@ void LogAnalysisHandler::invoke(logrec_t& r)
     }
 
     if (r.type() == logrec_t::t_page_write) {
-        PageID pid = *((PageID*) r.data());
-        uint32_t count = *((uint32_t*) (r.data() + sizeof(PageID)));
+        PageID pid = *((PageID*)r.data());
+        uint32_t count = *((uint32_t*)(r.data() + sizeof(PageID)));
         PageID end = pid + count;
 
         while (pid < end) {
@@ -149,6 +140,4 @@ void LogAnalysisHandler::invoke(logrec_t& r)
     }
 }
 
-void LogAnalysisHandler::finalize()
-{
-}
+void LogAnalysisHandler::finalize() {}

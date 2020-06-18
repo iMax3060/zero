@@ -80,15 +80,16 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 /*******************************************************/
 
 #ifndef __W_WORKAROUND_H
+
 #include "w_workaround.h"
+
 #endif // __W_WORKAROUND_H
 
 #define NORET        /**/
-#define CAST(t,o) ((t)(o))
+#define CAST(t, o) ((t)(o))
 #define    W_UNUSED(x)    /**/
 
-
-#if W_DEBUG_LEVEL>0
+#if W_DEBUG_LEVEL > 0
 #define W_IFDEBUG1(x)    x
 #define W_IFNDEBUG1(x)    /**/
 #else
@@ -96,7 +97,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define W_IFNDEBUG1(x)    x
 #endif
 
-#if W_DEBUG_LEVEL>1
+#if W_DEBUG_LEVEL > 1
 #define W_IFDEBUG2(x)    x
 #define W_IFNDEBUG2(x)    /**/
 #else
@@ -104,7 +105,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define W_IFNDEBUG2(x)    x
 #endif
 
-#if W_DEBUG_LEVEL>2
+#if W_DEBUG_LEVEL > 2
 #define W_IFDEBUG3(x)    x
 #define W_IFNDEBUG3(x)    /**/
 #else
@@ -112,7 +113,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define W_IFNDEBUG3(x)    x
 #endif
 
-#if W_DEBUG_LEVEL>3
+#if W_DEBUG_LEVEL > 3
 #define W_IFDEBUG4(x)    x
 #define W_IFNDEBUG4(x)    /**/
 #else
@@ -120,7 +121,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define W_IFNDEBUG4(x)    x
 #endif
 
-#if W_DEBUG_LEVEL>4
+#if W_DEBUG_LEVEL > 4
 #define W_IFDEBUG5(x)    x
 #define W_IFNDEBUG5(x)    /**/
 #else
@@ -134,22 +135,22 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 //////////////////////////////////////////////////////////
 #undef  W_IFDEBUG
 #undef  W_IFNDEBUG
-#if W_DEBUG_LEVEL==1
+#if W_DEBUG_LEVEL == 1
 #define W_IFDEBUG(x)    W_IFDEBUG1(x)
 #define W_IFNDEBUG(x)    W_IFNDEBUG1(x)
 #endif
 
-#if W_DEBUG_LEVEL==2
+#if W_DEBUG_LEVEL == 2
 #define W_IFDEBUG(x)    W_IFDEBUG2(x)
 #define W_IFNDEBUG(x)    W_IFNDEBUG2(x)
 #endif
 
-#if W_DEBUG_LEVEL==3
+#if W_DEBUG_LEVEL == 3
 #define W_IFDEBUG(x)    W_IFDEBUG3(x)
 #define W_IFNDEBUG(x)    W_IFNDEBUG3(x)
 #endif
 
-#if W_DEBUG_LEVEL==4
+#if W_DEBUG_LEVEL == 4
 #define W_IFDEBUG(x)    W_IFDEBUG4(x)
 #define W_IFNDEBUG(x)    W_IFNDEBUG4(x)
 #endif
@@ -191,7 +192,7 @@ do {                                                                    \
 #endif
 
 /// Level 1 should not add significant extra time.
-#if W_DEBUG_LEVEL>=1
+#if W_DEBUG_LEVEL >= 1
 #define w_assert1(x)    w_assert0(x)
 #else
 //#define w_assert1(x)    /**/
@@ -199,7 +200,7 @@ do {                                                                    \
 #endif
 
 /// Level 2 adds some time.
-#if W_DEBUG_LEVEL>=2
+#if W_DEBUG_LEVEL >= 2
 #define w_assert2(x)    w_assert1(x)
 #else
 //#define w_assert2(x)    /**/
@@ -207,7 +208,7 @@ do {                                                                    \
 #endif
 
 /// Level 3 definitely adds significant time.
-#if W_DEBUG_LEVEL>=3
+#if W_DEBUG_LEVEL >= 3
 #define w_assert3(x)    w_assert1(x)
 #else
 //#define w_assert3(x)    /**/
@@ -215,7 +216,7 @@ do {                                                                    \
 #endif
 
 /// Level 4 can be a hog.
-#if W_DEBUG_LEVEL>=4
+#if W_DEBUG_LEVEL >= 4
 #define w_assert4(x)    w_assert1(x)
 #else
 //#define w_assert4(x)    /**/
@@ -223,7 +224,7 @@ do {                                                                    \
 #endif
 
 /// Level 5 is not yet used.
-#if W_DEBUG_LEVEL>=5
+#if W_DEBUG_LEVEL >= 5
 #define w_assert5(x)    w_assert1(x)
 #else
 //#define w_assert5(x)    /**/
@@ -268,15 +269,17 @@ public:
     /*
      *  shorthands
      */
-    typedef unsigned char    u_char;
-    typedef unsigned short    u_short;
-    typedef unsigned long    u_long;
+    typedef unsigned char u_char;
+
+    typedef unsigned short u_short;
+
+    typedef unsigned long u_long;
     // typedef w_rc_t        rc_t;
 
     /*
      * For statistics that are always 64-bit numbers
      */
-    typedef uint64_t         large_stat_t;
+    typedef uint64_t large_stat_t;
 
     /*
      * For statistics that are 64-bit numbers
@@ -285,25 +288,35 @@ public:
 // ARCH_LP64 and LARGEFILE_AWARE are determined by configure
 // and set isn config/shore-config.h
 #if defined(LARGEFILE_AWARE) || defined(ARCH_LP64)
-    typedef int64_t          base_stat_t;
-    typedef double          base_float_t;
+
+    typedef int64_t base_stat_t;
+
+    typedef double base_float_t;
+
 #else
     typedef int32_t          base_stat_t;
     typedef float           base_float_t;
 #endif
 
-    typedef float        f4_t;
-    typedef double        f8_t;
+    typedef float f4_t;
 
-    static const int8_t        int1_max, int1_min;
-    static const int16_t        int2_max, int2_min;
-    static const int32_t        int4_max, int4_min;
-    static const int64_t        int8_max, int8_min;
+    typedef double f8_t;
 
-    static const uint8_t    uint1_max, uint1_min;
-    static const uint16_t    uint2_max, uint2_min;
-    static const uint32_t    uint4_max, uint4_min;
-    static const uint64_t    uint8_max, uint8_min;
+    static const int8_t int1_max, int1_min;
+
+    static const int16_t int2_max, int2_min;
+
+    static const int32_t int4_max, int4_min;
+
+    static const int64_t int8_max, int8_min;
+
+    static const uint8_t uint1_max, uint1_min;
+
+    static const uint16_t uint2_max, uint2_min;
+
+    static const uint32_t uint4_max, uint4_min;
+
+    static const uint64_t uint8_max, uint8_min;
 
     /*
      *  miscellaneous
@@ -312,7 +325,7 @@ public:
 /// helper for alignon
 #define alignonarg(a) (((ptrdiff_t)(a))-1)
 /// aligns a pointer p on a size a
-#define alignon(p,a) (((ptrdiff_t)((ptrdiff_t)(p) + alignonarg(a))) & ~alignonarg(a))
+#define alignon(p, a) (((ptrdiff_t)((ptrdiff_t)(p) + alignonarg(a))) & ~alignonarg(a))
 
     /*
      * turned into a macro for the purpose of folding
@@ -326,11 +339,14 @@ public:
 #    define ALIGNON1 (ALIGNON-1)
 #    define ALIGN_BYTE(sz) ((size_t)((sz + ALIGNON1) & ~ALIGNON1))
 #    endif /* ALIGN_BYTE */
-    static bool        is_aligned(size_t sz);
-    static bool        is_aligned(const void* s);
 
-    static bool        is_big_endian();
-    static bool        is_little_endian();
+    static bool is_aligned(size_t sz);
+
+    static bool is_aligned(const void* s);
+
+    static bool is_big_endian();
+
+    static bool is_little_endian();
 
     /*!
      * strtoi8 and strtou8 act like strto[u]ll with the following
@@ -343,19 +359,23 @@ public:
      *  two exceptions: the only bases supported are 0, 8, 10, 16;
      *  ::errno is not set
      */
-    static int64_t    strtoi8(const char *, char ** end=0 , int base=0);
+    static int64_t strtoi8(const char*, char** end = 0, int base = 0);
+
     /**\brief Convert string to 8-byte unsigned integer.
      *
      * strtou8 acts like strto[u]ll with the following
      *  two exceptions: the only bases supported are 0, 8, 10, 16;
      *  ::errno is not set
      */
-    static uint64_t    strtou8(const char *, char ** end=0, int base=0);
+    static uint64_t strtou8(const char*, char** end = 0, int base = 0);
 
-    static bool        is_finite(const f8_t x);
-    static bool        is_infinite(const f8_t x);
-    static bool        is_nan(const f8_t x);
-    static bool        is_infinite_or_nan(const f8_t x);
+    static bool is_finite(const f8_t x);
+
+    static bool is_infinite(const f8_t x);
+
+    static bool is_nan(const f8_t x);
+
+    static bool is_infinite_or_nan(const f8_t x);
 
     /*
      * Endian conversions that don't require any non-shore headers.
@@ -365,45 +385,59 @@ public:
      * conversions could be a big problem with this stuff.
      * Used by w_opaque.
      */
-    static uint16_t    w_ntohs(uint16_t);
-    static uint16_t    w_htons(uint16_t);
-    static uint32_t    w_ntohl(uint32_t);
-    static uint32_t    w_htonl(uint32_t);
+    static uint16_t w_ntohs(uint16_t);
+
+    static uint16_t w_htons(uint16_t);
+
+    static uint32_t w_ntohl(uint32_t);
+
+    static uint32_t w_htonl(uint32_t);
 
     /// print a message and abort
-    static void            assert_failed(
-        const char*            desc,
-        const char*            file,
-        uint32_t             line);
+    static void assert_failed(
+            const char* desc,
+            const char* file,
+            uint32_t line);
 
     /// dump core
-    static    void        abort();
+    static void abort();
 
     /**\brief Comparison Operators
      * \enum CompareOp
      * */
     enum CompareOp {
-    badOp=0x0, eqOp=0x1, gtOp=0x2, geOp=0x3, ltOp=0x4, leOp=0x5,
-    /* for internal use only: */
-    NegInf=0x100, eqNegInf, gtNegInf, geNegInf, ltNegInf, leNegInf,
-    PosInf=0x400, eqPosInf, gtPosInf, gePosInf, ltPosInf, lePosInf
+        badOp = 0x0,
+        eqOp = 0x1,
+        gtOp = 0x2,
+        geOp = 0x3,
+        ltOp = 0x4,
+        leOp = 0x5,
+        /* for internal use only: */
+        NegInf = 0x100,
+        eqNegInf,
+        gtNegInf,
+        geNegInf,
+        ltNegInf,
+        leNegInf,
+        PosInf = 0x400,
+        eqPosInf,
+        gtPosInf,
+        gePosInf,
+        ltPosInf,
+        lePosInf
     };
-
 };
-
 
 /*--------------------------------------------------------------*
  *  w_base_t::is_aligned()                    *
  *--------------------------------------------------------------*/
 inline bool
-w_base_t::is_aligned(size_t sz)
-{
+w_base_t::is_aligned(size_t sz) {
     return (ALIGN_BYTE(sz) == sz);
 }
 
 inline bool
-w_base_t::is_aligned(const void* s)
-{
+w_base_t::is_aligned(const void* s) {
     /* XXX works OK if there is a size mismatch because we are looking
        at the *low* bits */
     return is_aligned((ptrdiff_t)(s));
@@ -412,8 +446,7 @@ w_base_t::is_aligned(const void* s)
 /*--------------------------------------------------------------*
  *  w_base_t::is_big_endian()                    *
  *--------------------------------------------------------------*/
-inline bool w_base_t::is_big_endian()
-{
+inline bool w_base_t::is_big_endian() {
 #ifdef WORDS_BIGENDIAN
     return true;
 #else
@@ -425,29 +458,34 @@ inline bool w_base_t::is_big_endian()
  *  w_base_t::is_little_endian()                *
  *--------------------------------------------------------------*/
 inline bool
-w_base_t::is_little_endian()
-{
-    return ! is_big_endian();
+w_base_t::is_little_endian() {
+    return !is_big_endian();
 }
 
 /**\brief Class that adds virtual destructor to w_base_t.
  */
 class w_vbase_t : public w_base_t {
 public:
-    NORET                w_vbase_t()    {};
-    virtual NORET        ~w_vbase_t()    {};
+    NORET w_vbase_t() {};
+
+    virtual NORET        ~w_vbase_t() {};
 };
 
 #include "w_fill.h"
 #include "w_error.h"
 #include "w_rc.h"
 
-template<bool B> struct CompileTimeAssertion;
+template<bool B>
+struct CompileTimeAssertion;
+
 /** \brief Compile-time assertion trick.
  * \details
  * See compile_time_assert.
  */
-template<> struct CompileTimeAssertion<true> { void reference() {} };
+template<>
+struct CompileTimeAssertion<true> {
+    void reference() {}
+};
 
 /** \brief Compile-time assertion trick.
  * \details
@@ -466,8 +504,8 @@ template<> struct CompileTimeAssertion<true> { void reference() {} };
  *   though it's known yet fully supported (not safe).
  *
  */
-template<typename T> struct compile_time_assert
-{
+template<typename T>
+struct compile_time_assert {
     compile_time_assert() {
         CompileTimeAssertion<sizeof(long) == 8> assert_8byte_long;
         CompileTimeAssertion<sizeof(long) >= sizeof(T)> assert_long_holds_T;

@@ -18,11 +18,10 @@
 /** implementation of dump/output/other debug utility functions in lock_core,lock_m. */
 
 void
-lock_core_m::assert_empty() const
-{
-    int found_request=0;
+lock_core_m::assert_empty() const {
+    int found_request = 0;
 
-    for (uint h = 0; h < _htabsz; h++)   {
+    for (uint h = 0; h < _htabsz; h++) {
         // empty queue is fine. just check leftover requests
         for (MarkablePointer<RawLock> lock = _htab[h].head.next;
              !lock.is_null(); lock = lock->next) {
@@ -33,16 +32,15 @@ lock_core_m::assert_empty() const
     w_assert1(found_request == 0);
 }
 
-
-void lock_core_m::dump(ostream &o) {
+void lock_core_m::dump(ostream& o) {
     o << " WARNING: Dumping lock table. This method is thread-unsafe!!" << std::endl;
     lintel::atomic_signal_fence(lintel::memory_order_acquire); // memory barrier
-    for (uint h = 0; h < _htabsz; h++)  {
+    for (uint h = 0; h < _htabsz; h++) {
         // empty queue is fine. just check leftover requests
         for (MarkablePointer<RawLock> lock = _htab[h].head.next;
              !lock.is_null(); lock = lock->next) {
             o << "lock request(h=" << h << "):" << *lock.get_pointer()
-            << std::endl;
+              << std::endl;
         }
     }
     o << "--end of lock table--" << std::endl;
@@ -56,8 +54,7 @@ void lock_core_m::dump(ostream &o) {
  *
  *********************************************************************/
 ostream&
-operator<<(ostream& o, const lockid_t& i)
-{
+operator<<(ostream& o, const lockid_t& i) {
     o << "L(" << i.store() << ": key-hash=" << i.l[1];
     return o << ')';
 }

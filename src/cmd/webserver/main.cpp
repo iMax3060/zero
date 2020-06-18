@@ -2,29 +2,23 @@
 #include <memory>
 #include "http.h"
 
-
-void accept_and_run(ip::tcp::acceptor& acceptor, io_service& io_service, HandleKits *kits)
-{
-   std::shared_ptr<session> sesh = std::make_shared<session>(io_service);
-   //std::shared_ptr<HandleKits> kitsSh = std::make_shared<HandleKits>(kits);
-   acceptor.async_accept(sesh->socket, [sesh, kits, &acceptor, &io_service](const boost::system::error_code& accept_error)
-   {
-      accept_and_run(acceptor, io_service, kits);
-      if(!accept_error)
-      {
-         session::interact(sesh, kits);
-      }
-   });
+void accept_and_run(ip::tcp::acceptor& acceptor, io_service& io_service, HandleKits* kits) {
+    std::shared_ptr<session> sesh = std::make_shared<session>(io_service);
+    //std::shared_ptr<HandleKits> kitsSh = std::make_shared<HandleKits>(kits);
+    acceptor.async_accept(sesh->socket,
+                          [sesh, kits, &acceptor, &io_service](const boost::system::error_code& accept_error) {
+                              accept_and_run(acceptor, io_service, kits);
+                              if (!accept_error) {
+                                  session::interact(sesh, kits);
+                              }
+                          });
 };
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
     short unsigned int tcpPort = 8080;
-    if (argc>=2)
-    {
-        tcpPort = (short unsigned int) std::stoi(argv[1]);
-        if (tcpPort > 65500)
-        {
+    if (argc >= 2) {
+        tcpPort = (short unsigned int)std::stoi(argv[1]);
+        if (tcpPort > 65500) {
             cout << "ERROR: Define a valid port" << endl;
             return EXIT_FAILURE;
         }
@@ -38,5 +32,5 @@ int main(int argc, char ** argv)
     accept_and_run(acceptor, io_service, kits);
 
     io_service.run();
-    return  EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

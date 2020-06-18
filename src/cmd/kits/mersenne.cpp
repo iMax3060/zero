@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+
 #ifdef SYS_POSIX
 #include <sys/time.h>
 #include <unistd.h>
@@ -75,40 +76,37 @@ using namespace lintel;
 
 MersenneTwisterRandom MTRandom;
 
-MersenneTwisterInternal::MersenneTwisterInternal(uint32_t seed)
-{
-  if (seed == 0) {
+MersenneTwisterInternal::MersenneTwisterInternal(uint32_t seed) {
+    if (seed == 0) {
 #ifdef SYS_POSIX
-    seed = getpid() ^ (getppid() << 16);
-    struct timeval t;
-    gettimeofday(&t,nullptr);
-    seed = seed ^ t.tv_sec ^ (t.tv_usec << 10);
+        seed = getpid() ^ (getppid() << 16);
+        struct timeval t;
+        gettimeofday(&t,nullptr);
+        seed = seed ^ t.tv_sec ^ (t.tv_usec << 10);
 #endif
 #ifdef SYS_NT
-    HCRYPTPROV handle;
-    CHECKED(CryptAcquireContext(&handle, nullptr, nullptr, PROV_RSA_FULL, 0),
-	    "can't acquire crypt context");
-    CHECKED(CryptGenRandom(handle, 4, reinterpret_cast<BYTE *>(&seed)),
-	    "CryptGenRandom failure");
-    CHECKED(CryptReleaseContext(handle, 0), "can't release crypt context");
+        HCRYPTPROV handle;
+        CHECKED(CryptAcquireContext(&handle, nullptr, nullptr, PROV_RSA_FULL, 0),
+            "can't acquire crypt context");
+        CHECKED(CryptGenRandom(handle, 4, reinterpret_cast<BYTE *>(&seed)),
+            "CryptGenRandom failure");
+        CHECKED(CryptReleaseContext(handle, 0), "can't release crypt context");
 #endif
-  }
-  init(seed);
+    }
+    init(seed);
 }
 
-MersenneTwisterInternal::MersenneTwisterInternal(std::vector<uint32_t> seed_array)
-{
+MersenneTwisterInternal::MersenneTwisterInternal(std::vector<uint32_t> seed_array) {
     initArray(seed_array);
 }
 
 void
-MersenneTwisterInternal::init(uint32_t seed)
-{
+MersenneTwisterInternal::init(uint32_t seed) {
     seed_used = seed;
-    mt[0]= seed & 0xffffffffUL;
-    for (mti=1; mti<N; mti++) {
+    mt[0] = seed & 0xffffffffUL;
+    for (mti = 1; mti < N; mti++) {
         mt[mti] =
-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+                (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + mti);
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -140,26 +138,35 @@ MersenneTwisterInternal::init(uint32_t seed)
 /*  (seed_array[0]&UPPER_MASK), seed_array[1], ..., seed_array[N-1]  */
 /* can take any values except all zeros.                             */
 void
-MersenneTwisterInternal::initArray(std::vector<uint32_t> seed_array)
-{
+MersenneTwisterInternal::initArray(std::vector<uint32_t> seed_array) {
     int i, j, k;
     init(19650218UL);
-    i=1; j=0;
-    k = (N>(int)seed_array.size() ? N : seed_array.size());
+    i = 1;
+    j = 0;
+    k = (N > (int)seed_array.size() ? N : seed_array.size());
     for (; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
-          + seed_array[j] + j; /* non linear */
-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
-        i++; j++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
-        if (j>=(int)seed_array.size()) j=0;
-    }
-    for (k=N-1; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
-          - i; /* non linear */
+        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL))
+                + seed_array[j] + j; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+        j++;
+        if (i >= N) {
+            mt[0] = mt[N - 1];
+            i = 1;
+        }
+        if (j >= (int)seed_array.size()) {
+            j = 0;
+        }
+    }
+    for (k = N - 1; k; k--) {
+        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL))
+                - i; /* non linear */
+        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+        i++;
+        if (i >= N) {
+            mt[0] = mt[N - 1];
+            i = 1;
+        }
     }
 
     // only high bit of mt[0] is relevant.
@@ -170,18 +177,18 @@ MersenneTwisterInternal::initArray(std::vector<uint32_t> seed_array)
     bool any_nonzero = false;
 
     if (seed_array.size() == 0) {
-	init(4357);
+    init(4357);
     } else {
-	seed_used = 0;
-	j = 0;
-	for (i=0;i<N;i++) {
-	    if ((int)seed_array.size() == j)
-		j = 0;
-	    mt[i] = seed_array[j];
-	    if (mt[i] != 0) {
-		any_nonzero = true;
-	    }
-	}
+    seed_used = 0;
+    j = 0;
+    for (i=0;i<N;i++) {
+        if ((int)seed_array.size() == j)
+        j = 0;
+        mt[i] = seed_array[j];
+        if (mt[i] != 0) {
+        any_nonzero = true;
+        }
+    }
     }
     INVARIANT(any_nonzero, "Must have a non-zero entry in seed_array!\n");
     mti=N;
@@ -189,24 +196,23 @@ MersenneTwisterInternal::initArray(std::vector<uint32_t> seed_array)
 }
 
 void
-MersenneTwisterInternal::reloadArray()
-{
-    static unsigned long mag01[2]={0x0, MATRIX_A};
+MersenneTwisterInternal::reloadArray() {
+    static unsigned long mag01[2] = {0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     uint32_t y;
     int kk;
 
-    for (kk=0;kk<N-M;kk++) {
-	y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-	mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
+    for (kk = 0; kk < N - M; kk++) {
+        y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+        mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
     }
-    for (;kk<N-1;kk++) {
-	y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-	mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
+    for (; kk < N - 1; kk++) {
+        y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+        mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1];
     }
-    y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-    mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1];
+    y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
+    mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1];
 
     mti = 0;
 }
@@ -632,27 +638,27 @@ MersenneTwisterInternal::selfTest()
     MersenneTwisterRandom mt(init_array);
 
     for(int i=0;i<arrayCheck_count;i++) {
-	uint32_t v = mt.randInt();
-	INVARIANT(v == arrayCheck[i],
-		  boost::format("MersenneTwisterRandom::selfTest() %d failed %u != %u")
-		  % i % v % arrayCheck[i]);
+    uint32_t v = mt.randInt();
+    INVARIANT(v == arrayCheck[i],
+          boost::format("MersenneTwisterRandom::selfTest() %d failed %u != %u")
+          % i % v % arrayCheck[i]);
     }
 
     mt.init(5489UL);
     for(int i=0;i<seedCheck_count;i++) {
-	uint32_t v = mt.randInt();
-	INVARIANT(v == seedCheck[i],
-		  boost::format("MersenneTwisterRandom::selfTest() %d failed %u != %u")
-		  % i % v % seedCheck[i]);
+    uint32_t v = mt.randInt();
+    INVARIANT(v == seedCheck[i],
+          boost::format("MersenneTwisterRandom::selfTest() %d failed %u != %u")
+          % i % v % seedCheck[i]);
     }
 
     uint32_t maxint = ~0;
     double maxintplus1 = (double)maxint + 1.0;
 
     INVARIANT(maxint * MTR_int_to_open < 1,
-	      "MTR_int_to_open bad");
+          "MTR_int_to_open bad");
     INVARIANT(maxintplus1 * MTR_int_to_open >= 1,
-	      "MTR_int_to_open bad");
+          "MTR_int_to_open bad");
 
     // Oddly for gcc 2.95 on linux without optimization,
     // substituting yfoo into the assert makes it not work
@@ -660,17 +666,17 @@ MersenneTwisterInternal::selfTest()
     INVARIANT(yfoo == 1, boost::format("int_to_closed bad %.20g") % (1-yfoo));
 
     INVARIANT((maxint-1) * MTR_int_to_closed < 1,
-	      "int_to_closed bad");
+          "int_to_closed bad");
 
     uint32_t a_val = static_cast<uint32_t>(~0) >> 5;
     uint32_t b_val = static_cast<uint32_t>(~0) >> 6;
 
     INVARIANT(MTR_53bits_to_open(a_val,b_val) < 1,
-	      boost::format("MTR_53bits_to_open bad %d %d %.20g")
-	      % a_val % b_val % MTR_53bits_to_open(a_val,b_val));
+          boost::format("MTR_53bits_to_open bad %d %d %.20g")
+          % a_val % b_val % MTR_53bits_to_open(a_val,b_val));
 
     INVARIANT(MTR_53bits_to_closed(a_val,b_val) == 1,
-	      boost::format("MTR_53bits_to_closed bad %.20g")
-	      % MTR_53bits_to_closed(a_val,b_val));
+          boost::format("MTR_53bits_to_closed bad %.20g")
+          % MTR_53bits_to_closed(a_val,b_val));
 }
 #endif

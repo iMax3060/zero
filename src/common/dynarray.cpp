@@ -62,29 +62,33 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 // no system I know of *requires* larger pages than this
 static size_t const MM_PAGE_SIZE = 8192;
+
 // most systems can't handle bigger than this, and we need a sanity check
-static size_t const MM_MAX_CAPACITY = MM_PAGE_SIZE*1024*1024*1024;
+static size_t const MM_MAX_CAPACITY = MM_PAGE_SIZE * 1024 * 1024 * 1024;
 
 static size_t align_up(size_t bytes, size_t align) {
     size_t mask = align - 1;
-    return (bytes+mask) &~ mask;
+    return (bytes + mask) & ~mask;
 }
 
-#ifdef HAVE_DECL_MAP_ALIGN 
+#ifdef HAVE_DECL_MAP_ALIGN
 #define USE_MAP_ALIGN 1
 #endif
 
 int dynarray::init(size_t max_size, size_t align) {
     // round up to the nearest page boundary
     max_size = align_up(max_size, MM_PAGE_SIZE);
-    
+
     // validate inputs
-    if(max_size > MM_MAX_CAPACITY)
-	return EFBIG;
-    if(MM_PAGE_SIZE > max_size)
-	return EINVAL;
-    if((align & -align) != align)
-	return EINVAL;
+    if (max_size > MM_MAX_CAPACITY) {
+        return EFBIG;
+    }
+    if (MM_PAGE_SIZE > max_size) {
+        return EINVAL;
+    }
+    if ((align & -align) != align) {
+        return EINVAL;
+    }
 
     /*
       The magical incantation below tells mmap to reserve address
@@ -115,10 +119,14 @@ int dynarray::init(size_t max_size, size_t align) {
     size_t align_extra = align; // - MM_PAGE_SIZE;
     // fprintf(stderr, "%zx = %zx - %d\n", align_extra, align, MM_PAGE_SIZE);
 #endif
-    union { void* v; uintptr_t n; char* c; }
-    u={mmap(align_arg, max_size+align_extra, PROTS, flags, -1, 0)};
+    union {
+        void* v;
+        uintptr_t n;
+        char* c;
+    }
+            u = {mmap(align_arg, max_size + align_extra, PROTS, flags, -1, 0)};
 
-    if(u.v == MAP_FAILED) {
+    if (u.v == MAP_FAILED) {
         fprintf(stderr, "mmap failed: %s", strerror(errno));
         abort();
     }
@@ -145,20 +153,20 @@ int dynarray::init(size_t max_size, size_t align) {
     std::fprintf(stderr, "start: %p	end:%p\n", u.c, u.c+max_size+align_extra);
 #endif
     long aligned_base = align_up(u.n, align);
-    if(long extra=aligned_base-u.n) {
+    if (long extra = aligned_base - u.n) {
 #if 0
-	fprintf(stderr, "chopping off %zx bytes of prefix for start: %zx ; %zx/%zx\n",
-		extra, aligned_base, extra, align_extra);
+        fprintf(stderr, "chopping off %zx bytes of prefix for start: %zx ; %zx/%zx\n",
+            extra, aligned_base, extra, align_extra);
 #endif
-	munmap(u.c, extra);
-	u.n = aligned_base;
-	align_extra -= extra;
+        munmap(u.c, extra);
+        u.n = aligned_base;
+        align_extra -= extra;
     }
-    if(align_extra > 0) {
+    if (align_extra > 0) {
 #if 0
-	fprintf(stderr, "chopping %zx bytes of postfix for end: %p\n", align_extra, u.c+max_size);
+        fprintf(stderr, "chopping %zx bytes of postfix for end: %p\n", align_extra, u.c+max_size);
 #endif
-	munmap(u.c+max_size, align_extra);
+        munmap(u.c + max_size, align_extra);
     }
 #endif
 
@@ -168,10 +176,11 @@ int dynarray::init(size_t max_size, size_t align) {
     return 0;
 }
 
-int dynarray::init(dynarray const &to_copy, size_t max_size) {
+int dynarray::init(dynarray const& to_copy, size_t max_size) {
     max_size = std::max(max_size, to_copy.capacity());
-    if(int err=init(max_size))
-	return err;
+    if (int err = init(max_size)) {
+        return err;
+    }
 
     std::memmove(_base, to_copy._base, to_copy.size());
     return 0;
@@ -180,10 +189,10 @@ int dynarray::init(dynarray const &to_copy, size_t max_size) {
 int dynarray::fini() {
     //    int stack_tmp;
     // fprintf(stderr, "munmap %p %d (%p)...", _base, _capacity, &stack_tmp);
-    if(int err=munmap(_base, _capacity)) {
+    if (int err = munmap(_base, _capacity)) {
         fprintf(stderr, "munmap failed: %s", strerror(errno));
         abort();
-	return err;
+        return err;
     }
     // fprintf(stderr, "done.\n");
     _base = 0;
@@ -197,35 +206,38 @@ int dynarray::resize(size_t new_size) {
     new_size = align_up(new_size, MM_PAGE_SIZE);
 
     // validate
-    if(_size > new_size)
-	return EINVAL;
+    if (_size > new_size) {
+        return EINVAL;
+    }
 
     static int const PROTS = PROT_READ | PROT_WRITE;
     static int const FLAGS = MAP_FIXED | MAP_ANON | MAP_PRIVATE;
 
     // remap the new range as RW. Don't mess w/ the existing region!!
-    void* result = mmap(_base+_size, new_size-_size, PROTS, FLAGS, -1, 0);
+    void* result = mmap(_base + _size, new_size - _size, PROTS, FLAGS, -1, 0);
     if (result == MAP_FAILED) {
         fprintf(stderr, "mmap failed: %s", strerror(errno));
         abort();
     }
-    if(result == MAP_FAILED)
-	return errno;
+    if (result == MAP_FAILED) {
+        return errno;
+    }
 
     _size = new_size;
     return 0;
 }
 
 int dynarray::ensure_capacity(size_t min_size) {
-    min_size  = align_up(min_size, MM_PAGE_SIZE);
+    min_size = align_up(min_size, MM_PAGE_SIZE);
     int err = 0;
-    if(size() < min_size) {
-	size_t next_size = std::max(min_size, 2*size());
-	err = resize(next_size);
-	
-	// did we reach a limit?
-	if(err == EFBIG) 
-	    err = resize(min_size);
+    if (size() < min_size) {
+        size_t next_size = std::max(min_size, 2 * size());
+        err = resize(next_size);
+
+        // did we reach a limit?
+        if (err == EFBIG) {
+            err = resize(min_size);
+        }
     }
     return err;
 }

@@ -33,7 +33,6 @@
 #ifndef __TPCB_ENV_H
 #define __TPCB_ENV_H
 
-
 #include "sm_vas.h"
 
 #include "tpcb_input.h"
@@ -44,7 +43,6 @@
 #include "tpcb_schema_man.h"
 
 #include <map>
-
 
 using std::map;
 
@@ -58,77 +56,82 @@ namespace tpcb {
  *
  ********************************************************************/
 
-struct ShoreTPCBTrxCount
-{
-    uint acct_update;
-    uint populate_db;
+    struct ShoreTPCBTrxCount {
+        uint acct_update;
 
-    uint mbench_insert_only;
-    uint mbench_delete_only;
-    uint mbench_probe_only;
-    uint mbench_insert_delete;
-    uint mbench_insert_probe;
-    uint mbench_delete_probe;
-    uint mbench_mix;
+        uint populate_db;
 
-    ShoreTPCBTrxCount& operator+=(ShoreTPCBTrxCount const& rhs) {
-        acct_update += rhs.acct_update;
+        uint mbench_insert_only;
 
-	mbench_insert_only += rhs.mbench_insert_only;
-	mbench_delete_only += rhs.mbench_delete_only;
-	mbench_probe_only += rhs.mbench_probe_only;
-	mbench_insert_delete += rhs.mbench_insert_delete;
-	mbench_insert_probe += rhs.mbench_insert_probe;
-	mbench_delete_probe += rhs.mbench_delete_probe;
-	mbench_mix += rhs.mbench_mix;
+        uint mbench_delete_only;
 
-	return (*this);
-    }
+        uint mbench_probe_only;
 
-    ShoreTPCBTrxCount& operator-=(ShoreTPCBTrxCount const& rhs) {
-        acct_update -= rhs.acct_update;
+        uint mbench_insert_delete;
 
-	mbench_insert_only -= rhs.mbench_insert_only;
-	mbench_delete_only -= rhs.mbench_delete_only;
-	mbench_probe_only -= rhs.mbench_probe_only;
-	mbench_insert_delete -= rhs.mbench_insert_delete;
-	mbench_insert_probe -= rhs.mbench_insert_probe;
-	mbench_delete_probe -= rhs.mbench_delete_probe;
-	mbench_mix -= rhs.mbench_mix;
+        uint mbench_insert_probe;
 
-	return (*this);
-    }
+        uint mbench_delete_probe;
 
-    uint total() const {
-        return (acct_update+
-		mbench_insert_only+mbench_delete_only+mbench_probe_only+
-		mbench_insert_delete+mbench_insert_probe+mbench_delete_probe+mbench_mix);
-    }
+        uint mbench_mix;
 
-}; // EOF: ShoreTPCBTrxCount
+        ShoreTPCBTrxCount& operator+=(ShoreTPCBTrxCount const& rhs) {
+            acct_update += rhs.acct_update;
+
+            mbench_insert_only += rhs.mbench_insert_only;
+            mbench_delete_only += rhs.mbench_delete_only;
+            mbench_probe_only += rhs.mbench_probe_only;
+            mbench_insert_delete += rhs.mbench_insert_delete;
+            mbench_insert_probe += rhs.mbench_insert_probe;
+            mbench_delete_probe += rhs.mbench_delete_probe;
+            mbench_mix += rhs.mbench_mix;
+
+            return (*this);
+        }
+
+        ShoreTPCBTrxCount& operator-=(ShoreTPCBTrxCount const& rhs) {
+            acct_update -= rhs.acct_update;
+
+            mbench_insert_only -= rhs.mbench_insert_only;
+            mbench_delete_only -= rhs.mbench_delete_only;
+            mbench_probe_only -= rhs.mbench_probe_only;
+            mbench_insert_delete -= rhs.mbench_insert_delete;
+            mbench_insert_probe -= rhs.mbench_insert_probe;
+            mbench_delete_probe -= rhs.mbench_delete_probe;
+            mbench_mix -= rhs.mbench_mix;
+
+            return (*this);
+        }
+
+        uint total() const {
+            return (acct_update +
+                    mbench_insert_only + mbench_delete_only + mbench_probe_only +
+                    mbench_insert_delete + mbench_insert_probe + mbench_delete_probe + mbench_mix);
+        }
+    }; // EOF: ShoreTPCBTrxCount
 
 
-struct ShoreTPCBTrxStats
-{
-    ShoreTPCBTrxCount attempted;
-    ShoreTPCBTrxCount failed;
-    ShoreTPCBTrxCount deadlocked;
+    struct ShoreTPCBTrxStats {
+        ShoreTPCBTrxCount attempted;
 
-    ShoreTPCBTrxStats& operator+=(ShoreTPCBTrxStats const& other) {
-        attempted  += other.attempted;
-        failed     += other.failed;
-        deadlocked += other.deadlocked;
-        return (*this);
-    }
+        ShoreTPCBTrxCount failed;
 
-    ShoreTPCBTrxStats& operator-=(ShoreTPCBTrxStats const& other) {
-        attempted  -= other.attempted;
-        failed     -= other.failed;
-        deadlocked -= other.deadlocked;
-        return (*this);
-    }
+        ShoreTPCBTrxCount deadlocked;
 
-}; // EOF: ShoreTPCBTrxStats
+        ShoreTPCBTrxStats& operator+=(ShoreTPCBTrxStats const& other) {
+            attempted += other.attempted;
+            failed += other.failed;
+            deadlocked += other.deadlocked;
+            return (*this);
+        }
+
+        ShoreTPCBTrxStats& operator-=(ShoreTPCBTrxStats const& other) {
+            attempted -= other.attempted;
+            failed -= other.failed;
+            deadlocked -= other.deadlocked;
+            return (*this);
+        }
+    }; // EOF: ShoreTPCBTrxStats
 
 
 
@@ -140,107 +143,136 @@ struct ShoreTPCBTrxStats
  *
  ********************************************************************/
 
-class ShoreTPCBEnv : public ShoreEnv
-{
-public:
+    class ShoreTPCBEnv : public ShoreEnv {
+    public:
 
-    typedef std::map<pthread_t, ShoreTPCBTrxStats*> statmap_t;
+        typedef std::map<pthread_t, ShoreTPCBTrxStats*> statmap_t;
 
-    class table_builder_t;
-    class table_creator_t;
-    class fid_loader_t;
+        class table_builder_t;
+class table_creator_t;
+class fid_loader_t;
 
-public:
+    public:
 
-    ShoreTPCBEnv(boost::program_options::variables_map vm);
-    virtual ~ShoreTPCBEnv();
+        ShoreTPCBEnv(boost::program_options::variables_map vm);
 
-
-    // DB INTERFACE
-
-    virtual int set(envVarMap* /* vars */) { return(0); /* do nothing */ };
-    virtual int open() { return(0); /* do nothing */ };
-    virtual int pause() { return(0); /* do nothing */ };
-    virtual int resume() { return(0); /* do nothing */ };
-    virtual w_rc_t newrun() { return(RCOK); /* do nothing */ };
-
-    virtual int post_init();
-    virtual w_rc_t load_schema();
-
-    virtual w_rc_t load_and_register_fids();
-
-    virtual int conf();
-    virtual int start();
-    virtual int stop();
-    virtual int info() const;
-    virtual int statistics();
-
-    int dump();
-
-    virtual void print_throughput(const double iQueriedSF,
-                                  const int iSpread,
-                                  const int iNumOfThreads,
-                                  const double delay);
+        virtual ~ShoreTPCBEnv();
 
 
-    // Public methods //
+        // DB INTERFACE
 
-    // --- operations over tables --- //
-    w_rc_t create_tables();
-    w_rc_t load_data();
-    w_rc_t warmup();
-    w_rc_t check_consistency();
+        virtual int set(envVarMap* /* vars */) {
+            return (0); /* do nothing */ };
+
+        virtual int open() {
+            return (0); /* do nothing */ };
+
+        virtual int pause() {
+            return (0); /* do nothing */ };
+
+        virtual int resume() {
+            return (0); /* do nothing */ };
+
+        virtual w_rc_t newrun() {
+            return (RCOK); /* do nothing */ };
+
+        virtual int post_init();
+
+        virtual w_rc_t load_schema();
+
+        virtual w_rc_t load_and_register_fids();
+
+        virtual int conf();
+
+        virtual int start();
+
+        virtual int stop();
+
+        virtual int info() const;
+
+        virtual int statistics();
+
+        int dump();
+
+        virtual void print_throughput(const double iQueriedSF,
+                                      const int iSpread,
+                                      const int iNumOfThreads,
+                                      const double delay);
 
 
-    // TPCB Tables
-    branch_man_impl* branch_man;
-    teller_man_impl* teller_man;
-    account_man_impl* account_man;
-    history_man_impl* history_man;
+        // Public methods //
 
-    // --- kit baseline trxs --- //
+        // --- operations over tables --- //
+        w_rc_t create_tables();
 
-    w_rc_t run_one_xct(Request* prequest);
+        w_rc_t load_data();
 
-    // Transactions
-    DECLARE_TRX(acct_update);
+        w_rc_t warmup();
 
-    // Microbenchmarks
-    DECLARE_TRX(mbench_insert_only);
-    DECLARE_TRX(mbench_delete_only);
-    DECLARE_TRX(mbench_probe_only);
-    DECLARE_TRX(mbench_insert_delete);
-    DECLARE_TRX(mbench_insert_probe);
-    DECLARE_TRX(mbench_delete_probe);
-    DECLARE_TRX(mbench_mix);
+        w_rc_t check_consistency();
 
-    // Database population
-    DECLARE_TRX(populate_db);
+        // TPCB Tables
+        branch_man_impl* branch_man;
 
-    // for thread-local stats
-    virtual void env_thread_init();
-    virtual void env_thread_fini();
+        teller_man_impl* teller_man;
 
-    // stat map
-    statmap_t _statmap;
+        account_man_impl* account_man;
 
-    // snapshot taken at the beginning of each experiment
-    ShoreTPCBTrxStats _last_stats;
-    virtual void reset_stats();
-    ShoreTPCBTrxStats _get_stats();
+        history_man_impl* history_man;
 
-    // set load imbalance and time to apply it
-    void set_skew(int area, int load, int start_imbalance, int skew_type, bool shifting);
-    void start_load_imbalance();
-    void reset_skew();
+        // --- kit baseline trxs --- //
 
-    //print the current tables into files
-    w_rc_t db_print(int lines);
+        w_rc_t run_one_xct(Request* prequest);
 
-    //fetch the pages of the current tables and their indexes into the buffer pool
-    w_rc_t db_fetch();
+        // Transactions
+        DECLARE_TRX(acct_update);
 
-}; // EOF ShoreTPCBEnv
+        // Microbenchmarks
+        DECLARE_TRX(mbench_insert_only);
+
+        DECLARE_TRX(mbench_delete_only);
+
+        DECLARE_TRX(mbench_probe_only);
+
+        DECLARE_TRX(mbench_insert_delete);
+
+        DECLARE_TRX(mbench_insert_probe);
+
+        DECLARE_TRX(mbench_delete_probe);
+
+        DECLARE_TRX(mbench_mix);
+
+        // Database population
+        DECLARE_TRX(populate_db);
+
+        // for thread-local stats
+        virtual void env_thread_init();
+
+        virtual void env_thread_fini();
+
+        // stat map
+        statmap_t _statmap;
+
+        // snapshot taken at the beginning of each experiment
+        ShoreTPCBTrxStats _last_stats;
+
+        virtual void reset_stats();
+
+        ShoreTPCBTrxStats _get_stats();
+
+        // set load imbalance and time to apply it
+        void set_skew(int area, int load, int start_imbalance, int skew_type, bool shifting);
+
+        void start_load_imbalance();
+
+        void reset_skew();
+
+        //print the current tables into files
+        w_rc_t db_print(int lines);
+
+        //fetch the pages of the current tables and their indexes into the buffer pool
+        w_rc_t db_fetch();
+    }; // EOF ShoreTPCBEnv
 
 
 }; // namespace

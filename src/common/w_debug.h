@@ -89,8 +89,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 /* XXX missing type in vc++, hack around it here too, don't pollute
    global namespace too badly. */
-typedef    ios::fmtflags    w_dbg_fmtflags;
-
+typedef ios::fmtflags w_dbg_fmtflags;
 
 #ifdef W_TRACE
 
@@ -99,7 +98,6 @@ typedef    ios::fmtflags    w_dbg_fmtflags;
 // not on the full path, but on the file directly
 #define _strip_filename(f) \
     (strrchr(f, '/') ? strrchr(f, '/') + 1 : f)
-
 
 #endif  /* W_TRACE*/
 
@@ -122,32 +120,53 @@ typedef    ios::fmtflags    w_dbg_fmtflags;
  * stderr.
  */
 class w_debug {
-    private:
-        char *_flags;
-        enum { _all = 0x1, _none = 0x2 };
-        unsigned int        mask;
-        int            _trace_level;
+private:
+    char* _flags;
+
+    enum {
+        _all = 0x1,
+        _none = 0x2
+    };
+
+    unsigned int mask;
+
+    int _trace_level;
 
 #ifdef USE_REGEX
-        static regex_t        re_posix_re;
-        static bool        re_ready;
-        static char*        re_error_str;
-        static char*        re_comp_debug(const char* pattern);
-        static int        re_exec_debug(const char* string);
+    static regex_t        re_posix_re;
+    static bool        re_ready;
+    static char*        re_error_str;
+    static char*        re_comp_debug(const char* pattern);
+    static int        re_exec_debug(const char* string);
 #endif /* USE_REGEX */
 
-        int            all(void) { return (mask & _all) ? 1 : 0; }
-        int            none(void) { return (mask & _none) ? 1 : 0; }
+    int all(void) {
+        return (mask & _all) ? 1 : 0;
+    }
 
-    public:
-        w_debug(const char *n, const char *f);
-        ~w_debug();
-        int flag_on(const char *fn, const char *file);
-        const char *flags() { return _flags; }
-        void setflags(const char *newflags);
-        void memdump(void *p, int len); // hex dump of memory
-        int trace_level() { return _trace_level; }
+    int none(void) {
+        return (mask & _none) ? 1 : 0;
+    }
+
+public:
+    w_debug(const char* n, const char* f);
+
+    ~w_debug();
+
+    int flag_on(const char* fn, const char* file);
+
+    const char* flags() {
+        return _flags;
+    }
+
+    void setflags(const char* newflags);
+
+    void memdump(void* p, int len); // hex dump of memory
+    int trace_level() {
+        return _trace_level;
+    }
 };
+
 extern w_debug _w_debug;
 
 
@@ -181,7 +200,6 @@ extern w_debug _w_debug;
 #define DBGOUT1(a)
 #endif
 
-
 #if W_DEBUG_LEVEL >= 2
 #define DBGOUT2(a) DBGOUT(a)
 #else
@@ -194,13 +212,11 @@ extern w_debug _w_debug;
 #define DBGOUT3(a)
 #endif
 
-
 #if W_DEBUG_LEVEL >= 4
 #define DBGOUT4(a) DBGOUT(a)
 #else
 #define DBGOUT4(a)
 #endif
-
 
 #if W_DEBUG_LEVEL >= 5
 #define DBGOUT5(a) DBGOUT(a)
@@ -208,13 +224,11 @@ extern w_debug _w_debug;
 #define DBGOUT5(a)
 #endif
 
-
 #if W_DEBUG_LEVEL >= 6
 #define DBGOUT6(a) DBGOUT(a)
 #else
 #define DBGOUT6(a)
 #endif
-
 
 #if W_DEBUG_LEVEL >= 7
 #define DBGOUT7(a) DBGOUT(a)
@@ -222,13 +236,11 @@ extern w_debug _w_debug;
 #define DBGOUT7(a)
 #endif
 
-
 #if W_DEBUG_LEVEL >= 8
 #define DBGOUT8(a) DBGOUT(a)
 #else
 #define DBGOUT8(a)
 #endif
-
 
 #if W_DEBUG_LEVEL >= 9
 #define DBGOUT9(a) DBGOUT(a)
@@ -281,6 +293,7 @@ extern w_debug _w_debug;
 // #define DBG2(a,f,l) DBGPRINT(a,f,l) // used by smthread.h
 
 #include <thread>
+
 #define DBGTHRD(arg) DBG(<<" th."<< std::this_thread::get_id() << " " arg)
 
 /*<std-footer incl-file-exclusion='W_DEBUG_H'>  -- do not edit anything below this line -- */

@@ -13,18 +13,23 @@ class ArchiveIndex;
 class RunFile;
 class logrec_t;
 
-struct MergeInput
-{
+struct MergeInput {
     RunFile* runFile;
+
     size_t pos;
+
     lsn_t keyLSN;
+
     PageID keyPID;
+
     PageID endPID;
 
-
     logrec_t* logrec();
+
     bool open(PageID startPID);
+
     bool finished();
+
     void next();
 
     friend bool mergeInputCmpGt(const MergeInput& a, const MergeInput& b);
@@ -37,14 +42,17 @@ static_assert(sizeof(MergeInput) == 32, "Misaligned MergeInput");
 class ArchiveScan {
 public:
     ArchiveScan(std::shared_ptr<ArchiveIndex>);
+
     ~ArchiveScan();
 
     void open(PageID startPID, PageID endPID, lsn_t startLSN,
-            lsn_t endLSN = lsn_t::null);
+              lsn_t endLSN = lsn_t::null);
+
     bool next(logrec_t*&);
+
     bool finished();
 
-    template <class Iter>
+    template<class Iter>
     void openForMerge(Iter begin, Iter end);
 
     void dumpHeap();
@@ -54,11 +62,15 @@ private:
     static thread_local std::vector<MergeInput> _mergeInputVector;
 
     std::vector<MergeInput>::iterator heapBegin;
+
     std::vector<MergeInput>::iterator heapEnd;
 
     std::shared_ptr<ArchiveIndex> archIndex;
+
     lsn_t prevLSN;
+
     PageID prevPID;
+
     bool singlePage;
 
     void clear();
@@ -66,9 +78,8 @@ private:
 
 bool mergeInputCmpGt(const MergeInput& a, const MergeInput& b);
 
-template <class Iter>
-void ArchiveScan::openForMerge(Iter begin, Iter end)
-{
+template<class Iter>
+void ArchiveScan::openForMerge(Iter begin, Iter end) {
     w_assert0(archIndex);
     clear();
     auto& inputs = _mergeInputVector;
@@ -83,11 +94,11 @@ void ArchiveScan::openForMerge(Iter begin, Iter end)
 
     heapBegin = inputs.begin();
     auto it = inputs.rbegin();
-    while (it != inputs.rend())
-    {
+    while (it != inputs.rend()) {
         constexpr PageID startPID = 0;
-        if (it->open(startPID)) { it++; }
-        else {
+        if (it->open(startPID)) {
+            it++;
+        } else {
             std::advance(it, 1);
             inputs.erase(it.base());
         }

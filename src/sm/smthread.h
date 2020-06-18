@@ -66,12 +66,14 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  */
 
 #include <cassert>
+
 #ifndef __W_H
 #include "w.h"
 #endif // __W_H
 #ifndef __SM_BASE_H
 #include "sm_base.h"
 #endif // __SM_BASE_H
+
 #include "w_bitvector.h"
 #include <mutex>
 #include <memory>
@@ -84,13 +86,14 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 class xct_t;
 class lockid_t;
-
 class smthread_t;
 
-
 /**\cond skip */
-enum { FINGER_BITS=SM_DREADLOCK_FINGERS };
-typedef w_bitvector_t<SM_DREADLOCK_BITCOUNT>    sm_thread_map_t;
+enum {
+    FINGER_BITS = SM_DREADLOCK_FINGERS
+};
+
+typedef w_bitvector_t<SM_DREADLOCK_BITCOUNT> sm_thread_map_t;
 /**\endcond skip */
 
 /**\brief Fingerprint for this smthread.
@@ -197,27 +200,33 @@ public:
  */
 class smthread_t {
     friend class smthread_init_t;
+
     struct tcb_t {
         // CS: moved out of xct_t
         logrec_t _logbuf;
+
         logrec_t _logbuf2; // for "piggy-backed" SSX
 
-        xct_t*   xct;
-        int      pin_count;      // number of rsrc_m pins
-        int      prev_pin_count; // previous # of rsrc_m pins
+        xct_t* xct;
+
+        int pin_count;      // number of rsrc_m pins
+        int prev_pin_count; // previous # of rsrc_m pins
         int lock_timeout;    // timeout to use for lock acquisitions
-        bool    _in_sm;      // thread is in sm ss_m:: function
-        bool    _is_update_thread;// thread is in update function
+        bool _in_sm;      // thread is in sm ss_m:: function
+        bool _is_update_thread;// thread is in update function
 
-        int16_t  _depth; // how many "outer" this has
-        tcb_t*   _outer; // this forms a singly linked list
+        int16_t _depth; // how many "outer" this has
+        tcb_t* _outer; // this forms a singly linked list
 
-        sm_stats_t  _TL_stats; // thread-local stats
+        sm_stats_t _TL_stats; // thread-local stats
 
         // for lock_head_t::my_lock::get_me
         queue_based_lock_t::ext_qnode _me1;
+
         queue_based_lock_t::ext_qnode _me2;
+
         queue_based_lock_t::ext_qnode _me3;
+
         /**\var static __thread queue_based_lock_t::ext_qnode _xlist_mutex_node;
          * \brief Queue node for holding mutex to serialize
          * access transaction list. Used in xct.cpp
@@ -226,28 +235,33 @@ class smthread_t {
 
         // force this to be 8-byte aligned:
 
-        void    create_TL_stats();
-        void    clear_TL_stats();
-        void    destroy_TL_stats();
-        inline sm_stats_t& TL_stats() { return _TL_stats;}
-        inline const sm_stats_t& TL_stats_const() const {
-                                                 return _TL_stats; }
+        void create_TL_stats();
 
-        static long get_TL_stat(sm_stat_id stat)
-        {
+        void clear_TL_stats();
+
+        void destroy_TL_stats();
+
+        inline sm_stats_t& TL_stats() {
+            return _TL_stats;
+        }
+
+        inline const sm_stats_t& TL_stats_const() const {
+            return _TL_stats;
+        }
+
+        static long get_TL_stat(sm_stat_id stat) {
             return smthread_t::TL_stats()[enum_to_base(stat)];
         }
 
         tcb_t(tcb_t* outer) :
-            xct(0),
-            pin_count(0),
-            prev_pin_count(0),
-            lock_timeout(timeout_t::WAIT_FOREVER), // default for a thread
-            _in_sm(false),
-            _is_update_thread(false),
-            _depth(outer == nullptr ? 1 : outer->_depth + 1),
-            _outer(outer)
-        {
+                xct(0),
+                pin_count(0),
+                prev_pin_count(0),
+                lock_timeout(timeout_t::WAIT_FOREVER), // default for a thread
+                _in_sm(false),
+                _is_update_thread(false),
+                _depth(outer == nullptr ? 1 : outer->_depth + 1),
+                _outer(outer) {
             QUEUE_EXT_QNODE_INITIALIZE(_me1);
             QUEUE_EXT_QNODE_INITIALIZE(_me2);
             QUEUE_EXT_QNODE_INITIALIZE(_me3);
@@ -256,8 +270,7 @@ class smthread_t {
             create_TL_stats();
         }
 
-        ~tcb_t()
-        {
+        ~tcb_t() {
             destroy_TL_stats();
         }
     };
@@ -273,13 +286,13 @@ public:
 public:
     // const atomic_thread_map_t&  get_fingerprint_map() const
     //                         {   return _fingerprint_map; }
-    static void timeout_to_timespec(int timeout_ms, struct timespec &when);
+    static void timeout_to_timespec(int timeout_ms, struct timespec& when);
 
 public:
 
     /**\cond skip */
     /* public for debugging */
-    static void          init_fingerprint_map();
+    static void init_fingerprint_map();
     /**\endcond skip */
 
 
@@ -295,7 +308,8 @@ public:
      * Only one transaction may be attached to a thread at any time.
      * More than one thread may attach to a transaction concurrently.
      */
-    static void             attach_xct(xct_t* x);
+    static void attach_xct(xct_t* x);
+
     /**\brief Detach this thread from the given transaction.
      * \ingroup SSMXCT
      * @param[in] x Transaction to detach from the thread.
@@ -307,13 +321,14 @@ public:
      * If the transaction is not attached, returns error.
      * \endcond skip
      */
-    static void             detach_xct(xct_t* x);
+    static void detach_xct(xct_t* x);
 
     /// get lock_timeout value
     static inline
-    int        lock_timeout() {
-                    return tcb().lock_timeout;
-                }
+    int lock_timeout() {
+        return tcb().lock_timeout;
+    }
+
     /**\brief Set lock_timeout value
      * \details
      * You can give a value WAIT_FOREVER, WAIT_IMMEDIATE, or
@@ -333,30 +348,34 @@ public:
      * value given at ss_m::begin_xct.
      */
     static inline
-    void             set_lock_timeout(int i) {
-                    tcb().lock_timeout = i;
-                }
+    void set_lock_timeout(int i) {
+        tcb().lock_timeout = i;
+    }
 
-    static logrec_t* get_logbuf()
-    {
+    static logrec_t* get_logbuf() {
         return &tcb()._logbuf;
     }
 
-    static logrec_t* get_logbuf2()
-    {
+    static logrec_t* get_logbuf2() {
         return &tcb()._logbuf2;
     }
 
     /// return xct this thread is running
-    static inline xct_t* xct() { return tcb().xct; }
+    static inline xct_t* xct() {
+        return tcb().xct;
+    }
 
     /// Return thread-local statistics collected for this thread.
-    static inline sm_stats_t& TL_stats() { return tcb().TL_stats(); }
+    static inline sm_stats_t& TL_stats() {
+        return tcb().TL_stats();
+    }
 
-    static long get_TL_stat(sm_stat_id s) { return tcb().get_TL_stat(s); }
+    static long get_TL_stat(sm_stat_id s) {
+        return tcb().get_TL_stat(s);
+    }
 
     /// Add thread-local stats into the given structure.
-    static void add_from_TL_stats(sm_stats_t &w);
+    static void add_from_TL_stats(sm_stats_t& w);
 
     // NOTE: These macros don't have to be atomic since these thread stats
     // are stored in the smthread and collected when the smthread's tcb is
@@ -375,12 +394,12 @@ public:
 /**\def ADD_TSTAT(x,y)
  *\brief Increment statistic named x by y
  */
-#define ADD_TSTAT(x,y) smthread_t::TL_stats()[enum_to_base(sm_stat_id::x)] += (y)
+#define ADD_TSTAT(x, y) smthread_t::TL_stats()[enum_to_base(sm_stat_id::x)] += (y)
 
 /**\def SET_TSTAT(x,y)
  *\brief Set per-thread statistic named x to y
  */
-#define SET_TSTAT(x,y) smthread_t::TL_stats()[enum_to_base(sm_stat_id::x)] = (y)
+#define SET_TSTAT(x, y) smthread_t::TL_stats()[enum_to_base(sm_stat_id::x)] = (y)
 
 
     /**\cond skip */
@@ -390,30 +409,43 @@ public:
      *  operation and check_pin_count after it with the expected
      *  number of pins that should not have been realeased.
      */
-    static void             mark_pin_count();
-    static void             check_pin_count(int change);
-    static void             check_actual_pin_count(int actual) ;
-    static void             incr_pin_count(int amount) ;
-    static int              pin_count() ;
+    static void mark_pin_count();
+
+    static void check_pin_count(int change);
+
+    static void check_actual_pin_count(int actual);
+
+    static void incr_pin_count(int amount);
+
+    static int pin_count();
 
     /*
      *  These functions are used to verify that a thread
      *  is only in one ss_m::, scan::, or pin:: function at a time.
      */
     static inline
-    void             in_sm(bool in)    { tcb()._in_sm = in; }
-    static inline
-    bool             is_in_sm() { return tcb()._in_sm; }
+    void in_sm(bool in) {
+        tcb()._in_sm = in;
+    }
 
     static inline
-    bool             is_update_thread() {
-                                        return tcb()._is_update_thread; }
+    bool is_in_sm() {
+        return tcb()._in_sm;
+    }
+
     static inline
-    void             set_is_update_thread(bool in) { tcb()._is_update_thread = in; }
+    bool is_update_thread() {
+        return tcb()._is_update_thread;
+    }
 
-    static void             no_xct(xct_t *);
+    static inline
+    void set_is_update_thread(bool in) {
+        tcb()._is_update_thread = in;
+    }
 
-    virtual void     _dump(ostream &) const; // to be over-ridden
+    static void no_xct(xct_t*);
+
+    virtual void _dump(ostream&) const; // to be over-ridden
     /**\endcond skip */
 
     /* thread-level block() and unblock aren't public or protected
@@ -436,14 +468,25 @@ public:
 public:
     /**\brief  TLS variables Exported to sm.
      */
-    static queue_based_lock_t::ext_qnode& get_me3() { return tcb()._me3; }
-    static queue_based_lock_t::ext_qnode& get_me2() { return tcb()._me2; }
-    static queue_based_lock_t::ext_qnode& get_me1() { return tcb()._me1; }
+    static queue_based_lock_t::ext_qnode& get_me3() {
+        return tcb()._me3;
+    }
+
+    static queue_based_lock_t::ext_qnode& get_me2() {
+        return tcb()._me2;
+    }
+
+    static queue_based_lock_t::ext_qnode& get_me1() {
+        return tcb()._me1;
+    }
+
     static queue_based_lock_t::ext_qnode& get_xlist_mutex_node() {
-                                               return tcb()._xlist_mutex_node;}
+        return tcb()._xlist_mutex_node;
+    }
+
 private:
     /* sm-specific block / unblock implementation */
-    bool            _waiting;
+    bool _waiting;
 
     /** returns the transaction object that is currently active.*/
     /**
@@ -454,15 +497,13 @@ private:
      * needed, but it makes easier to work with existing codes
      * (which assume only one tcb_t instance).
      */
-    static tcb_t*& tcb_ptr()
-    {
+    static tcb_t*& tcb_ptr() {
         // static local var -- initialized only on first call
         static thread_local tcb_t* tcb = new tcb_t(nullptr);
         return tcb;
     }
 
-    static tcb_t& tcb()
-    {
+    static tcb_t& tcb() {
         auto ret = tcb_ptr();
         w_assert3(ret);
         return *ret;
@@ -470,35 +511,35 @@ private:
 
 public:
     /** Tells how many transactions are nested. */
-    static inline size_t get_tcb_depth() { return tcb()._depth; }
+    static inline size_t get_tcb_depth() {
+        return tcb()._depth;
+    }
 
 private:
 
     class GlobalThreadList {
     public:
-        void add_me()
-        {
-            std::unique_lock<std::mutex> lck {_mutex};
+        void add_me() {
+            std::unique_lock<std::mutex> lck{_mutex};
             _tcb_list.push_back(tcb_ptr());
         }
 
-        void remove_me()
-        {
-            std::unique_lock<std::mutex> lck {_mutex};
+        void remove_me() {
+            std::unique_lock<std::mutex> lck{_mutex};
             auto iter = _tcb_list.begin();
             while (iter != _tcb_list.end()) {
                 if (*iter == tcb_ptr()) {
                     delete *iter;
                     iter = _tcb_list.erase(iter);
+                } else {
+                    iter++;
                 }
-                else { iter++; }
             }
         }
 
-        template <typename F>
-        void for_each_stats(F& f)
-        {
-            std::unique_lock<std::mutex> lck {_mutex};
+        template<typename F>
+        void for_each_stats(F& f) {
+            std::unique_lock<std::mutex> lck{_mutex};
             for (auto p : _tcb_list) {
                 f(p->TL_stats());
             }
@@ -506,60 +547,56 @@ private:
 
     private:
         std::list<tcb_t*> _tcb_list;
+
         std::mutex _mutex;
     };
 
-    static std::shared_ptr<GlobalThreadList> thread_list()
-    {
+    static std::shared_ptr<GlobalThreadList> thread_list() {
         static auto ptr = std::make_shared<GlobalThreadList>();
         return ptr;
     }
 
 public:
 
-    static void add_me_to_thread_list()
-    {
+    static void add_me_to_thread_list() {
         thread_list()->add_me();
     }
 
-    static void remove_me_from_thread_list()
-    {
+    static void remove_me_from_thread_list() {
         thread_list()->remove_me();
     }
 
-    template <typename F>
-    static void for_each_thread_stats(F& f)
-    {
+    template<typename F>
+    static void for_each_thread_stats(F& f) {
         thread_list()->for_each_stats(f);
     }
 };
 
-inline xct_t* xct()
-{
+inline xct_t* xct() {
     return smthread_t::xct();
 }
 
 /**\cond skip */
 class smthread_init_t {
 public:
-    NORET            smthread_init_t();
-    NORET            ~smthread_init_t();
+    NORET smthread_init_t();
+
+    NORET ~smthread_init_t();
+
 private:
-    static int       count;
+    static int count;
 };
 /**\endcond  skip */
 
 /**\cond skip */
 
 inline void
-smthread_t::mark_pin_count()
-{
+smthread_t::mark_pin_count() {
     tcb().prev_pin_count = tcb().pin_count;
 }
 
 inline void
-smthread_t::check_pin_count(int W_IFDEBUG4(change))
-{
+smthread_t::check_pin_count(int W_IFDEBUG4(change)) {
 #if W_DEBUG_LEVEL > 3
     int diff = tcb().pin_count - tcb().prev_pin_count;
     if (change >= 0) {
@@ -571,21 +608,17 @@ smthread_t::check_pin_count(int W_IFDEBUG4(change))
 }
 
 inline void
-smthread_t::check_actual_pin_count(int actual)
-{
+smthread_t::check_actual_pin_count(int actual) {
     w_assert3(tcb().pin_count == actual);
 }
 
-
 inline void
-smthread_t::incr_pin_count(int amount)
-{
+smthread_t::incr_pin_count(int amount) {
     tcb().pin_count += amount;
 }
 
 inline int
-smthread_t::pin_count()
-{
+smthread_t::pin_count() {
     return tcb().pin_count;
 }
 

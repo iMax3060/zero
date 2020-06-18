@@ -21,41 +21,47 @@
 #include "logdef_gen.h"
 
 const string log_storage::log_prefix = "log.";
+
 const string log_storage::log_regex = "log\\.[1-9][0-9]*";
+
 const string log_storage::chkpt_prefix = "chkpt_";
+
 const string log_storage::chkpt_regex = "chkpt_[1-9][0-9]*\\.[0-9][0-9]*";
 
-class partition_recycler_t : public thread_wrapper_t
-{
+class partition_recycler_t : public thread_wrapper_t {
 public:
     partition_recycler_t(log_storage* storage)
-        : storage(storage), chkpt_only(false), retire(false)
-    {}
+            : storage(storage),
+              chkpt_only(false),
+              retire(false) {}
 
     virtual ~partition_recycler_t() {}
 
-    void run()
-    {
+    void run() {
         while (!retire) {
             unique_lock<mutex> lck(_recycler_mutex);
             _recycler_condvar.wait(lck);
-            if (retire) { break; }
+            if (retire) {
+                break;
+            }
             storage->delete_old_partitions(chkpt_only);
         }
     }
 
-    void wakeup(bool chkpt_only = false)
-    {
+    void wakeup(bool chkpt_only = false) {
         unique_lock<mutex> lck(_recycler_mutex);
         _recycler_condvar.notify_one();
         this->chkpt_only = chkpt_only;
     }
 
     log_storage* storage;
+
     bool chkpt_only;
 
     std::atomic<bool> retire;
+
     std::condition_variable _recycler_condvar;
+
     std::mutex _recycler_mutex;
 };
 
@@ -65,8 +71,7 @@ public:
  * found in the last block of the last partition -- this logic was moved
  * from the various prime methods of the old log_core.
  */
-log_storage::log_storage(const sm_options& options)
-{
+log_storage::log_storage(const sm_options& options) {
     // CS TODO: log record refactoring
     _skip_log = new skip_log;
     _skip_log->init_header(logrec_t::t_skip);
@@ -85,7 +90,7 @@ log_storage::log_storage(const sm_options& options)
         if (reformat) {
             fs::create_directories(_logpath);
         } else {
-            cerr << "Error: could not open the log directory " << logdir <<endl;
+            cerr << "Error: could not open the log directory " << logdir << endl;
             W_COERCE(RC(eOS));
         }
     }
@@ -102,7 +107,7 @@ log_storage::log_storage(const sm_options& options)
 
     _delete_old_partitions = options.get_bool_option("sm_log_delete_old_partitions", true);
 
-    partition_number_t  last_partition = 1;
+    partition_number_t last_partition = 1;
 
     fs::directory_iterator it(_logpath), eod;
     std::regex log_rx(log_regex, std::regex::basic);
@@ -123,8 +128,7 @@ log_storage::log_storage(const sm_options& options)
             if (pnum >= last_partition) {
                 last_partition = pnum;
             }
-        }
-        else if (std::regex_match(fname, chkpt_rx)) {
+        } else if (std::regex_match(fname, chkpt_rx)) {
             if (reformat) {
                 fs::remove(fpath);
                 continue;
@@ -134,12 +138,10 @@ log_storage::log_storage(const sm_options& options)
             stringstream ss(fname.substr(chkpt_prefix.length()));
             ss >> lsn;
             _checkpoints.push_back(lsn);
-        }
-        else {
+        } else {
             cerr << "log_storage: cannot parse filename " << fname << endl;
             W_FATAL(fcINTERNAL);
         }
-
     }
 
     auto p = get_partition(last_partition);
@@ -152,9 +154,9 @@ log_storage::log_storage(const sm_options& options)
     W_COERCE(p->open_for_append());
     _curr_partition = p;
 
-    if(!p) {
+    if (!p) {
         cerr << "ERROR: could not open log file for partition "
-            << last_partition << endl;
+             << last_partition << endl;
         W_FATAL(eINTERNAL);
     }
 
@@ -165,8 +167,7 @@ log_storage::log_storage(const sm_options& options)
     }
 }
 
-log_storage::~log_storage()
-{
+log_storage::~log_storage() {
     if (_recycler_thread) {
         _recycler_thread->retire = true;
         _recycler_thread->wakeup();
@@ -190,8 +191,7 @@ log_storage::~log_storage()
 }
 
 shared_ptr<partition_t> log_storage::get_partition_for_flush(lsn_t start_lsn,
-        long start1, long end1, long start2, long end2)
-{
+                                                             long start1, long end1, long start2, long end2) {
     w_assert1(end1 >= start1);
     w_assert1(end2 >= start2);
     // time to open a new partition? (used to be in log_core::insert,
@@ -200,14 +200,14 @@ shared_ptr<partition_t> log_storage::get_partition_for_flush(lsn_t start_lsn,
     // different file() portion from the current partition()'s
     // partition number, so the start_lsn is the clue.
     auto p = curr_partition();
-    if(start_lsn.file() != p->num()) {
+    if (start_lsn.file() != p->num()) {
         partition_number_t n = p->num();
-        w_assert3(start_lsn.file() == n+1);
+        w_assert3(start_lsn.file() == n + 1);
         w_assert3(n != 0);
 
         {
             W_COERCE(p->close_for_append());
-            p = create_partition(n+1);
+            p = create_partition(n + 1);
             W_COERCE(p->open_for_append());
         }
     }
@@ -215,11 +215,12 @@ shared_ptr<partition_t> log_storage::get_partition_for_flush(lsn_t start_lsn,
     return p;
 }
 
-shared_ptr<partition_t> log_storage::get_partition(partition_number_t n) const
-{
+shared_ptr<partition_t> log_storage::get_partition(partition_number_t n) const {
     spinlock_read_critical_section cs(&_partition_map_latch);
     partition_map_t::const_iterator it = _partitions.find(n);
-    if (it == _partitions.end()) { return nullptr; }
+    if (it == _partitions.end()) {
+        return nullptr;
+    }
     return it->second;
 }
 
@@ -326,8 +327,8 @@ log_storage::_close_min(partition_number_t n)
     return victim;
 }
 #endif
-shared_ptr<partition_t> log_storage::create_partition(partition_number_t pnum)
-{
+
+shared_ptr<partition_t> log_storage::create_partition(partition_number_t pnum) {
 #if W_DEBUG_LEVEL > 2
     // No other partition may be open for append
     {
@@ -363,7 +364,9 @@ shared_ptr<partition_t> log_storage::create_partition(partition_number_t pnum)
     if (_max_partitions > 0) {
         if (smlevel_0::bf && smlevel_0::bf->getPageCleaner()) {
             smlevel_0::bf->getPageCleaner()->wakeup();
-            if (smlevel_0::chkpt) { smlevel_0::chkpt->wakeup(); }
+            if (smlevel_0::chkpt) {
+                smlevel_0::chkpt->wakeup();
+            }
         }
     }
     wakeup_recycler();
@@ -377,9 +380,10 @@ shared_ptr<partition_t> log_storage::create_partition(partition_number_t pnum)
     return p;
 }
 
-void log_storage::wakeup_recycler(bool chkpt_only)
-{
-    if (!_delete_old_partitions && !chkpt_only) { return; }
+void log_storage::wakeup_recycler(bool chkpt_only) {
+    if (!_delete_old_partitions && !chkpt_only) {
+        return;
+    }
 
     if (!_recycler_thread) {
         _recycler_thread.reset(new partition_recycler_t(this));
@@ -388,15 +392,15 @@ void log_storage::wakeup_recycler(bool chkpt_only)
     _recycler_thread->wakeup(chkpt_only);
 }
 
-void log_storage::add_checkpoint(lsn_t lsn)
-{
+void log_storage::add_checkpoint(lsn_t lsn) {
     spinlock_write_critical_section cs(&_partition_map_latch);
     _checkpoints.push_back(lsn);
 }
 
-unsigned log_storage::delete_old_partitions(bool chkpt_only, partition_number_t older_than)
-{
-    if (!smlevel_0::log || (!_delete_old_partitions && !chkpt_only)) { return 0; }
+unsigned log_storage::delete_old_partitions(bool chkpt_only, partition_number_t older_than) {
+    if (!smlevel_0::log || (!_delete_old_partitions && !chkpt_only)) {
+        return 0;
+    }
 
     if (older_than == 0 && smlevel_0::chkpt) {
         lsn_t min_lsn = smlevel_0::chkpt->get_min_active_lsn();
@@ -424,8 +428,9 @@ unsigned log_storage::delete_old_partitions(bool chkpt_only, partition_number_t 
                 }
                 to_be_deleted.push_front(it->second);
                 it = _partitions.erase(it);
+            } else {
+                it++;
             }
-            else { it++; }
         }
 
         if (_checkpoints.size() > 1) {
@@ -460,14 +465,12 @@ unsigned log_storage::delete_old_partitions(bool chkpt_only, partition_number_t 
     return to_be_deleted.size();
 }
 
-shared_ptr<partition_t> log_storage::curr_partition() const
-{
+shared_ptr<partition_t> log_storage::curr_partition() const {
     spinlock_read_critical_section cs(&_partition_map_latch);
     return _curr_partition;
 }
 
-void log_storage::list_partitions(std::vector<partition_number_t>& vec) const
-{
+void log_storage::list_partitions(std::vector<partition_number_t>& vec) const {
     vec.clear();
     {
         spinlock_read_critical_section cs(&_partition_map_latch);
@@ -479,23 +482,19 @@ void log_storage::list_partitions(std::vector<partition_number_t>& vec) const
     std::sort(vec.begin(), vec.end());
 }
 
-string log_storage::make_log_name(partition_number_t pnum) const
-{
+string log_storage::make_log_name(partition_number_t pnum) const {
     return make_log_path(pnum).string();
 }
 
-fs::path log_storage::make_log_path(partition_number_t pnum) const
-{
+fs::path log_storage::make_log_path(partition_number_t pnum) const {
     return _logpath / fs::path(log_prefix + to_string(pnum));
 }
 
-fs::path log_storage::make_chkpt_path(lsn_t lsn) const
-{
+fs::path log_storage::make_chkpt_path(lsn_t lsn) const {
     return _logpath / fs::path(chkpt_prefix + lsn.str());
 }
 
-void log_storage::try_delete(partition_number_t pnum)
-{
+void log_storage::try_delete(partition_number_t pnum) {
     /*
      * Log full -- we must delete a partition before continuing.  But we can't
      * invoke normal checkpoint & cleaner because they will attempt to generate
@@ -546,16 +545,20 @@ void log_storage::try_delete(partition_number_t pnum)
     }
 }
 
-size_t log_storage::get_byte_distance(lsn_t a, lsn_t b) const
-{
-    if (a.is_null()) { a = lsn_t(1,0); }
-    if (b.is_null()) { b = lsn_t(1,0); }
-    if (a > b) { std::swap(a,b); }
+size_t log_storage::get_byte_distance(lsn_t a, lsn_t b) const {
+    if (a.is_null()) {
+        a = lsn_t(1, 0);
+    }
+    if (b.is_null()) {
+        b = lsn_t(1, 0);
+    }
+    if (a > b) {
+        std::swap(a, b);
+    }
 
     if (a.hi() == b.hi()) {
         return b.lo() - a.lo();
-    }
-    else {
+    } else {
         size_t rest = b.lo() + (_partition_size - a.lo());
         return _partition_size * (b.hi() - a.hi() - 1) + rest;
     }

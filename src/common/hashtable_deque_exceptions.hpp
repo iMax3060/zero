@@ -3,16 +3,16 @@
 
 namespace zero::hashtable_deque {
 
-	/*!\class   HashtableDequeException
-	 * \brief   Exception thrown in \link HashtableDeque \endlink
-	 * \details Represents an arbitrary exception that can be thrown in instances of \link HashtableDeque \endlink .
-	 *          Every exception that is specific for the \link HashtableDeque \endlink have to inherit from this class.
-	 *
-	 * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
-	 * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
-	 *
-	 * \author Max Gilbert
-	 */
+    /*!\class   HashtableDequeException
+     * \brief   Exception thrown in \link HashtableDeque \endlink
+     * \details Represents an arbitrary exception that can be thrown in instances of \link HashtableDeque \endlink .
+     *          Every exception that is specific for the \link HashtableDeque \endlink have to inherit from this class.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
     template<class key_type, key_type invalid_key>
     class HashtableDequeException : public std::exception {
     public:
@@ -35,7 +35,7 @@ namespace zero::hashtable_deque {
          *
          * @return A description about what caused this exception to be thrown.
          */
-        const char *what() const noexcept override {
+        const char* what() const noexcept override {
             return "An unknown exception happened in an instance of HashtableDeque.";
         };
 
@@ -45,11 +45,11 @@ namespace zero::hashtable_deque {
          *
          * @return A description about the state that caused this exception to be thrown.
          */
-        virtual const char *details() const noexcept {
+        virtual const char* details() const noexcept {
             int whatStringLength = snprintf(nullptr, 0,
                                             "HashtableDeque.size() = %zd, HashtableDeque._back = %zd, HashtableDeque._front = %zd",
                                             _size, _back, _front);
-            char *whatSentence = new char[whatStringLength + 1];
+            char* whatSentence = new char[whatStringLength + 1];
             snprintf(whatSentence, whatStringLength,
                      "HashtableDeque.size() = %zd, HashtableDeque._back = %zd, HashtableDeque._front = %zd",
                      _size, _back, _front);
@@ -77,19 +77,18 @@ namespace zero::hashtable_deque {
          *          time when this exception happened.
          */
         const key_type _front;
-
     };
 
-	/*!\class   HashtableDequeAlreadyContainsException
-	 * \brief   Exception thrown when an entry was already contained in an \link HashtableDeque \endlink
-	 * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
-	 *          was unexpectedly already contained in the deque.
-	 *
-	 * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
-	 * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
-	 *
-	 * \author Max Gilbert
-	 */
+    /*!\class   HashtableDequeAlreadyContainsException
+     * \brief   Exception thrown when an entry was already contained in an \link HashtableDeque \endlink
+     * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
+     *          was unexpectedly already contained in the deque.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
     template<class key_type, key_type invalid_key>
     class HashtableDequeAlreadyContainsException : public HashtableDequeException<key_type, invalid_key> {
     public:
@@ -109,11 +108,11 @@ namespace zero::hashtable_deque {
                 HashtableDequeException<key_type, invalid_key>(size, back, front),
                 _containedKey(containedKey) {};
 
-        const char *what() const noexcept override {
+        const char* what() const noexcept override {
             int whatStringLength = snprintf(nullptr, 0,
                                             "%zd was tried to be inserted into an HashtableDeque, but it was already contained in there.",
                                             _containedKey);
-            char *whatSentence = new char[whatStringLength + 1];
+            char* whatSentence = new char[whatStringLength + 1];
             snprintf(whatSentence, whatStringLength,
                      "%zd was tried to be inserted into an HashtableDeque, but it was already contained in there.",
                      _containedKey);
@@ -126,40 +125,38 @@ namespace zero::hashtable_deque {
          * \brief   The value of the entry that was unexpectedly already contained.
          */
         const key_type _containedKey;
-
     };
 
-	/*!\class   HashtableDequeEmptyException
-	 * \brief   Exception thrown when an \link HashtableDeque \endlink is empty
-	 * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when it is
-	 *          unexpectedly empty.
-	 *
-	 * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
-	 * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
-	 *
-	 * \author Max Gilbert
-	 */
+    /*!\class   HashtableDequeEmptyException
+     * \brief   Exception thrown when an \link HashtableDeque \endlink is empty
+     * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when it is
+     *          unexpectedly empty.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
     template<class key_type, key_type invalid_key>
     class HashtableDequeEmptyException : public HashtableDequeException<key_type, invalid_key> {
     public:
         using HashtableDequeException<key_type, invalid_key>::HashtableDequeException;
 
-        const char *what() const noexcept override {
+        const char* what() const noexcept override {
             return "An HashtableDeque was already empty.";
         };
-
     };
 
-	/*!\class   HashtableDequeNotContainedException
-	 * \brief   Exception thrown when an entry was not already contained in an \link HashtableDeque \endlink
-	 * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
-	 *          was unexpectedly not already contained in the deque.
-	 *
-	 * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
-	 * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
-	 *
-	 * \author Max Gilbert
-	 */
+    /*!\class   HashtableDequeNotContainedException
+     * \brief   Exception thrown when an entry was not already contained in an \link HashtableDeque \endlink
+     * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
+     *          was unexpectedly not already contained in the deque.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
     template<class key_type, key_type invalid_key>
     class HashtableDequeNotContainedException : public HashtableDequeException<key_type, invalid_key> {
     public:
@@ -178,9 +175,9 @@ namespace zero::hashtable_deque {
                 HashtableDequeException<key_type, invalid_key>(size, back, front),
                 _requestedKey(requestedKey) {};
 
-        const char *what() const noexcept override {
+        const char* what() const noexcept override {
             int whatStringLength = snprintf(nullptr, 0, "An HashtableDeque does not contain key %zd", _requestedKey);
-            char *whatSentence = new char[whatStringLength + 1];
+            char* whatSentence = new char[whatStringLength + 1];
             snprintf(whatSentence, whatStringLength, "An HashtableDeque does not contain key %zd", _requestedKey);
             return whatSentence;
         };
@@ -191,9 +188,7 @@ namespace zero::hashtable_deque {
          * \details The value of the entry that was unexpectedly not already contained.
          */
         const key_type _requestedKey;
-
     };
-    
 }
 
 #endif //__HASHTABLE_DEQUE_EXCEPTIONS_HPP

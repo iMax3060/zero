@@ -6,6 +6,7 @@
 class PropStats : public LogScannerCommand {
 public:
     void run();
+
     void setupOptions();
 
 private:

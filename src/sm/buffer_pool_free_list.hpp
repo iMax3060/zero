@@ -34,46 +34,42 @@ namespace zero::buffer_pool {
         public:
             AddFreeBufferpoolFrameException(bf_idx const triedFrame) :
                     RunTimeException("Failed to add buffer frame " + std::to_string(triedFrame)
-                                   + " to the free list of the buffer pool.") {};
+                                     + " to the free list of the buffer pool.") {};
         };
 
     protected:
         BufferPool* bufferPool;
-
     };
 
     class FreeListLowContention : public FreeList {
     public:
         FreeListLowContention(BufferPool* bufferpool, const sm_options& options) noexcept;
 
-        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final;
+        virtual void addFreeBufferpoolFrame(bf_idx freeFrame) noexcept final;
 
-        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept final;
+        virtual bool grabFreeBufferpoolFrame(bf_idx& freeFrame) noexcept final;
 
-        virtual bf_idx  getCount() final;
+        virtual bf_idx getCount() final;
 
     private:
         cds::container::FCQueue<bf_idx> list;
-
     };
 
     class FreeListHighContention : public FreeList {
     public:
         FreeListHighContention(BufferPool* bufferpool, const sm_options& options);
 
-        virtual void    addFreeBufferpoolFrame(bf_idx freeFrame) final;
+        virtual void addFreeBufferpoolFrame(bf_idx freeFrame) final;
 
-        virtual bool    grabFreeBufferpoolFrame(bf_idx& freeFrame) final;
+        virtual bool grabFreeBufferpoolFrame(bf_idx& freeFrame) final;
 
-        virtual bf_idx  getCount() final;
+        virtual bf_idx getCount() final;
 
     private:
         rigtorp::MPMCQueue<bf_idx> list;
 
-        mutable atomic_bf_idx      approximateListLength;
-
+        mutable atomic_bf_idx approximateListLength;
     };
-
 } // zero::buffer_pool
 
 #endif // __SM_BUFFER_POOL_FREE_LIST_HPP

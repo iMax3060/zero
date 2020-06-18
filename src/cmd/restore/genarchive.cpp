@@ -6,22 +6,20 @@
 // CS TODO: LA metadata -- should be serialized on run files
 const size_t BLOCK_SIZE = 1048576;
 
-void GenArchive::setupOptions()
-{
+void GenArchive::setupOptions() {
     options.add_options()
-        ("logdir,l", po::value<string>(&logdir)->required(),
-            "Directory containing the log to be archived")
-        ("archdir,a", po::value<string>(&archdir)->required(),
-            "Directory where the archive runs will be stored (must exist)")
-        ("bucket", po::value<size_t>(&bucketSize)->default_value(1),
-            "Size of log archive index bucked in output runs")
+            ("logdir,l", po::value<string>(&logdir)->required(),
+             "Directory containing the log to be archived")
+            ("archdir,a", po::value<string>(&archdir)->required(),
+             "Directory where the archive runs will be stored (must exist)")
+            ("bucket", po::value<size_t>(&bucketSize)->default_value(1),
+             "Size of log archive index bucked in output runs")
         // ("maxLogSize,m", po::value<long>(&maxLogSize)->default_value(m),
         //     "max_logsize parameter of Shore-MT (default should be fine)")
-    ;
+            ;
 }
 
-void GenArchive::run()
-{
+void GenArchive::run() {
     sm_options opt;
     opt.set_string_option("sm_logdir", logdir);
     opt.set_string_option("sm_archdir", archdir);

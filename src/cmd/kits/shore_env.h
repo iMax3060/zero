@@ -47,10 +47,9 @@ using std::map;
 
 namespace po = boost::program_options;
 
-
 /******** Constants ********/
 
-const int SHORE_NUM_OF_RETRIES       = 3;
+const int SHORE_NUM_OF_RETRIES = 3;
 
 #define SHORE_TABLE_DATA_DIR  "databases"
 
@@ -69,8 +68,7 @@ const int SHORE_NUM_OF_RETRIES       = 3;
     void   _inc_##trxlid##_failed();                                    \
     void   _inc_##trxlid##_dld()
 
-
-#define DECLARE_TABLE(table,manimpl,abbrv)                              \
+#define DECLARE_TABLE(table, manimpl, abbrv)                              \
     guard<manimpl>   _p##abbrv##_man;                                   \
     inline manimpl*  abbrv##_man() { return (_p##abbrv##_man); }        \
     guard<table>     _p##abbrv##_desc;                                  \
@@ -120,7 +118,7 @@ const int SHORE_NUM_OF_RETRIES       = 3;
 
 #else // ***** NO FLUSHER ***** //
 
-#define DEFINE_RUN_WITH_INPUT_TRX_WRAPPER(cname,trxlid,trximpl)         \
+#define DEFINE_RUN_WITH_INPUT_TRX_WRAPPER(cname, trxlid, trximpl)         \
     w_rc_t cname::run_##trximpl(Request* prequest, trxlid##_input_t& in) { \
         int xct_id = prequest->xct_id();                                \
         /* TRACE( TRACE_TRX_FLOW, "%d. %s ...\n", xct_id, #trximpl);     */  \
@@ -148,44 +146,40 @@ const int SHORE_NUM_OF_RETRIES       = 3;
 
 #endif // ***** EOF: CFG_FLUSHER ***** //
 
-
-#define DEFINE_RUN_WITHOUT_INPUT_TRX_WRAPPER(cname,trxlid,trximpl)      \
+#define DEFINE_RUN_WITHOUT_INPUT_TRX_WRAPPER(cname, trxlid, trximpl)      \
     w_rc_t cname::run_##trximpl(Request* prequest) {                    \
         trxlid##_input_t in = create_##trxlid##_input(_queried_factor, \
                 prequest->selectedID(), prequest->tspread()); \
         return (run_##trximpl(prequest, in)); }
 
-
-#define DEFINE_TRX_STATS(cname,trxlid)                                  \
+#define DEFINE_TRX_STATS(cname, trxlid)                                  \
     void cname::_inc_##trxlid##_att()    { ++my_stats.attempted.trxlid; } \
     void cname::_inc_##trxlid##_failed() { ++my_stats.failed.trxlid; }  \
     void cname::_inc_##trxlid##_dld() { ++my_stats.deadlocked.trxlid; }
 
 
 // In the common case, there is a single implementation per transaction
-#define DEFINE_TRX(cname,trx)                                   \
+#define DEFINE_TRX(cname, trx)                                   \
     DEFINE_RUN_WITHOUT_INPUT_TRX_WRAPPER(cname,trx,trx);        \
     DEFINE_RUN_WITH_INPUT_TRX_WRAPPER(cname,trx,trx);           \
     DEFINE_TRX_STATS(cname,trx)
 
-
-#define CHECK_XCT_RETURN(rc,retry,ENV)			\
-    if (rc.is_error()) {						\
-	TRACE( TRACE_ALWAYS, "Error %x\n", rc.err_num());		\
-	W_COERCE(ENV->db()->abort_xct());				\
-	switch(rc.err_num()) {						\
-	case eDEADLOCK:					\
-	    goto retry;							\
-	default:							\
-	    stringstream os; os << rc << ends;				\
-	    string str = os.str();					\
-	    TRACE( TRACE_ALWAYS,					\
-		   "Eek! Unable to populate db due to: \n%s\n",		\
-		   str.c_str());					\
-	    W_FATAL(rc.err_num());					\
-	}								\
+#define CHECK_XCT_RETURN(rc, retry, ENV)            \
+    if (rc.is_error()) {                        \
+    TRACE( TRACE_ALWAYS, "Error %x\n", rc.err_num());        \
+    W_COERCE(ENV->db()->abort_xct());                \
+    switch(rc.err_num()) {                        \
+    case eDEADLOCK:                    \
+        goto retry;                            \
+    default:                            \
+        stringstream os; os << rc << ends;                \
+        string str = os.str();                    \
+        TRACE( TRACE_ALWAYS,                    \
+           "Eek! Unable to populate db due to: \n%s\n",        \
+           str.c_str());                    \
+        W_FATAL(rc.err_num());                    \
+    }                                \
     }
-
 
 /******************************************************************
  *
@@ -195,27 +189,27 @@ const int SHORE_NUM_OF_RETRIES       = 3;
  *
  ******************************************************************/
 
-struct env_stats_t
-{
+struct env_stats_t {
     unsigned _ntrx_att;
+
     unsigned _ntrx_com;
 
     env_stats_t()
-        : _ntrx_att(0), _ntrx_com(0)
-    { }
+            : _ntrx_att(0),
+              _ntrx_com(0) {}
 
-    ~env_stats_t() { }
+    ~env_stats_t() {}
 
     void print_env_stats() const;
 
     inline unsigned inc_trx_att() {
         return lintel::unsafe::atomic_fetch_add(&_ntrx_att, 1);
     }
+
     inline unsigned inc_trx_com() {
         lintel::unsafe::atomic_fetch_add(&_ntrx_att, 1);
         return lintel::unsafe::atomic_fetch_add(&_ntrx_com, 1);
     }
-
 }; // EOF env_stats_t
 
 
@@ -228,10 +222,11 @@ struct env_stats_t
  *
  ********************************************************************/
 
-enum eDBControl { DBC_UNDEF =   0x1,
-                  DBC_PAUSED =  0x2,
-                  DBC_ACTIVE =  0x4,
-                  DBC_STOPPED = 0x8
+enum eDBControl {
+    DBC_UNDEF = 0x1,
+    DBC_PAUSED = 0x2,
+    DBC_ACTIVE = 0x4,
+    DBC_STOPPED = 0x8
 };
 
 /*********************************************************************
@@ -245,11 +240,12 @@ enum eDBControl { DBC_UNDEF =   0x1,
  *
  *********************************************************************/
 
-class db_iface
-{
+class db_iface {
 public:
-    typedef map<string,string>        envVarMap;
-    typedef envVarMap::iterator       envVarIt;
+    typedef map<string, string> envVarMap;
+
+    typedef envVarMap::iterator envVarIt;
+
     typedef envVarMap::const_iterator envVarConstIt;
 
 private:
@@ -258,16 +254,18 @@ private:
 public:
 
     db_iface()
-        : _dbc(DBC_UNDEF)
-    { }
-    virtual ~db_iface() { }
+            : _dbc(DBC_UNDEF) {}
+
+    virtual ~db_iface() {}
 
     // Access methods
 
-    eDBControl dbc() { return (eDBControl(*&_dbc)); }
+    eDBControl dbc() {
+        return (eDBControl(*&_dbc));
+    }
 
     void set_dbc(const eDBControl adbc) {
-        assert (adbc!=DBC_UNDEF);
+        assert (adbc != DBC_UNDEF);
         // CS TODO: does this have to be atomic??
         // unsigned int tmp = adbc;
         // atomic_swap_uint(&_dbc, tmp);
@@ -277,22 +275,35 @@ public:
 
     // DB INTERFACE
 
-    virtual int conf()=0;
-    virtual int set(envVarMap* vars)=0;
-    virtual w_rc_t load_schema()=0;
-    virtual int init()=0;
-    virtual int open()=0;
-    virtual int close()=0;
-    virtual int start()=0;
-    virtual int stop()=0;
-    virtual int restart()=0;
-    virtual int pause()=0;
-    virtual int resume()=0;
-    virtual w_rc_t newrun()=0;
-    virtual int statistics()=0;
-    virtual int dump()=0;
-    virtual int info() const=0;
+    virtual int conf() = 0;
 
+    virtual int set(envVarMap* vars) = 0;
+
+    virtual w_rc_t load_schema() = 0;
+
+    virtual int init() = 0;
+
+    virtual int open() = 0;
+
+    virtual int close() = 0;
+
+    virtual int start() = 0;
+
+    virtual int stop() = 0;
+
+    virtual int restart() = 0;
+
+    virtual int pause() = 0;
+
+    virtual int resume() = 0;
+
+    virtual w_rc_t newrun() = 0;
+
+    virtual int statistics() = 0;
+
+    virtual int dump() = 0;
+
+    virtual int info() const = 0;
 }; // EOF: db_iface
 
 
@@ -302,7 +313,6 @@ class base_worker_t;
 class trx_worker_t;
 class ShoreEnv;
 
-
 /******** Exported variables ********/
 
 extern ShoreEnv* _g_shore_env;
@@ -310,7 +320,6 @@ extern ShoreEnv* _g_shore_env;
 // extern procmonitor_t* _g_mon;
 
 extern int ssm_max_small_rec;
-
 
 /********************************************************************
  *
@@ -320,13 +329,13 @@ extern int ssm_max_small_rec;
  *
  ********************************************************************/
 
-enum MeasurementState { MST_UNDEF   = 0x0,
-                        MST_WARMUP  = 0x1,
-                        MST_MEASURE = 0x2,
-                        MST_DONE    = 0x4,
-                        MST_PAUSE   = 0x8
+enum MeasurementState {
+    MST_UNDEF = 0x0,
+    MST_WARMUP = 0x1,
+    MST_MEASURE = 0x2,
+    MST_DONE = 0x4,
+    MST_PAUSE = 0x8
 };
-
 
 /********************************************************************
  *
@@ -337,46 +346,55 @@ enum MeasurementState { MST_UNDEF   = 0x0,
  *
  ********************************************************************/
 
-class ShoreEnv : public db_iface
-{
+class ShoreEnv : public db_iface {
 public:
-    typedef std::map<string,string> ParamMap;
+    typedef std::map<string, string> ParamMap;
 
     typedef trx_request_t Request;
+
     typedef blob_pool RequestStack;
-    typedef trx_worker_t                Worker;
-    typedef trx_worker_t*               WorkerPtr;
-    typedef std::vector<WorkerPtr>           WorkerPool;
+
+    typedef trx_worker_t Worker;
+
+    typedef trx_worker_t* WorkerPtr;
+
+    typedef std::vector<WorkerPtr> WorkerPool;
+
     typedef std::vector<WorkerPtr>::iterator WorkerIt;
 
     class fid_loader_t;
 
 protected:
 
-    ss_m*           _pssm;               // database handle
+    ss_m* _pssm;               // database handle
 
     bool _clobber;
 
     // Status variables
-    bool            _initialized;
+    bool _initialized;
+
     pthread_mutex_t _init_mutex;
-    bool            _loaded;
+
+    bool _loaded;
+
     pthread_mutex_t _load_mutex;
 
     pthread_mutex_t _statmap_mutex;
+
     pthread_mutex_t _last_stats_mutex;
 
     // Device and volume. There is a single volume per device.
     // The whole environment resides in a single volume.
-    StoreID             _root_iid;  // root id of the volume
-    pthread_mutex_t    _vol_mutex; // volume mutex
+    StoreID _root_iid;  // root id of the volume
+    pthread_mutex_t _vol_mutex; // volume mutex
 
     // Configuration variables
     sm_options _popts;
 
     // List of worker threads
-    WorkerPool      _workers;
-    uint            _worker_cnt;
+    WorkerPool _workers;
+
+    uint _worker_cnt;
 
     // Scaling factors
     //
@@ -391,9 +409,12 @@ protected:
     // TPCE: SF=1 --> 6.5GB   (1K Customers)
     // TPCH: SF=1 --> 250MB (1 Warehouse)
     //
-    double             _scaling_factor;
+    double _scaling_factor;
+
     pthread_mutex_t _scaling_mutex;
-    double             _queried_factor;
+
+    double _queried_factor;
+
     pthread_mutex_t _queried_mutex;
 
     int _loaders_to_use;
@@ -402,23 +423,26 @@ protected:
     // kits_logger_t* _logger;
 
     // Stats
-    env_stats_t        _env_stats;
-    sm_stats_t    _last_sm_stats;
+    env_stats_t _env_stats;
+
+    sm_stats_t _last_sm_stats;
 
     // Measurement state
     volatile uint _measure;
 
     // system name
-    string          _sysname;
-
+    string _sysname;
 
     // Helper functions
     void readconfig();
 
     // The insert/delete/probe/update frequencies for microbenchmarks
     int _insert_freq;
+
     int _delete_freq;
+
     int _probe_freq;
+
     int _update_freq;
 
     // Frequency at which checkpoits are taken (period in seconds)
@@ -426,7 +450,9 @@ protected:
 
     // Flags to activate log archiver and asynchronous merger
     bool _enable_archiver;
+
     bool _enable_merger;
+
     // little trick to enable archiver daemons to start later during the exp.
     // see: chekpointer_t in shore_helper_loader.cpp
     int _activation_delay;
@@ -435,66 +461,102 @@ protected:
     int _crash_delay;
 
     // Storage manager access functions
-    int  configure_sm();
-    int  start_sm();
-    int  close_sm();
+    int configure_sm();
+
+    int start_sm();
+
+    int close_sm();
 
     // load balancing settings
 
 
 
     volatile bool _bAlarmSet;
+
     tatas_lock _alarm_lock;
+
     int _start_imbalance;
+
     skew_type_t _skew_type;
 
     std::atomic<bool> stop_benchmark;
 
     po::variables_map optionValues;
+
 public:
 
     ShoreEnv(po::variables_map& vm);
+
     virtual ~ShoreEnv();
 
-    sm_options& get_opts() { return _popts; }
-    po::variables_map& get_optionValues(){ return optionValues; };
+    sm_options& get_opts() {
+        return _popts;
+    }
+
+    po::variables_map& get_optionValues() {
+        return optionValues;
+    };
     // DB INTERFACE
 
     virtual int conf();
-    virtual int set(envVarMap* /* vars */) { return(0); /* do nothing */ };
-    virtual int init();
-    virtual int post_init() { return (0); /* do nothing */ }; // Should return >0 on error
-    virtual int open() { return(0); /* do nothing */ };
-    virtual int close();
-    virtual int start();
-    virtual int stop();
-    virtual int restart();
-    virtual int pause() { return(0); /* do nothing */ };
-    virtual int resume() { return(0); /* do nothing */ };
-    virtual w_rc_t newrun()=0;
-    virtual int statistics();
-    virtual int dump();
-    virtual int info() const=0;
 
+    virtual int set(envVarMap* /* vars */) {
+        return (0); /* do nothing */ };
+
+    virtual int init();
+
+    virtual int post_init() {
+        return (0); /* do nothing */ }; // Should return >0 on error
+    virtual int open() {
+        return (0); /* do nothing */ };
+
+    virtual int close();
+
+    virtual int start();
+
+    virtual int stop();
+
+    virtual int restart();
+
+    virtual int pause() {
+        return (0); /* do nothing */ };
+
+    virtual int resume() {
+        return (0); /* do nothing */ };
+
+    virtual w_rc_t newrun() = 0;
+
+    virtual int statistics();
+
+    virtual int dump();
+
+    virtual int info() const = 0;
 
     // Loads the database schema after the config file is read, and before the storage
     // manager is started.
-    virtual w_rc_t load_schema()=0;
-    virtual w_rc_t load_data()=0;
-    virtual w_rc_t create_tables()=0;
+    virtual w_rc_t load_schema() = 0;
 
-    virtual w_rc_t warmup()=0;
-    virtual w_rc_t check_consistency()=0;
+    virtual w_rc_t load_data() = 0;
+
+    virtual w_rc_t create_tables() = 0;
+
+    virtual w_rc_t warmup() = 0;
+
+    virtual w_rc_t check_consistency() = 0;
 
     // loads the store ids for each table and index at kits side
     // needed when an already populated database is being used
-    virtual w_rc_t load_and_register_fids()=0;
+    virtual w_rc_t load_and_register_fids() = 0;
 
     // inline access methods
-    inline ss_m* db() { return(_pssm); }
+    inline ss_m* db() {
+        return (_pssm);
+    }
 
     bool is_initialized();
+
     bool is_loaded();
+
     w_rc_t load();
 
     void set_measure(const MeasurementState aMeasurementState) {
@@ -504,67 +566,117 @@ public:
         // atomic_swap_uint(&_measure, tmp);
         _measure = aMeasurementState;
     }
-    inline MeasurementState get_measure() { return (MeasurementState(*&_measure)); }
 
-    bool should_stop_benchmark()
-    {
+    inline MeasurementState get_measure() {
+        return (MeasurementState(*&_measure));
+    }
+
+    bool should_stop_benchmark() {
         return stop_benchmark;
     }
 
-    void set_stop_benchmark(bool v)
-    {
+    void set_stop_benchmark(bool v) {
         stop_benchmark = v;
     }
 
+    pthread_mutex_t* get_init_mutex() {
+        return (&_init_mutex);
+    }
 
-    pthread_mutex_t* get_init_mutex() { return (&_init_mutex); }
-    pthread_mutex_t* get_vol_mutex() { return (&_vol_mutex); }
-    pthread_mutex_t* get_load_mutex() { return (&_load_mutex); }
-    bool get_init_no_cs() { return (_initialized); }
-    bool get_loaded_no_cs() { return (_loaded); }
-    void set_init_no_cs(const bool b_is_init) { _initialized = b_is_init; }
-    void set_loaded_no_cs(const bool b_is_loaded) { _loaded = b_is_loaded; }
+    pthread_mutex_t* get_vol_mutex() {
+        return (&_vol_mutex);
+    }
 
-    void set_clobber(bool c) { _clobber = c; }
-    void set_loaders(int l) { _loaders_to_use = l; }
+    pthread_mutex_t* get_load_mutex() {
+        return (&_load_mutex);
+    }
+
+    bool get_init_no_cs() {
+        return (_initialized);
+    }
+
+    bool get_loaded_no_cs() {
+        return (_loaded);
+    }
+
+    void set_init_no_cs(const bool b_is_init) {
+        _initialized = b_is_init;
+    }
+
+    void set_loaded_no_cs(const bool b_is_loaded) {
+        _loaded = b_is_loaded;
+    }
+
+    void set_clobber(bool c) {
+        _clobber = c;
+    }
+
+    void set_loaders(int l) {
+        _loaders_to_use = l;
+    }
 
     // --- scaling and querying factor --- //
     void set_qf(const double aQF);
+
     double get_qf() const;
+
     void set_sf(const double aSF);
+
     double get_sf() const;
+
     void print_sf() const;
 
     // kits logging
     // void log_insert(kits_logger_t::logrec_kind_t);
 
-    virtual w_rc_t update_partitioning() { return (RCOK); }
+    virtual w_rc_t update_partitioning() {
+        return (RCOK);
+    }
 
     // -- insert/delete/probe frequencies for microbenchmarks -- //
     void set_freqs(int insert_freq = 0, int delete_freq = 0, int probe_freq = 0, int update_freq = 0);
 
     // checkpoint frequency
     void set_chkpt_freq(int);
-    int get_chkpt_freq() { return _chkpt_freq; }
+
+    int get_chkpt_freq() {
+        return _chkpt_freq;
+    }
 
     void set_archiver_opts(bool, bool);
-    bool is_archiver_enabled() { return _enable_archiver; }
-    bool is_merger_enabled() { return _enable_merger; }
 
-    void set_activation_delay(int d) { _activation_delay = d; }
-    int get_activation_delay() { return _activation_delay; }
+    bool is_archiver_enabled() {
+        return _enable_archiver;
+    }
+
+    bool is_merger_enabled() {
+        return _enable_merger;
+    }
+
+    void set_activation_delay(int d) {
+        _activation_delay = d;
+    }
+
+    int get_activation_delay() {
+        return _activation_delay;
+    }
 
     // crash delay
     void set_crash_delay(int);
-    int get_crash_delay() { return _crash_delay; }
+
+    int get_crash_delay() {
+        return _crash_delay;
+    }
 
     //shutdown filthy
     void set_sm_shudown_filthy(bool);
 
     // load imbalance related
     virtual void set_skew(int area, int load, int start_imbalance, int skew_type,
-            bool shifting = false);
+                          bool shifting = false);
+
     virtual void reset_skew();
+
     virtual void start_load_imbalance();
 
     // print the current db to files
@@ -573,25 +685,30 @@ public:
 
     // fetch the current db to buffer pool
     // virtual void db_fetch_init();
-    virtual w_rc_t db_fetch() { return(RCOK); }
+    virtual w_rc_t db_fetch() {
+        return (RCOK);
+    }
 
     // Environment workers
     uint upd_worker_cnt();
+
     trx_worker_t* worker(const uint idx);
 
     // Request atomic trash stack
     RequestStack _request_pool;
 
     // For thread-local stats
-    virtual void env_thread_init()=0;
-    virtual void env_thread_fini()=0;
+    virtual void env_thread_init() = 0;
+
+    virtual void env_thread_fini() = 0;
 
     // Fake io delay interface
     int disable_fake_disk_latency();
+
     int enable_fake_disk_latency(const int adelay);
 
     // Collects and print statistics from the SM
-    void gatherstats_sm(ostream &);
+    void gatherstats_sm(ostream&);
 
     // Takes a checkpoint (forces dirty pages)
     int checkpoint();
@@ -600,77 +717,109 @@ public:
 
     void wait_for_warmup();
 
-    string sysname() { return (_sysname); }
+    string sysname() {
+        return (_sysname);
+    }
 
-    env_stats_t* get_env_stats() { return (&_env_stats); }
+    env_stats_t* get_env_stats() {
+        return (&_env_stats);
+    }
 
     // restart recovery status
     size_t get_total_pages_to_recover();
+
     size_t get_dirty_page_count();
+
     bool has_log_analysis_finished();
+
     size_t get_total_pages_to_restore();
+
     size_t get_num_restored_pages();
 
     // For temp throughput calculation
     unsigned get_trx_att() const;
+
     unsigned get_trx_com() const;
 
-    inline void inc_trx_att() { _env_stats.inc_trx_att(); }
-    inline void inc_trx_com() { _env_stats.inc_trx_com(); }
+    inline void inc_trx_att() {
+        _env_stats.inc_trx_att();
+    }
+
+    inline void inc_trx_com() {
+        _env_stats.inc_trx_com();
+    }
 
     // Throughput printing
     virtual void print_throughput(const double iQueriedSF,
                                   const int iSpread,
                                   const int iNumOfThreads,
-                                  const double delay)=0;
+                                  const double delay) = 0;
 
-    virtual void reset_stats()=0;
+    virtual void reset_stats() = 0;
 
     // Run one transaction
-    virtual w_rc_t run_one_xct(Request* prequest)=0;
-
-
+    virtual w_rc_t run_one_xct(Request* prequest) = 0;
 
     // Control whether asynchronous commit will be used
-    inline bool isAsynchCommit() const { return (_asynch_commit); }
+    inline bool isAsynchCommit() const {
+        return (_asynch_commit);
+    }
+
     void setAsynchCommit(const bool bAsynch);
 
 
     // SLI
 public:
-    bool isSLIEnabled() const { return (_bUseSLI); }
-    void setSLIEnabled(const bool bUseSLI) { _bUseSLI = bUseSLI; }
+    bool isSLIEnabled() const {
+        return (_bUseSLI);
+    }
+
+    void setSLIEnabled(const bool bUseSLI) {
+        _bUseSLI = bUseSLI;
+    }
+
 protected:
     bool _bUseSLI;
 
 
     // ELR
 public:
-    bool isELREnabled() const { return (_bUseELR); }
-    void setELREnabled(const bool bUseELR) { _bUseELR = bUseELR; }
+    bool isELREnabled() const {
+        return (_bUseELR);
+    }
+
+    void setELREnabled(const bool bUseELR) {
+        _bUseELR = bUseELR;
+    }
+
 protected:
     bool _bUseELR;
 
 
     // FLUSHER
 public:
-    bool isFlusherEnabled() const { return (_bUseFlusher); }
-    void setFlusherEnabled(const bool bUseFlusher) { _bUseFlusher = bUseFlusher; }
+    bool isFlusherEnabled() const {
+        return (_bUseFlusher);
+    }
+
+    void setFlusherEnabled(const bool bUseFlusher) {
+        _bUseFlusher = bUseFlusher;
+    }
 
 protected:
-    bool               _bUseFlusher;
+    bool _bUseFlusher;
+
     // guard<flusher_t>   _base_flusher;
     // virtual int        _start_flusher();
     // virtual int        _stop_flusher();
-    void               to_base_flusher(Request* ar);
-
+    void to_base_flusher(Request* ar);
 
 protected:
 
     // returns 0 on success
     int _set_sys_params();
-    bool _asynch_commit;
 
+    bool _asynch_commit;
 }; // EOF ShoreEnv
 
 

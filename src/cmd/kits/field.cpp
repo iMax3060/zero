@@ -39,43 +39,42 @@
  *
  *********************************************************************/
 
-void  field_desc_t::print_desc(ostream & os)
-{
+void field_desc_t::print_desc(ostream& os) {
     os << "Field " << _name << "\t";
     switch (_type) {
-    case SQL_BIT:
-	os << "Type: BIT \t size: " << sizeof(bool) << endl;
-	break;
-    case SQL_SMALLINT:
-	os << "Type: SMALLINT \t size: " << sizeof(short) << endl;
-	break;
-    case SQL_CHAR:
-	os << "Type: CHAR \t size: " << sizeof(char) << endl;
-	break;
-    case SQL_INT:
-	os << "Type: INT \t size: " << sizeof(int) << endl;
-	break;
-    case SQL_FLOAT:
-	os << "Type: FLOAT \t size: " << sizeof(double) << endl;
-	break;
-    case SQL_LONG:
-	os << "Type: LONG \t size: " << sizeof(long long) << endl;
-	break;
-    case SQL_TIME:
-	os << "Type: TIMESTAMP \t size: " << timestamp_t::size() << endl;
-	break;
-    case  SQL_VARCHAR:
-	os << "Type: VARCHAR \t size: " << _size << endl;
-	break;
-    case SQL_FIXCHAR:
-	os << "Type: CHAR \t size: " << _size << endl;
-	break;
-    case SQL_NUMERIC:
-	os << "Type: NUMERIC \t size: " << _size << endl;
-	break;
-    case SQL_SNUMERIC:
-	os << "Type: SNUMERIC \t size: " << _size << endl;
-	break;
+        case SQL_BIT:
+            os << "Type: BIT \t size: " << sizeof(bool) << endl;
+            break;
+        case SQL_SMALLINT:
+            os << "Type: SMALLINT \t size: " << sizeof(short) << endl;
+            break;
+        case SQL_CHAR:
+            os << "Type: CHAR \t size: " << sizeof(char) << endl;
+            break;
+        case SQL_INT:
+            os << "Type: INT \t size: " << sizeof(int) << endl;
+            break;
+        case SQL_FLOAT:
+            os << "Type: FLOAT \t size: " << sizeof(double) << endl;
+            break;
+        case SQL_LONG:
+            os << "Type: LONG \t size: " << sizeof(long long) << endl;
+            break;
+        case SQL_TIME:
+            os << "Type: TIMESTAMP \t size: " << timestamp_t::size() << endl;
+            break;
+        case SQL_VARCHAR:
+            os << "Type: VARCHAR \t size: " << _size << endl;
+            break;
+        case SQL_FIXCHAR:
+            os << "Type: CHAR \t size: " << _size << endl;
+            break;
+        case SQL_NUMERIC:
+            os << "Type: NUMERIC \t size: " << _size << endl;
+            break;
+        case SQL_SNUMERIC:
+            os << "Type: SNUMERIC \t size: " << _size << endl;
+            break;
     }
 }
 
@@ -107,60 +106,61 @@ void  field_desc_t::print_desc(ostream & os)
  *
  *********************************************************************/
 
-void  field_value_t::print_value(std::ostream & os)
-{
+void field_value_t::print_value(std::ostream& os) {
     assert (_pfield_desc);
 
     if (_null_flag) {
-	os << "(null)";
-	return;
+        os << "(null)";
+        return;
     }
 
     switch (_pfield_desc->type()) {
-    case SQL_BIT:
-	os <<_value._bit;
-	break;
-    case SQL_SMALLINT:
-	os <<_value._smallint;
-	break;
-    case SQL_CHAR:
-	os <<_value._char;
-	break;
-    case SQL_INT:
-	os << _value._int;
-	break;
-    case SQL_FLOAT:
-	os << fixed;
-	os.precision(2);
-	os << _value._float;
-	break;
-    case SQL_LONG:
-	os << _value._long;
-	break;
-    case SQL_TIME:
-        char mstr[32];
-        _value._time->string(mstr,32);
-	os << mstr;
-	break;
-    case SQL_VARCHAR:
-    case SQL_FIXCHAR:
-	//os << "\"";
-	for (uint i=0; i<_real_size; i++) {
-	    if (_value._string[i]) os << _value._string[i];
-	}
-	//os << "\"";
-	break;
-    case SQL_NUMERIC:
-    case SQL_SNUMERIC: {
-	for (uint i=0; i<_real_size; i++) {
-	    if (_value._string[i]) os << _value._string[i];
-	}
-	break;
-    }
+        case SQL_BIT:
+            os << _value._bit;
+            break;
+        case SQL_SMALLINT:
+            os << _value._smallint;
+            break;
+        case SQL_CHAR:
+            os << _value._char;
+            break;
+        case SQL_INT:
+            os << _value._int;
+            break;
+        case SQL_FLOAT:
+            os << fixed;
+            os.precision(2);
+            os << _value._float;
+            break;
+        case SQL_LONG:
+            os << _value._long;
+            break;
+        case SQL_TIME:
+            char mstr[32];
+            _value._time->string(mstr, 32);
+            os << mstr;
+            break;
+        case SQL_VARCHAR:
+        case SQL_FIXCHAR:
+            //os << "\"";
+            for (uint i = 0; i < _real_size; i++) {
+                if (_value._string[i]) {
+                    os << _value._string[i];
+                }
+            }
+            //os << "\"";
+            break;
+        case SQL_NUMERIC:
+        case SQL_SNUMERIC: {
+            for (uint i = 0; i < _real_size; i++) {
+                if (_value._string[i]) {
+                    os << _value._string[i];
+                }
+            }
+            break;
+        }
     }
 }
-
-
 
 /*********************************************************************
  *
@@ -171,8 +171,7 @@ void  field_value_t::print_value(std::ostream & os)
  *
  *********************************************************************/
 
-int field_value_t::get_debug_str(char* &buf)
-{
+int field_value_t::get_debug_str(char*& buf) {
     assert (_pfield_desc);
 
     unsigned sz = _max_size;
@@ -180,51 +179,51 @@ int field_value_t::get_debug_str(char* &buf)
     memset(buf, '\0', MAX_LINE_LENGTH);
 
     if (_null_flag) {
-	sprintf(buf, "(null)");
+        sprintf(buf, "(null)");
         return (0);
     }
 
     switch (_pfield_desc->type()) {
-    case SQL_BIT:
-        sprintf(buf, "SQL_BIT: \t%d", _value._bit);
-	break;
-    case SQL_SMALLINT:
-        sprintf(buf, "SQL_SMALLINT: \t%d", _value._smallint);
-	break;
-    case SQL_CHAR:
-        sprintf(buf, "SQL_CHAR: \t%d", _value._char);
-	break;
-    case SQL_INT:
-        sprintf(buf, "SQL_INT:      \t%d", _value._int);
-	break;
-    case SQL_FLOAT:
-        sprintf(buf, "SQL_FLOAT:    \t%.2f", _value._float);
-	break;
-    case SQL_LONG:
-        sprintf(buf, "SQL_LONG:    \t%lld", _value._long);
-	break;
-    case SQL_TIME:
-        char mstr[32];
-        _value._time->string(mstr,32);
-        sprintf(buf, "SQL_TIME:     \t%s", mstr);
-	break;
-    case SQL_VARCHAR:
-        strcat(buf, "SQL_VARCHAR:  \t");
-        strncat(buf, _value._string, _real_size);
-        break;
-    case SQL_FIXCHAR:
-        strcat(buf, "SQL_CHAR:     \t");
-        strncat(buf, _value._string, _real_size);
-	break;
-    case SQL_NUMERIC:
-        strcat(buf, "SQL_NUMERIC:  \t");
-        strncat(buf, _value._string, _real_size);
-        break;
-    case SQL_SNUMERIC: {
-        strcat(buf, "SQL_sNUMERIC: \t");
-        strncat(buf, _value._string, _real_size);
-	break;
-    }
+        case SQL_BIT:
+            sprintf(buf, "SQL_BIT: \t%d", _value._bit);
+            break;
+        case SQL_SMALLINT:
+            sprintf(buf, "SQL_SMALLINT: \t%d", _value._smallint);
+            break;
+        case SQL_CHAR:
+            sprintf(buf, "SQL_CHAR: \t%d", _value._char);
+            break;
+        case SQL_INT:
+            sprintf(buf, "SQL_INT:      \t%d", _value._int);
+            break;
+        case SQL_FLOAT:
+            sprintf(buf, "SQL_FLOAT:    \t%.2f", _value._float);
+            break;
+        case SQL_LONG:
+            sprintf(buf, "SQL_LONG:    \t%lld", _value._long);
+            break;
+        case SQL_TIME:
+            char mstr[32];
+            _value._time->string(mstr, 32);
+            sprintf(buf, "SQL_TIME:     \t%s", mstr);
+            break;
+        case SQL_VARCHAR:
+            strcat(buf, "SQL_VARCHAR:  \t");
+            strncat(buf, _value._string, _real_size);
+            break;
+        case SQL_FIXCHAR:
+            strcat(buf, "SQL_CHAR:     \t");
+            strncat(buf, _value._string, _real_size);
+            break;
+        case SQL_NUMERIC:
+            strcat(buf, "SQL_NUMERIC:  \t");
+            strncat(buf, _value._string, _real_size);
+            break;
+        case SQL_SNUMERIC: {
+            strcat(buf, "SQL_sNUMERIC: \t");
+            strncat(buf, _value._string, _real_size);
+            break;
+        }
     }
 
     return (sz);

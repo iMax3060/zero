@@ -4,22 +4,19 @@
 #include "log_core.h"
 #include "logarchiver.h"
 
-void AddBackup::setupOptions()
-{
+void AddBackup::setupOptions() {
     boost::program_options::options_description opt("AddBackup Options");
     opt.add_options()
-        ("logdir,l", po::value<string>(&logdir)->required(),
-            "Log directory")
-        ("file,f", po::value<string>(&backupPath)->required(),
-            "Path to backup file")
-        ("lsn", po::value<string>(&lsnString)->required(),
-            "Backup LSN (up to which all updates are guaranteed to be propagated)")
-    ;
+            ("logdir,l", po::value<string>(&logdir)->required(),
+             "Log directory")
+            ("file,f", po::value<string>(&backupPath)->required(),
+             "Path to backup file")
+            ("lsn", po::value<string>(&lsnString)->required(),
+             "Backup LSN (up to which all updates are guaranteed to be propagated)");
     options.add(opt);
 }
 
-void AddBackup::run()
-{
+void AddBackup::run() {
     sm_options opt;
     opt.set_string_option("sm_logdir", logdir);
 

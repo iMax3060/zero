@@ -10,7 +10,6 @@
 #include "latch.h"
 #include "sm_base.h"
 
-
 /**
  * \brief Handle class for pages that may be fixed (i.e., paged in by the main buffer
  * manager, zero::buffer_pool::BufferPool)
@@ -33,20 +32,25 @@ public:
     // ======================================================================
 
     /// Create handle not yet fixed to a page
-    fixable_page_h() : generic_page_h(nullptr), _bufferpool_managed(false), _mode(LATCH_NL) {}
-    ~fixable_page_h() { unfix(); }
+    fixable_page_h() : generic_page_h(nullptr),
+                       _bufferpool_managed(false),
+                       _mode(LATCH_NL) {}
+
+    ~fixable_page_h() {
+        unfix();
+    }
 
     /// assignment; steals the ownership of the page/latch p and unfixes old associated
     /// page if exists and is different
     fixable_page_h& operator=(fixable_page_h& p) {
         if (&p != this) {
             unfix();
-            _pp                 = p._pp;
+            _pp = p._pp;
             _bufferpool_managed = p._bufferpool_managed;
-            _mode               = p._mode;
-            _Q_ticket           = p._Q_ticket;
-            p._pp               = nullptr;
-            p._mode             = LATCH_NL;
+            _mode = p._mode;
+            _Q_ticket = p._Q_ticket;
+            p._pp = nullptr;
+            p._mode = LATCH_NL;
         }
         return *this;
     }
@@ -56,14 +60,18 @@ public:
     // ======================================================================
 
     /// Do we have an associated page?
-    bool is_fixed() const { return _pp != 0; }
+    bool is_fixed() const {
+        return _pp != 0;
+    }
 
     /// Unassociate us with any page; releases latch we may have held on previously
     /// associated page.
     void unfix(bool evict = false);
 
     /// Is this page really fixed in bufferpool or a psuedo-fix?
-    bool is_bufferpool_managed() const { return _bufferpool_managed; }
+    bool is_bufferpool_managed() const {
+        return _bufferpool_managed;
+    }
 
     /**
      * Fixes a non-root page in the bufferpool.  This method receives the parent page and
@@ -87,13 +95,13 @@ public:
      * \c ePARENTLATCHQFAIL, or \c eNEEDREALLATCH. The later occurs only when
      * \c virgin_page is \c true or \c pid is not swizzled.
      */
-    w_rc_t fix_nonroot(const fixable_page_h &parent,
-                       PageID pid, latch_mode_t mode, bool conditional=false,
-                       bool virgin_page=false, bool only_if_hit = false);
+    w_rc_t fix_nonroot(const fixable_page_h& parent,
+                       PageID pid, latch_mode_t mode, bool conditional = false,
+                       bool virgin_page = false, bool only_if_hit = false);
 
-    w_rc_t fix_direct(PageID pid, latch_mode_t mode, bool conditional=false,
-                       bool virgin_page=false, bool only_if_hit = false,
-                       bool do_recovery = true);
+    w_rc_t fix_direct(PageID pid, latch_mode_t mode, bool conditional = false,
+                      bool virgin_page = false, bool only_if_hit = false,
+                      bool do_recovery = true);
 
     /**
      * Adds an additional pin count for the given page.  This is used to re-fix the page
@@ -113,14 +121,14 @@ public:
      *
      * Currently returns eNEEDREALLATCH if mode is Q
      */
-    w_rc_t refix_direct(bf_idx idx, latch_mode_t mode, bool conditional=false);
+    w_rc_t refix_direct(bf_idx idx, latch_mode_t mode, bool conditional = false);
 
     /**
      * Fixes an existing (not virgin) root page for the given store.  This method doesn't
      * receive page ID because it's already known by bufferpool.
      */
     w_rc_t fix_root(StoreID store, latch_mode_t mode,
-                    bool conditional=false, bool virgin=false);
+                    bool conditional = false, bool virgin = false);
 
     /**
      * Imaginery 'fix' for a non-bufferpool-managed page.
@@ -140,15 +148,18 @@ public:
      *
      * @pre We do not hold current page's latch in Q mode
      */
-    bool         is_dirty()  const;
+    bool is_dirty() const;
 
     /// Updates page_lsn field stored in CB of buffered page
-    void update_page_lsn(const lsn_t & lsn) const;
+    void update_page_lsn(const lsn_t& lsn) const;
+
     lsn_t get_page_lsn() const;
 
     /// returns log volume in the CB
     uint32_t get_log_volume();
+
     void increment_log_volume(uint32_t);
+
     void reset_log_volume();
 
     /// return value of _check_recovery flag on CB
@@ -159,23 +170,31 @@ public:
 
     /// Return flag for if this page to be deleted when bufferpool evicts it.
     /// @pre We do not hold current page's latch in Q mode
-    bool         is_to_be_deleted();
+    bool is_to_be_deleted();
+
     /// Flag this page to be deleted when bufferpool evicts it.
     /// @pre We hold our associated page's latch in SH or EX mode
-    w_rc_t         set_to_be_deleted(bool log_it);
+    w_rc_t set_to_be_deleted(bool log_it);
+
     /// Unset the to be deleted flag.  This is only used by UNDO, so no logging and no
     /// failure possible.
     /// @pre We hold our associated page's latch in SH or EX mode
-    void         unset_to_be_deleted();
+    void unset_to_be_deleted();
 
     void set_check_recovery(bool);
 
-    void set_tag(page_tag_t tag) { _pp->tag = tag; }
+    void set_tag(page_tag_t tag) {
+        _pp->tag = tag;
+    }
 
+    latch_mode_t latch_mode() const {
+        return _mode;
+    }
 
-    latch_mode_t latch_mode() const { return _mode; }
     /// Do we hold our page's latch in SH or EX mode?
-    bool         is_latched() const { return _mode == LATCH_SH || _mode == LATCH_EX; }
+    bool is_latched() const {
+        return _mode == LATCH_SH || _mode == LATCH_EX;
+    }
 
     /**
      * Could someone else have changed our page via a EX latch since we last fixed it?
@@ -185,7 +204,7 @@ public:
      *
      * @pre is_fixed()
      */
-    bool         change_possible_after_fix() const;
+    bool change_possible_after_fix() const;
 
     /**
      * Attempt to upgrade our latch to at least mode, which must be either LATCH_EX (the
@@ -195,7 +214,7 @@ public:
      * WARNING: this operation can spuriously fail once in a while (e.g., S -> X may fail
      * even without any other latch holders).
      */
-    bool         upgrade_latch_conditional(latch_mode_t mode=LATCH_EX);
+    bool upgrade_latch_conditional(latch_mode_t mode = LATCH_EX);
 
 
     // ======================================================================
@@ -203,12 +222,14 @@ public:
     // ======================================================================
 
     /// @pre We do not hold current page's latch in Q mode
-    bool         has_children()   const;
+    bool has_children() const;
+
     /// @pre We do not hold current page's latch in Q mode
-    int          max_child_slot() const;
+    int max_child_slot() const;
+
     /// valid slots are [-1 .. max_child_slot()], where -1 is foster pointer and 0 is pid0
     /// @pre We do not hold current page's latch in Q mode
-    PageID*     child_slot_address(int child_slot) const;
+    PageID* child_slot_address(int child_slot) const;
 
     /**
      * Search in the given page to find the slot that contains the page id as a child.
@@ -223,16 +244,17 @@ public:
      * pool. Ideally, this would not be necessary, but unfortunately, the
      * log record interface requires a fixable_page_h to perform REDO.
      */
-     void setup_for_restore(generic_page* pp);
+    void setup_for_restore(generic_page* pp);
 
-     bool is_pinned_for_restore();
+    bool is_pinned_for_restore();
 
 protected:
     friend class borrowed_btree_page_h;
 
-    bool          _bufferpool_managed; ///< is our associated page managed by the buffer pool?
-    latch_mode_t  _mode;
-    q_ticket_t    _Q_ticket;
+    bool _bufferpool_managed; ///< is our associated page managed by the buffer pool?
+    latch_mode_t _mode;
+
+    q_ticket_t _Q_ticket;
 };
 
 #endif // __FIXABLE_PAGE_H_H

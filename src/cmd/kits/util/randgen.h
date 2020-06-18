@@ -28,13 +28,13 @@
 
 #include <cassert>
 
-class randgen_t
-{
+class randgen_t {
     MersenneTwisterRandom rng;
+
 public:
 
     void reset(unsigned int seed) {
-       rng.init(seed);
+        rng.init(seed);
     }
 
     int rand() {
@@ -49,8 +49,6 @@ public:
         assert(n > 0);
         return rng.randInt(n);
     }
-
 };
-
 
 #endif // __RANDGEN_H

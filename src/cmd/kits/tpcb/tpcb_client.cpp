@@ -38,44 +38,42 @@ namespace tpcb {
  *
  *********************************************************************/
 
-baseline_tpcb_client_t::baseline_tpcb_client_t(std::string tname, const int id,
-                                               ShoreTPCBEnv* env,
-                                               const MeasurementType aType,
-                                               const int trxid,
-                                               const int numOfTrxs,
-                                               const int selID, const double qf,
-                                               int tspread)
-    : base_client_t(tname,id,env,aType,trxid,numOfTrxs),
-      _selid(selID), _qf(qf), _tspread(tspread)
-{
-    assert (env);
-    assert (_id>=0 && _qf>0);
+    baseline_tpcb_client_t::baseline_tpcb_client_t(std::string tname, const int id,
+                                                   ShoreTPCBEnv* env,
+                                                   const MeasurementType aType,
+                                                   const int trxid,
+                                                   const int numOfTrxs,
+                                                   const int selID, const double qf,
+                                                   int tspread)
+            : base_client_t(tname, id, env, aType, trxid, numOfTrxs),
+              _selid(selID),
+              _qf(qf),
+              _tspread(tspread) {
+        assert (env);
+        assert (_id >= 0 && _qf > 0);
 
-    // pick worker thread
-    _worker = _env->worker(_id);
-    assert (_worker);
-}
+        // pick worker thread
+        _worker = _env->worker(_id);
+        assert (_worker);
+    }
 
+    int baseline_tpcb_client_t::load_sup_xct(mapSupTrxs& stmap) {
+        // clears the supported trx map and loads its own
+        stmap.clear();
 
-int baseline_tpcb_client_t::load_sup_xct(mapSupTrxs& stmap)
-{
-    // clears the supported trx map and loads its own
-    stmap.clear();
+        // Baseline TPC-B trxs
+        stmap[XCT_TPCB_ACCT_UPDATE] = "TPCB-AccountUpdate";
 
-    // Baseline TPC-B trxs
-    stmap[XCT_TPCB_ACCT_UPDATE]          = "TPCB-AccountUpdate";
+        stmap[XCT_TPCB_MBENCH_INSERT_ONLY] = "TPCB-MbenchInsertOnly";
+        stmap[XCT_TPCB_MBENCH_DELETE_ONLY] = "TPCB-MbenchDeleteOnly";
+        stmap[XCT_TPCB_MBENCH_PROBE_ONLY] = "TPCB-MbenchProbeOnly";
+        stmap[XCT_TPCB_MBENCH_INSERT_DELETE] = "TPCB-MbenchInsertDelete";
+        stmap[XCT_TPCB_MBENCH_INSERT_PROBE] = "TPCB-MbenchInsertProbe";
+        stmap[XCT_TPCB_MBENCH_DELETE_PROBE] = "TPCB-MbenchDeleteProbe";
+        stmap[XCT_TPCB_MBENCH_MIX] = "TPCB-MbenchMix";
 
-    stmap[XCT_TPCB_MBENCH_INSERT_ONLY]   = "TPCB-MbenchInsertOnly";
-    stmap[XCT_TPCB_MBENCH_DELETE_ONLY]   = "TPCB-MbenchDeleteOnly";
-    stmap[XCT_TPCB_MBENCH_PROBE_ONLY]    = "TPCB-MbenchProbeOnly";
-    stmap[XCT_TPCB_MBENCH_INSERT_DELETE] = "TPCB-MbenchInsertDelete";
-    stmap[XCT_TPCB_MBENCH_INSERT_PROBE]  = "TPCB-MbenchInsertProbe";
-    stmap[XCT_TPCB_MBENCH_DELETE_PROBE]  = "TPCB-MbenchDeleteProbe";
-    stmap[XCT_TPCB_MBENCH_MIX]           = "TPCB-MbenchMix";
-
-    return (stmap.size());
-}
-
+        return (stmap.size());
+    }
 
 /*********************************************************************
  *
@@ -88,32 +86,29 @@ int baseline_tpcb_client_t::load_sup_xct(mapSupTrxs& stmap)
  *
  *********************************************************************/
 
-w_rc_t baseline_tpcb_client_t::submit_one(int xct_type, int xctid)
-{
-    // Set input
-    trx_result_tuple_t atrt;
-    bool bWake = false;
-    if (condex* c = _cp->take_one()) {
-        atrt.set_notify(c);
-        // TRACE( TRACE_TRX_FLOW, "Sleeping\n");
-        bWake = true;
-    }
+    w_rc_t baseline_tpcb_client_t::submit_one(int xct_type, int xctid) {
+        // Set input
+        trx_result_tuple_t atrt;
+        bool bWake = false;
+        if (condex* c = _cp->take_one()) {
+            atrt.set_notify(c);
+            // TRACE( TRACE_TRX_FLOW, "Sleeping\n");
+            bWake = true;
+        }
 
-    // Pick a valid ID
-    int selid = _selid;
+        // Pick a valid ID
+        int selid = _selid;
 //     if (_selid==0)
 //         selid = URand(1,_qf);
 
-    // Get one action from the trash stack
-    trx_request_t* arequest = new (_env->_request_pool) trx_request_t;
-    tid_t atid;
-    arequest->set(nullptr,atid,xctid,atrt,xct_type,selid,_tspread);
+        // Get one action from the trash stack
+        trx_request_t* arequest = new(_env->_request_pool) trx_request_t;
+        tid_t atid;
+        arequest->set(nullptr, atid, xctid, atrt, xct_type, selid, _tspread);
 
-    // Enqueue to worker thread
-    assert (_worker);
-    _worker->enqueue(arequest,bWake);
-    return (RCOK);
-}
-
-
+        // Enqueue to worker thread
+        assert (_worker);
+        _worker->enqueue(arequest, bWake);
+        return (RCOK);
+    }
 };

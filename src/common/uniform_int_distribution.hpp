@@ -21,11 +21,10 @@ namespace zero::uniform_int_distribution {
 
     namespace details {
 
-        template <typename int_type>
+        template<typename int_type>
         constexpr uint16_t log2(int_type n) {
             return ((n < 2) ? 1 : 1 + log2(n / 2));
         };
-
     } // details
 
     /*!\class   biased_uniform_int_distribution
@@ -63,7 +62,7 @@ namespace zero::uniform_int_distribution {
      *
      * @tparam int_type The integer data type of the output range.
      */
-    template <class int_type = int>
+    template<class int_type = int>
     class biased_uniform_int_distribution {
         static_assert(std::is_integral<int_type>::value
                       && !std::is_same<int_type, bool>::value,
@@ -133,7 +132,7 @@ namespace zero::uniform_int_distribution {
              */
             friend bool operator==(const param_type& parameters0, const param_type& parameters1) noexcept {
                 return parameters0._lowerLimit == parameters1._lowerLimit
-                    && parameters0._upperLimit == parameters1._upperLimit;
+                       && parameters0._upperLimit == parameters1._upperLimit;
             }
 
             /*!\fn    operator!=(const param_type& parameters0, const param_type& parameters1) noexcept
@@ -284,20 +283,22 @@ namespace zero::uniform_int_distribution {
 
             // Whether the actual output range of the underlying PRNG is known at compile-time:
             constexpr bool minMaxAvailable = cgs::is_constexpr<uniform_random_number_generator::min>()
-                                          && cgs::is_constexpr<uniform_random_number_generator::max>();
+                                             && cgs::is_constexpr<uniform_random_number_generator::max>();
             // The length of the actual output range of the underlying PRNG or 0 if it outputs floats or if the range is
             // not known at compile-time:
             constexpr unsigned_generator_type generatorRange =
                     !minMaxAvailable || !std::is_integral<generator_type>::value ? 0
-                                                                                 : gcem::abs(static_cast<unsigned_generator_type>(uniform_random_number_generator::max())
-                                                                                           - static_cast<unsigned_generator_type>(uniform_random_number_generator::min()));
+                                                                                 : gcem::abs(
+                            static_cast<unsigned_generator_type>(uniform_random_number_generator::max())
+                            - static_cast<unsigned_generator_type>(uniform_random_number_generator::min()));
             // The effective bitwidth of the actual output range of the underlying integer PRNG if known at compile-time
             // or the bitwidth of the output data type of the underlying PRNG:
             constexpr uint16_t generatorBits = std::is_integral<generator_type>::value
-                                            && generatorRange < std::numeric_limits<unsigned_generator_type>::max()
-                                                    ? !minMaxAvailable ? static_cast<uint16_t>(0)
-                                                                       : static_cast<uint16_t>(details::log2<unsigned_generator_type>(generatorRange + 1) - 1)
-                                                    : static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT);
+                                               && generatorRange < std::numeric_limits<unsigned_generator_type>::max()
+                                               ? !minMaxAvailable ? static_cast<uint16_t>(0)
+                                                                  : static_cast<uint16_t>(
+                                                         details::log2<unsigned_generator_type>(generatorRange + 1) - 1)
+                                               : static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT);
             // The bitwidth of the output data type of the underlying PRNG:
             constexpr uint16_t generatorTypeBits = static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT);
 
@@ -318,137 +319,147 @@ namespace zero::uniform_int_distribution {
                 // The effective bitwidth of the output range of the PRNG is at least as high as the bitwidth of the
                 // output data type of this random distribution facility:
                 if constexpr (resultBits <= generatorBits) {
-                    DBG1( << "Best Case: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
+                    DBG1(<< "Best Case: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
                     unsigned_generator_type x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator()
-                                                                                   - uniform_random_number_generator::min());
+                                                                                     - uniform_random_number_generator::min());
                     if constexpr (generatorBits != details::log2(generatorRange)) {
-                        constexpr unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
+                        constexpr unsigned_generator_type bitMask =
+                                gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                         x = x & bitMask;
                     }
                     if constexpr (std::is_unsigned<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
                         unsigned_double_width_result_type m = static_cast<unsigned_double_width_result_type>(x)
-                                                            * (static_cast<unsigned_double_width_result_type>(_range)
-                                                             + static_cast<unsigned_double_width_result_type>(1));
+                                                              * (static_cast<unsigned_double_width_result_type>(_range)
+                                                                 + static_cast<unsigned_double_width_result_type>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else if (std::is_unsigned<result_type>::value) {
                         __uint128_t m = static_cast<__uint128_t>(x)
-                                      * (static_cast<__uint128_t>(_range)
-                                       + static_cast<__uint128_t>(1));
+                                        * (static_cast<__uint128_t>(_range)
+                                           + static_cast<__uint128_t>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else if (std::is_signed<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
                         signed_double_width_result_type m = static_cast<signed_double_width_result_type>(x)
-                                                          * (static_cast<signed_double_width_result_type>(_range)
-                                                           + static_cast<signed_double_width_result_type>(1));
+                                                            * (static_cast<signed_double_width_result_type>(_range)
+                                                               + static_cast<signed_double_width_result_type>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else {
                         __int128_t m = static_cast<__int128_t>(x)
-                                     * (static_cast<__int128_t>(_range)
-                                      + static_cast<__int128_t>(1));
+                                       * (static_cast<__int128_t>(_range)
+                                          + static_cast<__int128_t>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     }
-                // The effective bitwidth of the output range of the PRNG is lower than the one of the output data
-                // type of this random distribution facility. But the effective bitwidth of the output range of this
-                // random distribution facility (which is never known at compile-time) might still be lower than the
-                // effective bitwidth of the output range of the PRNG:
+                    // The effective bitwidth of the output range of the PRNG is lower than the one of the output data
+                    // type of this random distribution facility. But the effective bitwidth of the output range of this
+                    // random distribution facility (which is never known at compile-time) might still be lower than the
+                    // effective bitwidth of the output range of the PRNG:
                 } else {
                     // The effective bitwidth of the output range of the PRNG is at least as high as the effective
                     // bitwidth of the output range of this random distribution facility:
                     if (_rangeBits <= generatorBits) {
-                        DBG1( << "176: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
+                        DBG1(<< "176: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
                         unsigned_generator_type x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator()
-                                                                                       - uniform_random_number_generator::min());
+                                                                                         - uniform_random_number_generator::min());
                         if constexpr (generatorBits != details::log2(generatorRange)) {
-                            constexpr unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
+                            constexpr unsigned_generator_type bitMask =
+                                    gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                             x = x & bitMask;
                         }
                         if constexpr (std::is_unsigned<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
                             unsigned_double_width_result_type m = static_cast<unsigned_double_width_result_type>(x)
-                                                                * (static_cast<unsigned_double_width_result_type>(_range)
-                                                                 + static_cast<unsigned_double_width_result_type>(1));
+                                                                  * (static_cast<unsigned_double_width_result_type>(_range)
+                                                                     + static_cast<unsigned_double_width_result_type>(1));
                             return static_cast<result_type>(_offset + (m >> generatorBits));
                         } else if (std::is_unsigned<result_type>::value) {
                             __uint128_t m = static_cast<__uint128_t>(x)
-                                          * (static_cast<__uint128_t>(_range)
-                                           + static_cast<__uint128_t>(1));
+                                            * (static_cast<__uint128_t>(_range)
+                                               + static_cast<__uint128_t>(1));
                             return static_cast<result_type>(_offset + (m >> generatorBits));
                         } else if (std::is_signed<result_type>::value && resultBits <= 32 && generatorBits <= 32) {
                             signed_double_width_result_type m = static_cast<signed_double_width_result_type>(x)
-                                                              * (static_cast<signed_double_width_result_type>(_range)
-                                                               + static_cast<signed_double_width_result_type>(1));
+                                                                * (static_cast<signed_double_width_result_type>(_range)
+                                                                   + static_cast<signed_double_width_result_type>(1));
                             return static_cast<result_type>(_offset + (m >> generatorBits));
                         } else {
                             __int128_t m = static_cast<__int128_t>(x)
-                                         * (static_cast<__int128_t>(_range)
-                                          + static_cast<__int128_t>(1));
+                                           * (static_cast<__int128_t>(_range)
+                                              + static_cast<__int128_t>(1));
                             return static_cast<result_type>(_offset + (m >> generatorBits));
                         }
-                    // The effective bitwidth of the output range of the PRNG is lower than the effective bitwidth of
-                    // the output range of this random distribution facility and therefore multiple random numbers
-                    // generated by the underlying PRNG are required to get enough entropy for a biased uniformly
-                    // distributed random integer in the output range:
+                        // The effective bitwidth of the output range of the PRNG is lower than the effective bitwidth of
+                        // the output range of this random distribution facility and therefore multiple random numbers
+                        // generated by the underlying PRNG are required to get enough entropy for a biased uniformly
+                        // distributed random integer in the output range:
                     } else {
-                        DBG1( << "205: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " > log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
+                        DBG1(<< "205: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " > log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
                         return _fallbackDistribution(uniformRandomNumberGenerator);
                     }
                 }
-            // The output range of the underlying PRNG is not known at compile-time or it is a PRNG generating floating
-            // point numbers:
+                // The output range of the underlying PRNG is not known at compile-time or it is a PRNG generating floating
+                // point numbers:
             } else {
                 unsigned_generator_type generatorRange;
                 if constexpr (std::is_integral<generator_type>::value) {
-                    generatorRange = gcem::abs(static_cast<unsigned_generator_type>(uniform_random_number_generator::max())
-                                             - static_cast<unsigned_generator_type>(uniform_random_number_generator::min()));
+                    generatorRange = gcem::abs(
+                            static_cast<unsigned_generator_type>(uniform_random_number_generator::max())
+                            - static_cast<unsigned_generator_type>(uniform_random_number_generator::min()));
                 } else {
 
-                    generatorRange = gcem::abs(static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<uniform_random_number_generator>::max())
-                                             - static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<uniform_random_number_generator>::min()));
+                    generatorRange = gcem::abs(
+                            static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<
+                                    uniform_random_number_generator>::max())
+                            - static_cast<unsigned_generator_type>(boost::random::detail::uniform_int_float<
+                                    uniform_random_number_generator>::min()));
                 }
-                uint16_t generatorBits = generatorRange == std::numeric_limits<unsigned_generator_type>::max() ? static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT)
-                                                                                                               : static_cast<uint16_t>(std::floor(std::log2(generatorRange + 1)));
+                uint16_t generatorBits = generatorRange == std::numeric_limits<unsigned_generator_type>::max()
+                                         ? static_cast<uint16_t>(sizeof(generator_type) * CHAR_BIT)
+                                         : static_cast<uint16_t>(std::floor(std::log2(generatorRange + 1)));
 
                 // The effective bitwidth of the output range of the PRNG is at least as high as the effective bitwidth
                 // of the output range of this random distribution facility:
                 if (_rangeBits <= generatorBits) {
-                    DBG1( << "223: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
+                    DBG1(<< "223: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " <= log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
                     unsigned_generator_type x;
                     if constexpr (std::is_integral<generator_type>::value) {
-                        x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator() - uniform_random_number_generator::min());
+                        x = static_cast<unsigned_generator_type>(uniformRandomNumberGenerator()
+                                                                 - uniform_random_number_generator::min());
                         if (generatorBits < generatorTypeBits) {
-                            unsigned_generator_type bitMask = gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
+                            unsigned_generator_type bitMask =
+                                    gcem::pow<unsigned_generator_type, unsigned_generator_type>(2, generatorBits) - 1;
                             x = x & bitMask;
                         }
                     } else {
-                        boost::random::detail::uniform_int_float<uniform_random_number_generator> floatToInt(uniformRandomNumberGenerator);
+                        boost::random::detail::uniform_int_float<uniform_random_number_generator> floatToInt(
+                                uniformRandomNumberGenerator);
 
                         x = static_cast<unsigned_generator_type>(floatToInt());
                     }
                     if constexpr (std::is_unsigned<result_type>::value && resultBits <= 32 && generatorTypeBits <= 32) {
                         unsigned_double_width_result_type m = static_cast<unsigned_double_width_result_type>(x)
-                                                            * (static_cast<unsigned_double_width_result_type>(_range)
-                                                             + static_cast<unsigned_double_width_result_type>(1));
+                                                              * (static_cast<unsigned_double_width_result_type>(_range)
+                                                                 + static_cast<unsigned_double_width_result_type>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else if (std::is_unsigned<result_type>::value) {
                         __uint128_t m = static_cast<__uint128_t>(x)
-                                      * (static_cast<__uint128_t>(_range)
-                                       + static_cast<__uint128_t>(1));
+                                        * (static_cast<__uint128_t>(_range)
+                                           + static_cast<__uint128_t>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else if (std::is_signed<result_type>::value && resultBits <= 32 && generatorTypeBits <= 32) {
                         signed_double_width_result_type m = static_cast<signed_double_width_result_type>(x)
-                                                          * (static_cast<signed_double_width_result_type>(_range)
-                                                           + static_cast<signed_double_width_result_type>(1));
+                                                            * (static_cast<signed_double_width_result_type>(_range)
+                                                               + static_cast<signed_double_width_result_type>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     } else {
                         __int128_t m = static_cast<__int128_t>(x)
-                                     * (static_cast<__int128_t>(_range)
-                                      + static_cast<__int128_t>(1));
+                                       * (static_cast<__int128_t>(_range)
+                                          + static_cast<__int128_t>(1));
                         return static_cast<result_type>(_offset + (m >> generatorBits));
                     }
-                // The effective bitwidth of the output range of the PRNG is lower than the effective bitwidth of the
-                // output range of this random distribution facility and therefore multiple random numbers generated by
-                // the underlying PRNG are required to get enough entropy for a biased uniformly distributed random
-                // integer in the output range:
+                    // The effective bitwidth of the output range of the PRNG is lower than the effective bitwidth of the
+                    // output range of this random distribution facility and therefore multiple random numbers generated by
+                    // the underlying PRNG are required to get enough entropy for a biased uniformly distributed random
+                    // integer in the output range:
                 } else {
-                    DBG1( << "258: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " > log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
+                    DBG1(<< "258: " << typeid(uniformRandomNumberGenerator).name() << " (" << static_cast<uint32_t>(_rangeBits) << " > log2(" << static_cast<uint64_t>(generatorRange) << ") = " << static_cast<uint32_t>(generatorBits) << ")");
                     return _fallbackDistribution(uniformRandomNumberGenerator);
                 }
             }
@@ -497,7 +508,8 @@ namespace zero::uniform_int_distribution {
          */
         template<class CharT, class Traits, class result_type>
         friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& outputStream,
-                                                             const biased_uniform_int_distribution<result_type>& distribution) {
+                                                             const biased_uniform_int_distribution<
+                                                                     result_type>& distribution) {
             outputStream << distribution._parameters._a << "<" << distribution._parameters._b << std::endl;
 
             return outputStream;
@@ -521,7 +533,8 @@ namespace zero::uniform_int_distribution {
          */
         template<class CharT, class Traits, class result_type>
         friend std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>& inputStream,
-                                                             const biased_uniform_int_distribution<result_type>& distribution) {
+                                                             const biased_uniform_int_distribution<
+                                                                     result_type>& distribution) {
             result_type lowerBound;
             char separator;
             result_type upperBound;
@@ -569,9 +582,7 @@ namespace zero::uniform_int_distribution {
          *          multiple random numbers using the underlying PRNG.
          */
         boost::random::uniform_int_distribution<int_type> _fallbackDistribution;
-
     };
-
 } // zero::uniform_int_distribution
 
 #endif // __UNIFORM_INT_DISTRIBUTION_HPP

@@ -7,8 +7,7 @@
 #include "logdef_gen.h"
 #include "log_core.h"
 
-class XctLogger
-{
+class XctLogger {
 public:
 
     /*
@@ -17,15 +16,16 @@ public:
      * way in which PageLSNs are managed in Zero (see xct_t::give_logbuf).
      */
     // CS TODO we need a new page-lsn update mechanism!
-    template <class Logrec, class... Args>
-    static lsn_t log(const Args&... args)
-    {
+    template<class Logrec, class... Args>
+    static lsn_t log(const Args& ... args) {
         xct_t* xd = smthread_t::xct();
         bool should_log = smlevel_0::log && smlevel_0::logging_enabled && xd;
-        if (!should_log)  { return lsn_t::null; }
+        if (!should_log) {
+            return lsn_t::null;
+        }
 
         logrec_t* logrec = _get_logbuf(xd);
-        new (logrec) Logrec;
+        new(logrec) Logrec;
         logrec->init_header(Logrec::TYPE);
         logrec->init_xct_info();
         reinterpret_cast<Logrec*>(logrec)->construct(args...);
@@ -39,7 +39,7 @@ public:
         if (xd->is_piggy_backed_single_log_sys_xct()) {
             w_assert1(logrec->is_single_sys_xct());
             lsn_t lsn;
-            W_COERCE( ss_m::log->insert(*logrec, &lsn) );
+            W_COERCE(ss_m::log->insert(*logrec, &lsn));
             w_assert1(lsn != lsn_t::null);
             DBGOUT3(<< " SSX logged: " << logrec->type() << "\n new_lsn= " << lsn);
             return lsn;
@@ -53,16 +53,17 @@ public:
         return lsn;
     }
 
-    template <class Logrec, class PagePtr, class... Args>
-    static lsn_t log_p(PagePtr p, const Args&... args)
-    {
+    template<class Logrec, class PagePtr, class... Args>
+    static lsn_t log_p(PagePtr p, const Args& ... args) {
         xct_t* xd = smthread_t::xct();
         bool should_log = smlevel_0::log && smlevel_0::logging_enabled && xd;
-        if (!should_log)  { return lsn_t::null; }
+        if (!should_log) {
+            return lsn_t::null;
+        }
 
         if (_should_apply_img_compression(Logrec::TYPE, p)) {
             // log this page image as an SX to keep it out of the xct undo chain
-            sys_xct_section_t sx {false};
+            sys_xct_section_t sx{false};
             log_p<page_img_format_log>(p);
             sx.end_sys_xct(RCOK);
 
@@ -75,7 +76,7 @@ public:
 
         logrec_t* logrec = _get_logbuf(xd);
 
-        new (logrec) Logrec;
+        new(logrec) Logrec;
         logrec->init_header(Logrec::TYPE);
         logrec->init_xct_info();
         logrec->init_page_info(p);
@@ -94,13 +95,12 @@ public:
         if (xd->is_piggy_backed_single_log_sys_xct()) {
             w_assert1(logrec->is_single_sys_xct());
             lsn_t lsn;
-            W_COERCE( ss_m::log->insert(*logrec, &lsn) );
+            W_COERCE(ss_m::log->insert(*logrec, &lsn));
             w_assert1(lsn != lsn_t::null);
             _update_page_lsns(p, lsn, logrec->length());
             DBGOUT3(<< " SSX logged: " << logrec->type() << "\n new_lsn= " << lsn);
             return lsn;
         }
-
 
         lsn_t lsn;
         logrec->set_xid_prev(xd->tid(), xd->last_lsn());
@@ -111,15 +111,16 @@ public:
         return lsn;
     }
 
-    template <class Logrec, class PagePtr, class... Args>
-    static lsn_t log_p(PagePtr p, PagePtr p2, const Args&... args)
-    {
+    template<class Logrec, class PagePtr, class... Args>
+    static lsn_t log_p(PagePtr p, PagePtr p2, const Args& ... args) {
         xct_t* xd = smthread_t::xct();
         bool should_log = smlevel_0::log && smlevel_0::logging_enabled && xd;
-        if (!should_log)  { return lsn_t::null; }
+        if (!should_log) {
+            return lsn_t::null;
+        }
 
         logrec_t* logrec = _get_logbuf(xd);
-        new (logrec) Logrec;
+        new(logrec) Logrec;
         logrec->init_header(Logrec::TYPE);
         logrec->init_xct_info();
         logrec->init_page_info(p);
@@ -138,7 +139,7 @@ public:
         // For multi-page log, also set LSN chain with a branch.
         w_assert1(logrec->is_multi_page());
         w_assert1(logrec->is_single_sys_xct());
-        multi_page_log_t *multi = logrec->data_ssx_multi();
+        multi_page_log_t* multi = logrec->data_ssx_multi();
         w_assert1(multi->_page2_pid != 0);
         multi->_page2_prv = p2->get_page_lsn();
 
@@ -147,14 +148,13 @@ public:
         if (xd->is_piggy_backed_single_log_sys_xct()) {
             w_assert1(logrec->is_single_sys_xct());
             lsn_t lsn;
-            W_COERCE( ss_m::log->insert(*logrec, &lsn) );
+            W_COERCE(ss_m::log->insert(*logrec, &lsn));
             w_assert1(lsn != lsn_t::null);
             _update_page_lsns(p, lsn, logrec->length());
             _update_page_lsns(p2, lsn, logrec->length());
             DBGOUT3(<< " SSX logged: " << logrec->type() << "\n new_lsn= " << lsn);
             return lsn;
         }
-
 
         lsn_t lsn;
         logrec->set_xid_prev(xd->tid(), xd->last_lsn());
@@ -173,14 +173,13 @@ public:
      * The difference to the other logging methods is that no xct or page
      * is involved and the logrec buffer is obtained with the 'new' operator.
      */
-    template <class Logrec, class... Args>
-    static lsn_t log_sys(const Args&... args)
-    {
+    template<class Logrec, class... Args>
+    static lsn_t log_sys(const Args& ... args) {
         // this should use TLS allocator, so it's fast
         // (see macro DEFINE_SM_ALLOC in allocator.h and logrec.cpp)
         logrec_t* logrec = new logrec_t;
 
-        new (logrec) Logrec;
+        new(logrec) Logrec;
         logrec->init_header(Logrec::TYPE);
         logrec->init_xct_info();
         reinterpret_cast<Logrec*>(logrec)->construct(args...);
@@ -194,20 +193,22 @@ public:
         return lsn;
     }
 
-    template <class PagePtr>
-    static void _update_page_lsns(PagePtr page, lsn_t new_lsn, uint32_t size)
-    {
+    template<class PagePtr>
+    static void _update_page_lsns(PagePtr page, lsn_t new_lsn, uint32_t size) {
         page->update_page_lsn(new_lsn);
         page->increment_log_volume(size);
     }
 
-    template <class PagePtr>
-    static bool _should_apply_img_compression(logrec_t::kind_t type, PagePtr page)
-    {
-        if (type == logrec_t::t_page_img_format) { return false; }
+    template<class PagePtr>
+    static bool _should_apply_img_compression(logrec_t::kind_t type, PagePtr page) {
+        if (type == logrec_t::t_page_img_format) {
+            return false;
+        }
 
         auto comp = ss_m::log->get_page_img_compression();
-        if (comp == 0) { return false; }
+        if (comp == 0) {
+            return false;
+        }
         auto vol = page->get_log_volume();
         if (vol >= comp) {
             page->reset_log_volume();
@@ -216,8 +217,7 @@ public:
         return false;
     }
 
-    static logrec_t* _get_logbuf(xct_t* xd)
-    {
+    static logrec_t* _get_logbuf(xct_t* xd) {
         if (xd->is_piggy_backed_single_log_sys_xct()) {
             return smthread_t::get_logbuf2();
         }

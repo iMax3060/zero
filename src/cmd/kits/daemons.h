@@ -39,7 +39,6 @@
 
 class ShoreEnv;
 
-
 /******************************************************************
  *
  *  @class: db_init_smt_t
@@ -49,19 +48,21 @@ class ShoreEnv;
  *
  ******************************************************************/
 
-class db_init_smt_t : public thread_t
-{
+class db_init_smt_t : public thread_t {
 private:
     ShoreEnv* _env;
-    int       _rv;
+
+    int _rv;
 
 public:
 
     db_init_smt_t(std::string tname, ShoreEnv* db);
-    ~db_init_smt_t();
-    void work();
-    int rv();
 
+    ~db_init_smt_t();
+
+    void work();
+
+    int rv();
 }; // EOF: db_init_smt_t
 
 
@@ -84,15 +85,17 @@ public:
  ******************************************************************/
 
 
-class checkpointer_t : public thread_t
-{
+class checkpointer_t : public thread_t {
 private:
     ShoreEnv* _env;
+
     bool _active;
+
 public:
     checkpointer_t(ShoreEnv* env)
-        : thread_t("checkpointer"), _env(env), _active(true)
-    { }
+            : thread_t("checkpointer"),
+              _env(env),
+              _active(true) {}
 
     void set_active(bool active) {
         _active = active;
@@ -100,7 +103,6 @@ public:
 
     void work();
 };
-
 
 /******************************************************************
  *
@@ -113,14 +115,14 @@ public:
  ******************************************************************/
 
 
-class crasher_t : public thread_t
-{
+class crasher_t : public thread_t {
 private:
     int _timeout;
+
 public:
     crasher_t(int t)
-        : thread_t("crasher"), _timeout(t)
-    { }
+            : thread_t("crasher"),
+              _timeout(t) {}
 
     void work();
 };
@@ -134,37 +136,47 @@ public:
  *
  ******************************************************************/
 
-class table_loading_smt_t : public thread_t
-{
+class table_loading_smt_t : public thread_t {
 protected:
 
-    ss_m*         _pssm;
+    ss_m* _pssm;
+
     table_desc_t* _ptable;
-    const int     _sf;
-    const char*   _datadir;
-    int           _rv;
+
+    const int _sf;
+
+    const char* _datadir;
+
+    int _rv;
 
 public:
 
     table_loading_smt_t(std::string tname, ss_m* assm,
                         table_desc_t* atable,
                         const int asf, const char* adatadir)
-	: thread_t(tname), _pssm(assm), _ptable(atable),
-          _sf(asf), _datadir(adatadir)
-    {
+            : thread_t(tname),
+              _pssm(assm),
+              _ptable(atable),
+              _sf(asf),
+              _datadir(adatadir) {
         assert (_pssm);
         assert (_ptable);
         assert (_sf);
         assert (_datadir);
     }
 
-    virtual ~table_loading_smt_t() { }
+    virtual ~table_loading_smt_t() {}
 
     // thread entrance
-    virtual void work()=0;
-    inline int rv() { return (_rv); }
-    inline table_desc_t* table() { return (_ptable); }
+    virtual void work() = 0;
 
+    inline int rv() {
+        return (_rv);
+    }
+
+    inline table_desc_t* table() {
+        return (_ptable);
+    }
 }; // EOF: table_loading_smt_t
 
 
@@ -211,7 +223,7 @@ public:
 
     index_loading_smt_t(std::string tname, ss_m* assm, table_manager* aptable_manager,
                         index_desc_t* apindex, table_tuple* aptuple)
-	: thread_t(tname), _pssm(assm), _pmanager(aptable_manager),
+    : thread_t(tname), _pssm(assm), _pmanager(aptable_manager),
           _pindex(apindex), _t_count(0), _ptuple(aptuple),
           _has_to_consume(false), _start(false), _finish(false)
     {
@@ -222,8 +234,7 @@ public:
     }
 
     ~index_loading_smt_t()
-    {
-    }
+    {}
 
     inline int rv() { return (_rv); }
 
@@ -366,7 +377,7 @@ public:
 
     table_checking_smt_t(std::string tname, ss_m* pssm,
                         table_desc_t* atable)
-	: thread_t(tname), _pssm(pssm), _ptable(atable)
+    : thread_t(tname), _pssm(pssm), _ptable(atable)
     {
         assert (_pssm);
         assert (_ptable);
@@ -391,7 +402,7 @@ public:
     table_checking_smt_impl(std::string tname, ss_m* pssm,
                             table_man_t<TableDesc>* amanager,
                             TableDesc* atable)
-	: table_checking_smt_t(tname, pssm, atable), _pmanager(amanager)
+    : table_checking_smt_t(tname, pssm, atable), _pmanager(amanager)
     {
         assert (_pmanager);
     }
@@ -433,13 +444,11 @@ public:
     int	_rv;
 
     close_smt_t(ShoreEnv* env, std::string tname)
-	: thread_t(tname),
+    : thread_t(tname),
           _env(env), _rv(0)
-    {
-    }
+    {}
 
-    ~close_smt_t() {
-    }
+    ~close_smt_t() {}
 
     void work();
 
@@ -470,13 +479,11 @@ public:
     int	_rv;
 
     dump_smt_t(ShoreEnv* env, std::string tname)
-	: thread_t(tname),
+    : thread_t(tname),
           _env(env), _rv(0)
-    {
-    }
+    {}
 
-    ~dump_smt_t() {
-    }
+    ~dump_smt_t() {}
 
     void work();
 
@@ -489,7 +496,6 @@ public:
 
 #endif
 
-
 /******************************************************************
  *
  *  @class: abort_smt_t
@@ -499,20 +505,21 @@ public:
  *
  ******************************************************************/
 
-class abort_smt_t : public thread_t
-{
+class abort_smt_t : public thread_t {
 private:
     ShoreEnv* _env;
 
 public:
 
     vector<xct_t*>* _toabort;
+
     uint _aborted;
 
     abort_smt_t(std::string tname, ShoreEnv* env, vector<xct_t*>& toabort);
-    ~abort_smt_t();
-    void work();
 
+    ~abort_smt_t();
+
+    void work();
 }; // EOF: abort_smt_t
 
 #endif // __DAEMONS_H

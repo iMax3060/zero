@@ -17,27 +17,29 @@
 #include "restart.h"
 #include "buffer_pool.hpp"
 
-class RunRecycler : public worker_thread_t
-{
+class RunRecycler : public worker_thread_t {
 public:
     RunRecycler(unsigned replFactor, ArchiveIndex* archIndex)
-            : archIndex(archIndex), replFactor(replFactor)
-    {}
+            : archIndex(archIndex),
+              replFactor(replFactor) {}
 
-    virtual void do_work()
-    {
+    virtual void do_work() {
         archIndex->deleteRuns(replFactor);
     }
 
     ArchiveIndex* archIndex;
+
     const unsigned replFactor;
 };
 
 // definition of static members
 const string ArchiveIndex::RUN_PREFIX = "archive_";
+
 const string ArchiveIndex::CURR_RUN_PREFIX = "current_run_";
+
 const string ArchiveIndex::run_regex =
         "^archive_([1-9][0-9]*)_([1-9][0-9]*\\.[0-9]+)-([1-9][0-9]*\\.[0-9]+)$";
+
 const string ArchiveIndex::current_regex = "^current_run_[1-9][0-9]*$";
 
 // CS TODO: Aligning with the Linux standard FS block size
@@ -56,11 +58,12 @@ skip_log SKIP_LOGREC;
         W_FATAL_MSG(fcOS, << "Kernel errno code: " << errno); \
     }
 
-bool ArchiveIndex::parseRunFileName(string fname, RunId& fstats)
-{
+bool ArchiveIndex::parseRunFileName(string fname, RunId& fstats) {
     std::regex run_rx(run_regex);
     std::smatch res;
-    if (!std::regex_match(fname, res, run_rx)) { return false; }
+    if (!std::regex_match(fname, res, run_rx)) {
+        return false;
+    }
 
     fstats.level = std::stoi(res[1]);
 
@@ -74,16 +77,14 @@ bool ArchiveIndex::parseRunFileName(string fname, RunId& fstats)
     return true;
 }
 
-size_t ArchiveIndex::getFileSize(int fd)
-{
+size_t ArchiveIndex::getFileSize(int fd) {
     struct stat stat;
     auto ret = ::fstat(fd, &stat);
     CHECK_ERRNO(ret);
     return stat.st_size;
 }
 
-ArchiveIndex::ArchiveIndex(const sm_options& options)
-{
+ArchiveIndex::ArchiveIndex(const sm_options& options) {
     archdir = options.get_string_option("sm_archdir", "archive");
     // CS TODO: archiver currently only works with 1MB blocks
     blockSize = DFT_BLOCK_SIZE;
@@ -104,7 +105,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
         if (reformat) {
             fs::create_directories(archdir);
         } else {
-            cerr << "Error: could not open the log directory " << archdir <<endl;
+            cerr << "Error: could not open the log directory " << archdir << endl;
             W_COERCE(RC(eOS));
         }
     }
@@ -131,15 +132,15 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
             loadRunInfo(runFile, fstats);
             closeScan(fstats);
 
-            if (fstats.level > maxLevel) { maxLevel = fstats.level; }
+            if (fstats.level > maxLevel) {
+                maxLevel = fstats.level;
+            }
 
             runsFound++;
-        }
-        else if (std::regex_match(fname, current_rx)) {
+        } else if (std::regex_match(fname, current_rx)) {
             DBGTHRD(<< "Found unfinished log archive run. Deleting");
             fs::remove(fpath);
-        }
-        else {
+        } else {
             cerr << "ArchiveIndex cannot parse filename " << fname << endl;
             W_FATAL(fcINTERNAL);
         }
@@ -163,7 +164,7 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
                 auto startLSN = lsn_t(nextPartition, 0);
                 openNewRun(1);
                 closeCurrentRun(startLSN, 1);
-                RunId fstats = {lsn_t(1,0), startLSN, 1};
+                RunId fstats = {lsn_t(1, 0), startLSN, 1};
                 auto runFile = openForScan(fstats);
                 loadRunInfo(runFile, fstats);
                 closeScan(fstats);
@@ -182,13 +183,13 @@ ArchiveIndex::ArchiveIndex(const sm_options& options)
     }
 }
 
-ArchiveIndex::~ArchiveIndex()
-{
-    if (runRecycler) { runRecycler->stop(); }
+ArchiveIndex::~ArchiveIndex() {
+    if (runRecycler) {
+        runRecycler->stop();
+    }
 }
 
-void ArchiveIndex::listFiles(std::vector<std::string>& list, int level)
-{
+void ArchiveIndex::listFiles(std::vector<std::string>& list, int level) {
     list.clear();
 
     // CS TODO unify with listFileStats
@@ -204,10 +205,11 @@ void ArchiveIndex::listFiles(std::vector<std::string>& list, int level)
     }
 }
 
-void ArchiveIndex::listFileStats(list<RunId>& list, int level)
-{
+void ArchiveIndex::listFileStats(list<RunId>& list, int level) {
     list.clear();
-    if (level > static_cast<int>(getMaxLevel())) { return; }
+    if (level > static_cast<int>(getMaxLevel())) {
+        return;
+    }
 
     vector<string> fnames;
     listFiles(fnames, level);
@@ -230,21 +232,19 @@ void ArchiveIndex::listFileStats(list<RunId>& list, int level)
  * We assume the rename operation is atomic, even in case of OS crashes.
  *
  */
-rc_t ArchiveIndex::openNewRun(unsigned level)
-{
+rc_t ArchiveIndex::openNewRun(unsigned level) {
     int flags = O_WRONLY | O_CREAT;
     std::string fname = make_current_run_path(level).string();
     auto fd = ::open(fname.c_str(), flags, 0744 /*mode*/);
     CHECK_ERRNO(fd);
     DBGTHRD(<< "Opened new output run in level " << level);
 
-
     {
         spinlock_write_critical_section cs(&_mutex);
 
-        appendFd.resize(level+1, -1);
+        appendFd.resize(level + 1, -1);
         appendFd[level] = fd;
-        appendPos.resize(level+1, 0);
+        appendPos.resize(level + 1, 0);
         appendPos[level] = 0;
     }
 
@@ -252,26 +252,22 @@ rc_t ArchiveIndex::openNewRun(unsigned level)
 }
 
 fs::path ArchiveIndex::make_run_path(lsn_t begin, lsn_t end, unsigned level)
-const
-{
+const {
     return archpath / fs::path(RUN_PREFIX + std::to_string(level) + "_" + begin.str()
                                + "-" + end.str());
 }
 
-fs::path ArchiveIndex::make_current_run_path(unsigned level) const
-{
+fs::path ArchiveIndex::make_current_run_path(unsigned level) const {
     return archpath / fs::path(CURR_RUN_PREFIX + std::to_string(level));
 }
 
-rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPID)
-{
+rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPID) {
     lsn_t lastLSN = getLastLSN(level);
     if (lastLSN.is_null()) {
         if (level == 1) {
             // run being created by archiver -- must be the last LSNof all levels
             lastLSN = getLastLSN();
-        }
-        else {
+        } else {
             // run being created by merge -- previous-level runs must exist
             W_FATAL_MSG(fcINTERNAL, << "Invalid archiver state, closing run "
                     << runEndLSN << " on level " << level);
@@ -289,7 +285,7 @@ rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPI
                     // different --indir and --outdir options are used in the zapps
                     // MergeRuns command), roundToEndLSN will fail because there might
                     // be no lower level.
-                    runEndLSN = roundToEndLSN(runEndLSN, level-1);
+                    runEndLSN = roundToEndLSN(runEndLSN, level - 1);
                     w_assert1(!runEndLSN.is_null());
                 }
                 // register index information and write it on end of file
@@ -339,8 +335,7 @@ rc_t ArchiveIndex::closeCurrentRun(lsn_t runEndLSN, unsigned level, PageID maxPI
     return RCOK;
 }
 
-rc_t ArchiveIndex::append(char* data, size_t length, unsigned level)
-{
+rc_t ArchiveIndex::append(char* data, size_t length, unsigned level) {
     // make sure there is always a skip log record at the end
     w_assert1(length + SKIP_LOGREC.length() <= blockSize);
     memcpy(data + length, &SKIP_LOGREC, SKIP_LOGREC.length());
@@ -356,8 +351,7 @@ rc_t ArchiveIndex::append(char* data, size_t length, unsigned level)
     return RCOK;
 }
 
-RunFile* ArchiveIndex::openForScan(const RunId& runid)
-{
+RunFile* ArchiveIndex::openForScan(const RunId& runid) {
     spinlock_write_critical_section cs(&_open_file_mutex);
 
     auto& file = _open_files[runid];
@@ -365,14 +359,16 @@ RunFile* ArchiveIndex::openForScan(const RunId& runid)
     if (file.refcount == 0) {
         fs::path fpath = make_run_path(runid.beginLSN, runid.endLSN, runid.level);
         int flags = O_RDONLY;
-        if (directIO) { flags |= O_DIRECT; }
+        if (directIO) {
+            flags |= O_DIRECT;
+        }
         file.fd = ::open(fpath.string().c_str(), flags, 0744 /*mode*/);
         CHECK_ERRNO(file.fd);
         file.length = ArchiveIndex::getFileSize(file.fd);
 #ifdef USE_MMAP
         if (file.length > 0) {
-            file.data = (char*) mmap(nullptr, file.length, PROT_READ, MAP_SHARED, file.fd, 0);
-            CHECK_ERRNO((long) file.data);
+            file.data = (char*)mmap(nullptr, file.length, PROT_READ, MAP_SHARED, file.fd, 0);
+            CHECK_ERRNO((long)file.data);
         }
 #endif
         file.refcount = 0;
@@ -390,11 +386,12 @@ RunFile* ArchiveIndex::openForScan(const RunId& runid)
  * otherwise direct I/O with alignment will corrupt memory.
  */
 rc_t ArchiveIndex::readBlock(int fd, char* buf,
-                             size_t& offset, size_t readSize)
-{
+                             size_t& offset, size_t readSize) {
     stopwatch_t timer;
 
-    if (readSize == 0) { readSize = blockSize; }
+    if (readSize == 0) {
+        readSize = blockSize;
+    }
     size_t actualOffset = IO_ALIGN * (offset / IO_ALIGN);
     size_t diff = offset - actualOffset;
     w_assert1(actualOffset <= offset);
@@ -425,8 +422,7 @@ rc_t ArchiveIndex::readBlock(int fd, char* buf,
     return RCOK;
 }
 
-void ArchiveIndex::closeScan(const RunId& runid)
-{
+void ArchiveIndex::closeScan(const RunId& runid) {
     spinlock_write_critical_section cs(&_open_file_mutex);
 
     auto it = _open_files.find(runid);
@@ -448,8 +444,7 @@ void ArchiveIndex::closeScan(const RunId& runid)
     }
 }
 
-void ArchiveIndex::deleteRuns(unsigned replicationFactor)
-{
+void ArchiveIndex::deleteRuns(unsigned replicationFactor) {
     /*
      * CS TODO: deleting runs is not as trivial as I initially thought.
      * Here are some issues to be aware of:
@@ -504,8 +499,7 @@ void ArchiveIndex::deleteRuns(unsigned replicationFactor)
                 // delete all runs within the LSN range of the higher-level run
                 for (int l = lastFinished[levelToClean]; l >= 0; l--) {
                     auto& low = runs[levelToClean][l];
-                    if (low.firstLSN >= high.firstLSN && low.lastLSN <= high.lastLSN)
-                    {
+                    if (low.firstLSN >= high.firstLSN && low.lastLSN <= high.lastLSN) {
                         auto path = make_run_path(low.firstLSN,
                                                   low.lastLSN, levelToClean);
                         fs::remove(path);
@@ -517,14 +511,12 @@ void ArchiveIndex::deleteRuns(unsigned replicationFactor)
     }
 }
 
-size_t ArchiveIndex::getSkipLogrecSize() const
-{
+size_t ArchiveIndex::getSkipLogrecSize() const {
     return SKIP_LOGREC.length();
 }
 
-void ArchiveIndex::newBlock(const vector<pair<PageID, size_t> >&
-buckets, unsigned level)
-{
+void ArchiveIndex::newBlock(const vector<pair<PageID, size_t>>&
+buckets, unsigned level) {
     spinlock_write_critical_section cs(&_mutex);
 
     w_assert1(bucketSize > 0);
@@ -541,8 +533,7 @@ buckets, unsigned level)
 }
 
 rc_t ArchiveIndex::finishRun(lsn_t first, lsn_t last, PageID maxPID, int fd,
-                             off_t offset, unsigned level)
-{
+                             off_t offset, unsigned level) {
     int lf;
     {
         spinlock_write_critical_section cs(&_mutex);
@@ -554,26 +545,27 @@ rc_t ArchiveIndex::finishRun(lsn_t first, lsn_t last, PageID maxPID, int fd,
         w_assert1(offset % blockSize == 0);
 
         lf = lastFinished[level] + 1;
-        w_assert1(lf == 0 || first == runs[level][lf-1].lastLSN);
-        w_assert1(lf < (int) runs[level].size());
+        w_assert1(lf == 0 || first == runs[level][lf - 1].lastLSN);
+        w_assert1(lf < (int)runs[level].size());
 
         runs[level][lf].firstLSN = first;
         runs[level][lf].lastLSN = last;
         runs[level][lf].maxPID = maxPID;
     }
 
-    if (offset > 0 && lf < (int) runs[level].size()) {
+    if (offset > 0 && lf < (int)runs[level].size()) {
         W_DO(serializeRunInfo(runs[level][lf], fd, offset));
     }
 
-    if (level > 1 && runRecycler) { runRecycler->wakeup(); }
+    if (level > 1 && runRecycler) {
+        runRecycler->wakeup();
+    }
 
     return RCOK;
 }
 
 rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
-                                    off_t offset)
-{
+                                    off_t offset) {
     spinlock_read_critical_section cs(&_mutex);
 
     int entriesPerBlock =
@@ -583,7 +575,7 @@ rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
     size_t currEntry = 0;
 
     // CS TODO RAII
-    char * writeBuffer = new char[blockSize];
+    char* writeBuffer = new char[blockSize];
 
     while (remaining > 0) {
         int j = 0;
@@ -595,8 +587,7 @@ rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
         memcpy(writeBuffer + bpos, &run.maxPID, sizeof(PageID));
         bpos += sizeof(PageID);
 
-        while (j < entriesPerBlock && remaining > 0)
-        {
+        while (j < entriesPerBlock && remaining > 0) {
             memcpy(writeBuffer + bpos, &run.entries[currEntry],
                    sizeof(BlockEntry));
             j++;
@@ -604,10 +595,9 @@ rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
             remaining--;
             bpos += sizeof(BlockEntry);
         }
-        BlockHeader* h = (BlockHeader*) writeBuffer;
+        BlockHeader* h = (BlockHeader*)writeBuffer;
         h->entries = j;
         h->blockNumber = i;
-
 
         auto ret = ::pwrite(fd, writeBuffer, blockSize, offset);
         CHECK_ERRNO(ret);
@@ -620,28 +610,25 @@ rc_t ArchiveIndex::serializeRunInfo(RunInfo& run, int fd,
     return RCOK;
 }
 
-void ArchiveIndex::appendNewRun(unsigned level)
-{
+void ArchiveIndex::appendNewRun(unsigned level) {
     RunInfo newRun;
     if (level > maxLevel) {
         maxLevel = level;
-        runs.resize(maxLevel+1);
-        lastFinished.resize(maxLevel+1, -1);
+        runs.resize(maxLevel + 1);
+        lastFinished.resize(maxLevel + 1, -1);
     }
     runs[level].push_back(newRun);
 }
 
-void ArchiveIndex::startNewRun(unsigned level)
-{
+void ArchiveIndex::startNewRun(unsigned level) {
     spinlock_write_critical_section cs(&_mutex);
     appendNewRun(level);
 }
 
-lsn_t ArchiveIndex::getLastLSN()
-{
+lsn_t ArchiveIndex::getLastLSN() {
     spinlock_read_critical_section cs(&_mutex);
 
-    lsn_t last = lsn_t(1,0);
+    lsn_t last = lsn_t(1, 0);
 
     for (unsigned l = 1; l <= maxLevel; l++) {
         if (lastFinished[l] >= 0) {
@@ -655,35 +642,38 @@ lsn_t ArchiveIndex::getLastLSN()
     return last;
 }
 
-lsn_t ArchiveIndex::getLastLSN(unsigned level)
-{
+lsn_t ArchiveIndex::getLastLSN(unsigned level) {
     spinlock_read_critical_section cs(&_mutex);
 
     if (level > maxLevel) {
-        return lsn_t(1,0);
+        return lsn_t(1, 0);
     }
 
     if (lastFinished[level] < 0) {
         // No runs exist in the given level. If a previous level exists, it
         // must be the first LSN in that level; otherwise, it's simply 1.0
-        if (level == 0) { return lsn_t::null; }
+        if (level == 0) {
+            return lsn_t::null;
+        }
         return getFirstLSN(level - 1);
     }
 
     return runs[level][lastFinished[level]].lastLSN;
 }
 
-lsn_t ArchiveIndex::getFirstLSN(unsigned level)
-{
-    if (level == 0) { return lsn_t::null; }
+lsn_t ArchiveIndex::getFirstLSN(unsigned level) {
+    if (level == 0) {
+        return lsn_t::null;
+    }
     // If no runs exist at this level, recurse down to previous level;
-    if (lastFinished[level] < 0) { return getFirstLSN(level-1); }
+    if (lastFinished[level] < 0) {
+        return getFirstLSN(level - 1);
+    }
 
     return runs[level][0].firstLSN;
 }
 
-void ArchiveIndex::loadRunInfo(RunFile* runFile, const RunId& fstats)
-{
+void ArchiveIndex::loadRunInfo(RunFile* runFile, const RunId& fstats) {
     RunInfo run;
     {
 #ifndef USE_MMAP
@@ -708,16 +698,15 @@ void ArchiveIndex::loadRunInfo(RunFile* runFile, const RunId& fstats)
             char* readBuffer = runFile->getOffset(offset);
 #endif
 
-            BlockHeader* h = (BlockHeader*) readBuffer;
+            BlockHeader* h = (BlockHeader*)readBuffer;
 
             unsigned j = 0;
             size_t bpos = sizeof(BlockHeader);
 
-            run.maxPID = *((PageID*) (readBuffer + bpos));
+            run.maxPID = *((PageID*)(readBuffer + bpos));
             bpos += sizeof(PageID);
 
-            while(j < h->entries)
-            {
+            while (j < h->entries) {
                 BlockEntry* e = (BlockEntry*)(readBuffer + bpos);
                 w_assert1(lastOffset == 0 || e->offset > lastOffset);
                 run.entries.push_back(*e);
@@ -741,20 +730,23 @@ void ArchiveIndex::loadRunInfo(RunFile* runFile, const RunId& fstats)
     if (fstats.level > maxLevel) {
         maxLevel = fstats.level;
         // level 0 reserved, so add 1
-        runs.resize(maxLevel+1);
-        lastFinished.resize(maxLevel+1, -1);
+        runs.resize(maxLevel + 1);
+        lastFinished.resize(maxLevel + 1, -1);
     }
     runs[fstats.level].push_back(run);
     lastFinished[fstats.level] = runs[fstats.level].size() - 1;
 }
 
 void ArchiveIndex::getBlockCounts(RunFile* runFile, size_t* indexBlocks,
-                                  size_t* dataBlocks)
-{
+                                  size_t* dataBlocks) {
     // skip emtpy runs
     if (runFile->length == 0) {
-        if(indexBlocks) { *indexBlocks = 0; };
-        if(dataBlocks) { *dataBlocks = 0; };
+        if (indexBlocks) {
+            *indexBlocks = 0;
+        };
+        if (dataBlocks) {
+            *dataBlocks = 0;
+        };
         return;
     }
 
@@ -771,7 +763,7 @@ void ArchiveIndex::getBlockCounts(RunFile* runFile, size_t* indexBlocks,
 
     BlockHeader* header = (BlockHeader*) buffer;
 #else
-    BlockHeader* header = (BlockHeader*) runFile->getOffset(runFile->length - blockSize);
+    BlockHeader* header = (BlockHeader*)runFile->getOffset(runFile->length - blockSize);
 #endif
 
     if (indexBlocks) {
@@ -786,8 +778,7 @@ void ArchiveIndex::getBlockCounts(RunFile* runFile, size_t* indexBlocks,
 #endif
 }
 
-size_t ArchiveIndex::findRun(lsn_t lsn, unsigned level)
-{
+size_t ArchiveIndex::findRun(lsn_t lsn, unsigned level) {
     // Assumption: mutex is held by caller
     if (lsn == lsn_t::null) {
         // full log replay (backup-less)
@@ -801,9 +792,11 @@ size_t ArchiveIndex::findRun(lsn_t lsn, unsigned level)
     auto& lf = lastFinished[level];
 
     // No runs at this level
-    if (lf < 0) { return 0; }
+    if (lf < 0) {
+        return 0;
+    }
 
-    if(lsn >= runs[level][lf].lastLSN) {
+    if (lsn >= runs[level][lf].lastLSN) {
         return lf + 1;
     }
 
@@ -822,8 +815,7 @@ size_t ArchiveIndex::findRun(lsn_t lsn, unsigned level)
 }
 
 size_t ArchiveIndex::findEntry(RunInfo* run,
-                               PageID pid, int from, int to)
-{
+                               PageID pid, int from, int to) {
     // Assumption: mutex is held by caller
 
     if (from > to) {
@@ -838,8 +830,12 @@ size_t ArchiveIndex::findEntry(RunInfo* run,
     }
 
     // negative value indicates first invocation
-    if (to < 0) { to = run->entries.size() - 1; }
-    if (from < 0) { from = 0; }
+    if (to < 0) {
+        to = run->entries.size() - 1;
+    }
+    if (from < 0) {
+        from = 0;
+    }
 
     w_assert1(run);
     w_assert1(run->entries.size() > 0);
@@ -848,9 +844,8 @@ size_t ArchiveIndex::findEntry(RunInfo* run,
     size_t i;
     if (from == to) {
         i = from;
-    }
-    else {
-        i = from/2 + to/2;
+    } else {
+        i = from / 2 + to / 2;
     }
 
     w_assert0(i < run->entries.size());
@@ -874,27 +869,24 @@ size_t ArchiveIndex::findEntry(RunInfo* run,
     // }
 
     if (run->entries[i].pid <= pid &&
-        (i == run->entries.size() - 1 || run->entries[i+1].pid > pid))
-    {
+        (i == run->entries.size() - 1 || run->entries[i + 1].pid > pid)) {
         // found it! -- previous cannot contain the same pid in bucket organization
         return i;
     }
 
     // not found: recurse down
     if (run->entries[i].pid > pid) {
-        return findEntry(run, pid, from, i-1);
-    }
-    else {
-        return findEntry(run, pid, i+1, to);
+        return findEntry(run, pid, from, i - 1);
+    } else {
+        return findEntry(run, pid, i + 1, to);
     }
 }
 
-lsn_t ArchiveIndex::roundToEndLSN(lsn_t lsn, unsigned level)
-{
+lsn_t ArchiveIndex::roundToEndLSN(lsn_t lsn, unsigned level) {
     size_t index = findRun(lsn, level);
 
     // LSN not archived yet -> must be exactly the lastLSN of that level
-    if ((int) index > lastFinished[level]) {
+    if ((int)index > lastFinished[level]) {
         w_assert1(runs[level][lastFinished[level]].lastLSN == lsn);
         return lsn;
     }
@@ -903,13 +895,14 @@ lsn_t ArchiveIndex::roundToEndLSN(lsn_t lsn, unsigned level)
     // was already at an endLSN border and, becuase it is an open interval,
     // findRun returns the following run
     auto begin = runs[level][index].firstLSN;
-    if (lsn == begin) { return lsn; }
+    if (lsn == begin) {
+        return lsn;
+    }
 
     return runs[level][index].lastLSN;
 }
 
-void ArchiveIndex::dumpIndex(ostream& out)
-{
+void ArchiveIndex::dumpIndex(ostream& out) {
     for (size_t l = 0; l <= maxLevel; l++) {
         for (int i = 0; i <= lastFinished[l]; i++) {
             size_t offset = 0, prevOffset = 0;
@@ -927,8 +920,7 @@ void ArchiveIndex::dumpIndex(ostream& out)
     }
 }
 
-void ArchiveIndex::dumpIndex(ostream& out, const RunId& runid)
-{
+void ArchiveIndex::dumpIndex(ostream& out, const RunId& runid) {
     size_t offset = 0, prevOffset = 0;
     auto index = findRun(runid.beginLSN, runid.level);
     auto& run = runs[runid.level][index];

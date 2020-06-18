@@ -94,7 +94,9 @@ namespace zero::buffer_pool {
          */
         bf_idx pickVictim() noexcept final {
             while (true) {
-                if (should_exit()) return 0; // the buffer index 0 has the semantics of null
+                if (should_exit()) {
+                    return 0;
+                } // the buffer index 0 has the semantics of null
 
                 bf_idx selectedIndex = _selector.select();
 
@@ -241,10 +243,8 @@ namespace zero::buffer_pool {
          * \brief   The buffer frame filter
          * \details The buffer frame filter used by this _Select-and-Filter_ page evictioner.
          */
-        filter_class   _filter;
-
+        filter_class _filter;
     };
-
 } // zero::buffer_pool
 
 #endif // __ZERO_PAGE_EVICTIONER_SF_SKELETON_HPP

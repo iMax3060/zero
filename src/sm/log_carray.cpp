@@ -31,7 +31,7 @@
 
 void ConsolidationArray::wait_for_leader(CArraySlot* info) {
     long old_count;
-    while( (old_count=info->vthis()->count) >= SLOT_FINISHED);
+    while ((old_count = info->vthis()->count) >= SLOT_FINISHED) {}
     lintel::atomic_thread_fence(lintel::memory_order_acquire);
 }
 
@@ -43,13 +43,13 @@ bool ConsolidationArray::wait_for_expose(CArraySlot* info) {
     // let's try to delegate the work of releasing the buffer
     // to the slow predecessor. 1/32 to stop too long chains.
     const int TERMINATE_CHAIN_POSSIBILITY = 32;
-    if(info->pred2 && (_indexof(info) % TERMINATE_CHAIN_POSSIBILITY) != 0) {
+    if (info->pred2 && (_indexof(info) % TERMINATE_CHAIN_POSSIBILITY) != 0) {
         lintel::atomic_thread_fence(lintel::memory_order_release);
         // Atomically change my status to DELEGATED.
         int64_t waiting_cas_tmp = QNODE_WAITING._combined;
-        if(info->me2._status._combined == QNODE_WAITING._combined &&
+        if (info->me2._status._combined == QNODE_WAITING._combined &&
             lintel::unsafe::atomic_compare_exchange_strong<int64_t>(
-                &info->me2._status._combined, &waiting_cas_tmp, QNODE_DELEGATED._combined)) {
+                    &info->me2._status._combined, &waiting_cas_tmp, QNODE_DELEGATED._combined)) {
             return true; // delegate succeeded
         }
     }
@@ -58,7 +58,8 @@ bool ConsolidationArray::wait_for_expose(CArraySlot* info) {
 }
 
 ConsolidationArray::ConsolidationArray(int active_slot_count)
-    : _slot_mark(0), _active_slot_count(active_slot_count) {
+        : _slot_mark(0),
+          _active_slot_count(active_slot_count) {
     // Zero-out all slots
     ::memset(_all_slots, 0, sizeof(CArraySlot) * ALL_SLOT_COUNT);
     typedef CArraySlot* CArraySlotPtr;
@@ -73,20 +74,19 @@ ConsolidationArray::ConsolidationArray(int active_slot_count)
         _active_slots[i]->count = SLOT_AVAILABLE;
     }
 }
+
 ConsolidationArray::~ConsolidationArray() {
     delete[] _active_slots;
     // Check all slots are freed
     for (int i = 0; i < ALL_SLOT_COUNT; ++i) {
         w_assert0(_all_slots[i].count == SLOT_UNUSED
-            || _all_slots[i].count == SLOT_AVAILABLE);
+                  || _all_slots[i].count == SLOT_AVAILABLE);
     }
 }
 
-
-CArraySlot* ConsolidationArray::join_slot(int32_t size, carray_status_t &old_count)
-{
+CArraySlot* ConsolidationArray::join_slot(int32_t size, carray_status_t& old_count) {
     w_assert1(size > 0);
-    carray_slotid_t idx =  (carray_slotid_t) ::pthread_self();
+    carray_slotid_t idx = (carray_slotid_t)::pthread_self();
     while (true) {
         // probe phase
         CArraySlot* info = nullptr;
@@ -105,9 +105,8 @@ CArraySlot* ConsolidationArray::join_slot(int32_t size, carray_status_t &old_cou
             // set to 'available' and add our size to the slot
             carray_status_t new_count = join_carray_status(old_count, size);
             carray_status_t old_count_cas_tmp = old_count;
-            if(lintel::unsafe::atomic_compare_exchange_strong<carray_status_t>(
-                &info->count, &old_count_cas_tmp, new_count))
-            {
+            if (lintel::unsafe::atomic_compare_exchange_strong<carray_status_t>(
+                    &info->count, &old_count_cas_tmp, new_count)) {
                 // CAS succeeded. All done.
                 // The assertion below doesn't necessarily hold because of the
                 // ABA problem -- someone else might have grabbed the same slot
@@ -116,8 +115,7 @@ CArraySlot* ConsolidationArray::join_slot(int32_t size, carray_status_t &old_cou
                 // while loop must not use idx at all.
                 // w_assert1(old_count != 0 || _active_slots[idx] == info);
                 return info;
-            }
-            else {
+            } else {
                 // the status has been changed.
                 w_assert1(old_count != old_count_cas_tmp);
                 old_count = old_count_cas_tmp;
@@ -150,14 +148,14 @@ CArraySlot* ConsolidationArray::grab_delegated_expose(CArraySlot* info) {
     if (CARRAY_RELEASE_DELEGATION) {
         lintel::atomic_thread_fence(lintel::memory_order_release);
         // did next (predecessor in terms of logging) delegate to us?
-        mcs_lock::qnode *next = info->me2.vthis()->_next;
+        mcs_lock::qnode* next = info->me2.vthis()->_next;
         if (!next) {
             // the above fast check is not atomic if someone else is now connecting.
             // (if it's already connected, as 8-byte read is at least regular, safe)
             // So, additional atomic CAS to make sure we really don't have next.
             mcs_lock::qnode* me2_cas_tmp = &(info->me2);
             if (!lintel::unsafe::atomic_compare_exchange_strong<mcs_lock::qnode*>(
-                &_expose_lock._tail, &me2_cas_tmp, (mcs_lock::qnode*) nullptr)) {
+                    &_expose_lock._tail, &me2_cas_tmp, (mcs_lock::qnode*)nullptr)) {
                 // CAS failed, so someone just connected to us.
                 w_assert1(_expose_lock._tail != info->me2.vthis());
                 w_assert1(info->me2.vthis()->_next != nullptr);
@@ -175,7 +173,7 @@ CArraySlot* ConsolidationArray::grab_delegated_expose(CArraySlot* info) {
             // if the next says it's delegated, we take it over.
             int64_t status_cas_tmp = QNODE_WAITING._combined;
             lintel::unsafe::atomic_compare_exchange_strong<int64_t>(
-                &(next_i->me2._status._combined), &status_cas_tmp, QNODE_IDLE._combined);
+                    &(next_i->me2._status._combined), &status_cas_tmp, QNODE_IDLE._combined);
             if (status_cas_tmp == QNODE_DELEGATED._combined) {
                 // they delegated... up to us to do their dirty work
                 w_assert1(SLOT_FINISHED == next_i->vthis()->count);
@@ -194,11 +192,10 @@ CArraySlot* ConsolidationArray::grab_delegated_expose(CArraySlot* info) {
     return nullptr;
 }
 
-void ConsolidationArray::replace_active_slot(CArraySlot* info)
-{
+void ConsolidationArray::replace_active_slot(CArraySlot* info) {
     w_assert1(info->count > SLOT_AVAILABLE);
     while (SLOT_UNUSED != _all_slots[_slot_mark].count) {
-        if(++_slot_mark == ALL_SLOT_COUNT) {
+        if (++_slot_mark == ALL_SLOT_COUNT) {
             _slot_mark = 0;
         }
     }

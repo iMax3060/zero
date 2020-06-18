@@ -44,9 +44,7 @@
 
 #include "AtomicCounter.hpp"
 
-
 class table_desc_t;
-
 
 /******************************************************************
  *
@@ -59,29 +57,31 @@ class table_desc_t;
  *
  ******************************************************************/
 
-class index_desc_t
-{
+class index_desc_t {
     // this is needed at least for accessing the lock
     friend class table_desc_t;
+
 private:
-    table_desc_t*   _table;
+    table_desc_t* _table;
 
     StoreID _stid;
+
     string _name;
 
-    unsigned*       _key;                      /* index of fields in the base table */
-    unsigned        _field_count;
-    bool            _unique;                   /* whether allow duplicates or not */
-    bool            _primary;                  /* is it primary or not */
-    bool            _nolock;                   /* is it using locking or not */
-    bool            _latchless;                /* does it use any latches at all */
-    bool            _rmapholder;               /* it is used only for the range mapping */
+    unsigned* _key;                      /* index of fields in the base table */
+    unsigned _field_count;
+
+    bool _unique;                   /* whether allow duplicates or not */
+    bool _primary;                  /* is it primary or not */
+    bool _nolock;                   /* is it using locking or not */
+    bool _latchless;                /* does it use any latches at all */
+    bool _rmapholder;               /* it is used only for the range mapping */
 
     // CS: removed volatile, which has nothing to do with thread safety!
     unsigned _maxkeysize;               /* maximum key size */
 
-    char            _keydesc[MAX_KEYDESC_LEN]; /* buffer for the index key description */
-    tatas_lock      _keydesc_lock;             /* lock for the key desc */
+    char _keydesc[MAX_KEYDESC_LEN]; /* buffer for the index key description */
+    tatas_lock _keydesc_lock;             /* lock for the key desc */
 
 
 public:
@@ -93,20 +93,34 @@ public:
     index_desc_t(table_desc_t* table,
                  string name, const int fieldcnt,
                  const unsigned* fields,
-                 bool unique=true, bool primary=false,
-                 bool rmapholder=false);
+                 bool unique = true, bool primary = false,
+                 bool rmapholder = false);
 
     ~index_desc_t();
 
-    string  name() const { return _name; }
-    unsigned field_count() const { return _field_count; }
-    table_desc_t* table() const { return _table; }
+    string name() const {
+        return _name;
+    }
 
+    unsigned field_count() const {
+        return _field_count;
+    }
 
-    bool          is_fid_valid() const { return (_stid != 0); }
+    table_desc_t* table() const {
+        return _table;
+    }
 
-    StoreID& stid() { return _stid; }
-    void set_stid(StoreID const &stid) { _stid = stid; }
+    bool is_fid_valid() const {
+        return (_stid != 0);
+    }
+
+    StoreID& stid() {
+        return _stid;
+    }
+
+    void set_stid(StoreID const& stid) {
+        _stid = stid;
+    }
 
     w_rc_t load_stid(ss_m* db, StoreID cat_stid);
 
@@ -114,21 +128,32 @@ public:
     /* --- access methods --- */
     /* ---------------------- */
 
-    inline bool is_unique() const { return (_unique); }
-    inline bool is_primary() const { return (_primary); }
-    inline bool is_rmapholder() const { return (_rmapholder); }
+    inline bool is_unique() const {
+        return (_unique);
+    }
 
-    inline int  get_keysize() { return (*&_maxkeysize); }
-    inline void set_keysize(const unsigned sz)
-    {
+    inline bool is_primary() const {
+        return (_primary);
+    }
+
+    inline bool is_rmapholder() const {
+        return (_rmapholder);
+    }
+
+    inline int get_keysize() {
+        return (*&_maxkeysize);
+    }
+
+    inline void set_keysize(const unsigned sz) {
         //atomic_swap_uint(&_maxkeysize, sz);
         lintel::unsafe::atomic_exchange(&_maxkeysize, sz);
     }
 
-    bool is_key_index(unsigned i)
-    {
+    bool is_key_index(unsigned i) {
         for (unsigned j = 0; j < _field_count; j++) {
-            if (_key[j] == i) return true;
+            if (_key[j] == i) {
+                return true;
+            }
         }
         return false;
     }
@@ -144,7 +169,6 @@ public:
     /* ----------------- */
 
     void print_desc(ostream& os);
-
 }; // EOF: index_desc_t
 
 

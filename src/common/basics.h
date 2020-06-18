@@ -38,12 +38,13 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include <atomic>
 
 /* sizes-in-bytes for all persistent data in the SM. */
-typedef uint32_t               smsize_t;
+typedef uint32_t smsize_t;
 
 /* For types of store, volumes, see stid_t.h and vid_t.h */
 
-typedef uint32_t    PageID;
-typedef uint32_t    StoreID;
+typedef uint32_t PageID;
+
+typedef uint32_t StoreID;
 
 // Used in log archive
 typedef int32_t run_number_t;
@@ -53,9 +54,12 @@ typedef int16_t slotid_t;
 
 /* Type of a buffer index in the bufferpool */
 typedef uint32_t bf_idx;
+
 typedef std::atomic<uint32_t> atomic_bf_idx;
+
 /* Pair of buffer indexes where the parent page of the first index can be found at the second one */
 typedef std::pair<bf_idx, bf_idx> bf_idx_pair;
+
 typedef std::pair<std::atomic<bf_idx>, std::atomic<bf_idx>> atomic_bf_idx_pair;
 
 /**
@@ -65,6 +69,7 @@ typedef std::pair<std::atomic<bf_idx>, std::atomic<bf_idx>> atomic_bf_idx_pair;
 * Same as slotid_t, but used to avoid confusion.
 */
 typedef int16_t general_recordid_t;
+
 /**
  * \brief Defines constant values/methods for general_recordid_t.
  */
@@ -83,39 +88,43 @@ struct GeneralRecordIds {
     static slotid_t from_general_to_slot(general_recordid_t general) {
         return general - 1;
     }
+
     static general_recordid_t from_slot_to_general(slotid_t slot) {
         return slot + 1;
     }
 };
 
 /* XXX duplicates w_base types. */
-const int32_t    max_int4 = 0x7fffffff;         /*  (1 << 31) - 1;  */
-const int32_t    max_int4_minus1 = max_int4 -1;
-const int32_t    min_int4 = 0x80000000;         /* -(1 << 31);        */
+const int32_t max_int4 = 0x7fffffff;         /*  (1 << 31) - 1;  */
+const int32_t max_int4_minus1 = max_int4 - 1;
 
-const uint16_t    max_uint2 = 0xffff;
-const uint16_t    min_uint2 = 0;
-const uint32_t    max_uint4 = 0xffffffff;
-const uint32_t    min_uint4 = 0;
+const int32_t min_int4 = 0x80000000;         /* -(1 << 31);        */
 
+const uint16_t max_uint2 = 0xffff;
 
+const uint16_t min_uint2 = 0;
+
+const uint32_t max_uint4 = 0xffffffff;
+
+const uint32_t min_uint4 = 0;
 
 /*
  * Safe Integer conversion (ie. casting) function
  */
-inline int u4i(uint32_t x) {w_assert1(x<=(unsigned)max_int4); return int(x); }
+inline int u4i(uint32_t x) {
+    w_assert1(x <= (unsigned)max_int4);
+    return int(x);
+}
 
 // inline unsigned int  uToi(int32_t x) {assert(x>=0); return (uint) x; }
 
 
 
-inline bool is_aligned(smsize_t sz)
-{
+inline bool is_aligned(smsize_t sz) {
     return w_base_t::is_aligned(sz);
 }
 
-inline bool is_aligned(const void* p)
-{
+inline bool is_aligned(const void* p) {
     return w_base_t::is_aligned(p);
 }
 

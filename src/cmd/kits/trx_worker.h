@@ -51,7 +51,6 @@ const int WAITING_WINDOW = 5; // keep track the last 5 seconds
 // A worker needs to have processed at least 10 packets to print its own stats
 const uint MINIMUM_PROCESSED = 10;
 
-
 /********************************************************************
  *
  * @struct: worker_stats_t
@@ -63,18 +62,21 @@ const uint MINIMUM_PROCESSED = 10;
  *
  ********************************************************************/
 
-struct worker_stats_t
-{
+struct worker_stats_t {
     uint _processed;
+
     uint _problems;
 
     uint _served_input;
+
     uint _served_waiting;
 
     uint _condex_sleep;
+
     uint _failed_sleep;
 
     uint _early_aborts;
+
     uint _mid_aborts;
 
 #ifdef WORKER_VERBOSE_STATS
@@ -99,10 +101,14 @@ struct worker_stats_t
 #endif
 
     worker_stats_t()
-            : _processed(0), _problems(0),
-              _served_input(0), _served_waiting(0),
-              _condex_sleep(0), _failed_sleep(0),
-              _early_aborts(0), _mid_aborts(0)
+            : _processed(0),
+              _problems(0),
+              _served_input(0),
+              _served_waiting(0),
+              _condex_sleep(0),
+              _failed_sleep(0),
+              _early_aborts(0),
+              _mid_aborts(0)
 #ifdef WORKER_VERBOSE_STATS
     , _serving_total(0),
           _rvp_exec(0), _rvp_exec_time(0), _rvp_notify_time(0),
@@ -111,18 +117,20 @@ struct worker_stats_t
         , _ww_idx(0), _last_change(0)
 #endif
 #endif
-    { }
+    {}
 
-    ~worker_stats_t() { }
+    ~worker_stats_t() {}
 
     void print_stats() const;
 
     void reset();
 
-    void print_and_reset() { print_stats(); reset(); }
+    void print_and_reset() {
+        print_stats();
+        reset();
+    }
 
     worker_stats_t& operator+=(worker_stats_t const& rhs);
-
 }; // EOF: worker_stats_t
 
 
@@ -143,40 +151,44 @@ struct worker_stats_t
 
 class ShoreEnv;
 
-class base_worker_t : public thread_t
-{
+class base_worker_t : public thread_t {
 protected:
 
     // status variables
-    unsigned  _control;
+    unsigned _control;
+
     eDataOwnerState _data_owner;
+
     unsigned _ws;
 
     // cond var for sleeping instead of looping after a while
-    condex                   _notify;
+    condex _notify;
 
     // data
-    ShoreEnv*                _env;
+    ShoreEnv* _env;
 
     // needed for linked-list of workers
-    base_worker_t*           _next;
-    tatas_lock               _next_lock;
+    base_worker_t* _next;
+
+    tatas_lock _next_lock;
 
     // statistics
     worker_stats_t _stats;
 
     // processor binding
-    bool                     _is_bound;
+    bool _is_bound;
 
     // sli
-    int                      _use_sli;
+    int _use_sli;
 
     // states
     virtual int _work_PAUSED_impl();
-    virtual int _work_ACTIVE_impl()=0;
-    virtual int _work_STOPPED_impl();
-    virtual int _pre_STOP_impl()=0;
 
+    virtual int _work_ACTIVE_impl() = 0;
+
+    virtual int _work_STOPPED_impl();
+
+    virtual int _pre_STOP_impl() = 0;
 
     void _print_stats_impl() const;
 
@@ -184,13 +196,15 @@ public:
 
     base_worker_t(ShoreEnv* env, std::string tname, const int use_sli)
             : thread_t(tname),
-              _control(WC_PAUSED), _data_owner(DOS_UNDEF), _ws(WS_UNDEF),
+              _control(WC_PAUSED),
+              _data_owner(DOS_UNDEF),
+              _ws(WS_UNDEF),
               _env(env),
-              _next(nullptr), _is_bound(false),  _use_sli(use_sli)
-    {
-    }
+              _next(nullptr),
+              _is_bound(false),
+              _use_sli(use_sli) {}
 
-    virtual ~base_worker_t() { }
+    virtual ~base_worker_t() {}
 
     // access methods //
 
@@ -201,17 +215,21 @@ public:
         _next = apworker;
     }
 
-    base_worker_t* get_next() { return (_next); }
+    base_worker_t* get_next() {
+        return (_next);
+    }
 
     // data owner state
     void set_data_owner_state(const eDataOwnerState ados) {
-        assert ((ados==DOS_ALONE)||(ados==DOS_MULTIPLE));
+        assert ((ados == DOS_ALONE) || (ados == DOS_MULTIPLE));
         // CS TODO -- atomic necessary?
         // atomic_swap(&_data_owner, ados);
         _data_owner = ados;
     }
 
-    bool is_alone_owner() { return (*&_data_owner==DOS_ALONE); }
+    bool is_alone_owner() {
+        return (*&_data_owner == DOS_ALONE);
+    }
 
     // @brief: Set working state
     // @note:  This function can be called also by other threads
@@ -220,14 +238,18 @@ public:
         while (true) {
             unsigned old_ws = *&_ws;
             // Do not change WS, if it is already set to commit
-            if ((old_ws==WS_COMMIT_Q)&&(new_ws!=WS_LOOP)) { return (old_ws); }
+            if ((old_ws == WS_COMMIT_Q) && (new_ws != WS_LOOP)) {
+                return (old_ws);
+            }
 
             // Update WS
             bool cas_ok =
                     lintel::unsafe::atomic_compare_exchange_strong(&_ws, &old_ws, new_ws);
             if (cas_ok) {
                 // If cas successful, then wake up worker if sleeping
-                if ((old_ws==WS_SLEEP)&&(new_ws!=WS_SLEEP)) { condex_wakeup(); }
+                if ((old_ws == WS_SLEEP) && (new_ws != WS_SLEEP)) {
+                    condex_wakeup();
+                }
                 return (old_ws);
             }
 
@@ -236,15 +258,16 @@ public:
         return _ws;
     }
 
-    inline unsigned get_ws() { return (*&_ws); }
-
+    inline unsigned get_ws() {
+        return (*&_ws);
+    }
 
     inline bool can_continue(const unsigned my_ws) {
-        return ((*&_ws==my_ws)||(*&_ws==WS_LOOP));
+        return ((*&_ws == my_ws) || (*&_ws == WS_LOOP));
     }
 
     inline bool is_sleeping(void) {
-        return (*&_ws==WS_SLEEP);
+        return (*&_ws == WS_SLEEP);
     }
 
 
@@ -272,7 +295,6 @@ public:
         return (0);
     }
 
-
     // @note: The caller thread should have already changed the WS
     //        before calling this function
     inline void condex_wakeup() {
@@ -286,7 +308,9 @@ public:
 
 
     // thread control
-    inline unsigned get_control() { return (*&_control); }
+    inline unsigned get_control() {
+        return (*&_control);
+    }
 
     inline bool set_control(const unsigned awc) {
         //
@@ -327,31 +351,45 @@ public:
                 return (true);
             }
         }
-        TRACE( TRACE_DEBUG, "Not allowed transition (%d)-->(%d)\n",
-               _control, awc);
+        TRACE(TRACE_DEBUG, "Not allowed transition (%d)-->(%d)\n",
+              _control, awc);
         return (false);
     }
 
     // commands
     void stop() {
         set_control(WC_STOPPED);
-        if (is_sleeping()) _notify.signal();
+        if (is_sleeping()) {
+            _notify.signal();
+        }
     }
 
     void start() {
         set_control(WC_ACTIVE);
-        if (is_sleeping()) _notify.signal();
+        if (is_sleeping()) {
+            _notify.signal();
+        }
     }
 
     void pause() {
         set_control(WC_PAUSED);
-        if (is_sleeping()) _notify.signal();
+        if (is_sleeping()) {
+            _notify.signal();
+        }
     }
 
     // state implementation
-    inline int work_PAUSED()  { return (_work_PAUSED_impl());  }
-    inline int work_ACTIVE()  { return (_work_ACTIVE_impl());  }
-    inline int work_STOPPED() { return (_work_STOPPED_impl()); }
+    inline int work_PAUSED() {
+        return (_work_PAUSED_impl());
+    }
+
+    inline int work_ACTIVE() {
+        return (_work_ACTIVE_impl());
+    }
+
+    inline int work_STOPPED() {
+        return (_work_STOPPED_impl());
+    }
 
     // thread entrance
     void work();
@@ -364,15 +402,16 @@ public:
 
     worker_stats_t get_stats();
 
-    void reset_stats() { _stats.reset(); }
-
+    void reset_stats() {
+        _stats.reset();
+    }
 
 private:
 
     // copying not allowed
-    base_worker_t(base_worker_t const &);
-    void operator=(base_worker_t const &);
+    base_worker_t(base_worker_t const&);
 
+    void operator=(base_worker_t const&);
 }; // EOF: base_worker_t
 
 /********************************************************************
@@ -384,18 +423,22 @@ private:
  ********************************************************************/
 
 template<class Action>
-struct srmwqueue
-{
+struct srmwqueue {
     typedef typename PooledVec<Action*>::Type ActionVec;
+
     typedef typename ActionVec::iterator ActionVecIt;
 
     // owner thread
     base_worker_t* _owner;
 
     guard<ActionVec> _for_writers;
+
     guard<ActionVec> _for_readers;
+
     ActionVecIt _read_pos;
-    mcs_rwlock      _lock;
+
+    mcs_rwlock _lock;
+
     int _empty;
 
     eWorkingState _my_ws;
@@ -404,20 +447,21 @@ struct srmwqueue
     int _thres; // threshold value before waking up
 
     srmwqueue(Pool* actionPtrPool)
-            : _owner(nullptr), _empty(true), _my_ws(WS_UNDEF),
-              _loops(0), _thres(0)
-    {
+            : _owner(nullptr),
+              _empty(true),
+              _my_ws(WS_UNDEF),
+              _loops(0),
+              _thres(0) {
         assert (actionPtrPool);
         _for_writers = new ActionVec(actionPtrPool);
         _for_readers = new ActionVec(actionPtrPool);
         _read_pos = _for_readers->begin();
     }
-    ~srmwqueue() { }
 
+    ~srmwqueue() {}
 
     // sets the pointer of the queue to the controls of a specific worker thread
-    void setqueue(eWorkingState aws, base_worker_t* owner, const int& loops, const int& thres)
-    {
+    void setqueue(eWorkingState aws, base_worker_t* owner, const int& loops, const int& thres) {
         spinlock_write_critical_section cs(&_lock);
         _my_ws = aws;
         _owner = owner;
@@ -426,7 +470,9 @@ struct srmwqueue
     }
 
     // returns true if the passed control is the same
-    bool is_control(base_worker_t* athread) const { return (_owner==athread); }
+    bool is_control(base_worker_t* athread) const {
+        return (_owner == athread);
+    }
 
     // !!! @note: should be called only by the reader !!!
     inline int is_empty(void) const {
@@ -434,17 +480,17 @@ struct srmwqueue
     }
 
     // The expensive version which first locks, and then checks if empty
-    bool is_really_empty(void)
-    {
+    bool is_really_empty(void) {
         spinlock_write_critical_section cs(&_lock);
         bool isEmpty = ((_read_pos == _for_readers->end()) && (*&_empty));
-        if (isEmpty) { assert (_for_writers->empty()); }
+        if (isEmpty) {
+            assert (_for_writers->empty());
+        }
         return (isEmpty);
     }
 
     // spins until new input is set
-    bool wait_for_input()
-    {
+    bool wait_for_input() {
         assert (_owner);
         int loopcnt = 0;
         unsigned wc = WC_ACTIVE;
@@ -462,7 +508,9 @@ struct srmwqueue
             }
 
             // 3. if thread was signalled to go to other queue
-            if (!_owner->can_continue(_my_ws)) return (false);
+            if (!_owner->can_continue(_my_ws)) {
+                return (false);
+            }
 
             // 4. if spinned too much, start waiting on the condex
             if (++loopcnt > _loops) {
@@ -485,7 +533,7 @@ struct srmwqueue
 
         {
             spinlock_write_critical_section cs(&_lock);
-            _for_readers->erase(_for_readers->begin(),_for_readers->end());
+            _for_readers->erase(_for_readers->begin(), _for_readers->end());
             _for_writers->swap(*_for_readers);
             _empty = true;
         }
@@ -496,8 +544,9 @@ struct srmwqueue
 
     inline Action* pop() {
         // pops an action from the input vector, or waits for one to show up
-        if ((_read_pos == _for_readers->end()) && (!wait_for_input()))
+        if ((_read_pos == _for_readers->end()) && (!wait_for_input())) {
             return (nullptr);
+        }
         return (*(_read_pos++));
     }
 
@@ -521,15 +570,17 @@ struct srmwqueue
     }
 
     // resets queue
-    void clear(const bool removeOwner=true) {
+    void clear(const bool removeOwner = true) {
         spinlock_write_critical_section cs(&_lock);
 
         // clear owner
-        if (removeOwner) _owner = nullptr;
+        if (removeOwner) {
+            _owner = nullptr;
+        }
 
         // clear lists
-        _for_writers->erase(_for_writers->begin(),_for_writers->end());
-        _for_readers->erase(_for_readers->begin(),_for_readers->end());
+        _for_writers->erase(_for_writers->begin(), _for_writers->end());
+        _for_readers->erase(_for_readers->begin(), _for_readers->end());
 
         // set the reading position to the beginning
         _read_pos = _for_readers->begin();
@@ -537,22 +588,22 @@ struct srmwqueue
         // the queue is empty again
         _empty = true;
     }
-
 }; // EOF: struct srmwqueue
 
 
 const int REQUESTS_PER_WORKER_POOL_SZ = 60;
 
-class trx_worker_t : public base_worker_t
-{
+class trx_worker_t : public base_worker_t {
 public:
-    typedef trx_request_t      Request;
+    typedef trx_request_t Request;
+
     typedef srmwqueue<Request> Queue;
 
 private:
 
-    guard<Queue>         _pqueue;
-    guard<Pool>          _actionpool;
+    guard<Queue> _pqueue;
+
+    guard<Pool> _actionpool;
 
     // states
     int _work_ACTIVE_impl();
@@ -566,15 +617,15 @@ public:
 
     trx_worker_t(ShoreEnv* env, std::string tname,
                  const int use_sli = 0);
+
     ~trx_worker_t();
 
     // Enqueues a request to the queue of the worker thread
-    inline void enqueue(Request* arequest, const bool bWake=true) {
-        _pqueue->push(arequest,bWake);
+    inline void enqueue(Request* arequest, const bool bWake = true) {
+        _pqueue->push(arequest, bWake);
     }
 
     void init(const int lc);
-
 }; // EOF: trx_worker_t
 
 #endif // __TRX_WORKER_H

@@ -112,13 +112,13 @@ public:
     w_rc_t(const char* filename, uint32_t linenum, w_error_codes error_code, const char* custom_message = nullptr);
 
     /** Copy constructor. */
-    w_rc_t(const w_rc_t &other);
+    w_rc_t(const w_rc_t& other);
 
     /** Copy constructor to augment the stacktrace. */
-    w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenum, const char* more_custom_message = nullptr);
+    w_rc_t(const w_rc_t& other, const char* filename, uint32_t linenum, const char* more_custom_message = nullptr);
 
     /** Copy constructor. */
-    w_rc_t& operator=(w_rc_t const &other);
+    w_rc_t& operator=(w_rc_t const& other);
 
     /** Will warn in stderr if the error code is not checked yet. */
     ~w_rc_t();
@@ -133,37 +133,37 @@ public:
      * - #W_DO(x)
      * - #W_DO_MSG(x,m)
      */
-    bool                is_error() const;
+    bool is_error() const;
 
     /** Return the integer error code. */
-    w_error_codes       err_num() const;
+    w_error_codes err_num() const;
 
     /** Returns the error message inferred by the error code. */
-    const char*         get_message() const;
+    const char* get_message() const;
 
     /** Returns the custom error message. */
-    const char*         get_custom_message() const;
+    const char* get_custom_message() const;
 
     /** Appends more custom error message at the end. */
-    void                append_custom_message(const char* more_custom_message);
+    void append_custom_message(const char* more_custom_message);
 
     /** Returns the depth of stack this error code has collected. */
-    uint16_t            get_stack_depth() const;
+    uint16_t get_stack_depth() const;
 
     /** Returns the line number of the given stack position. */
-    uint16_t            get_linenum(uint16_t stack_index) const;
+    uint16_t get_linenum(uint16_t stack_index) const;
 
     /** Returns the file name of the given stack position. */
-    const char*         get_filename(uint16_t stack_index) const;
+    const char* get_filename(uint16_t stack_index) const;
 
     /** Output a warning to stderr if the error is not checked yet. */
-    void                verify() const;
+    void verify() const;
 
     /**
      * \brief Fail catastrophically after describing the error.
      * This is called from W_COERCE to handle an unexpected error.
      */
-    void                fatal() const;
+    void fatal() const;
 
 private:
 
@@ -176,10 +176,10 @@ private:
      * permanent. We only copy the pointers when passing around.
      * As far as we use "__FILE__" macro to get file name, this is the always case.
      */
-    const char*     _filenames[MAX_RCT_STACK_DEPTH];
+    const char* _filenames[MAX_RCT_STACK_DEPTH];
 
     /** \brief Line numbers of stacktraces. */
-    uint16_t        _linenums[MAX_RCT_STACK_DEPTH];
+    uint16_t _linenums[MAX_RCT_STACK_DEPTH];
 
     /**
      * \brief Optional custom error message.
@@ -187,7 +187,7 @@ private:
      * The reason why we don't use auto_ptr etc for this is that they are also expensive and will screw things
      * up if someone misuse our class. Custom error message should be rare, anyways.
      */
-    const char*     _custom_message;
+    const char* _custom_message;
 
     /**
      * \brief Integer error code.
@@ -196,16 +196,16 @@ private:
      * for better performance because that's by far the common case. So, all functions in this class
      * should first check if this value is w_error_ok or not to avoid further processing.
      */
-    w_error_codes   _error_code;
+    w_error_codes _error_code;
 
     /**
      * \brief Current stack depth.
      * Value 0 implies that we don't pass around stacktrace for this return code, bypassing stacktrace collection.
      */
-    uint16_t        _stack_depth;
+    uint16_t _stack_depth;
 
     /** \brief Whether someone already checked the error code of this object.*/
-    mutable bool    _checked;
+    mutable bool _checked;
 };
 
 typedef w_rc_t rc_t;
@@ -392,28 +392,35 @@ do {                             \
 #define W_IGNORE(x)    ((void) x.is_error())
 
 inline w_rc_t::w_rc_t()
-    : _custom_message(nullptr), _error_code(w_error_ok), _stack_depth(0), _checked(true) {
-}
+        : _custom_message(nullptr),
+          _error_code(w_error_ok),
+          _stack_depth(0),
+          _checked(true) {}
 
 inline w_rc_t::w_rc_t(w_error_codes error_code)
-    : _custom_message(nullptr), _error_code(error_code), _stack_depth(0), _checked(false) {
-}
+        : _custom_message(nullptr),
+          _error_code(error_code),
+          _stack_depth(0),
+          _checked(false) {}
 
 inline w_rc_t::w_rc_t(const char* filename, uint32_t linenum, w_error_codes error_code, const char* custom_message)
-    : _custom_message(custom_message), _error_code(error_code), _stack_depth(1), _checked(false) {
+        : _custom_message(custom_message),
+          _error_code(error_code),
+          _stack_depth(1),
+          _checked(false) {
     assert(error_code != w_error_ok);
     _filenames[0] = filename;
     _linenums[0] = linenum;
-#if W_DEBUG_LEVEL>=5
+#if W_DEBUG_LEVEL >= 5
     std::cout << "Error instantiated: " << *this << std::endl;
 #endif //W_DEBUG_LEVEL>=3
 }
 
-inline w_rc_t::w_rc_t(const w_rc_t &other) {
+inline w_rc_t::w_rc_t(const w_rc_t& other) {
     operator=(other);
 }
 
-inline w_rc_t& w_rc_t::operator=(w_rc_t const &other) {
+inline w_rc_t& w_rc_t::operator=(w_rc_t const& other) {
     // Invariant: if w_error_ok, no more processing
     if (other._error_code == w_error_ok) {
         this->_error_code = w_error_ok;
@@ -428,14 +435,14 @@ inline w_rc_t& w_rc_t::operator=(w_rc_t const &other) {
     if (other._custom_message != nullptr) {
         // do NOT use strdup to make sure new/delete everywhere.
         size_t len = ::strlen(other._custom_message);
-        char *copied = new char[len + 1]; // +1 for null terminator
+        char* copied = new char[len + 1]; // +1 for null terminator
         this->_custom_message = copied;
         ::memcpy(copied, other._custom_message, len + 1);
     }
     return *this;
 }
 
-inline w_rc_t::w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenum, const char* more_custom_message) {
+inline w_rc_t::w_rc_t(const w_rc_t& other, const char* filename, uint32_t linenum, const char* more_custom_message) {
     // Invariant: if w_error_ok, no more processing
     if (other._error_code == w_error_ok) {
         this->_error_code = w_error_ok;
@@ -453,7 +460,7 @@ inline w_rc_t::w_rc_t(const w_rc_t &other, const char* filename, uint32_t linenu
     if (more_custom_message != nullptr) {
         append_custom_message(more_custom_message);
     }
-#if W_DEBUG_LEVEL>=5
+#if W_DEBUG_LEVEL >= 5
     std::cout << "Error augmented: " << *this << std::endl;
 #endif //W_DEBUG_LEVEL>=3
 }
@@ -463,7 +470,7 @@ inline w_rc_t::~w_rc_t() {
     if (_error_code == w_error_ok) {
         return;
     }
-#if W_DEBUG_LEVEL>0
+#if W_DEBUG_LEVEL > 0
     // We output warning if some error code is not checked , but we don't do so in release mode.
     verify();
 #endif //  W_DEBUG_LEVEL>0
@@ -483,13 +490,13 @@ inline void w_rc_t::append_custom_message(const char* more_custom_message) {
     if (_custom_message != nullptr) {
         // concat
         size_t cur_len = ::strlen(_custom_message);
-        char *copied = new char[cur_len + more_len + 1];
+        char* copied = new char[cur_len + more_len + 1];
         _custom_message = copied;
         ::memcpy(copied, _custom_message, cur_len);
         ::memcpy(copied + cur_len, more_custom_message, more_len + 1);
     } else {
         // just put the new message
-        char *copied = new char[more_len + 1];
+        char* copied = new char[more_len + 1];
         _custom_message = copied;
         ::memcpy(copied, more_custom_message, more_len + 1);
     }

@@ -16,8 +16,7 @@
 #include "stopwatch.h"
 
 void SegmentRestorer::bf_restore(unsigned segment_begin, unsigned segment_end,
-        size_t segment_size, bool virgin_pages, lsn_t begin_lsn, lsn_t end_lsn)
-{
+                                 size_t segment_size, bool virgin_pages, lsn_t begin_lsn, lsn_t end_lsn) {
     PageID first_pid = segment_begin * segment_size;
     PageID total_pages = (segment_end - segment_begin) * segment_size;
     if (smlevel_0::bf->isMediaFailure(first_pid)) {
@@ -27,7 +26,7 @@ void SegmentRestorer::bf_restore(unsigned segment_begin, unsigned segment_end,
 
     for (unsigned s = segment_begin; s < segment_end; s++) {
         first_pid = s * segment_size;
-        GenericPageIterator pbegin {first_pid, static_cast<PageID>(segment_size), virgin_pages};
+        GenericPageIterator pbegin{first_pid, static_cast<PageID>(segment_size), virgin_pages};
         GenericPageIterator pend;
 
         // CS TODO there seems to be a weird memory leak in ArchiveScan
@@ -45,9 +44,8 @@ void SegmentRestorer::bf_restore(unsigned segment_begin, unsigned segment_end,
     }
 }
 
-template <class LogScan, class PageIter>
-void LogReplayer::replay(LogScan logs, PageIter& pagesBegin, PageIter pagesEnd)
-{
+template<class LogScan, class PageIter>
+void LogReplayer::replay(LogScan logs, PageIter& pagesBegin, PageIter pagesEnd) {
     fixable_page_h fixable;
     auto page = pagesBegin;
     logrec_t* lr;
@@ -65,7 +63,9 @@ void LogReplayer::replay(LogScan logs, PageIter& pagesBegin, PageIter pagesEnd)
         while (page != pagesEnd && page._current_pid < pid) {
             ++page;
         }
-        if (page == pagesEnd) { break; }
+        if (page == pagesEnd) {
+            break;
+        }
 
         if (page._current_pid > pid) {
             /*
@@ -92,7 +92,7 @@ void LogReplayer::replay(LogScan logs, PageIter& pagesBegin, PageIter pagesEnd)
 
         if (lr->lsn() > fixable.lsn()) {
             w_assert0(lr->page_prev_lsn() == lsn_t::null ||
-                    lr->page_prev_lsn() == p->lsn || lr->has_page_img(pid));
+                      lr->page_prev_lsn() == p->lsn || lr->has_page_img(pid));
 
             lr->redo(&fixable);
         }

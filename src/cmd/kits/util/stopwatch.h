@@ -55,7 +55,7 @@ public:
         return tv.tv_usec + tv.tv_sec*1000000ll;
     }
     void reset() {
-	mark = now();
+    mark = now();
     }
 };
 

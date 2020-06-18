@@ -60,54 +60,50 @@ namespace tpcc {
  *  Not seen by public.
  */
 
-int random(int low, int high, randgen_t* rp) {
+    int random(int low, int high, randgen_t* rp) {
 
-  return (low + rp->rand(high - low + 1));
-}
-
+        return (low + rp->rand(high - low + 1));
+    }
 
 /** @fn URand(int, int)
  *
  *  @brief Generates a uniform random number between (low) and (high)
  */
 
-int URand(int low, int high)
-{
-  thread_t* self = thread_get_self();
-  assert (self);
-  randgen_t* randgenp = self->randgen();
-  assert (randgenp);
+    int URand(int low, int high) {
+        thread_t* self = thread_get_self();
+        assert (self);
+        randgen_t* randgenp = self->randgen();
+        assert (randgenp);
 
-  int d = high - low + 1;
+        int d = high - low + 1;
 
-  /*
-  if (((d & -d) == d) && (high > 1)) {
-      // we avoid to pass a power of 2 to rand()
-      return( low + ((randgenp->rand(high - low + 2) + randgenp->rand(high - low))/2) );
-  }
-  */
+        /*
+        if (((d & -d) == d) && (high > 1)) {
+            // we avoid to pass a power of 2 to rand()
+            return( low + ((randgenp->rand(high - low + 2) + randgenp->rand(high - low))/2) );
+        }
+        */
 
-  //return (low + sthread_t::me()->rand());
-  return (low + randgenp->rand(d));
-}
-
+        //return (low + sthread_t::me()->rand());
+        return (low + randgenp->rand(d));
+    }
 
 /** @fn NURand(int, int, int)
  *
  *  @brief Generates a non-uniform random number
  */
 
-int NURand(int A, int low, int high)
-{
-  thread_t* self = thread_get_self();
-  assert (self);
-  randgen_t* randgenp = self->randgen();
-  assert (randgenp);
+    int NURand(int A, int low, int high) {
+        thread_t* self = thread_get_self();
+        assert (self);
+        randgen_t* randgenp = self->randgen();
+        assert (randgenp);
 
-  return ( (((random(0, A, randgenp) | random(low, high, randgenp))
-             + random(0, A, randgenp))
-            % (high - low + 1)) + low );
-}
+        return ((((random(0, A, randgenp) | random(low, high, randgenp))
+                  + random(0, A, randgenp))
+                 % (high - low + 1)) + low);
+    }
 
 /** @fn generate_cust_last(int)
  *
@@ -135,36 +131,31 @@ int NURand(int A, int low, int high)
  *  @return The length of the created string. 0 on errors.
  */
 
-const char* CUST_LAST[10] = { "BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE",
-                              "ANTI", "CALLY", "ATION", "EING" };
+    const char* CUST_LAST[10] = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE",
+                                 "ANTI", "CALLY", "ATION", "EING"};
 
+    int generate_cust_last(int select, char* dest) {
+        assert ((select >= 0) && (select < 1000));
+        assert (dest);
 
-int generate_cust_last(int select, char* dest)
-{
-  assert ((select>=0) && (select<1000));
-  assert (dest);
+        int i1, i2, i3;
 
-  int i1, i2, i3;
+        i3 = select % 10;
+        i2 = ((select % 100) - i3) / 10;
+        i1 = (select - (select % 100)) / 100;
 
-  i3 = select % 10;
-  i2 = ((select % 100) - i3) / 10;
-  i1 = (select - (select % 100)) / 100;
+        int iLen = (int)(strlen(CUST_LAST[i1]) + strlen(CUST_LAST[i2]) + strlen(CUST_LAST[i3]) + 1);
 
-  int iLen = (int)(strlen(CUST_LAST[i1]) + strlen(CUST_LAST[i2]) + strlen(CUST_LAST[i3]) + 1);
+        assert (iLen < 17);   // C_LAST is char[16]
 
-  assert (iLen < 17);   // C_LAST is char[16]
+        snprintf(dest, iLen, "%s%s%s",
+                 CUST_LAST[i1],
+                 CUST_LAST[i2],
+                 CUST_LAST[i3]);
+        dest[iLen] = '\0';
 
-  snprintf(dest, iLen, "%s%s%s",
-          CUST_LAST[i1],
-          CUST_LAST[i2],
-          CUST_LAST[i3]);
-  dest[iLen] = '\0';
-
-  return (iLen);
-}
-
-
-
+        return (iLen);
+    }
 
 /*******************************************************************************
  *
@@ -175,38 +166,41 @@ int generate_cust_last(int select, char* dest)
  *
  *******************************************************************************/
 
-int random_xct_type(int selected)
-{
-    int random_type = selected;
-    if (random_type < 0)
-        random_type = rand()%100;
-    assert (random_type >= 0);
+    int random_xct_type(int selected) {
+        int random_type = selected;
+        if (random_type < 0) {
+            random_type = rand() % 100;
+        }
+        assert (random_type >= 0);
 
-    int sum = 0;
-    sum+=PROB_NEWORDER;
-    if (random_type < sum)
-	return XCT_NEW_ORDER;
+        int sum = 0;
+        sum += PROB_NEWORDER;
+        if (random_type < sum) {
+            return XCT_NEW_ORDER;
+        }
 
-    sum+=PROB_PAYMENT;
-    if (random_type < sum)
-	return XCT_PAYMENT;
+        sum += PROB_PAYMENT;
+        if (random_type < sum) {
+            return XCT_PAYMENT;
+        }
 
-    sum+=PROB_ORDER_STATUS;
-    if (random_type < sum)
-	return XCT_ORDER_STATUS;
+        sum += PROB_ORDER_STATUS;
+        if (random_type < sum) {
+            return XCT_ORDER_STATUS;
+        }
 
-    sum+=PROB_DELIVERY;
-    if (random_type < sum) {
+        sum += PROB_DELIVERY;
+        if (random_type < sum) {
 #warning Disabling Delivery from the TPC-C Mix. Running Payment instead
-        return XCT_PAYMENT;
-        //return XCT_DELIVERY;
+            return XCT_PAYMENT;
+            //return XCT_DELIVERY;
+        }
+
+        sum += PROB_STOCK_LEVEL;
+        if (random_type < sum) {
+            return XCT_STOCK_LEVEL;
+        }
+
+        return 0;
     }
-
-    sum+=PROB_STOCK_LEVEL;
-    if (random_type < sum)
-	return XCT_STOCK_LEVEL;
-
-    return 0;
-}
-
 };

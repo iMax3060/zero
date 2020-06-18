@@ -51,29 +51,33 @@
    precisely for every combination of n and k which I've tested.
 */
 
-struct zipfian 
-{
+struct zipfian {
 //    rand48 _rng;
     double _k;
+
     double _mk_inv;
+
     double _cutoff;
+
     double _1mcutoff;
 
 //    zipfian(int n, double s, long seed_val=rand48::DEFAULT_SEED)
     zipfian(int n, double s)
 // _rng(seed_val), _k(1.1*s-1), _mk_inv(-1./_k)
-	: _k(1.1*s-1), _mk_inv(-1./_k)
-	, _cutoff(pow(n, -_k)), _1mcutoff(1-_cutoff)
-    {
+            : _k(1.1 * s - 1),
+              _mk_inv(-1. / _k),
+              _cutoff(pow(n, -_k)),
+              _1mcutoff(1 - _cutoff) {}
+
+    int operator()(double u) {
+        return next(u);
     }
 
-    int operator()(double u) { return next(u); }
-    
     int next(double uniform_input) {
         //double u = _rng.drand();
         uniform_input *= _1mcutoff;
         uniform_input += _cutoff;
-        return (int) pow(uniform_input, _mk_inv);
+        return (int)pow(uniform_input, _mk_inv);
     }
 };
 

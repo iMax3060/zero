@@ -63,13 +63,13 @@
  * ACM Transactions on Database Systems (TODS), 2011
  * Modern B-tree techniques
  */
-class btree_impl : public smlevel_0  {
+class btree_impl : public smlevel_0 {
 public:
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Insert/Delete functions. implemented in btree_impl.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: Insert/Delete functions. implemented in btree_impl.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
 
     /**
@@ -87,9 +87,9 @@ public:
      * @param[out] leaf the leaf the key should be in (if it exists or if it did exist)
      */
     static rc_t _ux_get_page_and_status
-    (StoreID store,
-     const w_keystr_t& key,
-     bool& need_lock, slotid_t& slot, bool& found, bool& took_XN, bool& is_ghost, btree_page_h& leaf);
+            (StoreID store,
+             const w_keystr_t& key,
+             bool& need_lock, slotid_t& slot, bool& found, bool& took_XN, bool& is_ghost, btree_page_h& leaf);
 
     /**
     *  \brief This function finds the leaf page to insert the given tuple,
@@ -100,21 +100,23 @@ public:
     * @param[in] key key of the inserted tuple
     * @param[in] elem data of the inserted tuple
     */
-    static rc_t                        _ux_insert(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
+    static rc_t _ux_insert(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
+
     /** _ux_insert()'s internal function without retry by itself.*/
-    static rc_t                        _ux_insert_core(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
+    static rc_t _ux_insert_core(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
+
     /** Last half of _ux_insert, after traversing, finding (or not) and ghost determination.*/
     static rc_t _ux_insert_core_tail
-    (StoreID store,
-     const w_keystr_t& key,const cvec_t& el,
-     bool& need_lock, slotid_t& slot, bool& found, bool& alreay_took_XN,
-     bool& is_ghost, btree_page_h& leaf);
+            (StoreID store,
+             const w_keystr_t& key, const cvec_t& el,
+             bool& need_lock, slotid_t& slot, bool& found, bool& alreay_took_XN,
+             bool& is_ghost, btree_page_h& leaf);
 
     /**
     *  \brief This function finds the given key, updates the element if found.
@@ -125,45 +127,45 @@ public:
     * @param[in] key key of the existing tuple
     * @param[in] elem new data of the tuple
     */
-    static rc_t                        _ux_update(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
+    static rc_t _ux_update(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
 
     /** _ux_update()'s internal function without retry by itself.*/
-    static rc_t                        _ux_update_core(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
+    static rc_t _ux_update_core(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
 
     /** Last half of _ux_update, after traversing, finding (or not) and ghost determination.*/
     static rc_t _ux_update_core_tail(
-     StoreID store,
-     const w_keystr_t& key, const cvec_t& elem,
-     bool& need_lock, slotid_t& slot, bool& found, bool& is_ghost,
-     btree_page_h& leaf);
+            StoreID store,
+            const w_keystr_t& key, const cvec_t& elem,
+            bool& need_lock, slotid_t& slot, bool& found, bool& is_ghost,
+            btree_page_h& leaf);
 
-   /**
-    *  \brief This function finds the given key, updates the element if found and inserts it if
-    * not.  If needed, this method also splits the page.  Could also be called "insert or update"
-    *
-    * \details
-    *  Context: User transaction.
-    * @param[in] store Store ID
-    * @param[in] key key of the existing tuple
-    * @param[in] elem new data of the tuple
-    */
-    static rc_t                        _ux_put(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
+    /**
+     *  \brief This function finds the given key, updates the element if found and inserts it if
+     * not.  If needed, this method also splits the page.  Could also be called "insert or update"
+     *
+     * \details
+     *  Context: User transaction.
+     * @param[in] store Store ID
+     * @param[in] key key of the existing tuple
+     * @param[in] elem new data of the tuple
+     */
+    static rc_t _ux_put(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
+
     /** _ux_put()'s internal function without retry by itself.  Uses _ux_insert_core_tail and
         _ux_update_core_tail for the heavy lifting*/
-    static rc_t                        _ux_put_core(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const cvec_t&                     elem);
-
+    static rc_t _ux_put_core(
+            StoreID store,
+            const w_keystr_t& key,
+            const cvec_t& elem);
 
     /**
     *  \brief This function finds the given key, updates the specific part of element if found.
@@ -175,15 +177,16 @@ public:
     * @param[in] offset overwrites to this position of the record
     * @param[in] elen number of bytes to overwrite
     */
-    static rc_t                        _ux_overwrite(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const char *el, smsize_t offset, smsize_t elen);
+    static rc_t _ux_overwrite(
+            StoreID store,
+            const w_keystr_t& key,
+            const char* el, smsize_t offset, smsize_t elen);
+
     /** _ux_overwrite()'s internal function without retry by itself.*/
-    static rc_t                        _ux_overwrite_core(
-        StoreID store,
-        const w_keystr_t&                 key,
-        const char *el, smsize_t offset, smsize_t elen);
+    static rc_t _ux_overwrite_core(
+            StoreID store,
+            const w_keystr_t& key,
+            const char* el, smsize_t offset, smsize_t elen);
 
     /**
      * \brief Creates a ghost record for the key as a preparation for insert.
@@ -192,11 +195,12 @@ public:
      *  @param[in] key key of the ghost record.
      *  @param[in] elem_len size of elem to be inserted
      */
-    static rc_t                        _sx_reserve_ghost(
-        btree_page_h &leaf, const w_keystr_t &key, int elem_len);
+    static rc_t _sx_reserve_ghost(
+            btree_page_h& leaf, const w_keystr_t& key, int elem_len);
+
     /** @see _sx_reserve_ghost() */
-    static rc_t                        _ux_reserve_ghost_core(
-        btree_page_h &leaf, const w_keystr_t &key, int elem_len);
+    static rc_t _ux_reserve_ghost_core(
+            btree_page_h& leaf, const w_keystr_t& key, int elem_len);
 
     /**
     *  \brief Removes the specified key from B+Tree.
@@ -206,12 +210,12 @@ public:
     * @param[in] store Store ID
     * @param[in] key key of the removed tuple
     */
-    static rc_t                        _ux_remove(
-        StoreID store,
-        const w_keystr_t&   key);
+    static rc_t _ux_remove(
+            StoreID store,
+            const w_keystr_t& key);
 
     /** _ux_remove()'s internal function without retry by itself.*/
-    static rc_t _ux_remove_core(StoreID store, const w_keystr_t &key);
+    static rc_t _ux_remove_core(StoreID store, const w_keystr_t& key);
 
     /**
     *  \brief Reverses the ghost record of specified key to regular state.
@@ -225,14 +229,14 @@ public:
     * @param[in] key key of the removed tuple
     * @see btree_ghost_mark_log::undo()
     */
-    static rc_t                        _ux_undo_ghost_mark(
-        StoreID store,
-        const w_keystr_t&                key);
+    static rc_t _ux_undo_ghost_mark(
+            StoreID store,
+            const w_keystr_t& key);
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Search/Lookup functions. implemented in btree_impl_search.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: Search/Lookup functions. implemented in btree_impl_search.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
 
     /** \brief 3 modes of traverse(). */
@@ -287,14 +291,14 @@ public:
     * @param[out] leaf leaf satisfying search
     * @param[in] allow_retry only when leaf_latch_mode=EX. whether to retry from root if latch upgrade fails
     */
-    static rc_t                 _ux_traverse(
-        StoreID store,
-        const w_keystr_t&          key,
-        traverse_mode_t            traverse_mode,
-        latch_mode_t               leaf_latch_mode,
-        btree_page_h&                   leaf,
-        bool                       allow_retry = true
-        );
+    static rc_t _ux_traverse(
+            StoreID store,
+            const w_keystr_t& key,
+            traverse_mode_t traverse_mode,
+            latch_mode_t leaf_latch_mode,
+            btree_page_h& leaf,
+            bool allow_retry = true
+                            );
 
     /**
     * \brief For internal recursion. Assuming start is non-leaf, check children recursively.
@@ -311,14 +315,14 @@ public:
     * and it fails upgrading the leaf page, this function returns eRETRY and fills this value.
     * [in:] On next try, put the page id in this param. This function will try EX-acquire, not upgrade.
     */
-    static rc_t                 _ux_traverse_recurse(
-        btree_page_h&                   start,
-        const w_keystr_t&          key,
-        traverse_mode_t            traverse_mode,
-        latch_mode_t               leaf_latch_mode,
-        btree_page_h&              leaf,
-        PageID&                   leaf_pid_causing_failed_upgrade
-        );
+    static rc_t _ux_traverse_recurse(
+            btree_page_h& start,
+            const w_keystr_t& key,
+            traverse_mode_t traverse_mode,
+            latch_mode_t leaf_latch_mode,
+            btree_page_h& leaf,
+            PageID& leaf_pid_causing_failed_upgrade
+                                    );
 
     /**
      * \brief Internal helper function to actually search for the correct slot and test fence
@@ -332,9 +336,9 @@ public:
      * @param[out] slot_to_follow The slot that we will to go down (or sideways) next.
      */
     static inline void _ux_traverse_search(btree_impl::traverse_mode_t traverse_mode,
-                                    btree_page_h *current,
-                                    const w_keystr_t& key,
-                                    bool &this_is_the_leaf_page, slot_follow_t &slot_to_follow);
+                                           btree_page_h* current,
+                                           const w_keystr_t& key,
+                                           bool& this_is_the_leaf_page, slot_follow_t& slot_to_follow);
 
     /**
      * Call this function when it seems like the next page will have VERY high contention
@@ -345,7 +349,7 @@ public:
      * and, false positive is fine. it's just one mutex call overhead.
      * See jira ticket:78 "Eager-Opportunistic Hybrid Latching" (originally trac ticket:80).
      */
-    static rc_t _ux_traverse_try_eager_adopt(btree_page_h &current, PageID next_pid);
+    static rc_t _ux_traverse_try_eager_adopt(btree_page_h& current, PageID next_pid);
 
     /**
      * If next has foster pointer and real-parent wants to adopt it, call this function.
@@ -355,7 +359,7 @@ public:
      * will be called to do it.
      * See jira ticket:78 "Eager-Opportunistic Hybrid Latching" (originally trac ticket:80).
      */
-    static rc_t _ux_traverse_try_opportunistic_adopt(btree_page_h &current, btree_page_h &next);
+    static rc_t _ux_traverse_try_opportunistic_adopt(btree_page_h& current, btree_page_h& next);
 
     /**
     *  Find key in btree. If found, copy up to elen bytes of the
@@ -367,26 +371,27 @@ public:
     * @param[out] el buffer to put el if !cursor
     * @param[out] elen size of el if !cursor
     */
-    static rc_t                 _ux_lookup(
-        StoreID store,
-        const w_keystr_t&          key,
-        bool&                      found,
-        void*                      el,
-        smsize_t&                  elen
-        );
+    static rc_t _ux_lookup(
+            StoreID store,
+            const w_keystr_t& key,
+            bool& found,
+            void* el,
+            smsize_t& elen
+                          );
+
     /** _ux_lookup()'s internal function which doesn't rety for locks by itself. */
-    static rc_t                 _ux_lookup_core(
-        StoreID store,
-        const w_keystr_t&          key,
-        bool&                      found,
-        void*                      el,
-        smsize_t&                  elen
-        );
+    static rc_t _ux_lookup_core(
+            StoreID store,
+            const w_keystr_t& key,
+            bool& found,
+            void* el,
+            smsize_t& elen
+                               );
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Split/Adopt functions. implemented in btree_impl_split.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: Split/Adopt functions. implemented in btree_impl_split.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
 
     /**
@@ -398,7 +403,7 @@ public:
      * @param[in] page the new page belongs to this page as foster-child.
      * @param[out] new_page_id Page ID of the new page.
      */
-    static rc_t _sx_norec_alloc(btree_page_h &page, PageID &new_page_id);
+    static rc_t _sx_norec_alloc(btree_page_h& page, PageID& new_page_id);
 
     /**
      * this version assumes system transaction as the active transaction on current thread.
@@ -407,7 +412,7 @@ public:
      * @pre In SSX
      * @pre In page is EX-latched
      */
-    static rc_t _ux_norec_alloc_core(btree_page_h &page, PageID &new_page_id);
+    static rc_t _ux_norec_alloc_core(btree_page_h& page, PageID& new_page_id);
 
     /**
      * \brief Checks all direct children of parent and, if some child has foster,
@@ -419,11 +424,12 @@ public:
      * @param[in] root root node.
      * @param[in] recursive whether we recursively check all descendants and fosters.
      */
-    static rc_t                 _sx_adopt_foster_all(
-        btree_page_h &root, bool recursive=false);
+    static rc_t _sx_adopt_foster_all(
+            btree_page_h& root, bool recursive = false);
+
     /** overload for recursion. */
-    static rc_t                 _sx_adopt_foster_all_core(
-        btree_page_h &parent, bool is_root, bool recursive);
+    static rc_t _sx_adopt_foster_all_core(
+            btree_page_h& parent, bool is_root, bool recursive);
 
     /**
      * \brief Pushes up a foster pointer of child to the parent.
@@ -437,15 +443,15 @@ public:
      * @param[in] parent the interior node to store new children.
      * @param[in] child child page of the parent that (might) has foster-children.
      */
-    static rc_t                 _sx_adopt_foster(btree_page_h &parent, btree_page_h &child);
+    static rc_t _sx_adopt_foster(btree_page_h& parent, btree_page_h& child);
 
     /**
      * this version assumes we have already split the parent if needed.
      * Context: in system transaction.
      * @see _sx_adopt_foster()
      */
-    static rc_t                 _ux_adopt_foster_core(btree_page_h &parent,
-                                        btree_page_h &child, const w_keystr_t &new_child_key);
+    static rc_t _ux_adopt_foster_core(btree_page_h& parent,
+                                      btree_page_h& child, const w_keystr_t& new_child_key);
 
     /**
      * \brief Pushes up a foster pointer of child to the parent IF we can get EX latches immediately.
@@ -456,8 +462,8 @@ public:
      * @param[in] child child page of the parent that (might) has foster-children.
      * @param[out] pushedup whether the adopt was done
      */
-    static rc_t _sx_opportunistic_adopt_foster(btree_page_h &parent, btree_page_h &child,
-                                                    bool &pushedup);
+    static rc_t _sx_opportunistic_adopt_foster(btree_page_h& parent, btree_page_h& child,
+                                               bool& pushedup);
 
     /**
      * \brief Pushes up all foster-children of children to the parent.
@@ -465,7 +471,7 @@ public:
      * This method also follows foster-children of the parent.
      * @param[in] parent_arg the interior node to store new children.
      */
-    static rc_t _sx_adopt_foster_sweep (btree_page_h &parent_arg);
+    static rc_t _sx_adopt_foster_sweep(btree_page_h& parent_arg);
 
     /**
      * @see _sx_adopt_foster_sweep()
@@ -474,13 +480,15 @@ public:
      * is that this function doesn't exactly check children have foster-child.
      * So, this is much faster but some foster-child might be not adopted!
      */
-    static rc_t _sx_adopt_foster_sweep_approximate (btree_page_h &parent, PageID surely_need_child_pid);
+    static rc_t _sx_adopt_foster_sweep_approximate(btree_page_h& parent, PageID surely_need_child_pid);
 
     /** Applies the changes of one adoption on parent node. Used by both usual adoption and REDO. */
-    static void _ux_adopt_foster_apply_parent (btree_page_h &parent_arg,
-        PageID new_child_pid, lsn_t new_child_emlsn, const w_keystr_t &new_child_key);
+    static void _ux_adopt_foster_apply_parent(btree_page_h& parent_arg,
+                                              PageID new_child_pid, lsn_t new_child_emlsn,
+                                              const w_keystr_t& new_child_key);
+
     /** Applies the changes of one adoption on child node. Used by both usual adoption and REDO. */
-    static void _ux_adopt_foster_apply_child (btree_page_h &child);
+    static void _ux_adopt_foster_apply_child(btree_page_h& child);
 
     /**
      * \brief Splits a page, making the new page as foster-child.
@@ -511,8 +519,8 @@ public:
      * @param[in] triggering_key the key to be inserted after this split.
      * used to determine split policy.
      */
-    static rc_t                 _sx_split_foster(btree_page_h &page,
-            PageID &new_page_id, const w_keystr_t &triggering_key);
+    static rc_t _sx_split_foster(btree_page_h& page,
+                                 PageID& new_page_id, const w_keystr_t& triggering_key);
 
     /**
      * \brief Splits the given page if we need to do so for inserting the given key.
@@ -521,14 +529,15 @@ public:
      * is switched to the new page. Remember, we receive a reference here.
      * @param[in] new_key the key that has to be inserted.
      */
-    static rc_t                 _sx_split_if_needed (btree_page_h &page,
-                                                      const w_keystr_t &new_key);
+    static rc_t _sx_split_if_needed(btree_page_h& page,
+                                    const w_keystr_t& new_key);
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Lock related functions. implemented in btree_impl_lock.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: Lock related functions. implemented in btree_impl_lock.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
+
     /**
      * \brief Acquires a lock on the given leaf page, tentatively unlatching the page if needed.
      * \details
@@ -550,24 +559,24 @@ public:
      * @param[in] check_only whether the lock goes away right after grant
      */
     static rc_t _ux_lock_key(
-        const StoreID&      store,
-        btree_page_h&      leaf,
-        const w_keystr_t&   key,
-        latch_mode_t        latch_mode,
-        const okvl_mode&       lock_mode,
-        bool                check_only
-    );
+            const StoreID& store,
+            btree_page_h& leaf,
+            const w_keystr_t& key,
+            latch_mode_t latch_mode,
+            const okvl_mode& lock_mode,
+            bool check_only
+                            );
 
     /** raw string and length version. */
     static rc_t _ux_lock_key(
-        const StoreID&      store,
-        btree_page_h&      leaf,
-        const void         *keystr,
-        size_t              keylen,
-        latch_mode_t        latch_mode,
-        const okvl_mode&       lock_mode,
-        bool                check_only
-    );
+            const StoreID& store,
+            btree_page_h& leaf,
+            const void* keystr,
+            size_t keylen,
+            latch_mode_t latch_mode,
+            const okvl_mode& lock_mode,
+            bool check_only
+                            );
 
     /**
      * Lock gap containing nonexistent key key in page leaf with locking mode
@@ -587,25 +596,25 @@ public:
      * Used when the exact key is not found and range locking is needed.
      * @see _ux_lock_key()
      */
-    static rc_t _ux_lock_range(const StoreID&     store,
-                               btree_page_h&     leaf,
+    static rc_t _ux_lock_range(const StoreID& store,
+                               btree_page_h& leaf,
                                const w_keystr_t& key,
-                               slotid_t          slot,
-                               latch_mode_t      latch_mode,
-                               const okvl_mode&  exact_hit_lock_mode,
-                               const okvl_mode&  miss_lock_mode,
-                               bool              check_only);
-
-    /** raw string version. */
-    static rc_t _ux_lock_range(const StoreID&    store,
-                               btree_page_h&    leaf,
-                               const void*      keystr,
-                               size_t           keylen,
-                               slotid_t         slot,
-                               latch_mode_t     latch_mode,
+                               slotid_t slot,
+                               latch_mode_t latch_mode,
                                const okvl_mode& exact_hit_lock_mode,
                                const okvl_mode& miss_lock_mode,
-                               bool             check_only);
+                               bool check_only);
+
+    /** raw string version. */
+    static rc_t _ux_lock_range(const StoreID& store,
+                               btree_page_h& leaf,
+                               const void* keystr,
+                               size_t keylen,
+                               slotid_t slot,
+                               latch_mode_t latch_mode,
+                               const okvl_mode& exact_hit_lock_mode,
+                               const okvl_mode& miss_lock_mode,
+                               bool check_only);
 
     /**
      * \brief Assures the given leaf page has an entry whose key is the low-fence.
@@ -621,18 +630,19 @@ public:
      * This method is called for foster-child when Merge/Rebalance happens.
      * See jira ticket:84 "Key Range Locking" (originally trac ticket:86) for more details.
      */
-    static rc_t _ux_assure_fence_low_entry(btree_page_h &leaf);
+    static rc_t _ux_assure_fence_low_entry(btree_page_h& leaf);
 
-    #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Tree Grow/Shrink/Create. implemented in btree_impl_grow.cpp
-///==========================================
+#ifdef DOXYGEN_HIDE
+    ///==========================================
+    ///   BEGIN: Tree Grow/Shrink/Create. implemented in btree_impl_grow.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
+
     /**
      * this version assumes system transaction as the active transaction on current thread.
      * @see _sx_shrink_tree()
      */
-    static rc_t                        _ux_create_tree_core(const StoreID &stid, const PageID &root_pid);
+    static rc_t _ux_create_tree_core(const StoreID& stid, const PageID& root_pid);
 
     /**
     *  \brief Shrink the tree. Copy the child page over the root page so the
@@ -641,12 +651,14 @@ public:
      * Context: only in system transaction.
      * @param[in] root current root page.
     */
-    static rc_t                        _sx_shrink_tree(btree_page_h& root);
+    static rc_t _sx_shrink_tree(btree_page_h& root);
+
     /**
      * this version assumes system transaction as the active transaction on current thread.
      * @see _sx_shrink_tree()
      */
-    static rc_t                        _ux_shrink_tree_core(btree_page_h& root);
+    static rc_t _ux_shrink_tree_core(btree_page_h& root);
+
     /**
     *  \brief On root page split, allocates a new child, shifts all entries of
     *  root to new child, and has the only entry in root (pid0) point
@@ -655,12 +667,12 @@ public:
      * Context: only in system transaction.
      * @param[in] root current root page.
     */
-    static rc_t                        _sx_grow_tree(btree_page_h& root);
+    static rc_t _sx_grow_tree(btree_page_h& root);
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: BTree Verification. implemented in btree_impl_verify.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: BTree Verification. implemented in btree_impl_verify.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
 
     /**
@@ -677,17 +689,16 @@ public:
     * @param[in] hash_bits the number of bits we use for hashing, at most 31.
     * @param[out] consistent whether the BTree is consistent
     */
-    static rc_t                        _ux_verify_tree(
-        StoreID store, int hash_bits, bool &consistent);
-
+    static rc_t _ux_verify_tree(
+            StoreID store, int hash_bits, bool& consistent);
 
     /**
     * Internal method to be called from _ux_verify_tree() for recursively check foster and children.
     * @param[in] parent page to check
     * @param[in] context context object to maintain
     */
-    static rc_t                        _ux_verify_tree_recurse(
-        btree_page_h &parent, verification_context &context);
+    static rc_t _ux_verify_tree_recurse(
+            btree_page_h& parent, verification_context& context);
 
     /**
     * Internal method to check each page. Called both from tree-recurse type and
@@ -695,8 +706,8 @@ public:
     * @param[in] page the page to check
     * @param[in] context context object to maintain
     */
-    static rc_t                        _ux_verify_feed_page(
-        btree_page_h &page, verification_context &context);
+    static rc_t _ux_verify_feed_page(
+            btree_page_h& page, verification_context& context);
 
     /**
      * \brief Verifies consistency of all BTree indexes in the volume.
@@ -709,21 +720,24 @@ public:
      * @param[out] result Results of the verification.
      * @see _ux_verify_tree()
      */
-    static rc_t                       _ux_verify_volume(
-        int hash_bits, verify_volume_result &result);
+    static rc_t _ux_verify_volume(
+            int hash_bits, verify_volume_result& result);
 
     /** initialize context for in-query verification.*/
     static void inquery_verify_init(StoreID store);
+
     /** checks one page against the given expectation. */
-    static void inquery_verify_fact(btree_page_h &page);
+    static void inquery_verify_fact(btree_page_h& page);
+
     /** adds expectation for next page. */
-    static void inquery_verify_expect(btree_page_h &page, slot_follow_t next_follow);
+    static void inquery_verify_expect(btree_page_h& page, slot_follow_t next_follow);
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Defrag/Reorg functions. implemented in btree_impl_defrag.cpp
-///==========================================
+    ///==========================================
+    ///   BEGIN: Defrag/Reorg functions. implemented in btree_impl_defrag.cpp
+    ///==========================================
 #endif // DOXYGEN_HIDE
+
     /**
     *  \brief Checks the whole tree to opportunistically adopt, in-page defrag and rebalance.
     *  \details
@@ -739,22 +753,22 @@ public:
     * @param[in] does_adopt whether we do adopts
     * @param[in] does_merge whether we do merge/rebalance (which might trigger de-adopt as well)
     */
-    static rc_t                        _sx_defrag_tree(
-        StoreID store,
-        uint16_t inpage_defrag_ghost_threshold = 10,
-        uint16_t inpage_defrag_usage_threshold = 50,
-        bool does_adopt = true,
-        bool does_merge = true);
+    static rc_t _sx_defrag_tree(
+            StoreID store,
+            uint16_t inpage_defrag_ghost_threshold = 10,
+            uint16_t inpage_defrag_usage_threshold = 50,
+            bool does_adopt = true,
+            bool does_merge = true);
 
     /**
      * @see _sx_defrag_tree()
      */
-    static rc_t                        _ux_defrag_tree_core(
-        StoreID store,
-        uint16_t inpage_defrag_ghost_threshold,
-        uint16_t inpage_defrag_usage_threshold,
-        bool does_adopt,
-        bool does_merge);
+    static rc_t _ux_defrag_tree_core(
+            StoreID store,
+            uint16_t inpage_defrag_ghost_threshold,
+            uint16_t inpage_defrag_usage_threshold,
+            bool does_adopt,
+            bool does_merge);
 
     /**
      * \brief Defrags the given page to remove holes and ghost records in the page.
@@ -767,13 +781,13 @@ public:
      * Context: System transaction.
      * @param[in] page the page to be defraged
      */
-    static rc_t _sx_defrag_page(btree_page_h &page);
+    static rc_t _sx_defrag_page(btree_page_h& page);
 
     /**
      * this version assumes system transaction as the active transaction on current thread.
      * @see _sx_defrag_page()
      */
-    static rc_t _ux_defrag_page_core(btree_page_h &p);
+    static rc_t _ux_defrag_page_core(btree_page_h& p);
 
     /**
     * Helper method to create an OKVL instance on one partition,
@@ -782,9 +796,9 @@ public:
     static okvl_mode create_part_okvl(okvl_mode::element_lock_mode mode, const w_keystr_t& key);
 
 #ifdef DOXYGEN_HIDE
-///==========================================
-///   BEGIN: Global Approximate (non-protected) Counters to guide opportunistic/eager latching.
-///==========================================
+    ///==========================================
+    ///   BEGIN: Global Approximate (non-protected) Counters to guide opportunistic/eager latching.
+    ///==========================================
 #endif // DOXYGEN_HIDE
     // see jira ticket:78 "Eager-Opportunistic Hybrid Latching" (originally trac ticket:80)
     // these are used to help determine when we should do eager EX latching.
@@ -793,11 +807,13 @@ public:
         GAC_HASH_BITS = 16, // 64K
         GAC_HASH_MOD = 65521 // some prime number smaller than 2^GAC_HASH_BITS
     };
+
     /**
      * The corresponding page is a real-parent of some foster-parent page
      * The value means an approximate count of failed Upgrade of the page.
      */
     static uint8_t s_ex_need_counts[1 << GAC_HASH_BITS];
+
     /**
      * To avoid excessive spin locks on the same page,
      * use this mutex when you are suspicious that the page is in high contention (should be rare).
@@ -805,6 +821,7 @@ public:
      * This is just optional to avoid CPU usage.
      */
     static queue_based_lock_t s_ex_need_mutex[1 << GAC_HASH_BITS];
+
     /**
      * The corresponding page is a foster-parent.
      * The value means an approximate count of foster-children.
@@ -813,36 +830,40 @@ public:
     static uint8_t s_foster_children_counts[1 << GAC_HASH_BITS];
 
     /** simple modular hashing. this must be cheap. */
-    inline static uint32_t shpid2hash (PageID pid) {
+    inline static uint32_t shpid2hash(PageID pid) {
         return pid % GAC_HASH_MOD;
     }
+
     /** Returns the mutex we should use when the given page is expected to be high-contended. */
-    inline static queue_based_lock_t* mutex_for_high_contention (PageID pid) {
+    inline static queue_based_lock_t* mutex_for_high_contention(PageID pid) {
         return s_ex_need_mutex + shpid2hash(pid);
     }
 
     /** Returns if the page should be fixed with EX latch. */
-    inline static bool is_ex_recommended (PageID pid) {
+    inline static bool is_ex_recommended(PageID pid) {
         uint32_t hash = shpid2hash(pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         return (s_ex_need_counts[hash] > 30);
     }
+
     /** Returns if the page is likely to have foster-child. */
-    inline static uint8_t get_expected_childrens (PageID pid) {
+    inline static uint8_t get_expected_childrens(PageID pid) {
         uint32_t hash = shpid2hash(pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         return s_foster_children_counts[hash];
     }
+
     /** Call this when encountered a failed upgrade. Again, doesn't need to be exact! */
-    inline static void increase_ex_need (PageID real_parent_pid) {
+    inline static void increase_ex_need(PageID real_parent_pid) {
         uint32_t hash = shpid2hash(real_parent_pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         if (s_ex_need_counts[hash] < 255) {
             ++s_ex_need_counts[hash];
         }
     }
+
     /** Call this when there happened a split. Again, doesn't need to be exact! */
-    inline static void increase_forster_child (PageID new_foster_parent_pid) {
+    inline static void increase_forster_child(PageID new_foster_parent_pid) {
         uint32_t hash = shpid2hash(new_foster_parent_pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         ++s_foster_children_counts[hash];
@@ -850,17 +871,20 @@ public:
             ++s_foster_children_counts[hash];
         }
     }
+
     /** Call this when adopted children under the page.*/
-    inline static void clear_ex_need (PageID real_parent_pid) {
+    inline static void clear_ex_need(PageID real_parent_pid) {
         uint32_t hash = shpid2hash(real_parent_pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         s_ex_need_counts[hash] = 0;
     }
+
     /** Call this when you cleared foster status of the page.*/
-    inline static void clear_forster_child (PageID foster_parent_pid) {
+    inline static void clear_forster_child(PageID foster_parent_pid) {
         uint32_t hash = shpid2hash(foster_parent_pid);
         w_assert1(hash < (1 << GAC_HASH_BITS));
         s_foster_children_counts[hash] = 0;
     }
 };
+
 #endif // __BTREE_IMPL_H

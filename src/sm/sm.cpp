@@ -74,18 +74,21 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include "log_core.h"
 #include "xct_logger.h"
 
-
 sm_tls_allocator smlevel_0::allocator;
 
 memalign_allocator<char, smlevel_0::IO_ALIGN> smlevel_0::aligned_allocator;
 
-
 bool         smlevel_0::shutdown_filthy = false;
+
 bool         smlevel_0::shutdown_clean = false;
+
 bool         smlevel_0::shutting_down = false;
-            //controlled by AutoTurnOffLogging:
+
+//controlled by AutoTurnOffLogging:
 bool        smlevel_0::lock_caching_default = true;
+
 bool        smlevel_0::logging_enabled = true;
+
 bool        smlevel_0::statistics_enabled = true;
 
 /*
@@ -97,12 +100,16 @@ bool        smlevel_0::statistics_enabled = true;
  */
 
 // Certain operations have to exclude xcts
-static srwlock_t          _begin_xct_mutex;
+static srwlock_t _begin_xct_mutex;
 
 BackupManager* smlevel_0::bk = 0;
+
 vol_t* smlevel_0::vol = 0;
+
 zero::buffer_pool::BufferPool* smlevel_0::bf = 0;
+
 log_core* smlevel_0::log = 0;
+
 LogArchiver* smlevel_0::logArchiver = 0;
 
 lock_m* smlevel_0::lm = 0;
@@ -125,12 +132,12 @@ ss_m* smlevel_top::SSM = 0;
  *  Order is important!!
  */
 int ss_m::_instance_cnt = 0;
+
 sm_options ss_m::_options;
 
-
 static queue_based_block_lock_t ssm_once_mutex;
-ss_m::ss_m(const sm_options &options)
-{
+
+ss_m::ss_m(const sm_options& options) {
     _options = options;
 
     // Start the store during ss_m constructor if caller is asking for it
@@ -140,11 +147,9 @@ ss_m::ss_m(const sm_options &options)
         W_FATAL_MSG(eINTERNAL, << "Failed to start the store from ss_m constructor");
 }
 
-bool ss_m::startup()
-{
+bool ss_m::startup() {
     CRITICAL_SECTION(cs, ssm_once_mutex);
-    if (0 == _instance_cnt)
-    {
+    if (0 == _instance_cnt) {
         // Start the store if it is not running currently
         // Caller can start and stop the store independent of construct and destory
         // the ss_m object.
@@ -167,11 +172,9 @@ bool ss_m::startup()
     return false;
 }
 
-bool ss_m::shutdown()
-{
+bool ss_m::shutdown() {
     CRITICAL_SECTION(cs, ssm_once_mutex);
-    if (0 < _instance_cnt)
-    {
+    if (0 < _instance_cnt) {
         // Stop the store if it is running currently,
         // do not destroy the ss_m object, caller can start the store again using
         // the same ss_m object, therefore all the option setting remain the same
@@ -198,13 +201,12 @@ bool ss_m::shutdown()
 }
 
 void
-ss_m::_construct_once()
-{
+ss_m::_construct_once() {
     stopwatch_t timer;
 
     // smthread_t::init_fingerprint_map();
 
-    if (_instance_cnt++)  {
+    if (_instance_cnt++) {
         cerr << "ss_m cannot be instantiated more than once" << endl;
         W_FATAL_MSG(eINTERNAL, << "instantiating sm twice");
     }
@@ -223,7 +225,7 @@ ss_m::_construct_once()
     ERROUT(<< "[" << timer.time_ms() << "] Initializing lock manager");
 
     lm = new lock_m(_options);
-    if (! lm)  {
+    if (!lm) {
         W_FATAL(eOUTOFMEMORY);
     }
 
@@ -248,7 +250,7 @@ ss_m::_construct_once()
     ERROUT(<< "[" << timer.time_ms() << "] Initializing restart manager");
 
     if (_options.get_bool_option("sm_log_benchmark_start", false)) {
-            Logger::log_sys<benchmark_start_log>();
+        Logger::log_sys<benchmark_start_log>();
     }
 
     // Log analysis provides info required to initialize vol_t
@@ -267,7 +269,7 @@ ss_m::_construct_once()
     ERROUT(<< "[" << timer.time_ms() << "] Initializing buffer manager");
 
     bf = new zero::buffer_pool::BufferPool();
-    if (! bf) {
+    if (!bf) {
         W_FATAL(eOUTOFMEMORY);
     }
 
@@ -282,11 +284,15 @@ ss_m::_construct_once()
     ERROUT(<< "[" << timer.time_ms() << "] Initializing buffer cleaner and other services");
 
     bt = new btree_m;
-    if (! bt) { W_FATAL(eOUTOFMEMORY); }
+    if (!bt) {
+        W_FATAL(eOUTOFMEMORY);
+    }
     bt->construct_once();
 
     chkpt = new chkpt_m(_options, chkpt_info);
-    if (! chkpt)  { W_FATAL(eOUTOFMEMORY); }
+    if (!chkpt) {
+        W_FATAL(eOUTOFMEMORY);
+    }
 
     SSM = this;
 
@@ -300,34 +306,36 @@ ss_m::_construct_once()
         recovery->wakeup();
         recovery->join();
         // metadata caches can only be constructed now
-        if (logBasedRedo) { vol->build_caches(format, nullptr); }
+        if (logBasedRedo) {
+            vol->build_caches(format, nullptr);
+        }
     }
 
     ERROUT(<< "[" << timer.time_ms() << "] Finished SM initialization");
 }
 
-ss_m::~ss_m()
-{
+ss_m::~ss_m() {
     // This looks like a candidate for pthread_once(), but then smsh
     // would not be able to
     // do multiple startups and shutdowns in one process, alas.
     CRITICAL_SECTION(cs, ssm_once_mutex);
 
-    if (0 < _instance_cnt)
+    if (0 < _instance_cnt) {
         _destruct_once();
+    }
 }
 
 void
-ss_m::_destruct_once()
-{
-    if (shutdown_filthy)
+ss_m::_destruct_once() {
+    if (shutdown_filthy) {
         shutdown_clean = false;
+    }
     --_instance_cnt;
 
-    if (_instance_cnt)  {
+    if (_instance_cnt) {
         cerr << "ss_m::~ss_m() : \n"
-            << "\twarning --- destructor called more than once\n"
-            << "\tignored" << endl;
+             << "\twarning --- destructor called more than once\n"
+             << "\tignored" << endl;
         return;
     }
 
@@ -342,7 +350,7 @@ ss_m::_destruct_once()
 
     // get rid of all non-prepared transactions
     // First... disassociate me from any tx
-    if(xct()) {
+    if (xct()) {
         smthread_t::detach_xct(xct());
     }
 
@@ -355,8 +363,9 @@ ss_m::_destruct_once()
         if (shutdown_clean) {
             recovery->wakeup();
             recovery->join();
+        } else {
+            recovery->stop();
         }
-        else { recovery->stop(); }
     }
 
     // remove all transactions, aborting them in case of clean shutdown
@@ -374,19 +383,22 @@ ss_m::_destruct_once()
         } while (bf->hasDirtyFrames());
         smthread_t::check_actual_pin_count(0);
 
-        if (truncate) { W_COERCE(_truncate_log()); }
-        else { chkpt->take(); }
+        if (truncate) {
+            W_COERCE(_truncate_log());
+        } else {
+            chkpt->take();
+        }
 
         ERROUT(<< "All pages cleaned successfully");
-    }
-    else {
+    } else {
         ERROUT(<< "SM performing dirty shutdown");
     }
 
     // Stop cleaner and evictioner
     bf->shutdown();
 
-    delete chkpt; chkpt = 0;
+    delete chkpt;
+    chkpt = 0;
 
     if (recovery) {
         delete recovery;
@@ -394,48 +406,54 @@ ss_m::_destruct_once()
     }
 
     ERROUT(<< "Terminating log archiver");
-    if (logArchiver) { logArchiver->shutdown(); }
+    if (logArchiver) {
+        logArchiver->shutdown();
+    }
 
     ERROUT(<< "Terminating buffer manager");
-    delete bf; bf = 0;
+    delete bf;
+    bf = 0;
 
     ERROUT(<< "Terminating other services");
     lm->assert_empty(); // no locks should be left
     bt->destruct_once();
-    delete bt; bt = 0; // btree manager
-    delete lm; lm = 0;
+    delete bt;
+    bt = 0; // btree manager
+    delete lm;
+    lm = 0;
 
-    if(logArchiver) {
+    if (logArchiver) {
         delete logArchiver; // LL: decoupled cleaner in bf still needs archiver
         logArchiver = 0;    //     so we delete it only after bf is gone
     }
 
     ERROUT(<< "Terminating volume");
     vol->shutdown();
-    delete vol; vol = 0;
+    delete vol;
+    vol = 0;
 
     ERROUT(<< "Terminating log manager");
     log->shutdown();
-    delete log; log = 0;
+    delete log;
+    log = 0;
 
+    if (shutdown_filthy) {
+        ERROUT(<< "Executing Shutdown Filthy");
+        auto offset = shutdown_lsn.lo();
+        resize_file(current_log_path, offset);
+        if ((offset % partition_t::XFERSIZE) > 0) {
+            offset = (offset / partition_t::XFERSIZE + 1) * partition_t::XFERSIZE;
+        }
+        resize_file(current_log_path, offset);
+    }
 
-     if (shutdown_filthy) {
-         ERROUT(<< "Executing Shutdown Filthy");
-         auto offset = shutdown_lsn.lo();
-         resize_file(current_log_path, offset);
-         if ((offset % partition_t::XFERSIZE)> 0 )
-    	     offset = (offset/ partition_t::XFERSIZE + 1) * partition_t::XFERSIZE;
-         resize_file(current_log_path, offset);
-     }
+    shutdown_filthy = false;
+    shutdown_clean = true;
 
-     shutdown_filthy = false;
-     shutdown_clean = true;
-
-     ERROUT(<< "SM shutdown complete!");
+    ERROUT(<< "SM shutdown complete!");
 }
 
-rc_t ss_m::_truncate_log()
-{
+rc_t ss_m::_truncate_log() {
     DBGTHRD(<< "Truncating log on LSN " << log->durable_lsn());
 
     // Wait for cleaner to finish its current round
@@ -459,9 +477,9 @@ rc_t ss_m::_truncate_log()
     W_DO(log->flush_all());
 
     // generate an empty log archive run to cover the new durable LSN
-    if(logArchiver) {
+    if (logArchiver) {
         unsigned replFactor =
-            _options.get_int_option("sm_archiver_replication_factor", 1);
+                _options.get_int_option("sm_archiver_replication_factor", 1);
         logArchiver->archiveUntilLSN(log->durable_lsn());
         logArchiver->getIndex()->deleteRuns(replFactor);
     }
@@ -474,13 +492,11 @@ rc_t ss_m::_truncate_log()
     return RCOK;
 }
 
-void ss_m::set_shutdown_flag(bool clean)
-{
+void ss_m::set_shutdown_flag(bool clean) {
     shutdown_clean = clean;
 }
 
-void ss_m::set_shutdown_filthy(bool filthy)
-{
+void ss_m::set_shutdown_filthy(bool filthy) {
     shutdown_filthy = filthy;
 }
 
@@ -495,16 +511,15 @@ void ss_m::set_shutdown_filthy(bool filthy)
  *--------------------------------------------------------------*/
 rc_t
 ss_m::begin_xct(
-        sm_stats_t*             _stats, // allocated by caller
-        int timeout)
-{
+        sm_stats_t* _stats, // allocated by caller
+        int timeout) {
     tid_t tid;
     W_DO(_begin_xct(_stats, tid, timeout));
     return RCOK;
 }
+
 rc_t
-ss_m::begin_xct(int timeout)
-{
+ss_m::begin_xct(int timeout) {
     tid_t tid;
     W_DO(_begin_xct(0, tid, timeout));
     return RCOK;
@@ -514,28 +529,24 @@ ss_m::begin_xct(int timeout)
  *  ss_m::begin_xct() - for Markos' tests                       *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::begin_xct(tid_t& tid, int timeout)
-{
+ss_m::begin_xct(tid_t& tid, int timeout) {
     W_DO(_begin_xct(0, tid, timeout));
     return RCOK;
 }
 
 rc_t ss_m::begin_sys_xct(bool single_log_sys_xct,
-    sm_stats_t *stats, int timeout)
-{
+                         sm_stats_t* stats, int timeout) {
     tid_t tid;
     W_DO (_begin_xct(stats, tid, timeout, true, single_log_sys_xct));
     return RCOK;
 }
-
 
 /*--------------------------------------------------------------*
  *  ss_m::commit_xct()                                *
  *--------------------------------------------------------------*/
 rc_t
 ss_m::commit_xct(sm_stats_t*& _stats, bool lazy,
-                 lsn_t* plastlsn)
-{
+                 lsn_t* plastlsn) {
 
     W_DO(_commit_xct(_stats, lazy, plastlsn));
 
@@ -543,9 +554,8 @@ ss_m::commit_xct(sm_stats_t*& _stats, bool lazy,
 }
 
 rc_t
-ss_m::commit_sys_xct()
-{
-    sm_stats_t *_stats = nullptr;
+ss_m::commit_sys_xct() {
+    sm_stats_t* _stats = nullptr;
     W_DO(_commit_xct(_stats, true, nullptr)); // always lazy commit
     return RCOK;
 }
@@ -554,11 +564,10 @@ ss_m::commit_sys_xct()
  *  ss_m::commit_xct()                                          *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::commit_xct(bool lazy, lsn_t* plastlsn)
-{
+ss_m::commit_xct(bool lazy, lsn_t* plastlsn) {
 
-    sm_stats_t*             _stats=0;
-    W_DO(_commit_xct(_stats,lazy,plastlsn));
+    sm_stats_t* _stats = 0;
+    W_DO(_commit_xct(_stats, lazy, plastlsn));
     /*
      * throw away the _stats, since user isn't harvesting...
      */
@@ -571,8 +580,7 @@ ss_m::commit_xct(bool lazy, lsn_t* plastlsn)
  *  ss_m::abort_xct()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::abort_xct(sm_stats_t*&             _stats)
-{
+ss_m::abort_xct(sm_stats_t*& _stats) {
 
     // Temp removed for debugging purposes only
     // want to see what happens if the abort proceeds (scripts/alloc.10)
@@ -581,10 +589,10 @@ ss_m::abort_xct(sm_stats_t*&             _stats)
 
     return RCOK;
 }
+
 rc_t
-ss_m::abort_xct()
-{
-    sm_stats_t*             _stats=0;
+ss_m::abort_xct() {
+    sm_stats_t* _stats = 0;
 
     W_DO(_abort_xct(_stats));
     /*
@@ -599,12 +607,11 @@ ss_m::abort_xct()
  *  ss_m::save_work()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::save_work(sm_save_point_t& sp)
-{
+ss_m::save_work(sm_save_point_t& sp) {
     // For now, consider this a read/write operation since you
     // wouldn't be doing this unless you intended to write and
     // possibly roll back.
-    W_DO( _save_work(sp) );
+    W_DO(_save_work(sp));
     return RCOK;
 }
 
@@ -612,9 +619,8 @@ ss_m::save_work(sm_save_point_t& sp)
  *  ss_m::rollback_work()                            *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::rollback_work(const sm_save_point_t& sp)
-{
-    W_DO( _rollback_work(sp) );
+ss_m::rollback_work(const sm_save_point_t& sp) {
+    W_DO(_rollback_work(sp));
     return RCOK;
 }
 
@@ -622,23 +628,21 @@ ss_m::rollback_work(const sm_save_point_t& sp)
  *  ss_m::num_active_xcts()                            *
  *--------------------------------------------------------------*/
 uint32_t
-ss_m::num_active_xcts()
-{
+ss_m::num_active_xcts() {
     return xct_t::num_active_xcts();
 }
+
 /*--------------------------------------------------------------*
  *  ss_m::tid_to_xct()                                *
  *--------------------------------------------------------------*/
-xct_t* ss_m::tid_to_xct(const tid_t& tid)
-{
+xct_t* ss_m::tid_to_xct(const tid_t& tid) {
     return xct_t::look_up(tid);
 }
 
 /*--------------------------------------------------------------*
  *  ss_m::xct_to_tid()                                *
  *--------------------------------------------------------------*/
-tid_t ss_m::xct_to_tid(const xct_t* x)
-{
+tid_t ss_m::xct_to_tid(const xct_t* x) {
     w_assert0(x != nullptr);
     return x->tid();
 }
@@ -646,8 +650,7 @@ tid_t ss_m::xct_to_tid(const xct_t* x)
 /*--------------------------------------------------------------*
  *  ss_m::dump_xcts()                                           *
  *--------------------------------------------------------------*/
-rc_t ss_m::dump_xcts(ostream& o)
-{
+rc_t ss_m::dump_xcts(ostream& o) {
     xct_t::dump(o);
     return RCOK;
 }
@@ -655,8 +658,7 @@ rc_t ss_m::dump_xcts(ostream& o)
 /*--------------------------------------------------------------*
  *  ss_m::state_xct()                                *
  *--------------------------------------------------------------*/
-ss_m::xct_state_t ss_m::state_xct(const xct_t* x)
-{
+ss_m::xct_state_t ss_m::state_xct(const xct_t* x) {
     w_assert3(x != nullptr);
     return x->state();
 }
@@ -665,16 +667,15 @@ ss_m::xct_state_t ss_m::state_xct(const xct_t* x)
  *  ss_m::chain_xct()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::chain_xct( sm_stats_t*&  _stats, bool lazy)
-{
-    W_DO( _chain_xct(_stats, lazy) );
+ss_m::chain_xct(sm_stats_t*& _stats, bool lazy) {
+    W_DO(_chain_xct(_stats, lazy));
     return RCOK;
 }
+
 rc_t
-ss_m::chain_xct(bool lazy)
-{
-    sm_stats_t        *_stats = 0;
-    W_DO( _chain_xct(_stats, lazy) );
+ss_m::chain_xct(bool lazy) {
+    sm_stats_t* _stats = 0;
+    W_DO(_chain_xct(_stats, lazy));
     /*
      * throw away the _stats, since user isn't harvesting...
      */
@@ -687,16 +688,14 @@ ss_m::chain_xct(bool lazy)
  *  For debugging, smsh
  *--------------------------------------------------------------*/
 rc_t
-ss_m::checkpoint()
-{
+ss_m::checkpoint() {
     // Just kick the chkpt thread
     chkpt->take();
     return RCOK;
 }
 
 rc_t
-ss_m::activate_archiver()
-{
+ss_m::activate_archiver() {
     if (logArchiver) {
         logArchiver->activate(lsn_t::null, false);
     }
@@ -708,8 +707,7 @@ ss_m::activate_archiver()
  *  For debugging, smsh
  *--------------------------------------------------------------*/
 rc_t
-ss_m::dump_buffers(ostream &o)
-{
+ss_m::dump_buffers(ostream& o) {
     bf->debugDump(o);
     return RCOK;
 }
@@ -729,11 +727,11 @@ ss_m::config_info(sm_config_info_t& info) {
     // lose those 4 bytes.
     info.lg_rec_page_space = btree_page::data_sz;
     info.buffer_pool_size = bf->getBlockCount() * ss_m::page_sz / 1024;
-    info.max_btree_entry_size  = btree_m::max_entry_size();
-    info.exts_on_page  = 0;
+    info.max_btree_entry_size = btree_m::max_entry_size();
+    info.exts_on_page = 0;
     info.pages_per_ext = smlevel_0::ext_sz;
 
-    info.logging  = (ss_m::log != 0);
+    info.logging = (ss_m::log != 0);
 
     return RCOK;
 }
@@ -742,54 +740,51 @@ ss_m::config_info(sm_config_info_t& info) {
  *  ss_m::sync_log()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::sync_log(bool block)
-{
-    return log? log->flush_all(block) : RCOK;
+ss_m::sync_log(bool block) {
+    return log ? log->flush_all(block) : RCOK;
 }
 
 /*--------------------------------------------------------------*
  *  ss_m::flush_until()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::flush_until(lsn_t& anlsn, bool block)
-{
-  return log->flush(anlsn, block);
+ss_m::flush_until(lsn_t& anlsn, bool block) {
+    return log->flush(anlsn, block);
 }
 
 /*--------------------------------------------------------------*
  *  ss_m::get_curr_lsn()                            *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::get_curr_lsn(lsn_t& anlsn)
-{
-  anlsn = log->curr_lsn();
-  return (RCOK);
+ss_m::get_curr_lsn(lsn_t& anlsn) {
+    anlsn = log->curr_lsn();
+    return (RCOK);
 }
 
 /*--------------------------------------------------------------*
  *  ss_m::get_durable_lsn()                            *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::get_durable_lsn(lsn_t& anlsn)
-{
-  anlsn = log->durable_lsn();
-  return (RCOK);
+ss_m::get_durable_lsn(lsn_t& anlsn) {
+    anlsn = log->durable_lsn();
+    return (RCOK);
 }
 
-void ss_m::dump_page_lsn_chain(std::ostream &o) {
+void ss_m::dump_page_lsn_chain(std::ostream& o) {
     dump_page_lsn_chain(o, 0, lsn_t::max);
 }
-void ss_m::dump_page_lsn_chain(std::ostream &o, const PageID &pid) {
+
+void ss_m::dump_page_lsn_chain(std::ostream& o, const PageID& pid) {
     dump_page_lsn_chain(o, pid, lsn_t::max);
 }
-void ss_m::dump_page_lsn_chain(std::ostream &o, const PageID &pid, const lsn_t &max_lsn) {
+
+void ss_m::dump_page_lsn_chain(std::ostream& o, const PageID& pid, const lsn_t& max_lsn) {
     // using static method since restart_thread_t is not guaranteed to be active
     restart_thread_t::dump_page_lsn_chain(o, pid, max_lsn);
 }
 
 rc_t ss_m::verify_volume(
-    int hash_bits, verify_volume_result &result)
-{
+        int hash_bits, verify_volume_result& result) {
     W_DO(btree_m::verify_volume(hash_bits, result));
     return RCOK;
 }
@@ -813,23 +808,19 @@ ostream& operator<<(ostream& o, const smlevel_0::xct_state_t& xct_state)
 }
 #endif
 
-
 /*--------------------------------------------------------------*
  *  ss_m::dump_locks()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::dump_locks(ostream &o)
-{
+ss_m::dump_locks(ostream& o) {
     lm->dump(o);
     return RCOK;
 }
 
 rc_t
 ss_m::dump_locks() {
-  return dump_locks(std::cout);
+    return dump_locks(std::cout);
 }
-
-
 
 lil_global_table* ss_m::get_lil_global_table() {
     if (lm) {
@@ -840,9 +831,8 @@ lil_global_table* ss_m::get_lil_global_table() {
 }
 
 rc_t ss_m::lock(const lockid_t& n, const okvl_mode& m,
-           bool check_only, int timeout)
-{
-    W_DO( lm->lock(n.hash(), m, true, true, !check_only, nullptr, timeout) );
+                bool check_only, int timeout) {
+    W_DO(lm->lock(n.hash(), m, true, true, !check_only, nullptr, timeout));
     return RCOK;
 }
 
@@ -856,9 +846,8 @@ rc_t ss_m::lock(const lockid_t& n, const okvl_mode& m,
  *                    commit_xct, abort_xct, prepare_xct, or chain_xct.
  *--------------------------------------------------------------*/
 rc_t
-ss_m::_begin_xct(sm_stats_t *_stats, tid_t& tid, int timeout, bool sys_xct,
-    bool single_log_sys_xct)
-{
+ss_m::_begin_xct(sm_stats_t* _stats, tid_t& tid, int timeout, bool sys_xct,
+                 bool single_log_sys_xct) {
     w_assert1(!single_log_sys_xct || sys_xct); // SSX is always system-transaction
 
     // system transaction can be a nested transaction, so
@@ -886,15 +875,16 @@ ss_m::_begin_xct(sm_stats_t *_stats, tid_t& tid, int timeout, bool sys_xct,
     } else {
         spinlock_read_critical_section cs(&_begin_xct_mutex);
         x = _new_xct(_stats, timeout, sys_xct);
-        if(log) {
+        if (log) {
             // This transaction will make no events related to LSN
             // smaller than this. Used to control garbage collection, etc.
             log->get_oldest_lsn_tracker()->enter(reinterpret_cast<uintptr_t>(x), log->curr_lsn());
         }
     }
 
-    if (!x)
+    if (!x) {
         return RC(eOUTOFMEMORY);
+    }
 
     w_assert3(xct() == x);
     w_assert3(x->state() == xct_t::xct_active);
@@ -907,8 +897,7 @@ xct_t* ss_m::_new_xct(
         sm_stats_t* stats,
         int timeout,
         bool sys_xct,
-        bool single_log_sys_xct)
-{
+        bool single_log_sys_xct) {
     return new xct_t(stats, timeout, sys_xct, single_log_sys_xct, false);
 }
 
@@ -917,12 +906,11 @@ xct_t* ss_m::_new_xct(
  *--------------------------------------------------------------*/
 rc_t
 ss_m::_commit_xct(sm_stats_t*& _stats, bool lazy,
-                  lsn_t* plastlsn)
-{
+                  lsn_t* plastlsn) {
     w_assert3(xct() != 0);
     xct_t* xp = xct();
     xct_t& x = *xp;
-    DBGOUT5(<<"commit " << ((char *)lazy?" LAZY":"") << x );
+    DBGOUT5(<<"commit " << ((char *)lazy?" LAZY":"") << x);
 
     if (x.is_piggy_backed_single_log_sys_xct()) {
         // then, commit() does nothing
@@ -935,12 +923,12 @@ ss_m::_commit_xct(sm_stats_t*& _stats, bool lazy,
         return RCOK;
     }
 
-    w_assert3(x.state()==xct_active);
+    w_assert3(x.state() == xct_active);
     w_assert1(x.ssx_chain_len() == 0);
 
-    W_DO( x.commit(lazy,plastlsn) );
+    W_DO(x.commit(lazy, plastlsn));
 
-    if(x.is_instrumented()) {
+    if (x.is_instrumented()) {
         _stats = x.steal_stats();
     }
     bool was_sys_xct = x.is_sys_xct();
@@ -955,16 +943,15 @@ ss_m::_commit_xct(sm_stats_t*& _stats, bool lazy,
  *--------------------------------------------------------------*/
 rc_t
 ss_m::_chain_xct(
-        sm_stats_t*&  _stats, /* pass in a new one, get back the old */
-        bool lazy)
-{
-    sm_stats_t*  new_stats = _stats;
+        sm_stats_t*& _stats, /* pass in a new one, get back the old */
+        bool lazy) {
+    sm_stats_t* new_stats = _stats;
     w_assert3(xct() != 0);
     xct_t* x = xct();
 
-    W_DO( x->chain(lazy) );
+    W_DO(x->chain(lazy));
     w_assert3(xct() == x);
-    if(x->is_instrumented()) {
+    if (x->is_instrumented()) {
         _stats = x->steal_stats();
     }
     x->give_stats(new_stats);
@@ -976,8 +963,7 @@ ss_m::_chain_xct(
  *  ss_m::_abort_xct()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::_abort_xct(sm_stats_t*&             _stats)
-{
+ss_m::_abort_xct(sm_stats_t*& _stats) {
     w_assert3(xct() != 0);
     xct_t* xp = xct();
     xct_t& x = *xp;
@@ -990,8 +976,8 @@ ss_m::_abort_xct(sm_stats_t*&             _stats)
 
     bool was_sys_xct W_IFDEBUG3(= x.is_sys_xct());
 
-    W_DO( x.abort(true /* save _stats structure */) );
-    if(x.is_instrumented()) {
+    W_DO(x.abort(true /* save _stats structure */));
+    if (x.is_instrumented()) {
         _stats = x.steal_stats();
     }
 
@@ -1005,8 +991,7 @@ ss_m::_abort_xct(sm_stats_t*&             _stats)
  *  ss_m::save_work()                                *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::_save_work(sm_save_point_t& sp)
-{
+ss_m::_save_work(sm_save_point_t& sp) {
     w_assert3(xct() != 0);
     xct_t* x = xct();
 
@@ -1019,17 +1004,15 @@ ss_m::_save_work(sm_save_point_t& sp)
  *  ss_m::rollback_work()                            *
  *--------------------------------------------------------------*/
 rc_t
-ss_m::_rollback_work(const sm_save_point_t& sp)
-{
+ss_m::_rollback_work(const sm_save_point_t& sp) {
     w_assert3(xct() != 0);
     xct_t* x = xct();
-    if (sp._tid != x->tid())  {
+    if (sp._tid != x->tid()) {
         return RC(eBADSAVEPOINT);
     }
-    W_DO( x->rollback(sp) );
+    W_DO(x->rollback(sp));
     return RCOK;
 }
-
 
 /*--------------------------------------------------------------*
  *  ss_m::gather_xct_stats()                            *
@@ -1039,13 +1022,12 @@ ss_m::_rollback_work(const sm_save_point_t& sp)
  *  Doing this has the side-effect of clearing the per-thread copy.
  *--------------------------------------------------------------*/
 rc_t
-ss_m::gather_xct_stats(sm_stats_t& _stats, bool reset)
-{
+ss_m::gather_xct_stats(sm_stats_t& _stats, bool reset) {
     w_assert3(xct() != 0);
     xct_t& x = *xct();
 
-    if(x.is_instrumented()) {
-        DBGTHRD(<<"instrumented, reset= " << reset );
+    if (x.is_instrumented()) {
+        DBGTHRD(<<"instrumented, reset= " << reset);
         // detach_xct adds the per-thread stats to the xct's stats,
         // then clears the per-thread stats so that
         // the next time some stats from this thread are gathered like this
@@ -1058,8 +1040,8 @@ ss_m::gather_xct_stats(sm_stats_t& _stats, bool reset)
         // Copy out the stats structure stored for this xct.
         _stats = x.const_stats_ref();
 
-        if(reset) {
-            DBGTHRD(<<"clearing stats " );
+        if (reset) {
+            DBGTHRD(<<"clearing stats ");
             // clear
             // NOTE!!!!!!!!!!!!!!!!!  NOT THREAD-SAFE:
             x.clear_stats();
@@ -1123,23 +1105,21 @@ ss_m::gather_xct_stats(sm_stats_t& _stats, bool reset)
  *  NOTE: you do not have to be in a transaction to call this.
  *--------------------------------------------------------------*/
 rc_t
-ss_m::gather_stats(sm_stats_t& _stats)
-{
-    class GatherSmthreadStats
-    {
+ss_m::gather_stats(sm_stats_t& _stats) {
+    class GatherSmthreadStats {
     public:
-        GatherSmthreadStats(sm_stats_t &s) : _stats(s)
-        {
+        GatherSmthreadStats(sm_stats_t& s) : _stats(s) {
             _stats.fill(0);
         };
-        void operator()(sm_stats_t& st)
-        {
+
+        void operator()(sm_stats_t& st) {
             for (size_t i = 0; i < st.size(); i++) {
                 _stats[i] += st[i];
             }
         }
+
     private:
-        sm_stats_t &_stats;
+        sm_stats_t& _stats;
     } F(_stats);
 
     //Gather all the threads' statistics into the copy given by
@@ -1157,36 +1137,32 @@ ss_m::gather_stats(sm_stats_t& _stats)
 }
 
 extern void dump_all_sm_stats();
-void dump_all_sm_stats()
-{
+
+void dump_all_sm_stats() {
     static sm_stats_t s;
     W_COERCE(ss_m::gather_stats(s));
     print_sm_stats(s, std::cerr);
 }
 
-
 extern "C" {
 /* Debugger-callable functions to dump various SM tables. */
 
-    void        sm_dumplocks()
-    {
-        if (smlevel_0::lm) {
-                W_IGNORE(ss_m::dump_locks(cout));
-        }
-        else
-                cout << "no smlevel_0::lm" << endl;
-        cout << flush;
+void sm_dumplocks() {
+    if (smlevel_0::lm) {
+        W_IGNORE(ss_m::dump_locks(cout));
+    } else {
+        cout << "no smlevel_0::lm" << endl;
     }
+    cout << flush;
+}
 
-    void   sm_dumpxcts()
-    {
-        W_IGNORE(ss_m::dump_xcts(cout));
-        cout << flush;
-    }
+void sm_dumpxcts() {
+    W_IGNORE(ss_m::dump_xcts(cout));
+    cout << flush;
+}
 
-    void        sm_dumpbuffers()
-    {
-        W_IGNORE(ss_m::dump_buffers(cout));
-        cout << flush;
-    }
+void sm_dumpbuffers() {
+    W_IGNORE(ss_m::dump_buffers(cout));
+    cout << flush;
+}
 }

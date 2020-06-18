@@ -33,12 +33,8 @@
 #include <pthread.h> /* for pthread_t */
 #include <cstdio>   /* for FILE* */
 
-
-
 /* exported functions */
 
 void trace_print_pthread(FILE* out_stream, pthread_t thread);
-
-
 
 #endif // __TRACE_PRINT_PTHREAD_H

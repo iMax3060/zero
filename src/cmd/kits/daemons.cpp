@@ -31,7 +31,6 @@
 #include "daemons.h"
 #include "shore_env.h"
 
-
 /******************************************************************
  *
  *  @class: db_init_smt_t
@@ -42,40 +41,32 @@
  ******************************************************************/
 
 db_init_smt_t::db_init_smt_t(std::string tname, ShoreEnv* db)
-    : thread_t(tname), _env(db)
-{
+        : thread_t(tname),
+          _env(db) {
     assert (_env);
 }
 
+db_init_smt_t::~db_init_smt_t() {}
 
-db_init_smt_t::~db_init_smt_t()
-{
-}
-
-void db_init_smt_t::work()
-{
+void db_init_smt_t::work() {
     if (!_env->is_initialized()) {
         _rv = _env->init();
         if (_rv) {
             // Couldn't initialize the Shore environment
             // cannot proceed
-            TRACE( TRACE_ALWAYS, "Couldn't initialize Shore...\n");
+            TRACE(TRACE_ALWAYS, "Couldn't initialize Shore...\n");
             return;
         }
     }
 
     // if reached this point everything went ok
-    TRACE( TRACE_DEBUG, "Shore initialized...\n");
+    TRACE(TRACE_DEBUG, "Shore initialized...\n");
     _rv = 0;
 }
 
-
-
-int db_init_smt_t::rv()
-{
+int db_init_smt_t::rv() {
     return (_rv);
 }
-
 
 #if 0 // CS TODO
 
@@ -100,8 +91,6 @@ void dump_smt_t::work()
 
 #endif
 
-
-
 /******************************************************************
  *
  *  @class: abort_smt_t
@@ -114,18 +103,15 @@ void dump_smt_t::work()
 abort_smt_t::abort_smt_t(std::string tname,
                          ShoreEnv* env,
                          vector<xct_t*>& toabort)
-    : thread_t(tname), _env(env)
-{
+        : thread_t(tname),
+          _env(env) {
     assert(env);
     _toabort = &toabort;
 }
 
-abort_smt_t::~abort_smt_t()
-{
-}
+abort_smt_t::~abort_smt_t() {}
 
-void abort_smt_t::work()
-{
+void abort_smt_t::work() {
     w_rc_t r = RCOK;
     xct_t* victim = nullptr;
     // me()->alloc_sdesc_cache();
@@ -137,26 +123,24 @@ void abort_smt_t::work()
         _env->db()->attach_xct(victim);
         r = _env->db()->abort_xct();
         if (r.is_error()) {
-            TRACE( TRACE_ALWAYS, "Problem aborting (%x)\n", *it);
-        }
-        else {
+            TRACE(TRACE_ALWAYS, "Problem aborting (%x)\n", *it);
+        } else {
             _aborted++;
         }
     }
     // me()->free_sdesc_cache();
 }
 
-void checkpointer_t::work()
-{
+void checkpointer_t::work() {
     // overflows in 64 years, so it's fine
     int ticker = 0;
     int act_delay = _env->get_activation_delay();
-    while(_active) {
-    	/**
-    	 * CS: sleep one second F times rather than sleeping F seconds.
-    	 * This allows to thread to finish after one second at most
-    	 * once it is deactivated.
-    	 */
+    while (_active) {
+        /**
+         * CS: sleep one second F times rather than sleeping F seconds.
+         * This allows to thread to finish after one second at most
+         * once it is deactivated.
+         */
         for (int i = 0; i < _env->get_chkpt_freq(); i++) {
             ::sleep(1);
             ticker++;
@@ -170,17 +154,18 @@ void checkpointer_t::work()
             if (ticker >= act_delay) {
                 _env->activate_archiver();
             }
-            if (!_active) return;
+            if (!_active) {
+                return;
+            }
         }
-       	TRACE( TRACE_ALWAYS, "db checkpoint - start\n");
-       	_env->checkpoint();
-       	TRACE( TRACE_ALWAYS, "db checkpoint - end\n");
+        TRACE(TRACE_ALWAYS, "db checkpoint - start\n");
+        _env->checkpoint();
+        TRACE(TRACE_ALWAYS, "db checkpoint - end\n");
     }
-    TRACE( TRACE_ALWAYS, "Checkpointer thread deactivated\n");
+    TRACE(TRACE_ALWAYS, "Checkpointer thread deactivated\n");
 }
 
-void crasher_t::work()
-{
+void crasher_t::work() {
     ::sleep(_timeout);
     abort();
 }

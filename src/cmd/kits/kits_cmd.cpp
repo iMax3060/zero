@@ -6,7 +6,9 @@
 #include <chrono>
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 #include "thread_wrapper.h"
@@ -23,17 +25,15 @@ namespace fs = boost::filesystem;
 
 int MAX_THREADS = 1000;
 
-template <class Env>
-class CrashThread : public thread_wrapper_t
-{
+template<class Env>
+class CrashThread : public thread_wrapper_t {
 public:
     CrashThread(Env* env, unsigned delay, bool wait_for_warmup)
-        : env(env), delay(delay), wait_for_warmup(wait_for_warmup)
-    {
-    }
+            : env(env),
+              delay(delay),
+              wait_for_warmup(wait_for_warmup) {}
 
-    virtual void run()
-    {
+    virtual void run() {
         if (wait_for_warmup) {
             env->wait_for_warmup();
         }
@@ -47,22 +47,21 @@ public:
 
 private:
     Env* env;
+
     unsigned delay;
+
     bool wait_for_warmup;
 };
 
-class FailureThread : public thread_wrapper_t
-{
+class FailureThread : public thread_wrapper_t {
 public:
     FailureThread(unsigned delay, bool* flag)
-        : delay(delay), flag(flag)
-    {
-    }
+            : delay(delay),
+              flag(flag) {}
 
     virtual ~FailureThread() {}
 
-    virtual void run()
-    {
+    virtual void run() {
         ::sleep(delay);
 
         smlevel_0::bf->setMediaFailure();
@@ -76,19 +75,17 @@ public:
 
 private:
     unsigned delay;
+
     bool* flag;
 };
 
-class SkewShiftingThread : public worker_thread_t
-{
+class SkewShiftingThread : public worker_thread_t {
 public:
     SkewShiftingThread(unsigned delay)
-        : worker_thread_t(0), delay(delay)
-    {
-    }
+            : worker_thread_t(0),
+              delay(delay) {}
 
-    virtual void do_work()
-    {
+    virtual void do_work() {
         // CS TODO: onlt works for TPC-C!
         ::sleep(delay);
         tpcc::w_skewer.increment_intervals();
@@ -98,88 +95,82 @@ private:
     unsigned delay;
 };
 
-void KitsCommand::set_stop_benchmark(bool stop)
-{
+void KitsCommand::set_stop_benchmark(bool stop) {
     shoreEnv->set_stop_benchmark(stop);
 }
 
-void KitsCommand::crashFilthy()
-{
+void KitsCommand::crashFilthy() {
     shoreEnv->set_sm_shudown_filthy(true);
     set_stop_benchmark(true);
 }
 
-
-void KitsCommand::setupOptions()
-{
+void KitsCommand::setupOptions() {
     setupSMOptions(options);
     boost::program_options::options_description kits("Kits Options");
     kits.add_options()
-        ("benchmark,b", po::value<string>(&opt_benchmark)->required(),
-            "Benchmark to execute. Possible values: tpcb, tpcc, ycsb")
-        ("load", po::value<bool>(&opt_load)->default_value(false)
-            ->implicit_value(true),
-            "If set, log and archive folders are emptied, database files \
+            ("benchmark,b", po::value<string>(&opt_benchmark)->required(),
+             "Benchmark to execute. Possible values: tpcb, tpcc, ycsb")
+            ("load", po::value<bool>(&opt_load)->default_value(false)
+                     ->implicit_value(true),
+             "If set, log and archive folders are emptied, database files \
             and backups are deleted, and dataset is loaded from scratch")
-        ("trxs", po::value<int>(&opt_num_trxs)->default_value(0),
-            "Number of transactions to execute")
-        ("logVolume", po::value<unsigned>(&opt_log_volume)->default_value(0),
-            "Run benchmark until the given amount of log volume (in MB) is reached \
+            ("trxs", po::value<int>(&opt_num_trxs)->default_value(0),
+             "Number of transactions to execute")
+            ("logVolume", po::value<unsigned>(&opt_log_volume)->default_value(0),
+             "Run benchmark until the given amount of log volume (in MB) is reached \
             (overrides the trxs option)")
-        ("duration", po::value<unsigned>(&opt_duration)->default_value(0),
-            "Run benchmark for the given number of seconds (overrides the \
+            ("duration", po::value<unsigned>(&opt_duration)->default_value(0),
+             "Run benchmark for the given number of seconds (overrides the \
             logVolume option)")
-        ("no_stop", po::value<bool>(&opt_no_stop)->default_value(false)
-            ->implicit_value(true),
-            "Run benchmark continuously until a crash occurs (overrides the \
+            ("no_stop", po::value<bool>(&opt_no_stop)->default_value(false)
+                     ->implicit_value(true),
+             "Run benchmark continuously until a crash occurs (overrides the \
             duration option)")
-        ("threads,t", po::value<int>(&opt_num_threads)->default_value(4),
-            "Number of threads to execute benchmark with")
-        ("select_trx,s", po::value<int>(&opt_select_trx)->default_value(0),
-            "Transaction code or mix identifier (0 = all trxs)")
-        ("queried_sf,q", po::value<int>(&opt_queried_sf)->default_value(1),
-            "Scale factor to which to restrict queries")
-        ("updateFreq", po::value<int>(&opt_update_freq)->default_value(50),
-            "Workload update frequency beteen 0 and 100")
-        ("asyncCommit", po::value<bool>(&opt_asyncCommit)->default_value(true)
-            ->implicit_value(true),
-            "Whether to use asynchronous commit (non-durable) for Kits transactions")
-        ("spread", po::value<bool>(&opt_spread)->default_value(true)
-            ->implicit_value(true),
-            "Attach each worker thread to a fixed core for improved concurrency")
-        ("eager", po::value<bool>(&opt_eager)->default_value(true)
-            ->implicit_value(true),
-            "Run log archiving in eager mode")
-        ("skew", po::value<bool>(&opt_skew)->default_value(false)
-            ->implicit_value(true),
-            "Activate skew on transaction inputs (currently only 80:20 skew \
+            ("threads,t", po::value<int>(&opt_num_threads)->default_value(4),
+             "Number of threads to execute benchmark with")
+            ("select_trx,s", po::value<int>(&opt_select_trx)->default_value(0),
+             "Transaction code or mix identifier (0 = all trxs)")
+            ("queried_sf,q", po::value<int>(&opt_queried_sf)->default_value(1),
+             "Scale factor to which to restrict queries")
+            ("updateFreq", po::value<int>(&opt_update_freq)->default_value(50),
+             "Workload update frequency beteen 0 and 100")
+            ("asyncCommit", po::value<bool>(&opt_asyncCommit)->default_value(true)
+                     ->implicit_value(true),
+             "Whether to use asynchronous commit (non-durable) for Kits transactions")
+            ("spread", po::value<bool>(&opt_spread)->default_value(true)
+                     ->implicit_value(true),
+             "Attach each worker thread to a fixed core for improved concurrency")
+            ("eager", po::value<bool>(&opt_eager)->default_value(true)
+                     ->implicit_value(true),
+             "Run log archiving in eager mode")
+            ("skew", po::value<bool>(&opt_skew)->default_value(false)
+                     ->implicit_value(true),
+             "Activate skew on transaction inputs (currently only 80:20 skew \
             is supported, i.e., 80% of access to 20% of data")
-        ("warmup", po::value<bool>(&opt_warmup)->default_value(false),
-            "Warmup buffer before crashing or counting duration")
-        ("crashDelay", po::value<int>(&opt_crashDelay)->default_value(-1),
-            "Time (sec) to wait before aborting execution to simulate system \
+            ("warmup", po::value<bool>(&opt_warmup)->default_value(false),
+             "Warmup buffer before crashing or counting duration")
+            ("crashDelay", po::value<int>(&opt_crashDelay)->default_value(-1),
+             "Time (sec) to wait before aborting execution to simulate system \
             failure (negative disables)")
-        ("crashDelayAfterInit", po::value<bool>(&opt_crashDelayAfterInit)->default_value(true),
-            "Start counting crash delay only after SM is initialized (and recovered if in ARIES)")
-        ("failDelay", po::value<int>(&opt_failDelay)->default_value(-1),
-            "Time to wait before marking the volume as failed (simulates media failure)")
-        ("skewShiftDelay", po::value<int>(&opt_skewShiftDelay)->default_value(0),
-            "Shift skewed are every N seconds")
-    ;
+            ("crashDelayAfterInit", po::value<bool>(&opt_crashDelayAfterInit)->default_value(true),
+             "Start counting crash delay only after SM is initialized (and recovered if in ARIES)")
+            ("failDelay", po::value<int>(&opt_failDelay)->default_value(-1),
+             "Time to wait before marking the volume as failed (simulates media failure)")
+            ("skewShiftDelay", po::value<int>(&opt_skewShiftDelay)->default_value(0),
+             "Shift skewed are every N seconds");
     options.add(kits);
 }
 
-ShoreEnv* KitsCommand::getShoreEnv()
-{
+ShoreEnv* KitsCommand::getShoreEnv() {
     return shoreEnv;
 }
 
 KitsCommand::KitsCommand()
-    : mtype(MT_UNDEF), clientsForked(false), failure_thread(nullptr)
-{}
+        : mtype(MT_UNDEF),
+          clientsForked(false),
+          failure_thread(nullptr) {}
 
-void KitsCommand::run()
-{
+void KitsCommand::run() {
     init();
 
     if (opt_load) {
@@ -218,19 +209,17 @@ void KitsCommand::run()
     // crash_thread aborts the program, so we don't worry about joining it
 }
 
-void KitsCommand::mediaFailure(unsigned delay)
-{
+void KitsCommand::mediaFailure(unsigned delay) {
     //FailureThread* failure_thread = nullptr;
     hasFailed = false;
     failure_thread = new FailureThread(delay, &hasFailed);
     failure_thread->fork();
 }
 
-void KitsCommand::randomRootPageFailure()
-{
+void KitsCommand::randomRootPageFailure() {
     std::vector<StoreID> stores;
     smlevel_0::vol->get_stnode_cache()->get_used_stores(stores);
-    int randomStore = random()%(stores.size() -1);
+    int randomStore = random() % (stores.size() - 1);
     // StoreID stid = stores.at(randomStore);
     // PageID root_pid = smlevel_0::vol->get_stnode_cache()->get_root_pid(stid);
     fixable_page_h page;
@@ -241,42 +230,33 @@ void KitsCommand::randomRootPageFailure()
     page.unfix(true);
 }
 
-void KitsCommand::init()
-{
+void KitsCommand::init() {
     // just TPC-B and TPC-C for now
     if (opt_benchmark == "tpcb") {
         initShoreEnv<tpcb::ShoreTPCBEnv>();
-    }
-    else if (opt_benchmark == "tpcc") {
+    } else if (opt_benchmark == "tpcc") {
         initShoreEnv<tpcc::ShoreTPCCEnv>();
-    }
-    else if (opt_benchmark == "ycsb") {
+    } else if (opt_benchmark == "ycsb") {
         initShoreEnv<ycsb::ShoreYCSBEnv>();
-    }
-    else {
+    } else {
         throw runtime_error("Unknown benchmark string");
     }
 }
 
-void KitsCommand::runBenchmark()
-{
+void KitsCommand::runBenchmark() {
     if (opt_benchmark == "tpcb") {
         runBenchmarkSpec<tpcb::baseline_tpcb_client_t, tpcb::ShoreTPCBEnv>();
-    }
-    else if (opt_benchmark == "tpcc") {
+    } else if (opt_benchmark == "tpcc") {
         runBenchmarkSpec<tpcc::baseline_tpcc_client_t, tpcc::ShoreTPCCEnv>();
-    }
-    else if (opt_benchmark == "ycsb") {
+    } else if (opt_benchmark == "ycsb") {
         runBenchmarkSpec<ycsb::baseline_ycsb_client_t, ycsb::ShoreYCSBEnv>();
-    }
-    else {
+    } else {
         throw runtime_error("Unknown benchmark string");
     }
 }
 
 template<class Client, class Environment>
-void KitsCommand::runBenchmarkSpec()
-{
+void KitsCommand::runBenchmarkSpec() {
     shoreEnv->reset_stats();
 
     // reset monitor stats
@@ -301,7 +281,7 @@ void KitsCommand::runBenchmarkSpec()
             forkClients();
 
             auto crash_thread =
-                std::make_shared<CrashThread<ShoreEnv>>(shoreEnv, opt_crashDelay, opt_warmup);
+                    std::make_shared<CrashThread<ShoreEnv>>(shoreEnv, opt_crashDelay, opt_warmup);
             crash_thread->fork();
             crash_thread->join();
 
@@ -336,8 +316,7 @@ void KitsCommand::runBenchmarkSpec()
 }
 
 template<class Client, class Environment>
-void KitsCommand::createClients()
-{
+void KitsCommand::createClients() {
     // reset starting cpu and wh id
     int wh_id = 0;
 
@@ -345,28 +324,24 @@ void KitsCommand::createClients()
     int trxsPerThread = 0;
     if (opt_no_stop == true) {
         mtype = MT_NO_STOP;
-    }
-    else if (opt_duration > 0) {
+    } else if (opt_duration > 0) {
         mtype = MT_TIME_DUR;
-    }
-    else if (opt_num_trxs > 0) {
+    } else if (opt_num_trxs > 0) {
         mtype = MT_NUM_OF_TRXS;
         trxsPerThread = opt_num_trxs / opt_num_threads;
-    }
-    else if (opt_log_volume > 0) {
+    } else if (opt_log_volume > 0) {
         mtype = MT_LOG_VOL;
     }
-
 
     for (int i = 0; i < opt_num_threads; i++) {
         // create & fork testing threads
         if (opt_spread) {
-            wh_id = (i%(int)opt_queried_sf)+1;
+            wh_id = (i % (int)opt_queried_sf) + 1;
         }
 
         Client* client = new Client(
                 "client-" + std::to_string(i), i,
-                (Environment*) shoreEnv,
+                (Environment*)shoreEnv,
                 mtype, opt_select_trx,
                 trxsPerThread,
                 wh_id, opt_queried_sf,
@@ -376,8 +351,7 @@ void KitsCommand::createClients()
     }
 }
 
-void KitsCommand::forkClients()
-{
+void KitsCommand::forkClients() {
     for (size_t i = 0; i < clients.size(); i++) {
         clients[i]->fork();
     }
@@ -385,8 +359,7 @@ void KitsCommand::forkClients()
     shoreEnv->set_measure(MST_MEASURE);
 }
 
-void KitsCommand::joinClients()
-{
+void KitsCommand::joinClients() {
     shoreEnv->set_measure(MST_DONE);
 
     if (clientsForked) {
@@ -402,8 +375,7 @@ void KitsCommand::joinClients()
     }
 }
 
-void KitsCommand::doWork()
-{
+void KitsCommand::doWork() {
     lsn_t last_log_tail = smlevel_0::log->durable_lsn();
 
     forkClients();
@@ -426,8 +398,7 @@ void KitsCommand::doWork()
     // If running for a time duration, wait specified number of seconds
     if (mtype == MT_TIME_DUR) {
         std::this_thread::sleep_for(std::chrono::seconds(opt_duration));
-    }
-    else if (mtype == MT_LOG_VOL) {
+    } else if (mtype == MT_LOG_VOL) {
         // check every second
         size_t part_size = smlevel_0::log->get_storage()->get_partition_size();
         unsigned long generated_log_vol = 0;
@@ -437,26 +408,23 @@ void KitsCommand::doWork()
             unsigned partitions = log_tail.hi() - last_log_tail.hi();
             if (partitions == 0) {
                 generated_log_vol += log_tail.lo() - last_log_tail.lo();
-            }
-            else {
+            } else {
                 generated_log_vol += part_size - last_log_tail.lo();
-                generated_log_vol += part_size * (partitions-1);
+                generated_log_vol += part_size * (partitions - 1);
                 generated_log_vol += log_tail.lo();
             }
             last_log_tail = log_tail;
         }
-    }
-    else if (mtype == MT_NO_STOP) {
+    } else if (mtype == MT_NO_STOP) {
         // keep running until variable is externally set to true
-        while(!shoreEnv->should_stop_benchmark()){
+        while (!shoreEnv->should_stop_benchmark()) {
             ::usleep(100000); // 100ms
         }
     }
 }
 
 template<class Environment>
-void KitsCommand::initShoreEnv()
-{
+void KitsCommand::initShoreEnv() {
     shoreEnv = new Environment(optionValues);
 
     shoreEnv->set_sf(opt_queried_sf);
@@ -471,7 +439,7 @@ void KitsCommand::initShoreEnv()
 
     if (opt_crashDelay >= 0 && !opt_crashDelayAfterInit) {
         pre_init_crash_thread =
-            std::make_shared<CrashThread<ShoreEnv>>(shoreEnv, opt_crashDelay, false);
+                std::make_shared<CrashThread<ShoreEnv>>(shoreEnv, opt_crashDelay, false);
         pre_init_crash_thread->fork();
     }
 
@@ -484,14 +452,12 @@ void KitsCommand::initShoreEnv()
     shoreEnv->start();
 }
 
-void KitsCommand::mkdirs(string path)
-{
+void KitsCommand::mkdirs(string path) {
     // if directory does not exist, create it
     fs::path fspath(path);
     if (!fs::exists(fspath)) {
         fs::create_directories(fspath);
-    }
-    else {
+    } else {
         if (!fs::is_directory(fspath)) {
             throw runtime_error("Provided path is not a directory!");
         }
@@ -503,14 +469,15 @@ void KitsCommand::mkdirs(string path)
  * Ensures that the directory containing the file exists, to avoid
  * OS failures in the SM when creating the file.
  */
-void KitsCommand::ensureParentPathExists(string path)
-{
+void KitsCommand::ensureParentPathExists(string path) {
 
     fs::path fspath(path);
     fspath.remove_filename();
     string parent = fspath.string();
     // can happen if relative path is used
-    if (parent.empty()) { return; }
+    if (parent.empty()) {
+        return;
+    }
 
     mkdirs(parent);
 }
@@ -519,8 +486,7 @@ void KitsCommand::ensureParentPathExists(string path)
  * If called on directory, remove all its contents, leaving an empty directory
  * behind.
  */
-void KitsCommand::ensureEmptyPath(string path)
-{
+void KitsCommand::ensureEmptyPath(string path) {
     fs::path fspath(path);
     if (!fs::exists(path)) {
         return;
@@ -539,21 +505,18 @@ void KitsCommand::ensureEmptyPath(string path)
     }
 }
 
-void KitsCommand::loadOptions(sm_options& options)
-{
+void KitsCommand::loadOptions(sm_options& options) {
     options.set_bool_option("sm_format", opt_load);
 
     // ticker always turned on
     options.set_bool_option("sm_ticker_enable", true);
 }
 
-void KitsCommand::finish()
-{
+void KitsCommand::finish() {
     // shoreEnv has stop() and close(), and close calls stop (confusing!)
     shoreEnv->close();
 }
 
-bool KitsCommand::running()
-{
+bool KitsCommand::running() {
     return clientsForked;
 }

@@ -39,16 +39,16 @@
  *********************************************************************/
 
 static bool _abort_test = false;
-void base_client_t::abort_test()
-{
+
+void base_client_t::abort_test() {
     _abort_test = true;
 }
-void base_client_t::resume_test()
-{
+
+void base_client_t::resume_test() {
     _abort_test = false;
 }
-bool base_client_t::is_test_aborted()
-{
+
+bool base_client_t::is_test_aborted() {
     return (_abort_test);
 }
 
@@ -61,37 +61,44 @@ bool base_client_t::is_test_aborted()
  *
  *********************************************************************/
 
-w_rc_t base_client_t::submit_batch(int xct_type, int& trx_cnt, const int batch_sz)
-{
+w_rc_t base_client_t::submit_batch(int xct_type, int& trx_cnt, const int batch_sz) {
     assert (batch_sz);
     assert (_cp);
-    for(int j=1; j <= batch_sz; j++) {
+    for (int j = 1; j <= batch_sz; j++) {
 
         // adding think time
         //usleep(int(_think_time*(sthread_t::drand())));
 
-        if (j == batch_sz)
-	    _cp->please_take_one();
+        if (j == batch_sz) {
+            _cp->please_take_one();
+        }
         W_COERCE(submit_one(xct_type, trx_cnt++));
     }
     return (RCOK);
 }
 
 static pthread_mutex_t client_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static pthread_cond_t client_cond = PTHREAD_COND_INITIALIZER;
+
 static int client_needed_count;
+
 extern void shell_expect_clients(int count) {
     client_needed_count = count;
 }
+
 extern void shell_await_clients() {
     CRITICAL_SECTION(cs, client_mutex);
-    while(client_needed_count)
-	pthread_cond_wait(&client_cond, &client_mutex);
+    while (client_needed_count) {
+        pthread_cond_wait(&client_cond, &client_mutex);
+    }
 }
+
 void client_ready() {
     CRITICAL_SECTION(cs, client_mutex);
-    if(! --client_needed_count)
-	pthread_cond_signal(&client_cond);
+    if (!--client_needed_count) {
+        pthread_cond_signal(&client_cond);
+    }
 }
 
 /*********************************************************************
@@ -102,10 +109,9 @@ void client_ready() {
  *
  *********************************************************************/
 
-w_rc_t base_client_t::run_xcts(int xct_type, int num_xct)
-{
-    int i=0;
-    int batchsz=1;
+w_rc_t base_client_t::run_xcts(int xct_type, int num_xct) {
+    int i = 0;
+    int batchsz = 1;
     client_ready();
     optionValues = _env->get_optionValues();
     // retrieve the default batch size and think time
@@ -117,83 +123,82 @@ w_rc_t base_client_t::run_xcts(int xct_type, int num_xct)
     switch (_measure_type) {
 
         // case of number-of-trxs-based measurement
-    case (MT_NUM_OF_TRXS):
-    {
-        int max_batch = 100000;
-        if (num_xct <= max_batch) {
-            // submit a batch of num_xct trxs
-            W_COERCE(submit_batch(xct_type, i, num_xct));
-            // wait for the batch to complete
-            _cp->wait();
-        }
-        else {
-            int submitted = 0;
-            int current_batch = 0;
-            while (submitted < num_xct) {
-                if (submitted + max_batch > num_xct) {
-                    current_batch = num_xct - submitted;
-                }
-                else {
-                    current_batch = max_batch;
-                }
+        case (MT_NUM_OF_TRXS): {
+            int max_batch = 100000;
+            if (num_xct <= max_batch) {
                 // submit a batch of num_xct trxs
-                W_COERCE(submit_batch(xct_type, i, current_batch));
+                W_COERCE(submit_batch(xct_type, i, num_xct));
                 // wait for the batch to complete
                 _cp->wait();
-                submitted += current_batch;
+            } else {
+                int submitted = 0;
+                int current_batch = 0;
+                while (submitted < num_xct) {
+                    if (submitted + max_batch > num_xct) {
+                        current_batch = num_xct - submitted;
+                    } else {
+                        current_batch = max_batch;
+                    }
+                    // submit a batch of num_xct trxs
+                    W_COERCE(submit_batch(xct_type, i, current_batch));
+                    // wait for the batch to complete
+                    _cp->wait();
+                    submitted += current_batch;
+                }
             }
+            break;
         }
-        break;
-    }
-        // case of duration-based measurement
-    case MT_TIME_DUR: case MT_LOG_VOL:
+            // case of duration-based measurement
+        case MT_TIME_DUR:
+        case MT_LOG_VOL:
 
-	// submit the first two batches...
-	W_COERCE(submit_batch(xct_type, i, batchsz));
-	W_COERCE(submit_batch(xct_type, i, batchsz));
-
-	// main loop
-        while (true) {
-	    // wait for the first to complete
-	    _cp->wait();
-
-	    // check for exit...
-	    if(_abort_test || _env->get_measure() == MST_DONE)
-		break;
-
-	    // submit a replacement batch...
-	    W_COERCE(submit_batch(xct_type, i, batchsz));
-        }
-
-	// wait for the last batch to complete...
-	_cp->wait();
-        break;
-
-    // case no stop until variable stop_benchmark is seted to true
-    case MT_NO_STOP:
-
-    // submit the first two batches...
-    W_COERCE(submit_batch(xct_type, i, batchsz));
-    W_COERCE(submit_batch(xct_type, i, batchsz));
-    // wait for the first to complete
-    _cp->wait();
-
-    // main loop
-        while (!_env->should_stop_benchmark()) {
-            // submit a replacement batch...
+            // submit the first two batches...
             W_COERCE(submit_batch(xct_type, i, batchsz));
-            // wait for to complete
+            W_COERCE(submit_batch(xct_type, i, batchsz));
+
+            // main loop
+            while (true) {
+                // wait for the first to complete
+                _cp->wait();
+
+                // check for exit...
+                if (_abort_test || _env->get_measure() == MST_DONE) {
+                    break;
+                }
+
+                // submit a replacement batch...
+                W_COERCE(submit_batch(xct_type, i, batchsz));
+            }
+
+            // wait for the last batch to complete...
             _cp->wait();
-        }
+            break;
 
-    // wait for the last batch to complete...
-    _cp->wait();
+            // case no stop until variable stop_benchmark is seted to true
+        case MT_NO_STOP:
 
-       break;
+            // submit the first two batches...
+            W_COERCE(submit_batch(xct_type, i, batchsz));
+            W_COERCE(submit_batch(xct_type, i, batchsz));
+            // wait for the first to complete
+            _cp->wait();
 
-    default:
-        assert (0); // UNSUPPORTED MEASUREMENT TYPE
-        break;
+            // main loop
+            while (!_env->should_stop_benchmark()) {
+                // submit a replacement batch...
+                W_COERCE(submit_batch(xct_type, i, batchsz));
+                // wait for to complete
+                _cp->wait();
+            }
+
+            // wait for the last batch to complete...
+            _cp->wait();
+
+            break;
+
+        default:
+            assert (0); // UNSUPPORTED MEASUREMENT TYPE
+            break;
     }
     // TRACE( TRACE_TRX_FLOW, "Exiting...\n");
 

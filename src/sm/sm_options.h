@@ -92,13 +92,15 @@ private:
 // typedef sm_options option_group_t;
 
 inline sm_options::sm_options() {}
-inline sm_options::sm_options(const sm_options& other)
-    : _int_options(other._int_options), _bool_options(other._bool_options), _string_options(other._string_options) {
-}
 
-template <typename V>
-const V& get_option_with_default (
-    const std::map<std::string, V> &the_map, const std::string& option_name, const V &default_value) {
+inline sm_options::sm_options(const sm_options& other)
+        : _int_options(other._int_options),
+          _bool_options(other._bool_options),
+          _string_options(other._string_options) {}
+
+template<typename V>
+const V& get_option_with_default(
+        const std::map<std::string, V>& the_map, const std::string& option_name, const V& default_value) {
     typename std::map<std::string, V>::const_iterator it = the_map.find(option_name);
     if (it == the_map.end()) {
         return default_value;
@@ -110,19 +112,24 @@ const V& get_option_with_default (
 inline int64_t sm_options::get_int_option(const std::string& option_name, int64_t default_value) const {
     return get_option_with_default<int64_t>(_int_options, option_name, default_value);
 }
+
 inline bool sm_options::get_bool_option(const std::string& option_name, bool default_value) const {
     return get_option_with_default<bool>(_bool_options, option_name, default_value);
 }
-inline const std::string& sm_options::get_string_option(const std::string& option_name, const std::string& default_value) const {
+
+inline const std::string& sm_options::get_string_option(const std::string& option_name,
+                                                        const std::string& default_value) const {
     return get_option_with_default<std::string>(_string_options, option_name, default_value);
 }
 
 inline void sm_options::set_int_option(const std::string& option_name, int64_t value) {
     _int_options[option_name] = value;
 }
+
 inline void sm_options::set_bool_option(const std::string& option_name, bool value) {
     _bool_options[option_name] = value;
 }
+
 inline void sm_options::set_string_option(const std::string& option_name, const std::string& value) {
     _string_options[option_name] = value;
 }

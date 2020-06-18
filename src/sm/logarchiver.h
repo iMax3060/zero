@@ -14,7 +14,9 @@
 #include <set>
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 class sm_options;
@@ -50,53 +52,71 @@ class LogScanner;
  * \author Caetano Sauer
  */
 class ArchiverHeap {
-    public:
-        ArchiverHeap(size_t workspaceSize);
-        virtual ~ArchiverHeap();
+public:
+    ArchiverHeap(size_t workspaceSize);
 
-        bool push(logrec_t* lr, bool duplicate);
-        logrec_t* top();
-        void pop();
+    virtual ~ArchiverHeap();
 
-        run_number_t topRun() { return w_heap.First().run; }
-        size_t size() { return w_heap.NumElements(); }
-    private:
-        run_number_t currentRun;
-        bool filledFirst;
-        fixed_lists_mem_t* workspace;
+    bool push(logrec_t* lr, bool duplicate);
 
-        fixed_lists_mem_t::slot_t allocate(size_t length);
+    logrec_t* top();
 
-        struct HeapEntry {
-            fixed_lists_mem_t::slot_t slot;
-            lsn_t lsn;
-            run_number_t run;
-            PageID pid;
+    void pop();
 
-            HeapEntry(run_number_t run, PageID pid, lsn_t lsn,
-                    fixed_lists_mem_t::slot_t slot)
-                : slot(slot), lsn(lsn), run(run), pid(pid)
-            {}
+    run_number_t topRun() {
+        return w_heap.First().run;
+    }
 
-            HeapEntry()
-                : slot(nullptr, 0), lsn(lsn_t::null), run(0), pid(0)
-            {}
+    size_t size() {
+        return w_heap.NumElements();
+    }
 
-            friend std::ostream& operator<<(std::ostream& os,
-                    const HeapEntry& e)
-            {
-                os << "[run " << e.run << ", " << e.pid << ", " << e.lsn <<
-                    ", slot(" << e.slot.address << ", " << e.slot.length << ")]";
-                return os;
-            }
-        };
+private:
+    run_number_t currentRun;
 
-        struct Cmp {
-            bool gt(const HeapEntry& a, const HeapEntry& b) const;
-        };
+    bool filledFirst;
 
-        Cmp heapCmp;
-        Heap<HeapEntry, Cmp> w_heap;
+    fixed_lists_mem_t* workspace;
+
+    fixed_lists_mem_t::slot_t allocate(size_t length);
+
+    struct HeapEntry {
+        fixed_lists_mem_t::slot_t slot;
+
+        lsn_t lsn;
+
+        run_number_t run;
+
+        PageID pid;
+
+        HeapEntry(run_number_t run, PageID pid, lsn_t lsn,
+                  fixed_lists_mem_t::slot_t slot)
+                : slot(slot),
+                  lsn(lsn),
+                  run(run),
+                  pid(pid) {}
+
+        HeapEntry()
+                : slot(nullptr, 0),
+                  lsn(lsn_t::null),
+                  run(0),
+                  pid(0) {}
+
+        friend std::ostream& operator<<(std::ostream& os,
+                                        const HeapEntry& e) {
+            os << "[run " << e.run << ", " << e.pid << ", " << e.lsn <<
+               ", slot(" << e.slot.address << ", " << e.slot.length << ")]";
+            return os;
+        }
+    };
+
+    struct Cmp {
+        bool gt(const HeapEntry& a, const HeapEntry& b) const;
+    };
+
+    Cmp heapCmp;
+
+    Heap<HeapEntry, Cmp> w_heap;
 };
 
 /**
@@ -120,8 +140,8 @@ class ArchiverHeap {
 class MergerDaemon : public worker_thread_t {
 public:
     MergerDaemon(const sm_options&,
-        std::shared_ptr<ArchiveIndex> in,
-        std::shared_ptr<ArchiveIndex> ou = nullptr);
+                 std::shared_ptr<ArchiveIndex> in,
+                 std::shared_ptr<ArchiveIndex> ou = nullptr);
 
     virtual ~MergerDaemon() {}
 
@@ -131,8 +151,11 @@ public:
 
 private:
     std::shared_ptr<ArchiveIndex> indir;
+
     std::shared_ptr<ArchiveIndex> outdir;
+
     unsigned _fanin;
+
     bool _compression;
 };
 
@@ -202,64 +225,95 @@ private:
 class LogArchiver : public thread_wrapper_t {
 public:
     LogArchiver(const sm_options& options);
+
     LogArchiver(
             ArchiveIndex*,
             LogConsumer*,
             ArchiverHeap*,
             BlockAssembly*
-    );
+               );
 
     virtual ~LogArchiver();
 
     virtual void run();
+
     void activate(lsn_t endLSN = lsn_t::null, bool wait = true);
+
     void shutdown();
+
     bool requestFlushAsync(lsn_t);
+
     void requestFlushSync(lsn_t);
+
     void archiveUntilLSN(lsn_t);
 
-    std::shared_ptr<ArchiveIndex> getIndex() { return index; }
-    lsn_t getNextConsumedLSN() { return consumer->getNextLSN(); }
-    void setEager(bool e)
-    {
+    std::shared_ptr<ArchiveIndex> getIndex() {
+        return index;
+    }
+
+    lsn_t getNextConsumedLSN() {
+        return consumer->getNextLSN();
+    }
+
+    void setEager(bool e) {
         eager = e;
         lintel::atomic_thread_fence(lintel::memory_order_release);
     }
 
-    bool getEager() const { return eager; }
+    bool getEager() const {
+        return eager;
+    }
 
     /*
      * IMPORTANT: the block size must be a multiple of the log
      * page size to ensure that logrec headers are not truncated
      */
     const static bool DFT_EAGER = true;
+
     const static bool DFT_READ_WHOLE_BLOCKS = true;
+
     const static int DFT_GRACE_PERIOD = 1000000; // 1 sec
 
 private:
     std::shared_ptr<ArchiveIndex> index;
+
     LogConsumer* consumer;
+
     ArchiverHeap* heap;
+
     BlockAssembly* blkAssemb;
+
     MergerDaemon* merger;
 
     std::atomic<bool> shutdownFlag;
+
     ArchiverControl control;
+
     bool selfManaged;
+
     bool eager;
+
     bool readWholeBlocks;
+
     int slowLogGracePeriod;
+
     lsn_t nextActLSN;
+
     lsn_t flushReqLSN;
 
     void replacement();
-    bool selection();
-    void pushIntoHeap(logrec_t*, bool duplicate);
-    bool waitForActivation();
-    bool processFlushRequest();
-    bool isLogTooSlow();
-    bool shouldActivate(bool logTooSlow);
 
+    bool selection();
+
+    void pushIntoHeap(logrec_t*, bool duplicate);
+
+    bool waitForActivation();
+
+    bool processFlushRequest();
+
+    bool isLogTooSlow();
+
+    bool shouldActivate(bool logTooSlow);
 };
 
 #endif // __LOGARCHIVER_H

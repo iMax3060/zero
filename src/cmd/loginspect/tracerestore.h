@@ -7,13 +7,16 @@
 class RestoreTrace : public LogScannerCommand {
 public:
     void run();
+
     void setupOptions();
 };
 
 class RestoreTraceHandler : public Handler {
 public:
     RestoreTraceHandler();
+
     virtual void invoke(logrec_t& r);
+
 protected:
     int currentTick;
 };

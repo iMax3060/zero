@@ -26,38 +26,42 @@
 
 #include <sys/time.h>
 
-
-
 /**
  *  @brief a timer object.
  */
 class stopwatch_t {
 private:
     struct timeval tv;
+
     long long mark;
+
 public:
     stopwatch_t() {
         reset();
     }
+
     long long time_us() {
         long long old_mark = mark;
         reset();
         return mark - old_mark;
     }
+
     double time_ms() {
-        return ((double)(time_us()*1e-3));
+        return ((double)(time_us() * 1e-3));
     }
+
     double time() {
-        return ((double)(time_us()*1e-6));
+        return ((double)(time_us() * 1e-6));
     }
+
     long long now() {
         gettimeofday(&tv, nullptr);
-        return tv.tv_usec + tv.tv_sec*1000000ll;
+        return tv.tv_usec + tv.tv_sec * 1000000ll;
     }
+
     void reset() {
-	mark = now();
+        mark = now();
     }
 };
-
 
 #endif // __STOPWATCH_H

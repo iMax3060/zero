@@ -85,7 +85,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 class ErrLog;
 class xct_t;
 class xct_i;
-
 class vol_t;
 class BackupManager;
 namespace zero::buffer_pool {
@@ -95,15 +94,14 @@ class comm_m;
 class log_core;
 class lock_m;
 class LogArchiver;
-
 class option_t;
 class rid_t;
 class lsn_t;
-
 class sm_naive_allocator;
 class sm_tls_allocator;
-template <typename T, size_t A> class memalign_allocator;
 
+template<typename T, size_t A>
+class memalign_allocator;
 class chkpt_m;
 class restart_thread_t;
 namespace zero::buffer_pool {
@@ -120,7 +118,8 @@ class ss_m;
 #endif
 
 class w_rc_t;
-typedef   w_rc_t        rc_t;
+
+typedef w_rc_t rc_t;
 
 
 /**\cond skip
@@ -149,6 +148,7 @@ typedef   w_rc_t        rc_t;
 #else
 #define CHECK_NESTING_VARIABLES 0
 #endif
+
 struct check_compensated_op_nesting {
 #if CHECK_NESTING_VARIABLES
     xct_t* _xd;
@@ -164,8 +164,7 @@ struct check_compensated_op_nesting {
     _depth(_xd? compensated_op_depth(_xd, 0) : 0),
     _line(line),
     _file(file)
-    {
-    }
+    {}
 
     ~check_compensated_op_nesting() {
         if(_xd) {
@@ -180,24 +179,28 @@ struct check_compensated_op_nesting {
         }
     }
 #else
-    check_compensated_op_nesting(xct_t*, int, const char *const) { }
+
+    check_compensated_op_nesting(xct_t*, int, const char* const) {}
+
 #endif
 };
-
 
 /**\brief Encapsulates a few types uses in the API */
 class smlevel_0 : public w_base_t {
 public:
     // Give these enums names for doxygen purposes:
-    enum error_constant_t { eNOERROR = 0, eFAILURE = -1 };
+    enum error_constant_t {
+        eNOERROR = 0,
+        eFAILURE = -1
+    };
     enum sm_constant_t {
         page_sz = SM_PAGESIZE,        // page size (SM_PAGESIZE is set by makemake)
         ext_sz = SM_EXTENTSIZE,        // extent size
 #if defined(_POSIX_PATH_MAX)
         max_devname = _POSIX_PATH_MAX,        // max length of unix path name
-    // BEWARE: this might be larger than you want.  Array sizes depend on it.
-    // The default might be small enough, e.g., 256; getconf() yields the upper
-    // bound on this value.
+        // BEWARE: this might be larger than you want.  Array sizes depend on it.
+        // The default might be small enough, e.g., 256; getconf() yields the upper
+        // bound on this value.
 #elif defined(MAXPATHLEN)
         max_devname = MAXPATHLEN,
 #else
@@ -227,14 +230,20 @@ public:
 
     /**\endcond skip */
 
-    typedef    uint32_t partition_number_t;
+    typedef uint32_t partition_number_t;
 
     /**\brief Comparison types used in scan_index_i
      * \enum cmp_t
      * Shorthand for CompareOp.
      */
-    enum cmp_t { bad_cmp_t=badOp, eq=eqOp,
-                 gt=gtOp, ge=geOp, lt=ltOp, le=leOp };
+    enum cmp_t {
+        bad_cmp_t = badOp,
+        eq = eqOp,
+        gt = gtOp,
+        ge = geOp,
+        lt = ltOp,
+        le = leOp
+    };
 
     /**\enum concurrency_t
      * \brief
@@ -274,43 +283,53 @@ public:
      * - t_cache | t_compact | t_append  -- append to file as a last resort
      */
     enum pg_policy_t {
-        t_append        = 0x01, // retain sort order (cache 0 pages)
-        t_cache        = 0x02, // look in n cached pgs
-        t_compact        = 0x04 // scan file for space in pages
+        t_append = 0x01, // retain sort order (cache 0 pages)
+        t_cache = 0x02, // look in n cached pgs
+        t_compact = 0x04 // scan file for space in pages
 
     };
-
 
 /**\cond skip */
 
 
-    static void  add_to_global_stats(const sm_stats_t &from);
-    static void  add_from_global_stats(sm_stats_t &to);
+    static void add_to_global_stats(const sm_stats_t& from);
+
+    static void add_from_global_stats(sm_stats_t& to);
 
     static BackupManager* bk;
+
     static vol_t* vol;
+
     static zero::buffer_pool::BufferPool* bf;
+
     static lock_m* lm;
 
     static log_core* log;
+
     static LogArchiver* logArchiver;
 
-    static int    dcommit_timeout; // to convey option to coordinator,
-                                   // if it is created by VAS
+    static int dcommit_timeout; // to convey option to coordinator,
+    // if it is created by VAS
 
     static ErrLog* errlog;
 
     static sm_tls_allocator allocator;
 
     static constexpr size_t IO_ALIGN = 512;
+
     static memalign_allocator<char, IO_ALIGN> aligned_allocator;
 
-    static bool         shutdown_clean;
-    static bool         shutdown_filthy;
-    static bool         shutting_down;
-    static bool         logging_enabled;
-    static bool         lock_caching_default;
-    static bool         statistics_enabled;
+    static bool shutdown_clean;
+
+    static bool shutdown_filthy;
+
+    static bool shutting_down;
+
+    static bool logging_enabled;
+
+    static bool lock_caching_default;
+
+    static bool statistics_enabled;
 
     // This is a zeroed page for use wherever initialized memory
     // is needed.
@@ -322,22 +341,22 @@ public:
         /// No flags means a store is not currently allocated
         st_unallocated = 0,
 
-        st_regular     = 0x01, // fully logged
-        st_tmp         = 0x02, // space logging only,
-                               // file destroy on dismount/restart
-        st_load_file   = 0x04, // not stored in the stnode_t,
-                               // only passed down to io_m and then
-                               // converted to tmp and added to the
-                               // list of load files for the xct.  no
-                               // longer needed
+        st_regular = 0x01, // fully logged
+        st_tmp = 0x02, // space logging only,
+        // file destroy on dismount/restart
+        st_load_file = 0x04, // not stored in the stnode_t,
+        // only passed down to io_m and then
+        // converted to tmp and added to the
+        // list of load files for the xct.  no
+        // longer needed
         st_insert_file = 0x08, // stored in stnode, but not on page.
-                               // new pages are saved as tmp, old pages as regular.
-        st_empty       = 0x100 // store might be empty - used ONLY
-                               // as a function argument, NOT stored
-                               // persistently.  Nevertheless, it's
-                               // defined here to be sure that if
-                               // other store flags are added, this
-                               // doesn't conflict with them.
+        // new pages are saved as tmp, old pages as regular.
+        st_empty = 0x100 // store might be empty - used ONLY
+        // as a function argument, NOT stored
+        // persistently.  Nevertheless, it's
+        // defined here to be sure that if
+        // other store flags are added, this
+        // doesn't conflict with them.
     };
 
     /*
@@ -345,16 +364,18 @@ public:
      * type of operation to perform on the stnode
      */
     enum store_operation_t {
-            t_delete_store,
-            t_create_store,
-            t_set_deleting,
-            t_set_store_flags,
-            t_set_root};
+        t_delete_store,
+        t_create_store,
+        t_set_deleting,
+        t_set_store_flags,
+        t_set_root
+    };
 
-    enum store_deleting_t  {
-            t_not_deleting_store = 0,  // must be 0: code assumes it
-            t_deleting_store,
-            t_unknown_deleting};
+    enum store_deleting_t {
+        t_not_deleting_store = 0,  // must be 0: code assumes it
+        t_deleting_store,
+        t_unknown_deleting
+    };
 
     // CS: stuff below was from smlevels 1-4
 
@@ -363,29 +384,30 @@ public:
     // given here only for convenience in debugging/grepping
     // Well, their ORDER is significant, so that you can only
     // change state to a larger state with change_state().
-    enum xct_state_t {  xct_stale = 0x0,
-                        xct_active = 0x1,  // active or rolling back in
-                                           // doing rollback_work
-                                           // It is also used in Recovery for loser transaction
-                                           // because it is using the standard rollback logic
-                                           // for loser txn, check the _loser_xct flag
-                                           // in xct_t
-                        xct_chaining = 0x3,
-                        xct_committing = 0x4,
-                        xct_aborting = 0x5,  // normal transaction abort
-                        xct_freeing_space = 0x6,
-                        xct_ended = 0x7
+    enum xct_state_t {
+        xct_stale = 0x0,
+        xct_active = 0x1,  // active or rolling back in
+        // doing rollback_work
+        // It is also used in Recovery for loser transaction
+        // because it is using the standard rollback logic
+        // for loser txn, check the _loser_xct flag
+        // in xct_t
+        xct_chaining = 0x3,
+        xct_committing = 0x4,
+        xct_aborting = 0x5,  // normal transaction abort
+        xct_freeing_space = 0x6,
+        xct_ended = 0x7
     };
 
     // Checkpoint manager
-    static chkpt_m*    chkpt;
+    static chkpt_m* chkpt;
 
     // Recovery manager
-    static restart_thread_t*  recovery;
+    static restart_thread_t* recovery;
 
     static btree_m* bt;
 
-    static ss_m*    SSM;    // we will change to lower case later
+    static ss_m* SSM;    // we will change to lower case later
 
     /**\brief Store property that controls logging of pages in the store.
      * \ingroup SSMSTORE
@@ -462,22 +484,22 @@ public:
      * \endverbatim
      */
     enum sm_store_property_t {
-    // NB: this had better match store_flag_t!!! (sm_base.h)
-    t_regular     = 0x1,
+        // NB: this had better match store_flag_t!!! (sm_base.h)
+        t_regular = 0x1,
 
-    /// allowed only in create
-    t_temporary    = 0x2,
+        /// allowed only in create
+        t_temporary = 0x2,
 
-    /// allowed only in create, these files start out
-    /// as temp and are converted to regular on commit
-    t_load_file    = 0x4,
+        /// allowed only in create, these files start out
+        /// as temp and are converted to regular on commit
+        t_load_file = 0x4,
 
-    /// current pages logged, new pages not logged
-    /// EX lock is acquired on file.
-    /// only valid with a normal file, not indices.
-    t_insert_file = 0x08,
+        /// current pages logged, new pages not logged
+        /// EX lock is acquired on file.
+        /// only valid with a normal file, not indices.
+        t_insert_file = 0x08,
 
-    t_bad_storeproperty = 0x80// no bits in common with good properties
+        t_bad_storeproperty = 0x80// no bits in common with good properties
     };
 /**\endcond skip */
 };

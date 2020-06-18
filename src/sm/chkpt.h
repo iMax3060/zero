@@ -79,19 +79,28 @@ struct buf_tab_entry_t {
     lsn_t clean_lsn;            // last time page was cleaned
 
     buf_tab_entry_t() :
-        rec_lsn(lsn_t::max), page_lsn(lsn_t::null), clean_lsn(lsn_t::null)
-    {}
+            rec_lsn(lsn_t::max),
+            page_lsn(lsn_t::null),
+            clean_lsn(lsn_t::null) {}
 
-    bool is_dirty() const { return page_lsn >= clean_lsn; }
+    bool is_dirty() const {
+        return page_lsn >= clean_lsn;
+    }
 
     void mark_dirty(lsn_t page, lsn_t rec) {
         // w_assert1(!rec.is_null());
-        if (page > page_lsn) { page_lsn = page; }
-        if (rec >= clean_lsn && rec < rec_lsn) { rec_lsn = rec; }
+        if (page > page_lsn) {
+            page_lsn = page;
+        }
+        if (rec >= clean_lsn && rec < rec_lsn) {
+            rec_lsn = rec;
+        }
     }
 
     void mark_clean(lsn_t clean) {
-        if (clean > clean_lsn) { clean_lsn = clean; }
+        if (clean > clean_lsn) {
+            clean_lsn = clean;
+        }
     }
 };
 
@@ -106,37 +115,50 @@ struct lock_info_t {
 
 struct xct_tab_entry_t {
     smlevel_0::xct_state_t state;
+
     lsn_t last_lsn;               // most recent log record
     lsn_t first_lsn;              // first lsn of the txn
     vector<lock_info_t> locks;
 
     xct_tab_entry_t() :
-        state(xct_t::xct_active), last_lsn(lsn_t::null), first_lsn(lsn_t::max) {}
+            state(xct_t::xct_active),
+            last_lsn(lsn_t::null),
+            first_lsn(lsn_t::max) {}
 
-    bool is_active() const { return state != xct_t::xct_ended; }
+    bool is_active() const {
+        return state != xct_t::xct_ended;
+    }
 
-    void add_lock(okvl_mode mode, uint32_t hash)
-    {
+    void add_lock(okvl_mode mode, uint32_t hash) {
         if (is_active()) {
             locks.push_back({mode, hash});
         }
     }
 
-    void mark_ended() { state = xct_t::xct_ended; }
+    void mark_ended() {
+        state = xct_t::xct_ended;
+    }
 
     void update_lsns(lsn_t first, lsn_t last) {
-        if (last > last_lsn) { last_lsn = last; }
-        if (first < first_lsn && !first.is_null()) { first_lsn = first; }
+        if (last > last_lsn) {
+            last_lsn = last;
+        }
+        if (first < first_lsn && !first.is_null()) {
+            first_lsn = first;
+        }
     }
 };
 
-typedef unordered_map<PageID, buf_tab_entry_t>       buf_tab_t;
-typedef unordered_map<tid_t, xct_tab_entry_t>        xct_tab_t;
+typedef unordered_map<PageID, buf_tab_entry_t> buf_tab_t;
+
+typedef unordered_map<tid_t, xct_tab_entry_t> xct_tab_t;
 
 class chkpt_t {
     friend class chkpt_m;
+
 private:
     tid_t highest_tid;
+
     lsn_t last_scan_start;
 
     /*
@@ -153,11 +175,17 @@ private:
 
 public: // required for restart for now
     buf_tab_t buf_tab;
+
     xct_tab_t xct_tab;
+
     string bkp_path;
+
     lsn_t bkp_lsn;
+
     std::vector<uint32_t> restore_tab;
+
     bool ongoing_restore;
+
     PageID restore_page_cnt;
 
 public:
@@ -166,24 +194,40 @@ public:
     void scan_log(lsn_t scan_start = lsn_t::null, lsn_t archived_lsn = lsn_t::null);
 
     void mark_page_dirty(PageID pid, lsn_t page_lsn, lsn_t rec_lsn);
+
     void mark_page_clean(PageID pid, lsn_t lsn);
+
     xct_tab_entry_t& mark_xct_active(tid_t tid, lsn_t first, lsn_t last);
 
     void add_backup(const char* path, lsn_t backupLSN);
+
     void analyze_logrec(logrec_t&, xct_tab_entry_t* xct,
-            lsn_t& scan_stop, lsn_t archived_lsn);
+                        lsn_t& scan_stop, lsn_t archived_lsn);
 
     lsn_t get_min_rec_lsn() const;
-    lsn_t get_min_xct_lsn() const;
-    lsn_t get_last_scan_start() const { return last_scan_start; }
-    void set_last_scan_start(lsn_t l) { last_scan_start = l; }
 
-    tid_t get_highest_tid() { return highest_tid; }
-    void set_highest_tid(tid_t tid) { highest_tid = tid; }
+    lsn_t get_min_xct_lsn() const;
+
+    lsn_t get_last_scan_start() const {
+        return last_scan_start;
+    }
+
+    void set_last_scan_start(lsn_t l) {
+        last_scan_start = l;
+    }
+
+    tid_t get_highest_tid() {
+        return highest_tid;
+    }
+
+    void set_highest_tid(tid_t tid) {
+        highest_tid = tid;
+    }
 
     void dump(ostream& out);
 
     void serialize_binary(ofstream& ofs);
+
     void deserialize_binary(ifstream& ofs, lsn_t archived_lsn = lsn_t::null);
 
     // Used by nodb mode
@@ -191,6 +235,7 @@ public:
 
 private:
     void cleanup();
+
     void acquire_lock(xct_tab_entry_t& xct, logrec_t& r);
 };
 
@@ -212,6 +257,7 @@ class chkpt_m : public worker_thread_t {
 public:
     /// chkpt_info is obtained via log analysis
     chkpt_m(const sm_options&, chkpt_t* chkpt_info = nullptr);
+
     virtual ~chkpt_m();
 
 public:
@@ -219,8 +265,13 @@ public:
 
     void take(chkpt_t* chkpt = nullptr);
 
-    lsn_t get_min_rec_lsn() { return _min_rec_lsn; }
-    lsn_t get_min_xct_lsn() { return _min_xct_lsn; }
+    lsn_t get_min_rec_lsn() {
+        return _min_rec_lsn;
+    }
+
+    lsn_t get_min_xct_lsn() {
+        return _min_xct_lsn;
+    }
 
     /*
      * min_active_lsn is the LSN up to which log records can be thrown away,
@@ -241,20 +292,27 @@ public:
     }
 
 private:
-    long             _chkpt_count;
-    chkpt_t          curr_chkpt;
-    std::mutex       chkpt_mutex;
+    long _chkpt_count;
 
-    void             _acquire_lock(logrec_t& r, chkpt_t& new_chkpt);
+    chkpt_t curr_chkpt;
+
+    std::mutex chkpt_mutex;
+
+    void _acquire_lock(logrec_t& r, chkpt_t& new_chkpt);
 
     // Values cached from the last checkpoint
     lsn_t _min_rec_lsn;
+
     lsn_t _min_xct_lsn;
+
     lsn_t _last_end_lsn;
 
     bool _use_log_archive;
+
     bool _log_based;
+
     bool _print_propstats;
+
     size_t _dirty_page_count;
 
     std::ofstream _propstats_ofs;

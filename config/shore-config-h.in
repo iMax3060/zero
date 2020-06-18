@@ -17,7 +17,7 @@
 #undef GCC_VER_34_WARNINGS
 
 /*if is gcc3.x, x < 4*/
-#if defined(__GNUC__) && (__GNUC__==3) 
+#if defined(__GNUC__) && (__GNUC__==3)
 # define GCC_VER_3_WARNINGS
 #endif
 
@@ -494,7 +494,7 @@
 #undef IS_ULTRIX42
 
 /*simply !IS_NT*/
-#ifndef IS_NT 
+#ifndef IS_NT
 #define IS_UNIX 1
 #endif
 
@@ -650,7 +650,7 @@
 #undef pid_t
 
 /*turn off sgi */
-#if defined(sgi) 
+#if defined(sgi)
 #undef sgi
 #endif
 

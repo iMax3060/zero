@@ -20,7 +20,7 @@ namespace zero::buffer_pool {
      *
      * \author  Max Gilbert
      */
-    template <bool on_page_unfix/* = false*/>
+    template<bool on_page_unfix/* = false*/>
     class PageEvictionerCAR : public PageEvictioner {
     public:
         /*!\fn      PageEvictionerCAR(const BufferPool* bufferPool)
@@ -60,7 +60,9 @@ namespace zero::buffer_pool {
             bf_idx blockedT2 = 0;
 
             while (!evictedPage) {
-                if (should_exit()) return 0; // the buffer index 0 has the semantics of null
+                if (should_exit()) {
+                    return 0;
+                } // the buffer index 0 has the semantics of null
 
                 if (_handMovement >= _c) {
                     smlevel_0::bf->getPageCleaner()->wakeup(false);
@@ -74,7 +76,8 @@ namespace zero::buffer_pool {
                 w_assert1(iterations < 3);
                 DBG3(<< "p = " << _p);
                 std::lock_guard<std::mutex> guard(_latch);
-                if ((_clocks.sizeOf<T_1>() >= std::max<uint32_t>(uint32_t(1), _p) || blockedT2 >= _clocks.sizeOf<T_2>()) && blockedT1 < _clocks.sizeOf<T_1>()) {
+                if ((_clocks.sizeOf<T_1>() >= std::max<uint32_t>(uint32_t(1), _p) || blockedT2 >= _clocks.sizeOf<T_2>())
+                    && blockedT1 < _clocks.sizeOf<T_1>()) {
                     bool t1Head;
                     _clocks.getHead<T_1>(t1Head);
                     bf_idx t1HeadIndex;
@@ -201,10 +204,12 @@ namespace zero::buffer_pool {
                 DBG5(<< "Added to T_2: " << idx << "; New size: " << _clocks.sizeOf<T_2>() << "; Free frames: " << smlevel_0::bf->getFreeList()->getCount());
                 _clocks.set(idx, false);
             }
-            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() <= _c);
+            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>()
+                      && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() <= _c);
             w_assert1(0 <= _clocks.sizeOf<T_1>() + _b1.length() && _clocks.sizeOf<T_1>() + _b1.length() <= _c);
             w_assert1(0 <= _clocks.sizeOf<T_2>() + _b2.length() && _clocks.sizeOf<T_2>() + _b2.length() <= 2 * (_c));
-            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() <= 2 * (_c));
+            w_assert1(0 <= _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length()
+                      && _clocks.sizeOf<T_1>() + _clocks.sizeOf<T_2>() + _b1.length() + _b2.length() <= 2 * (_c));
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -295,40 +300,40 @@ namespace zero::buffer_pool {
          *          range of indexes starting from 0), the used invalid index is 0 which isn't used in the buffer pool
          *          as well.
          */
-        multi_clock::MultiHandedClock<bf_idx, bool, 2, 0>           _clocks;
+        multi_clock::MultiHandedClock<bf_idx, bool, 2, 0> _clocks;
 
         /*!\var     _b1
          * \brief   LRU-list \f$B_1\f$
          * \details Represents the LRU-list \f$B_1\f$ which contains the \link PageID \endlink s of pages evicted from
          *          \f$T_1\f$.
          */
-        hashtable_deque::HashtableDeque<PageID, 1 | 0x80000000>     _b1;
+        hashtable_deque::HashtableDeque<PageID, 1 | 0x80000000> _b1;
 
         /*!\var     _b2
          * \brief   LRU-list \f$B_2\f$
          * \details Represents the LRU-list \f$B_2\f$ which contains the \link PageID \endlink s of pages evicted from
          *          \f$T_2\f$.
          */
-        hashtable_deque::HashtableDeque<PageID, 1 | 0x80000000>     _b2;
+        hashtable_deque::HashtableDeque<PageID, 1 | 0x80000000> _b2;
 
         /*!\var     _p
          * \brief   Parameter \f$p\f$
          * \details Represents the parameter \f$p\f$ which acts as a target size of \f$T_1\f$.
          */
-        u_int32_t                                                   _p;
+        u_int32_t _p;
 
         /*!\var     _c
          * \brief   Parameter \f$c\f$
          * \details The number of buffer frames in the buffer pool.
          */
-        u_int32_t                                                   _c;
+        u_int32_t _c;
 
         /*!\var     _handMovement
          * \brief   Clock hand movements in current circulation
          * \details The combined number of movements of the clock hands of \f$T_1\f$ and \f$T_2\f$. Is reset after
          *          \link _c \endlink movements.
          */
-        bf_idx                                                      _handMovement;
+        bf_idx _handMovement;
 
         /*!\var     _latch
          * \brief   Latch of \link _clocks \endlink, \link _b1 \endlink and \link _b2 \endlink
@@ -339,7 +344,7 @@ namespace zero::buffer_pool {
          *          called with the corresponding buffer frame latched and the access is also only atomic and therefore
          *          this method does not need to acquire this lock for its changes.
          */
-        std::mutex                                                  _latch;
+        std::mutex _latch;
 
         /*!\enum    clock_index
          * \brief   Clock names
@@ -350,8 +355,6 @@ namespace zero::buffer_pool {
             T_1 = 0,
             T_2 = 1
         };
-
     };
-
 } // zero::buffer_pool
 #endif // __ZERO_PAGE_EVICTIONER_OTHER_HPP

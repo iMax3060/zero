@@ -32,43 +32,58 @@
 #ifndef __TPCC_CONST_H
 #define __TPCC_CONST_H
 
-
 namespace tpcc {
 
-const int TPCC_C_LAST_SZ  = 16;
-const int TPCC_C_FIRST_SZ = 16;
+    const int TPCC_C_LAST_SZ = 16;
+
+    const int TPCC_C_FIRST_SZ = 16;
 
 
 
 // --- standard scale -- //
 
-const int DISTRICTS_PER_WAREHOUSE = 10;
-const int CUSTOMERS_PER_DISTRICT  = 3000;
-const int ITEMS                   = 100000;
-const int STOCK_PER_WAREHOUSE     = ITEMS;
-const int MIN_OL_PER_ORDER        = 5;
-const int MAX_OL_PER_ORDER        = 15;
-const int NU_ORDERS_PER_DISTRICT  = 900;
+    const int DISTRICTS_PER_WAREHOUSE = 10;
 
-const int MAX_TABLENAM_LENGTH     = 20;
-const int MAX_RECORD_LENGTH       = 512;
+    const int CUSTOMERS_PER_DISTRICT = 3000;
+
+    const int ITEMS = 100000;
+
+    const int STOCK_PER_WAREHOUSE = ITEMS;
+
+    const int MIN_OL_PER_ORDER = 5;
+
+    const int MAX_OL_PER_ORDER = 15;
+
+    const int NU_ORDERS_PER_DISTRICT = 900;
+
+    const int MAX_TABLENAM_LENGTH = 20;
+
+    const int MAX_RECORD_LENGTH = 512;
 
 
 // --- number of fields per table --- //
 
-const int TPCC_WAREHOUSE_FCOUNT  = 9;
-const int TPCC_DISTRICT_FCOUNT   = 11;
-const int TPCC_CUSTOMER_FCOUNT   = 22;
-const int TPCC_HISTORY_FCOUNT    = 8;
-const int TPCC_NEW_ORDER_FCOUNT  = 3;
-const int TPCC_ORDER_FCOUNT      = 8;
-const int TPCC_ORDER_LINE_FCOUNT = 10;
-const int TPCC_ITEM_FCOUNT       = 5;
-const int TPCC_STOCK_FCOUNT      = 17;
+    const int TPCC_WAREHOUSE_FCOUNT = 9;
+
+    const int TPCC_DISTRICT_FCOUNT = 11;
+
+    const int TPCC_CUSTOMER_FCOUNT = 22;
+
+    const int TPCC_HISTORY_FCOUNT = 8;
+
+    const int TPCC_NEW_ORDER_FCOUNT = 3;
+
+    const int TPCC_ORDER_FCOUNT = 8;
+
+    const int TPCC_ORDER_LINE_FCOUNT = 10;
+
+    const int TPCC_ITEM_FCOUNT = 5;
+
+    const int TPCC_STOCK_FCOUNT = 17;
 
 // -- number of tables -- //
 
-const int SHORE_TPCC_TABLES = 9;
+    const int SHORE_TPCC_TABLES = 9;
 
 
 
@@ -76,36 +91,43 @@ const int SHORE_TPCC_TABLES = 9;
 /* --- TPC-C TRANSACTION MIX --- */
 /* ----------------------------- */
 
-const int XCT_MIX           = 0;
-const int XCT_NEW_ORDER     = 1;
-const int XCT_PAYMENT       = 2;
-const int XCT_ORDER_STATUS  = 3;
-const int XCT_DELIVERY      = 4;
-const int XCT_STOCK_LEVEL   = 5;
+    const int XCT_MIX = 0;
 
-const int XCT_LITTLE_MIX    = 9;
+    const int XCT_NEW_ORDER = 1;
 
+    const int XCT_PAYMENT = 2;
 
-const int XCT_MBENCH_WH   = 11;
-const int XCT_MBENCH_CUST = 12;
+    const int XCT_ORDER_STATUS = 3;
+
+    const int XCT_DELIVERY = 4;
+
+    const int XCT_STOCK_LEVEL = 5;
+
+    const int XCT_LITTLE_MIX = 9;
+
+    const int XCT_MBENCH_WH = 11;
+
+    const int XCT_MBENCH_CUST = 12;
 
 
 // --- probabilities for the TPC-C MIX --- //
 
-const int PROB_NEWORDER     = 45;
-const int PROB_PAYMENT      = 43;
-const int PROB_ORDER_STATUS = 4;
-const int PROB_DELIVERY     = 4;
-const int PROB_STOCK_LEVEL  = 4;
+    const int PROB_NEWORDER = 45;
+
+    const int PROB_PAYMENT = 43;
+
+    const int PROB_ORDER_STATUS = 4;
+
+    const int PROB_DELIVERY = 4;
+
+    const int PROB_STOCK_LEVEL = 4;
 
 
 // --- Helper functions --- //
 
 
 // Translates or picks a random xct type given the benchmark specification
-int random_xct_type(int selected);
-
-
+    int random_xct_type(int selected);
 };
 
 #endif // __TPCC_CONST_H

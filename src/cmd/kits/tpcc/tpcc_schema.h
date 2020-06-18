@@ -32,7 +32,6 @@
 #ifndef __TPCC_SCHEMA_H
 #define __TPCC_SCHEMA_H
 
-
 #include <cmath>
 
 #include "sm_vas.h"
@@ -51,17 +50,23 @@ namespace tpcc {
 /* -------------------------------------------------- */
 
 
-DECLARE_TABLE_SCHEMA(warehouse_t);
-DECLARE_TABLE_SCHEMA(district_t);
-DECLARE_TABLE_SCHEMA(stock_t);
-DECLARE_TABLE_SCHEMA(order_line_t);
-DECLARE_TABLE_SCHEMA(customer_t);
-DECLARE_TABLE_SCHEMA(history_t);
-DECLARE_TABLE_SCHEMA(order_t);
-DECLARE_TABLE_SCHEMA(new_order_t);
-DECLARE_TABLE_SCHEMA(item_t);
+    DECLARE_TABLE_SCHEMA(warehouse_t);
 
+    DECLARE_TABLE_SCHEMA(district_t);
 
+    DECLARE_TABLE_SCHEMA(stock_t);
+
+    DECLARE_TABLE_SCHEMA(order_line_t);
+
+    DECLARE_TABLE_SCHEMA(customer_t);
+
+    DECLARE_TABLE_SCHEMA(history_t);
+
+    DECLARE_TABLE_SCHEMA(order_t);
+
+    DECLARE_TABLE_SCHEMA(new_order_t);
+
+    DECLARE_TABLE_SCHEMA(item_t);
 };
 
 #endif // __TPCC_SCHEMA_H

@@ -6,7 +6,9 @@
 class LogCat : public LogScannerCommand {
 public:
     void usage();
+
     void run();
+
     void setupOptions();
 };
 

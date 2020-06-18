@@ -12,31 +12,28 @@ const static int DFT_BLOCK_SIZE = 1024 * 1024; // 1MB = 128 pages
 
 const auto& parseRunFileName = ArchiveIndex::parseRunFileName;
 
-void BaseScanner::handle(logrec_t* lr)
-{
+void BaseScanner::handle(logrec_t* lr) {
     for (auto h : handlers) {
         h->invoke(*lr);
     }
 }
 
-void BaseScanner::finalize()
-{
+void BaseScanner::finalize() {
     for (auto h : handlers) {
         h->finalize();
     }
 }
 
-void BaseScanner::initialize()
-{
+void BaseScanner::initialize() {
     for (auto h : handlers) {
         h->initialize();
     }
 }
 
 BlockScanner::BlockScanner(const po::variables_map& options,
-        bitset<logrec_t::t_max_logrec>* filter)
-    : BaseScanner(options), pnum(-1)
-{
+                           bitset<logrec_t::t_max_logrec>* filter)
+        : BaseScanner(options),
+          pnum(-1) {
     logdir = options["logdir"].as<string>().c_str();
     // blockSize = options["sm_archiver_block_size"].as<int>();
     // CS TODO no option for archiver block size
@@ -48,7 +45,7 @@ BlockScanner::BlockScanner(const po::variables_map& options,
         logScanner->ignoreAll();
         for (int i = 0; i < logrec_t::t_max_logrec; i++) {
             if (filter->test(i)) {
-                logScanner->unsetIgnore((logrec_t::kind_t) i);
+                logScanner->unsetIgnore((logrec_t::kind_t)i);
             }
         }
         // skip cannot be ignored because it tells us when file ends
@@ -56,8 +53,7 @@ BlockScanner::BlockScanner(const po::variables_map& options,
     }
 }
 
-void BlockScanner::findFirstFile()
-{
+void BlockScanner::findFirstFile() {
     pnum = numeric_limits<int>::max();
     DIR* dir = opendir(logdir);
     if (!dir) {
@@ -65,7 +61,7 @@ void BlockScanner::findFirstFile()
         W_COERCE(RC(fcOS));
     }
     struct dirent* entry = readdir(dir);
-    const char * PREFIX = "log.";
+    const char* PREFIX = "log.";
 
     while (entry != nullptr) {
         const char* fname = entry->d_name;
@@ -80,14 +76,12 @@ void BlockScanner::findFirstFile()
     closedir(dir);
 }
 
-string BlockScanner::getNextFile()
-{
+string BlockScanner::getNextFile() {
     stringstream fname;
     fname << logdir << "/";
     if (pnum < 0) {
         findFirstFile();
-    }
-    else {
+    } else {
         pnum++;
     }
     fname << "log." << pnum;
@@ -99,8 +93,7 @@ string BlockScanner::getNextFile()
     return fname.str();
 }
 
-void BlockScanner::run()
-{
+void BlockScanner::run() {
     BaseScanner::initialize();
 
     size_t bpos = 0;
@@ -138,16 +131,13 @@ void BlockScanner::run()
             if (in.eof()) {
                 // partial read on end of file
                 fpos = fend;
-            }
-            else if (in.gcount() == 0) {
+            } else if (in.gcount() == 0) {
                 // file ended exactly on block boundary
                 break;
-            }
-            else if (in.fail()) {
+            } else if (in.fail()) {
                 // EOF implies fail, so we check it first
                 throw runtime_error("IO error reading block from file");
-            }
-            else {
+            } else {
                 fpos += blockSize;
             }
 
@@ -172,29 +162,27 @@ void BlockScanner::run()
 
     if (pnum == firstPartition && bpos == 0) {
         throw runtime_error("Could not find/open log files in "
-                + string(logdir));
+                            + string(logdir));
     }
 
     BaseScanner::finalize();
 }
 
-BlockScanner::~BlockScanner()
-{
+BlockScanner::~BlockScanner() {
     delete currentBlock;
     delete logScanner;
 }
 
-
 LogArchiveScanner::LogArchiveScanner(const po::variables_map& options)
-    : BaseScanner(options), runBegin(lsn_t::null), runEnd(lsn_t::null)
-{
+        : BaseScanner(options),
+          runBegin(lsn_t::null),
+          runEnd(lsn_t::null) {
     archdir = options["logdir"].as<string>();
     level = options["level"].as<int>();
     scan_pid = options["pid"].as<PageID>();
 }
 
-bool runCompare (string a, string b)
-{
+bool runCompare(string a, string b) {
     RunId fstats;
     parseRunFileName(a, fstats);
     lsn_t lsn_a = fstats.beginLSN;
@@ -203,8 +191,7 @@ bool runCompare (string a, string b)
     return lsn_a < lsn_b;
 }
 
-void LogArchiveScanner::run()
-{
+void LogArchiveScanner::run() {
     BaseScanner::initialize();
 
     // CS TODO no option for archiver block size
@@ -220,8 +207,7 @@ void LogArchiveScanner::run()
     if (restrictFile.empty()) {
         directory->listFiles(runFiles, level);
         std::sort(runFiles.begin(), runFiles.end(), runCompare);
-    }
-    else {
+    } else {
         runFiles.push_back(restrictFile);
     }
 
@@ -230,7 +216,7 @@ void LogArchiveScanner::run()
     runBegin = fstats.beginLSN;
     runEnd = fstats.endLSN;
     std::vector<std::string>::const_iterator it;
-    for(size_t i = 0; i < runFiles.size(); i++) {
+    for (size_t i = 0; i < runFiles.size(); i++) {
         if (i > 0) {
             // begin of run i must be equal to end of run i-1
             parseRunFileName(runFiles[i], fstats);
@@ -245,15 +231,15 @@ void LogArchiveScanner::run()
             openFileCallback(runFiles[i].c_str());
         }
 
-        ArchiveScan scan {directory};
+        ArchiveScan scan{directory};
         scan.open(
-                    scan_pid, // first PID
-                    0, // last PID
-                    runBegin,
-                    runEnd
-                    // CS TODO: level not supported yet
-                    // fstats.level
-            );
+                scan_pid, // first PID
+                0, // last PID
+                runBegin,
+                runEnd
+                // CS TODO: level not supported yet
+                // fstats.level
+                 );
 
         lsn_t prevLSN = lsn_t::null;
         PageID prevPid = 0;
@@ -262,9 +248,9 @@ void LogArchiveScanner::run()
         while (scan.next(lr)) {
             w_assert0(lr->pid() >= prevPid);
             w_assert0(lr->has_page_img(lr->pid()) ||
-                    lr->pid() != prevPid ||
-                    lr->page_prev_lsn() == lsn_t::null ||
-                    lr->page_prev_lsn() == prevLSN);
+                      lr->pid() != prevPid ||
+                      lr->page_prev_lsn() == lsn_t::null ||
+                      lr->page_prev_lsn() == prevLSN);
             w_assert0(lr->lsn_ck() >= runBegin);
             w_assert0(lr->lsn_ck() < runEnd);
 
@@ -279,15 +265,13 @@ void LogArchiveScanner::run()
 }
 
 MergeScanner::MergeScanner(const po::variables_map& options)
-    : BaseScanner(options)
-{
+        : BaseScanner(options) {
     archdir = options["logdir"].as<string>();
     level = options["level"].as<int>();
     scan_pid = options["pid"].as<PageID>();
 }
 
-void MergeScanner::run()
-{
+void MergeScanner::run() {
     BaseScanner::initialize();
 
     sm_options opt;
@@ -296,7 +280,7 @@ void MergeScanner::run()
     // opt.set_int_option("sm_archiver_bucket_size", bucketSize);
 
     auto directory = std::make_shared<ArchiveIndex>(opt);
-    ArchiveScan scan {directory};
+    ArchiveScan scan{directory};
     scan.open(scan_pid, 0, lsn_t::null);
 
     logrec_t* lr;
@@ -307,9 +291,9 @@ void MergeScanner::run()
     while (scan.next(lr)) {
         w_assert0(lr->pid() >= prevPid);
         w_assert0(lr->has_page_img(lr->pid()) ||
-                lr->pid() != prevPid ||
-                lr->page_prev_lsn() == lsn_t::null ||
-                lr->page_prev_lsn() == prevLSN);
+                  lr->pid() != prevPid ||
+                  lr->page_prev_lsn() == lsn_t::null ||
+                  lr->page_prev_lsn() == prevLSN);
 
         handle(lr);
 

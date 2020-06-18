@@ -43,7 +43,9 @@
 enum w_error_codes {
     /** 0 means no-error. */
     w_error_ok = 0,
+
 #include "w_error_xmacro.h"
+
     /** dummy entry to get the count of error codes. */
     w_error_count
 };
@@ -53,14 +55,18 @@ enum w_error_codes {
 #define X_QUOTE(str) #str
 #define X_EXPAND_AND_QUOTE(str) X_QUOTE(str)
 #define X(a, b) case a: return X_EXPAND_AND_QUOTE(a);
+
 /**
  * \brief Returns the names of w_error_code enum defined in w_error_xmacro.h.
  * \ingroup ERRORCODES
  */
 inline const char* w_error_name(w_error_codes error_code) {
     switch (error_code) {
-        case w_error_ok: return "w_error_ok";
-        case w_error_count: return "w_error_count";
+        case w_error_ok:
+            return "w_error_ok";
+        case w_error_count:
+            return "w_error_count";
+
 #include "w_error_xmacro.h"
     }
     return "Unexpected error code";
@@ -70,14 +76,18 @@ inline const char* w_error_name(w_error_codes error_code) {
 #undef X_QUOTE
 
 #define X(a, b) case a: return b;
+
 /**
  * \brief Returns the error messages corresponding to w_error_code enum defined in w_error_xmacro.h.
  * \ingroup ERRORCODES
  */
 inline const char* w_error_message(w_error_codes error_code) {
     switch (error_code) {
-        case w_error_ok: return "no_error";
-        case w_error_count: return "error-count";
+        case w_error_ok:
+            return "no_error";
+        case w_error_count:
+            return "error-count";
+
 #include "w_error_xmacro.h"
     }
     return "Unexpected error code";

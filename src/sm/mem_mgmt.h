@@ -27,26 +27,27 @@
  *
  * @author: Caetano Sauer
  */
-class fixed_lists_mem_t
-{
+class fixed_lists_mem_t {
 public:
     struct slot_t {
         char* address;
+
         size_t length;
+
         slot_t(char* a, size_t l)
-            : address(a), length(l)
-        {}
+                : address(a),
+                  length(l) {}
     };
+
 private:
     class list_header_t {
     private:
         uint16_t tag;
 
         void update_footer() {
-            char* p = (char*) this + block_size() - 2;
+            char* p = (char*)this + block_size() - 2;
             memcpy(p, &tag, 2);
         }
-
 
     public:
         /*
@@ -54,12 +55,12 @@ private:
          * offsets relative to the memory manager buffer (_buf)
          */
         list_header_t* next;
+
         list_header_t* prev;
 
         uint16_t block_size() {
             return tag & 0x7FFF;
         }
-
 
         void init(size_t block_size) {
             // max length is 32K (15 bits)
@@ -91,20 +92,21 @@ private:
 
         list_header_t* get_left_neighbor() {
             uint16_t left_tag;
-            memcpy(&left_tag, (char*) this - 2, 2);
-            return (list_header_t*) ((char*) this - (left_tag & 0x7FFF));
+            memcpy(&left_tag, (char*)this - 2, 2);
+            return (list_header_t*)((char*)this - (left_tag & 0x7FFF));
         }
 
         list_header_t* get_right_neighbor() {
             return (list_header_t*)
-                ((char*) this + block_size());
+                    ((char*)this + block_size());
         }
 
         uint16_t footer() {
-            return *((uint16_t*) ((char*) this + block_size() - 2));
+            return *((uint16_t*)((char*)this + block_size() - 2));
         }
+
         uint16_t header() {
-            return *((uint16_t*) this);
+            return *((uint16_t*)this);
         }
 
         static size_t get_best_fit(size_t length, size_t incr) {
@@ -118,18 +120,29 @@ private:
     };
 
     const size_t _incr;
+
     const size_t _max;
+
     size_t _bufsize;
-    list_header_t ** _lists;
-    char * _buf;
+
+    list_header_t** _lists;
+
+    char* _buf;
+
     size_t _first_non_empty;
+
     size_t _last_non_empty;
+
     size_t _alloc;
+
     size_t _used;
 
     void add_to_list(size_t block_size, char* address);
+
     char* remove_from_list(size_t block_size);
+
     void remove_from_list(list_header_t* p);
+
     bool is_list_empty(size_t block_size);
 
 #ifdef MM_TEST
@@ -144,11 +157,14 @@ public:
             size_t bufsize = 8192 * 10240,
             size_t incr = 32,
             size_t max = 16384);
+
     ~fixed_lists_mem_t();
+
     rc_t allocate(size_t length, slot_t& slot);
+
     rc_t free(slot_t slot);
+
     rc_t defrag();
 };
-
 
 #endif // __MEM_MGMT_H

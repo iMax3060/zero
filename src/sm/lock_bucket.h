@@ -17,9 +17,7 @@ class xct_lock_info_t;
 class lock_queue_entry_t;
 class lock_queue_t;
 class xct_lock_entry_t;
-
 class lock_core_m;
-
 
 /**
  * \brief A lock request entry in a lock queue.
@@ -48,27 +46,43 @@ class lock_core_m;
  */
 class lock_queue_entry_t {
 public:
-    uint32_t get_observed_release_version() const { return _observed_release_version; }
-    const okvl_mode& get_requested_mode() const { return _requested_mode; }
-    const okvl_mode& get_granted_mode() const { return _granted_mode; }
+    uint32_t get_observed_release_version() const {
+        return _observed_release_version;
+    }
+
+    const okvl_mode& get_requested_mode() const {
+        return _requested_mode;
+    }
+
+    const okvl_mode& get_granted_mode() const {
+        return _granted_mode;
+    }
+
 private:
     friend class lock_queue_t;
     friend class lock_core_m;  // TODO: narrow this down later <<<>>>
     friend ostream& operator<<(ostream& o, const lock_queue_entry_t& r);
 
-    lock_queue_entry_t (xct_t& xct, smthread_t& thr, xct_lock_info_t& li,
-                        const okvl_mode& granted_mode, const okvl_mode& requested_mode)
-        : _xct(xct), _thr(thr), _li(li), _xct_entry(nullptr), _prev(nullptr), _next(nullptr),
-            _observed_release_version(0),
-            _granted_mode(granted_mode), _requested_mode(requested_mode) {
-    }
+    lock_queue_entry_t(xct_t& xct, smthread_t& thr, xct_lock_info_t& li,
+                       const okvl_mode& granted_mode, const okvl_mode& requested_mode)
+            : _xct(xct),
+              _thr(thr),
+              _li(li),
+              _xct_entry(nullptr),
+              _prev(nullptr),
+              _next(nullptr),
+              _observed_release_version(0),
+              _granted_mode(granted_mode),
+              _requested_mode(requested_mode) {}
 
-    xct_t&              _xct;  ///< owning xct.
-    smthread_t&         _thr;  ///< owning thread.
-    xct_lock_info_t&    _li;
-    xct_lock_entry_t*   _xct_entry;
+    xct_t& _xct;  ///< owning xct.
+    smthread_t& _thr;  ///< owning thread.
+    xct_lock_info_t& _li;
+
+    xct_lock_entry_t* _xct_entry;
 
     lock_queue_entry_t* _prev;
+
     lock_queue_entry_t* _next;
 
     /**
@@ -79,17 +93,18 @@ private:
      * 0 if this lock is not waiting.
      * This is NOT protected by latch because this is used only opportunistically.
      */
-    uint64_t            _observed_release_version;
+    uint64_t _observed_release_version;
 
-    okvl_mode              _granted_mode;
-    okvl_mode              _requested_mode;
+    okvl_mode _granted_mode;
+
+    okvl_mode _requested_mode;
 };
+
 /**
  * Requires holding a read latch for queue._requests_latch where queue
  * is the lock_queue_t that r belongs to.
  */
-ostream&  operator<<(ostream& o, const lock_queue_entry_t& r);
-
+ostream& operator<<(ostream& o, const lock_queue_entry_t& r);
 
 /**
  * \brief A lock queue to hold granted and waiting lock requests
@@ -106,85 +121,110 @@ ostream&  operator<<(ostream& o, const lock_queue_entry_t& r);
  */
 class lock_queue_t {
 public:
-    lock_queue_t(uint32_t hash) : _hash(hash), _hit_counts(0), _release_version(1), _next (nullptr),
-        _x_lock_tag(lsn_t::null), _head (nullptr), _tail (nullptr) {
-    }
+    lock_queue_t(uint32_t hash) : _hash(hash),
+                                  _hit_counts(0),
+                                  _release_version(1),
+                                  _next(nullptr),
+                                  _x_lock_tag(lsn_t::null),
+                                  _head(nullptr),
+                                  _tail(nullptr) {}
+
     ~lock_queue_t() {}
 
-    inline uint32_t hash()       const { return _hash;}
-    inline uint32_t hit_count () const { return _hit_counts;}
+    inline uint32_t hash() const {
+        return _hash;
+    }
 
+    inline uint32_t hit_count() const {
+        return _hit_counts;
+    }
 
 private:
     friend class bucket_t;
     friend class lock_core_m;  // TODO: narrow this down later <<<>>>
 
-    inline void increase_hit_count () {++_hit_counts;}
-
+    inline void increase_hit_count() {
+        ++_hit_counts;
+    }
 
     /** Requires read access for the bucket containing us if any's
         _queue_latch. */
-    inline lock_queue_t* next () { return _next; }
+    inline lock_queue_t* next() {
+        return _next;
+    }
+
     /** Requires write access for the bucket containing us if any's
         _queue_latch. */
-    inline void set_next (lock_queue_t *new_next) { _next = new_next; }
+    inline void set_next(lock_queue_t* new_next) {
+        _next = new_next;
+    }
 
     /** Allocate a new queue object.  Uses TLS cache in lock_core.cpp. */
     static lock_queue_t* allocate_lock_queue(uint32_t hash);
+
     /** Deallocate a new queue object.  Uses TLS cache in
         lock_core.cpp.  Shutdown time only. */
-    static void deallocate_lock_queue(lock_queue_t *obj);
-
+    static void deallocate_lock_queue(lock_queue_t* obj);
 
     /** Requires read access for _request_latch. */
-    inline const lsn_t& x_lock_tag () const {return _x_lock_tag;}
+    inline const lsn_t& x_lock_tag() const {
+        return _x_lock_tag;
+    }
+
     /** Requires write access for _request_latch, new_tag may be
         lsn_t::null. */
-    inline void update_x_lock_tag (const lsn_t &new_tag) {
+    inline void update_x_lock_tag(const lsn_t& new_tag) {
         if (!_x_lock_tag.valid() || _x_lock_tag < new_tag) {
             _x_lock_tag = new_tag;
         }
     }
 
+    lock_queue_entry_t* find_request(const xct_lock_info_t* li);
 
-    lock_queue_entry_t* find_request (const xct_lock_info_t* li);
+    void append_request(lock_queue_entry_t* myreq);
 
-    void append_request (lock_queue_entry_t* myreq);
-    void detach_request (lock_queue_entry_t* myreq);
+    void detach_request(lock_queue_entry_t* myreq);
+
     /**
      * try getting a lock.
      * @return if it really succeeded to get the lock.
      * Requires current thread is myreq->_thr
      */
-    bool grant_request (lock_queue_entry_t* myreq, lsn_t& observed);
+    bool grant_request(lock_queue_entry_t* myreq, lsn_t& observed);
 
     struct check_grant_result {
-        void init (const atomic_thread_map_t &fingerprint) {
+        void init(const atomic_thread_map_t& fingerprint) {
             can_be_granted = true;
             deadlock_detected = false;
             deadlock_myself_should_die = false;
             deadlock_other_victim = nullptr;
             refreshed_wait_map.copy(fingerprint);
         }
+
         bool can_be_granted;
+
         bool deadlock_detected;
+
         bool deadlock_myself_should_die;
+
         smthread_t* deadlock_other_victim;
-        atomic_thread_map_t  refreshed_wait_map;
+
+        atomic_thread_map_t refreshed_wait_map;
+
         lsn_t observed;
     };
+
     /**
      * Checkif my request can be granted, and also check deadlocks.
      */
-    void check_can_grant (lock_queue_entry_t* myreq, check_grant_result &result);
+    void check_can_grant(lock_queue_entry_t* myreq, check_grant_result& result);
 
     //* Requires read access to _requests_latch of queue other_request belongs to
     bool _check_compatible(const okvl_mode& granted_mode, const okvl_mode& requested_mode,
-            lock_queue_entry_t* other_request, bool proceeds_me, lsn_t& observed);
+                           lock_queue_entry_t* other_request, bool proceeds_me, lsn_t& observed);
 
     /** opportunistically wake up waiters.  called when some lock is released. */
     void wakeup_waiters(const okvl_mode& released_requested);
-
 
     const uint32_t _hash;  ///< precise hash for this lock queue.
 
@@ -196,7 +236,7 @@ private:
      * NOTE this is NOT a pin-count that is precisely
      * incremented/decremented to control when deletion could occur.
      */
-    uint32_t       _hit_counts;
+    uint32_t _hit_counts;
 
     /**
      * \brief Monotonically increasing counter that is incremented
@@ -208,33 +248,34 @@ private:
      * in waitmap, but turns out that a granular checking prevents
      * false deadlock detections more precisely and efficiently.
      */
-    uint64_t       _release_version;
+    uint64_t _release_version;
 
     /** Forms a singly-linked list for other queues in the same bucket
         as us; protected by the bucket containing us's _queue_latch if
         any. */
-    lock_queue_t*  _next;
-
+    lock_queue_t* _next;
 
     /** R/W latch to protect remaining fields as well as our
         lock_queue_entry_t's fields. */
-    srwlock_t     _requests_latch;
+    srwlock_t _requests_latch;
 
     /** Stores the commit timestamp of the latest transaction that
         released an X lock on this queue; holds lsn_t::null if no such
         transaction exists; protected by _requests_latch. */
-    lsn_t          _x_lock_tag;
+    lsn_t _x_lock_tag;
 
     /** The first entry in this queue or NULL if queue empty;
         protected by _requests_latch. */
     lock_queue_entry_t* _head;
+
     /** The last entry in this queue or NULL if queue empty; protected
         by _requests_latch. */
     lock_queue_entry_t* _tail;
 };
 
 inline bool lock_queue_t::_check_compatible(const okvl_mode& granted_mode,
-    const okvl_mode& requested_mode, lock_queue_entry_t* other_request, bool precedes_me, lsn_t& observed) {
+                                            const okvl_mode& requested_mode, lock_queue_entry_t* other_request,
+                                            bool precedes_me, lsn_t& observed) {
     bool compatible;
     if (precedes_me) {
         // in this case, we _respect_ the predecesor's requested mode, not just granted mode.
@@ -253,25 +294,26 @@ inline bool lock_queue_t::_check_compatible(const okvl_mode& granted_mode,
                 compatible = okvl_mode::is_compatible(other_request->_granted_mode, requested_mode);
             }
         }
-
     } else {
         compatible = okvl_mode::is_compatible(other_request->_granted_mode, requested_mode);
     }
 
-    if (compatible)
+    if (compatible) {
         return true;
+    }
 
     // Can we violate the lock?
     xct_lock_info_t& li = other_request->_li;
     spinlock_read_critical_section cs(&li._shared_latch);
-    if (!li._permission_to_violate)
+    if (!li._permission_to_violate) {
         return false;
+    }
 
-    if (!observed.valid() || observed < li._commit_lsn)
+    if (!observed.valid() || observed < li._commit_lsn) {
         observed = li._commit_lsn;
+    }
     return true;
 }
-
 
 /**
  * \brief Lock table hash table bucket.
@@ -283,9 +325,11 @@ inline bool lock_queue_t::_check_compatible(const okvl_mode& granted_mode,
  */
 class bucket_t {
     /** friending for unsafe dump as an exception to the latch protocol here. */
-    friend void lock_core_m::dump(std::ostream &o);
+    friend void lock_core_m::dump(std::ostream& o);
+
 public:
     bucket_t() : _queue(nullptr) {}
+
     ~bucket_t() {
         // assume done only at shutdown so no locks needed:
         lock_queue_t* p = _queue;
@@ -307,7 +351,7 @@ private:
      * lock_queue_t's on that list only.  We only keep this latch
      * until we find or create the right lock_queue_t.
      */
-    srwlock_t     _queue_latch;
+    srwlock_t _queue_latch;
     //tatas_lock  _queue_latch;
 
     /** Pointer to the first lock_queue_ of our list; protected by _queue_latch. */
@@ -319,6 +363,7 @@ private:
      * @return returns NULL if not found.  In that case, call find_lock_queue_create().
      */
     lock_queue_t* find_lock_queue_nocreate(uint32_t hash);
+
     /**
      * Find a lock queue for the given hash, creating a new lock queue
      * if needed.

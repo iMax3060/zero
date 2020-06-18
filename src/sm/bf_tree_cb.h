@@ -73,8 +73,7 @@ struct bf_tree_cb_t {
     bf_tree_cb_t() {};
 
     /** Initializes all fields -- called by fix when fetching a new page */
-    void init(PageID pid = 0, lsn_t page_lsn = lsn_t::null)
-    {
+    void init(PageID pid = 0, lsn_t page_lsn = lsn_t::null) {
         w_assert1(_pin_cnt == -1);
         _pin_cnt = 0;
         _pid = pid;
@@ -127,9 +126,17 @@ struct bf_tree_cb_t {
     uint8_t _fill13; // +1 -> 13
 
     std::atomic<bool> _pinned_for_restore; // +1 -> 14
-    void pin_for_restore() { _pinned_for_restore = true; }
-    void unpin_for_restore() { _pinned_for_restore = false; }
-    bool is_pinned_for_restore() { return _pinned_for_restore; }
+    void pin_for_restore() {
+        _pinned_for_restore = true;
+    }
+
+    void unpin_for_restore() {
+        _pinned_for_restore = false;
+    }
+
+    bool is_pinned_for_restore() {
+        return _pinned_for_restore;
+    }
 
     /// true if this block is actually used
     std::atomic<bool> _used;          // +1  -> 15
@@ -137,24 +144,31 @@ struct bf_tree_cb_t {
     std::atomic<bool> _swizzled;      // +1 -> 16
 
     lsn_t _page_lsn; // +8 -> 24
-    lsn_t get_page_lsn() const { return _page_lsn; }
-    void set_page_lsn(lsn_t lsn)
-    {
+    lsn_t get_page_lsn() const {
+        return _page_lsn;
+    }
+
+    void set_page_lsn(lsn_t lsn) {
         // caller must hold EX latch, since it has just performed an update on
         // the page
         _page_lsn = lsn;
-        if (_rec_lsn <= _persisted_lsn) { _rec_lsn = lsn; }
-        if (_next_rec_lsn <= _next_persisted_lsn) { _next_rec_lsn = lsn; }
+        if (_rec_lsn <= _persisted_lsn) {
+            _rec_lsn = lsn;
+        }
+        if (_next_rec_lsn <= _next_persisted_lsn) {
+            _next_rec_lsn = lsn;
+        }
     }
 
     // CS: page_lsn value when it was last picked for cleaning
     // Replaces the old dirty flag, because dirty is defined as
     // page_lsn > clean_lsn
     lsn_t _persisted_lsn; // +8 -> 32
-    lsn_t get_persisted_lsn() const { return _persisted_lsn; }
+    lsn_t get_persisted_lsn() const {
+        return _persisted_lsn;
+    }
 
-    bool is_dirty() const
-    {
+    bool is_dirty() const {
         // Unconditional latch may cause deadlocks!
         auto rc = latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
         if (rc.is_error()) {
@@ -175,20 +189,25 @@ struct bf_tree_cb_t {
     // of all recovery LSNs determines the starting point for the log-based redo
     // recovery of traditional ARIES. This is not used in instant restart.
     lsn_t _rec_lsn; // +8 -> 40
-    lsn_t get_rec_lsn() const  { return _rec_lsn; }
+    lsn_t get_rec_lsn() const {
+        return _rec_lsn;
+    }
 
     lsn_t _next_persisted_lsn; // +8 -> 48
-    lsn_t get_next_persisted_lsn() const { return _next_persisted_lsn; }
+    lsn_t get_next_persisted_lsn() const {
+        return _next_persisted_lsn;
+    }
 
-    void mark_persisted_lsn()
-    {
+    void mark_persisted_lsn() {
         // called by cleaner while it holds SH latch
         _next_rec_lsn = lsn_t::null;
         _next_persisted_lsn = _page_lsn;
     }
 
     lsn_t _next_rec_lsn; // +8 -> 56
-    lsn_t get_next_rec_lsn() const  { return _next_rec_lsn; }
+    lsn_t get_next_rec_lsn() const {
+        return _next_rec_lsn;
+    }
 
     // Called when cleaner writes and fsync's the page to disk. This updates
     // rec_lsn and persisted_lsn to their "next" counterparts that were recorded
@@ -196,8 +215,7 @@ struct bf_tree_cb_t {
     // that this does not necessarily mark the frame as "clean", since updates
     // might have happened since the copy was taken. That's why we don't have
     // a dirty flag and rely on LSN comparisons instead.
-    void notify_write()
-    {
+    void notify_write() {
         // SH latch is enough because we are only worried about races with
         // set_page_lsn, which always holds an EX latch
         // Unconditional latch may cause deadlocks!
@@ -215,10 +233,11 @@ struct bf_tree_cb_t {
 
     /// This is used by the decoupled (a.k.a log-based) cleaner
     // CS TODO: I never tested restart with decoupled cleaner!
-    void notify_write_logbased(lsn_t archived_lsn)
-    {
+    void notify_write_logbased(lsn_t archived_lsn) {
         auto rc = latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
-        if (rc.is_error()) { return; }
+        if (rc.is_error()) {
+            return;
+        }
 
         _rec_lsn = archived_lsn;
         _persisted_lsn = archived_lsn;
@@ -227,19 +246,29 @@ struct bf_tree_cb_t {
 
     /// Log volume generated on this page (for page_img logrec compression, see xct_logger.h)
     uint32_t _log_volume;        // +4 -> 60
-    uint16_t get_log_volume() const { return _log_volume; }
-    void increment_log_volume(uint16_t c) { _log_volume += c; }
-    void set_log_volume(uint16_t c) { _log_volume = c; }
+    uint16_t get_log_volume() const {
+        return _log_volume;
+    }
+
+    void increment_log_volume(uint16_t c) {
+        _log_volume += c;
+    }
+
+    void set_log_volume(uint16_t c) {
+        _log_volume = c;
+    }
 
     /**
      * number of swizzled pointers to children; protected by ??
      */
-    uint16_t                    _swizzled_ptr_cnt_hint; // +2 -> 62
+    uint16_t _swizzled_ptr_cnt_hint; // +2 -> 62
 
     /// This is used for frames that are prefetched during buffer pool warmup.
     /// They might need recovery next time they are fixed.
     bool _check_recovery;   // +1 -> 63
-    void set_check_recovery(bool chk) { _check_recovery = chk; }
+    void set_check_recovery(bool chk) {
+        _check_recovery = chk;
+    }
 
     // Add padding to align control block at cacheline boundary (64 bytes)
     // CS: padding not needed anymore because we are exactly on offset 63 above
@@ -258,16 +287,17 @@ struct bf_tree_cb_t {
      * avoid having a control block and latch in the same 128B sector.
      */
 
-    int8_t                      _fill64;  // +1 -> 64
+    int8_t _fill64;  // +1 -> 64
 
-    latch_t                     _latch;
+    latch_t _latch;
 
     // increment pin count atomically
-    bool pin()
-    {
+    bool pin() {
         int32_t old = _pin_cnt;
         while (true) {
-            if (old < 0) { return false; }
+            if (old < 0) {
+                return false;
+            }
             if (_pin_cnt.compare_exchange_strong(old, old + 1)) {
                 return true;
             }
@@ -275,15 +305,13 @@ struct bf_tree_cb_t {
     }
 
     // decrement pin count atomically
-    void unpin()
-    {
+    void unpin() {
         auto v = --_pin_cnt;
         // only prepare_for_eviction may set negative pin count
         w_assert1(v >= 0);
     }
 
-    bool prepare_for_eviction()
-    {
+    bool prepare_for_eviction() {
         w_assert1(_pin_cnt >= 0);
         int32_t old = 0;
         if (!_pin_cnt.compare_exchange_strong(old, -1)) {
@@ -294,39 +322,36 @@ struct bf_tree_cb_t {
         return true;
     }
 
-    bool is_in_use() const
-    {
+    bool is_in_use() const {
         return _pin_cnt >= 0 && _used;
     }
 
-    void inc_ref_count()
-    {
+    void inc_ref_count() {
         if (_ref_count < BP_MAX_REFCOUNT) {
             ++_ref_count;
         }
     }
 
-    void inc_ref_count_ex()
-    {
+    void inc_ref_count_ex() {
         if (_ref_count < BP_MAX_REFCOUNT) {
             ++_ref_count_ex;
         }
     }
 
-    void reset_ref_count_ex()
-    {
+    void reset_ref_count_ex() {
         _ref_count_ex = 0;
     }
 
     // disabled (no implementation)
     bf_tree_cb_t(const bf_tree_cb_t&);
+
     bf_tree_cb_t& operator=(const bf_tree_cb_t&);
 
     latch_t* latchp() const {
         return const_cast<latch_t*>(&_latch);
     }
 
-    latch_t &latch() const {
+    latch_t& latch() const {
         return *latchp();
     }
 };

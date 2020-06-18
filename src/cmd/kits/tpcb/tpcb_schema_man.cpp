@@ -44,33 +44,30 @@ namespace tpcb {
 /* --- BRANCH --- */
 /* ----------------- */
 
-w_rc_t
-branch_man_impl::b_index_probe(ss_m* db,
-			       branch_tuple* ptuple,
-			       const int b_id)
-{
-    assert (ptuple);
-    ptuple->set_value(0, b_id);
-    return (index_probe_by_name(db, "B_INDEX", ptuple));
-}
+    w_rc_t
+    branch_man_impl::b_index_probe(ss_m* db,
+                                   branch_tuple* ptuple,
+                                   const int b_id) {
+        assert (ptuple);
+        ptuple->set_value(0, b_id);
+        return (index_probe_by_name(db, "B_INDEX", ptuple));
+    }
 
-w_rc_t branch_man_impl::b_index_probe_forupdate(ss_m* db,
-                                                branch_tuple* ptuple,
-                                                const int b_id)
-{
-    assert (ptuple);
-    ptuple->set_value(0, b_id);
-    return (index_probe_forupdate_by_name(db, "BRANCH", ptuple));
-}
+    w_rc_t branch_man_impl::b_index_probe_forupdate(ss_m* db,
+                                                    branch_tuple* ptuple,
+                                                    const int b_id) {
+        assert (ptuple);
+        ptuple->set_value(0, b_id);
+        return (index_probe_forupdate_by_name(db, "BRANCH", ptuple));
+    }
 
-w_rc_t branch_man_impl::b_idx_nl(ss_m* db,
-                                 branch_tuple* ptuple,
-                                 const int b_id)
-{
-    assert (ptuple);
-    ptuple->set_value(0, b_id);
-    return (index_probe_nl_by_name(db, "BRANCH", ptuple));
-}
+    w_rc_t branch_man_impl::b_idx_nl(ss_m* db,
+                                     branch_tuple* ptuple,
+                                     const int b_id) {
+        assert (ptuple);
+        ptuple->set_value(0, b_id);
+        return (index_probe_nl_by_name(db, "BRANCH", ptuple));
+    }
 
 
 /* ---------------- */
@@ -78,23 +75,21 @@ w_rc_t branch_man_impl::b_idx_nl(ss_m* db,
 /* ---------------- */
 
 
-w_rc_t teller_man_impl::t_index_probe_forupdate(ss_m* db,
-                                                teller_tuple* ptuple,
-                                                const int t_id)
-{
-    assert (ptuple);
-    ptuple->set_value(0, t_id);
-    return (index_probe_forupdate_by_name(db, "TELLER", ptuple));
-}
+    w_rc_t teller_man_impl::t_index_probe_forupdate(ss_m* db,
+                                                    teller_tuple* ptuple,
+                                                    const int t_id) {
+        assert (ptuple);
+        ptuple->set_value(0, t_id);
+        return (index_probe_forupdate_by_name(db, "TELLER", ptuple));
+    }
 
-w_rc_t teller_man_impl::t_idx_nl(ss_m* db,
-                                 teller_tuple* ptuple,
-                                 const int t_id)
-{
-    assert (ptuple);
-    ptuple->set_value(0, t_id);
-    return (index_probe_nl_by_name(db, "TELLER", ptuple));
-}
+    w_rc_t teller_man_impl::t_idx_nl(ss_m* db,
+                                     teller_tuple* ptuple,
+                                     const int t_id) {
+        assert (ptuple);
+        ptuple->set_value(0, t_id);
+        return (index_probe_nl_by_name(db, "TELLER", ptuple));
+    }
 
 
 
@@ -102,77 +97,72 @@ w_rc_t teller_man_impl::t_idx_nl(ss_m* db,
 /* --- ACCOUNT --- */
 /* ---------------- */
 
-w_rc_t account_man_impl::a_index_probe(ss_m* db,
-                                       account_tuple* ptuple,
-                                       const int a_id,
-                                       const int b_id,
-                                       const double balance)
-{
-    assert (ptuple);
-    ptuple->set_value(0, a_id);
-#ifdef PLP_MBENCH
-    ptuple->set_value(1, b_id);
-    ptuple->set_value(2, balance);
-#else
-    (void)b_id;
-    (void)balance;
-#endif
-    return (index_probe_by_name(db, "ACCOUNT", ptuple));
-}
-
-w_rc_t account_man_impl::a_delete_by_index(ss_m* db,
+    w_rc_t account_man_impl::a_index_probe(ss_m* db,
                                            account_tuple* ptuple,
                                            const int a_id,
                                            const int b_id,
-                                           const double balance)
-{
-    assert (ptuple);
-    ptuple->set_value(0, a_id);
+                                           const double balance) {
+        assert (ptuple);
+        ptuple->set_value(0, a_id);
 #ifdef PLP_MBENCH
-    ptuple->set_value(1, b_id);
-    ptuple->set_value(2, balance);
+        ptuple->set_value(1, b_id);
+        ptuple->set_value(2, balance);
 #else
-    (void)b_id;
-    (void)balance;
+        (void)b_id;
+        (void)balance;
 #endif
-    W_DO(index_probe_forupdate_by_name(db, "ACCOUNT", ptuple));
-    return (delete_tuple(db, ptuple));
-}
+        return (index_probe_by_name(db, "ACCOUNT", ptuple));
+    }
 
-w_rc_t account_man_impl::a_index_probe_forupdate(ss_m* db,
-                                                 account_tuple* ptuple,
-                                                 const int a_id,
-                                                 const int b_id,
-                                                 const double balance)
-{
-    assert (ptuple);
-    ptuple->set_value(0, a_id);
+    w_rc_t account_man_impl::a_delete_by_index(ss_m* db,
+                                               account_tuple* ptuple,
+                                               const int a_id,
+                                               const int b_id,
+                                               const double balance) {
+        assert (ptuple);
+        ptuple->set_value(0, a_id);
 #ifdef PLP_MBENCH
-    ptuple->set_value(1, b_id);
-    ptuple->set_value(2, balance);
+        ptuple->set_value(1, b_id);
+        ptuple->set_value(2, balance);
 #else
-    (void)b_id;
-    (void)balance;
+        (void)b_id;
+        (void)balance;
 #endif
-    return (index_probe_forupdate_by_name(db, "ACCOUNT", ptuple));
-}
+        W_DO(index_probe_forupdate_by_name(db, "ACCOUNT", ptuple));
+        return (delete_tuple(db, ptuple));
+    }
 
-w_rc_t account_man_impl::a_idx_nl(ss_m* db,
-                                  account_tuple* ptuple,
-                                  const int a_id,
-                                  const int b_id,
-                                  const double balance)
-{
-    assert (ptuple);
-    ptuple->set_value(0, a_id);
+    w_rc_t account_man_impl::a_index_probe_forupdate(ss_m* db,
+                                                     account_tuple* ptuple,
+                                                     const int a_id,
+                                                     const int b_id,
+                                                     const double balance) {
+        assert (ptuple);
+        ptuple->set_value(0, a_id);
 #ifdef PLP_MBENCH
-    ptuple->set_value(1, b_id);
-    ptuple->set_value(2, balance);
+        ptuple->set_value(1, b_id);
+        ptuple->set_value(2, balance);
 #else
-    (void)b_id;
-    (void)balance;
+        (void)b_id;
+        (void)balance;
 #endif
-    return (index_probe_nl_by_name(db, "ACCOUNT", ptuple));
-}
+        return (index_probe_forupdate_by_name(db, "ACCOUNT", ptuple));
+    }
 
+    w_rc_t account_man_impl::a_idx_nl(ss_m* db,
+                                      account_tuple* ptuple,
+                                      const int a_id,
+                                      const int b_id,
+                                      const double balance) {
+        assert (ptuple);
+        ptuple->set_value(0, a_id);
+#ifdef PLP_MBENCH
+        ptuple->set_value(1, b_id);
+        ptuple->set_value(2, balance);
+#else
+        (void)b_id;
+        (void)balance;
+#endif
+        return (index_probe_nl_by_name(db, "ACCOUNT", ptuple));
+    }
 };

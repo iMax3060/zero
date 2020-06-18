@@ -47,10 +47,10 @@
  * --------------------------------------------------------------- */
 
 enum skew_type_t {
-    SKEW_NONE      = 0x0,
-    SKEW_NORMAL    = 0x1,
-    SKEW_DYNAMIC   = 0x2,
-    SKEW_CHAOTIC   = 0x4
+    SKEW_NONE = 0x0,
+    SKEW_NORMAL = 0x1,
+    SKEW_DYNAMIC = 0x2,
+    SKEW_CHAOTIC = 0x4
 };
 
 using namespace std;
@@ -76,6 +76,7 @@ private:
 
     // the boundaries of the whole area
     int _lower;
+
     int _upper;
 
     // the boundaries of the area that the load will be applied to
@@ -83,6 +84,7 @@ private:
     // vector<int> _interval_l;
     // vector<int> _interval_u;
     int _interval_l;
+
     int _interval_u;
 
     // the boundaries of the area that the remaining load will be applied to
@@ -98,7 +100,9 @@ private:
 public:
 
     // empty constructor, things should be set later
-    skewer_t() { _is_used = false; }
+    skewer_t() {
+        _is_used = false;
+    }
 
     // initialization
     void set(int area, int lower, int upper, int load, bool shifting);
@@ -126,7 +130,6 @@ private:
     void _set_intervals();
 
     void _add_interval(int interval_lower, int interval_upper);
-
 };
 
 #endif // __SKEWER_H

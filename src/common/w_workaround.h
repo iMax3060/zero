@@ -69,7 +69,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
    number is encountered. 
 */
 
-#define    W_GCC_VER(major,minor)    (((major) << 16) + (minor))
+#define    W_GCC_VER(major, minor)    (((major) << 16) + (minor))
 
 #ifndef __GNUC_MINOR__    /* gcc-1.something -- No minor version number */
 #define    W_GCC_THIS_VER    W_GCC_VER(__GNUC__,0)
@@ -77,61 +77,59 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define    W_GCC_THIS_VER    W_GCC_VER(__GNUC__,__GNUC_MINOR__)
 #endif
 
-
-#if     W_GCC_THIS_VER < W_GCC_VER(2,5)
+#if     W_GCC_THIS_VER < W_GCC_VER(2, 5)
 /* XXX all the following tests assume this filter is used */
 #error    This software requires gcc 2.5.x or a later release.
 #error  Gcc 2.6.0 is preferred.
 #endif
 
+#if W_GCC_THIS_VER < W_GCC_VER(2, 6)
 
-#if W_GCC_THIS_VER < W_GCC_VER(2,6)
-
-    /*
-     * G++ also has a bug in calling the destructor of a template
-     */
+/*
+ * G++ also has a bug in calling the destructor of a template
+ */
 #   define GNUG_BUG_2 1
 
-    /*
-     * G++ seems to have a problem calling ::operator delete 
-     */
+/*
+ * G++ seems to have a problem calling ::operator delete
+ */
 #   define GNUG_BUG_3 1
 
-    /*
-     * G++ version 2.4.5 has problems with templates that don't have
-     * destructors explicitly defined.  It also seems to have problems
-     * with classes used to instantiate templates if those classes
-     * do not have destructors.
-     */
+/*
+ * G++ version 2.4.5 has problems with templates that don't have
+ * destructors explicitly defined.  It also seems to have problems
+ * with classes used to instantiate templates if those classes
+ * do not have destructors.
+ */
 #   define GNUG_BUG_7 1
 
-    /* bug #8:
-     * gcc include files don't define signal() as in ANSI C.
-     * we need to get around that
-     */
+/* bug #8:
+ * gcc include files don't define signal() as in ANSI C.
+ * we need to get around that
+ */
 #   define GNUG_BUG_8 1
 
 #endif /* gcc < 2.6 */
 
-    /*
-     * #12
-     * This is a bug in parsing specific to gcc 2.6.0.
-     * The compiler misinterprets:
-     *    int(j)
-     * to be a declaration of j as an int rather than the correct
-     * interpretation as a cast of j to an int.  This shows up in
-     * statements like:
-     *     istrstream(c) >> i;
-    */
+/*
+ * #12
+ * This is a bug in parsing specific to gcc 2.6.0.
+ * The compiler misinterprets:
+ *    int(j)
+ * to be a declaration of j as an int rather than the correct
+ * interpretation as a cast of j to an int.  This shows up in
+ * statements like:
+ *     istrstream(c) >> i;
+*/
 
 /* see below for more info on GNUG_BUG_12 */
 #define GNUG_BUG_12(arg) arg
-#if W_GCC_THIS_VER > W_GCC_VER(2,5)
-#    undef GNUG_BUG_12    
+#if W_GCC_THIS_VER > W_GCC_VER(2, 5)
+#    undef GNUG_BUG_12
 #       define GNUG_BUG_12(arg) (arg)
 #endif
 
-#if W_GCC_THIS_VER > W_GCC_VER(2,5)
+#if W_GCC_THIS_VER > W_GCC_VER(2, 5)
 /*
  *     GNU 2.6.0  : template functions that are 
  *  not member functions don't get exported from the
@@ -145,7 +143,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #define     GNUG_BUG_14 1
 #endif
 
-#if W_GCC_THIS_VER > W_GCC_VER(2,6)
+#if W_GCC_THIS_VER > W_GCC_VER(2, 6)
 /* gcc 2.7.2 has bogus warning messages; it doesn't inherit pointer
    properties correctly */
 #define        GNUG_BUG_15  1
@@ -164,7 +162,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  * Migration to standard C++
  *
  ******************************************************************************/
-#if W_GCC_THIS_VER >= W_GCC_VER(2,90)
+#if W_GCC_THIS_VER >= W_GCC_VER(2, 90)
 /*
  * EGCS is 2.90 (which really screws up any attempt to fix 
  * things based on __GNUC_MINOR__ and __GNUC__
@@ -172,7 +170,7 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  */
 #endif
 
-#if W_GCC_THIS_VER < W_GCC_VER(2,8)
+#if W_GCC_THIS_VER < W_GCC_VER(2, 8)
 
 #   define BIND_FRIEND_OPERATOR_PART_1(TYP,L,TMPLa,TMPLb) /**/
 #   define BIND_FRIEND_OPERATOR_PART_1B(TYP1,TYP3,TYP2,TMPLa,TMPLc,TMPLb) /**/
@@ -181,18 +179,18 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #   else
 
-#   define BIND_FRIEND_OPERATOR_PART_1(TYP,L,TMPLa,TMPLb) \
+#   define BIND_FRIEND_OPERATOR_PART_1(TYP, L, TMPLa, TMPLb) \
     template <class TYP, class L> \
     ostream & operator<<(ostream&o, const TMPLa,TMPLb& l);
 
-#   define BIND_FRIEND_OPERATOR_PART_1B(TYP1,TYP3, TYP2,TMPLa,TMPLc,TMPLb) \
+#   define BIND_FRIEND_OPERATOR_PART_1B(TYP1, TYP3, TYP2, TMPLa, TMPLc, TMPLb) \
     template <class TYP1, class TYP3, class TYP2> \
                 ostream & operator<<(ostream&o, const TMPLa,TMPLc,TMPLb& l);
 
 #   define BIND_FRIEND_OPERATOR_PART_2(TYP, L)\
     <TYP, L>
 
-#   define BIND_FRIEND_OPERATOR_PART_2B(TYP1,L,TYP2)\
+#   define BIND_FRIEND_OPERATOR_PART_2B(TYP1, L, TYP2)\
     <TYP1, L, TYP2>
 
 #   endif
@@ -209,8 +207,8 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
  *  This could arguably belong in w_base.h, I put it here since w_base.h
  *  always sucks this in and it is a compiler-dependency.
  */
-#if W_GCC_THIS_VER >= W_GCC_VER(3,0)
-#define    w_offsetof(t,f)    \
+#if W_GCC_THIS_VER >= W_GCC_VER(3, 0)
+#define    w_offsetof(t, f)    \
     ((size_t)((char*)&(*(t*)sizeof(t)).f - (char *)&(*(t*)sizeof(t))))
 #endif
 
@@ -238,13 +236,13 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
    optimal solution can be used on each platform.
    If a portable scan() equivalent is written, a similar set
    of W_SCAN macros could encapuslate input scanning too.
- */  
+ */
 #define    W_FORM(stream)        stream << form
 
 // in w_form.cpp
-extern const char *form(const char *, ...);
+extern const char* form(const char*, ...);
 
-#define    W_FORM2(stream,args)    W_FORM(stream) args
+#define    W_FORM2(stream, args)    W_FORM(stream) args
 
 /*
  * Try to use the system definition of offsetof, and provide one here

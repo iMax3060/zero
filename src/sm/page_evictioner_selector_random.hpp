@@ -92,6 +92,7 @@ namespace zero::buffer_pool {
     };
 
 #if __SIZEOF_INT128__
+
     /*!\class   SeedGeneratorChrono<__uint128_t>
      * \brief   128-Bit seed generator using the wall-clock time for PRNGs
      * \details A seed generator for pseudorandom numbers generators that can be used as class template argument and
@@ -110,9 +111,10 @@ namespace zero::buffer_pool {
          */
         static inline __uint128_t getSeed() noexcept {
             return (static_cast<__uint128_t>(chrono::high_resolution_clock::now().time_since_epoch().count()) << 64)
-                 + chrono::high_resolution_clock::now().time_since_epoch().count();
+                   + chrono::high_resolution_clock::now().time_since_epoch().count();
         };
     };
+
 #endif // __SIZEOF_INT128__
 
     /*!\class   SeedGeneratorRandomDevice
@@ -189,6 +191,7 @@ namespace zero::buffer_pool {
     };
 
 #if __SIZEOF_INT128__
+
     /*!\class   SeedGeneratorRandomDevice<__uint128_t>
      * \brief   128-Bit seed generator using a non-deterministic source for PRNGs
      * \details A seed generator for pseudorandom numbers generators that can be used as class template argument and
@@ -209,10 +212,12 @@ namespace zero::buffer_pool {
         static inline __uint128_t getSeed() noexcept {
             std::random_device randomDevice;
 
-            return (static_cast<__uint128_t>((static_cast<uint64_t>(randomDevice()) << 32) | static_cast<uint64_t>(randomDevice())) << 64)
+            return (static_cast<__uint128_t>((static_cast<uint64_t>(randomDevice()) << 32)
+                                             | static_cast<uint64_t>(randomDevice())) << 64)
                    + ((static_cast<uint64_t>(randomDevice()) << 32) | static_cast<uint64_t>(randomDevice()));
         };
     };
+
 #endif // __SIZEOF_INT128__
 
     /*!\class   PageEvictionerSelectorRANDOMExternal
@@ -384,7 +389,6 @@ namespace zero::buffer_pool {
          * \brief   The uniform distribution and range for the pseudo-random number generator (post-processor)
          */
         random_distribution _randomDistribution;
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMExternalThreadLocal
@@ -570,7 +574,6 @@ namespace zero::buffer_pool {
          * \brief   The uniform distribution and range for the pseudo-random number generator (post-processor)
          */
         std::uniform_int_distribution<bf_idx> _randomDistribution;
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMCLHEP
@@ -713,7 +716,6 @@ namespace zero::buffer_pool {
          * \brief   The used pseudo-random number generator
          */
         random_number_generator _randomNumberGenerator;
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMCLHEPThreadLocal
@@ -868,7 +870,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMCRand
@@ -994,7 +995,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMXORWow
@@ -1068,7 +1068,7 @@ namespace zero::buffer_pool {
                 _d = std::random_device{}();
                 _seedInitialized = true;
             }
-            uint32_t t = _x ^ (_x >> 2);
+            uint32_t t = _x ^(_x >> 2);
             _x = _y;
             _y = _z;
             _z = _w;
@@ -1172,7 +1172,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
 
     /*!\class   PageEvictionerSelectorRANDOMXORShift128Plus
@@ -1324,9 +1323,7 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
-
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_SELECTOR_RANDOM_HPP

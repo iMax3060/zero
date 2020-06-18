@@ -124,20 +124,25 @@ if (result.pids_inconsistent.size() > 0) {
  */
 class inquery_verify_context_t {
 public:
-    inquery_verify_context_t() : pages_checked(0), next_pid(0), next_level(0) {
-    }
+    inquery_verify_context_t() : pages_checked(0),
+                                 next_pid(0),
+                                 next_level(0) {}
 
     /** total count of pages checked (includes checks of same page). */
     int32_t pages_checked;
+
     /** ID of pages that had some inconsistency. */
     std::set<PageID> pids_inconsistent;
 
     /** expected next page id. */
     PageID next_pid;
+
     /** expected next page level. -1 means "don't check" (only for root page). */
     int16_t next_level;
+
     /** expected next fence-low key. */
     w_keystr_t next_low_key;
+
     /** expected next fence-high key. */
     w_keystr_t next_high_key;
 };
@@ -147,21 +152,22 @@ public:
  * freed or changed from tmp to regular at the end of
  * a transaction
  */
-class stid_list_elem_t  {
-    public:
-    StoreID        stid;
-    w_link_t    _link;
+class stid_list_elem_t {
+public:
+    StoreID stid;
+
+    w_link_t _link;
 
     stid_list_elem_t(const StoreID& theStid)
-        : stid(theStid)
-        {};
-    ~stid_list_elem_t()
-    {
-        if (_link.member_of() != nullptr)
+            : stid(theStid) {};
+
+    ~stid_list_elem_t() {
+        if (_link.member_of() != nullptr) {
             _link.detach();
+        }
     }
-    static uint32_t    link_offset()
-    {
+
+    static uint32_t link_offset() {
         return W_LIST_ARG(stid_list_elem_t, _link);
     }
 };
@@ -186,7 +192,7 @@ class xct_t : public smlevel_0 {
     friend class lock_request_t;
 
 public:
-    typedef xct_state_t           state_t;
+    typedef xct_state_t state_t;
 
     /* A nearly-POD struct whose only job is to enable a N:1
        relationship between the log streams of a transaction (xct_t)
@@ -199,30 +205,35 @@ public:
        Static data members can stay in xct_t, since they're not even
        duplicated per-xct, let alone per-thread.
      */
-    struct xct_core
-    {
-        xct_core(tid_t const &t, state_t s, int timeout);
+    struct xct_core {
+        xct_core(tid_t const& t, state_t s, int timeout);
+
         ~xct_core();
 
         //-- from xct.h ----------------------------------------------------
-        tid_t                  _tid;
-        int          _timeout; // default timeout value for lock reqs
-        bool                   _warn_on;
-        xct_lock_info_t*       _lock_info;
-        lil_private_table*     _lil_lock_info;
+        tid_t _tid;
+
+        int _timeout; // default timeout value for lock reqs
+        bool _warn_on;
+
+        xct_lock_info_t* _lock_info;
+
+        lil_private_table* _lil_lock_info;
 
         /** RAW-style lock manager's shadow transaction object. Garbage collected. */
-        RawXct*                _raw_lock_xct;
+        RawXct* _raw_lock_xct;
 
-        state_t                   _state;
-        bool                      _read_only;
+        state_t _state;
+
+        bool _read_only;
 
         lintel::Atomic<int> _xct_ended; // used for self-checking (assertions) only
-        bool              _xct_aborting; // distinguish abort()ing xct from
+        bool _xct_aborting; // distinguish abort()ing xct from
         // commit()ing xct when they are in state xct_freeing_space
 
         // CS: Using these instead of the old new_xct and destroy_xct methods
         void* operator new(size_t s);
+
         void operator delete(void* p, size_t s);
     };
 
@@ -230,12 +241,18 @@ protected:
     xct_core* _core;
 
 protected:
-    enum commit_t { t_normal = 0, t_lazy = 1, t_chain = 2, t_group = 4 };
+    enum commit_t {
+        t_normal = 0,
+        t_lazy = 1,
+        t_chain = 2,
+        t_group = 4
+    };
 
     enum loser_xct_state_t {
-                 loser_false = 0x0,      // Not a loser transaction
-                 loser_true = 0x1,       // A loser transaction
-                 loser_undoing = 0x2};   // Loser transaction is being rolled back currently
+        loser_false = 0x0,      // Not a loser transaction
+        loser_true = 0x1,       // A loser transaction
+        loser_undoing = 0x2
+    };   // Loser transaction is being rolled back currently
 
 
 /**\endcond skip */
@@ -243,96 +260,123 @@ protected:
 /**\cond skip */
 public:
     static
-    rc_t                      group_commit(const xct_t *list[], int number);
+    rc_t group_commit(const xct_t* list[], int number);
 
-    rc_t                      commit_free_locks(bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
-    rc_t                      early_lock_release();
+    rc_t commit_free_locks(bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
+
+    rc_t early_lock_release();
 
     // CS: Using these instead of the old new_xct and destroy_xct methods
     void* operator new(size_t s);
+
     void operator delete(void* p, size_t s);
 
 public:
-    NORET                       xct_t(
-            sm_stats_t*    stats = nullptr,
-            int       timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD,
-            bool                sys_xct = false,
-            bool                single_log_sys_xct = false,
-            const tid_t&        tid = 0,
-            const lsn_t&        last_lsn = lsn_t::null,
-            const lsn_t&        undo_nxt = lsn_t::null,
-            bool                loser_xct = false
-            );
+    NORET xct_t(
+            sm_stats_t* stats = nullptr,
+            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD,
+            bool sys_xct = false,
+            bool single_log_sys_xct = false,
+            const tid_t& tid = 0,
+            const lsn_t& last_lsn = lsn_t::null,
+            const lsn_t& undo_nxt = lsn_t::null,
+            bool loser_xct = false
+               );
+
     ~xct_t();
 
 public:
 
-    friend ostream&             operator<<(ostream&, const xct_t&);
+    friend ostream& operator<<(ostream&, const xct_t&);
 
-    state_t                     state() const;
-    void                        set_timeout(int t) ;
+    state_t state() const;
 
-    int               timeout_c() const;
+    void set_timeout(int t);
+
+    int timeout_c() const;
 
     /*
      * basic tx commands:
      */
 public:
-    static void                 dump(ostream &o);
-    static void                  cleanup(bool shutdown_clean = true);
+    static void dump(ostream& o);
 
+    static void cleanup(bool shutdown_clean = true);
 
-    bool                        is_instrumented() {
-                                   return (__stats != 0);
-                                }
-    void                        give_stats(sm_stats_t* s) {
-                                    w_assert1(__stats == 0);
-                                    __stats = s;
-                                }
-    void                        clear_stats() {
-                                    memset(__stats,0, sizeof(*__stats));
-                                }
-    sm_stats_t*            steal_stats() {
-                                    sm_stats_t*s = __stats;
-                                    __stats = 0;
-                                    return         s;
-                                }
-    const sm_stats_t&      const_stats_ref() { return *__stats; }
-    rc_t                        commit(bool lazy = false, lsn_t* plastlsn=nullptr);
-    rc_t                        commit_as_group_member();
-    rc_t                        rollback(const lsn_t &save_pt);
-    rc_t                        save_point(lsn_t& lsn);
-    rc_t                        chain(bool lazy = false);
-    rc_t                        abort(bool save_stats = false);
+    bool is_instrumented() {
+        return (__stats != 0);
+    }
+
+    void give_stats(sm_stats_t* s) {
+        w_assert1(__stats == 0);
+        __stats = s;
+    }
+
+    void clear_stats() {
+        memset(__stats, 0, sizeof(*__stats));
+    }
+
+    sm_stats_t* steal_stats() {
+        sm_stats_t* s = __stats;
+        __stats = 0;
+        return s;
+    }
+
+    const sm_stats_t& const_stats_ref() {
+        return *__stats;
+    }
+
+    rc_t commit(bool lazy = false, lsn_t* plastlsn = nullptr);
+
+    rc_t commit_as_group_member();
+
+    rc_t rollback(const lsn_t& save_pt);
+
+    rc_t save_point(lsn_t& lsn);
+
+    rc_t chain(bool lazy = false);
+
+    rc_t abort(bool save_stats = false);
 
     // used by restart.cpp, some logrecs
 protected:
-    sm_stats_t&            stats_ref() { return *__stats; }
-    rc_t                        dispose();
-    void                        change_state(state_t new_state);
-    void                        set_first_lsn(const lsn_t &) ;
-    void                        set_last_lsn(const lsn_t &) ;
-    void                        set_undo_nxt(const lsn_t &) ;
+    sm_stats_t& stats_ref() {
+        return *__stats;
+    }
+
+    rc_t dispose();
+
+    void change_state(state_t new_state);
+
+    void set_first_lsn(const lsn_t&);
+
+    void set_last_lsn(const lsn_t&);
+
+    void set_undo_nxt(const lsn_t&);
 /**\endcond skip */
 
 public:
 
     // used by checkpoint, restart:
-    const lsn_t&                last_lsn() const;
-    const lsn_t&                first_lsn() const;
-    const lsn_t&                undo_nxt() const;
-    const logrec_t*             last_log() const;
+    const lsn_t& last_lsn() const;
+
+    const lsn_t& first_lsn() const;
+
+    const lsn_t& undo_nxt() const;
+
+    const logrec_t* last_log() const;
 
     // used by restart, chkpt among others
-    static xct_t*               look_up(const tid_t& tid);
-    static tid_t                oldest_tid();        // with min tid value
-    static tid_t                youngest_tid();        // with max tid value
+    static xct_t* look_up(const tid_t& tid);
+
+    static tid_t oldest_tid();        // with min tid value
+    static tid_t youngest_tid();        // with max tid value
 /**\cond skip */
-    static void                 update_youngest_tid(const tid_t &);
+    static void update_youngest_tid(const tid_t&);
 /**\endcond skip */
 
     // used by sm.cpp:
-    static uint32_t    num_active_xcts();
+    static uint32_t num_active_xcts();
 
     static size_t get_loser_count();
 
@@ -340,17 +384,19 @@ public:
 
 /**\cond skip */
     // used for compensating (top-level actions)
-    const lsn_t&                anchor(bool grabit = true);
-    void                        release_anchor(bool compensate
-                                   ADD_LOG_COMMENT_SIG
-                                   );
+    const lsn_t& anchor(bool grabit = true);
 
-    void                        compensate(const lsn_t&,
-                                          bool undoable
-                                          ADD_LOG_COMMENT_SIG
-                                          );
+    void release_anchor(bool compensate
+                        ADD_LOG_COMMENT_SIG
+                       );
+
+    void compensate(const lsn_t&,
+                    bool undoable
+                    ADD_LOG_COMMENT_SIG
+                   );
+
     // for recovery:
-    void                        compensate_undo(const lsn_t&);
+    void compensate_undo(const lsn_t&);
 /**\endcond skip */
 
     // For handling log-space warnings
@@ -358,44 +404,53 @@ public:
     // choose to abort that victim, you don't want every
     // ssm prologue to warn thereafter. This allows the
     // callback function to turn off the warnings for the (non-)victim.
-    void                         log_warn_disable();
-    void                         log_warn_resume();
-    bool                         log_warn_is_on() const;
+    void log_warn_disable();
+
+    void log_warn_resume();
+
+    bool log_warn_is_on() const;
 
 public:
     //        logging functions
-    rc_t                        update_last_logrec(logrec_t* l, lsn_t lsn);
+    rc_t update_last_logrec(logrec_t* l, lsn_t lsn);
 
     //
     //        Used by I/O layer
     //
-    void                        AddStoreToFree(const StoreID& stid);
-    void                        AddLoadStore(const StoreID& stid);
+    void AddStoreToFree(const StoreID& stid);
+
+    void AddLoadStore(const StoreID& stid);
+
     //        Used by vol.cpp
-    void                        set_alloced() { }
+    void set_alloced() {}
 
 protected:
     /////////////////////////////////////////////////////////////////
     // the following is put here because smthread
     // doesn't know about the structures
     // and we have changed these to be a per-thread structures.
-    static lockid_t*            new_lock_hierarchy();
+    static lockid_t* new_lock_hierarchy();
 
 public: // not quite public thing.. but convenient for experiments
-    xct_lock_info_t*             lock_info() const;
-    lil_private_table*           lil_lock_info() const;
-    RawXct*                      raw_lock_xct() const;
+    xct_lock_info_t* lock_info() const;
+
+    lil_private_table* lil_lock_info() const;
+
+    RawXct* raw_lock_xct() const;
 
 public:
     // XXX this is only for chkpt::take().  This problem needs to
     // be fixed correctly.  DO NOT USE THIS.  Really want a
     // friend that is just a friend on some methods, not the entire class.
-    static w_rc_t                acquire_xlist_mutex();
-    static void                  release_xlist_mutex();
-    static void                  assert_xlist_mutex_not_mine();
-    static void                  assert_xlist_mutex_is_mine();
-    static bool                  xlist_mutex_is_mine();
+    static w_rc_t acquire_xlist_mutex();
 
+    static void release_xlist_mutex();
+
+    static void assert_xlist_mutex_not_mine();
+
+    static void assert_xlist_mutex_is_mine();
+
+    static bool xlist_mutex_is_mine();
 
     /* "poisons" the transaction so cannot block on locks (or remain
        blocked if already so), instead aborting the offending lock
@@ -410,7 +465,7 @@ public:
        completion/termination of transactions which would prevent a
        checkpoint from freeing up needed log space.
      */
-    void                         force_nonblocking();
+    void force_nonblocking();
 
 
 /////////////////////////////////////////////////////////////////
@@ -418,29 +473,32 @@ public:
 /////////////////////////////////////////////////////////////////
 protected:
     // list of all transactions instances
-    w_link_t                      _xlink;
+    w_link_t _xlink;
+
     static w_descend_list_t<xct_t, queue_based_lock_t, tid_t> _xlist;
-    void                         put_in_order();
+
+    void put_in_order();
 
     // CS TODO: TID assignment could be thread-local
-    static std::atomic<tid_t>                 _nxt_tid;// only safe for pre-emptive
-                                        // threads on 64-bit platforms
-    static tid_t                 _oldest_tid;
-private:
-    static queue_based_lock_t    _xlist_mutex;
+    static std::atomic<tid_t> _nxt_tid;// only safe for pre-emptive
+    // threads on 64-bit platforms
+    static tid_t _oldest_tid;
 
-    sm_stats_t*             __stats; // allocated by user
-    lockid_t*                    __saved_lockid_t;
+private:
+    static queue_based_lock_t _xlist_mutex;
+
+    sm_stats_t* __stats; // allocated by user
+    lockid_t* __saved_lockid_t;
 
     // NB: must replicate because _xlist keys off it...
     // NB: can't be const because we might chain...
-    tid_t                        _tid;
+    tid_t _tid;
 
     /**
      * number of previously committed xcts on this thread as a chain.
      * If 0, there is no chained previous xct.
      */
-    uint32_t                     _xct_chain_len;
+    uint32_t _xct_chain_len;
 
     /**
      * \brief The count of consecutive SSXs conveyed by this transaction object.
@@ -453,40 +511,43 @@ private:
      * start/end SSX. Chaining is useful when SSX operation might cause another SSX
      * operation, eg ghost-reservation causes page-split which causes page-evict etc etc.
      */
-    uint32_t                     _ssx_chain_len;
+    uint32_t _ssx_chain_len;
 
     /** concurrency mode of this transaction. */
-    concurrency_t                _query_concurrency;
+    concurrency_t _query_concurrency;
+
     /** whether to take X lock for lookup/cursor. */
-    bool                         _query_exlock_for_select;
+    bool _query_exlock_for_select;
 // hey, these could be one integer with OR-ed flags
 
     /**
      * true if this transaction is now conveying a single-log system transaction.
      */
-    bool                         _piggy_backed_single_log_sys_xct;
+    bool _piggy_backed_single_log_sys_xct;
 
     /** whether this transaction is a system transaction. */
-    bool                         _sys_xct;
+    bool _sys_xct;
 
-     /** whether this transaction will have at most one xlog entry*/
-    bool                         _single_log_sys_xct;
+    /** whether this transaction will have at most one xlog entry*/
+    bool _single_log_sys_xct;
 
     /**
      * whether to defer the logging and applying of the change made
      * by single-log system transaxction (SSX). Experimental.
      */
-    bool                         _deferred_ssx;
+    bool _deferred_ssx;
 
     /** whether in-query verification is on. */
-    bool                         _inquery_verify;
+    bool _inquery_verify;
+
     /** whether to additionally check the sortedness and uniqueness of keys. */
-    bool                         _inquery_verify_keyorder;
+    bool _inquery_verify_keyorder;
+
     /** whether to check any overlaps of records and integrity of space offset. */
-    bool                         _inquery_verify_space;
+    bool _inquery_verify_space;
 
     /** result and context of in-query verification. */
-    inquery_verify_context_t     _inquery_verify_context;
+    inquery_verify_context_t _inquery_verify_context;
 
     // For a loser transaction identified during Log Analysis phase in Recovery,
     // the transaction state is 'xct_active' so the standard roll back logic can be
@@ -495,71 +556,118 @@ private:
     // for transaction driven UNDO logic.
     // For on_demand UNDO, this flag also indicate if the loser transaction
     // is currently rolling back
-    loser_xct_state_t            _loser_xct;
+    loser_xct_state_t _loser_xct;
 
     // Latch object mainly for checkpoint to access information in txn object
-    latch_t                      _latch;
+    latch_t _latch;
 
 protected:
-    rc_t                _abort();
-    rc_t                _commit(uint32_t flags,
-                                                 lsn_t* plastlsn=nullptr);
+    rc_t _abort();
+
+    rc_t _commit(uint32_t flags,
+                 lsn_t* plastlsn = nullptr);
+
     // CS: decoupled from _commit to allow reuse in plog_xct_t
     rc_t _commit_read_only(uint32_t flags, lsn_t& inherited_read_watermark);
+
     rc_t _pre_commit(uint32_t flags);
+
     rc_t _pre_abort();
 
 private:
-    bool                        one_thread_attached() const;   // assertion
+    bool one_thread_attached() const;   // assertion
     // helper function for compensate() and compensate_undo()
-    void                        _compensate(const lsn_t&, bool undoable = false);
+    void _compensate(const lsn_t&, bool undoable = false);
 
 public:
-    bool                        is_piggy_backed_single_log_sys_xct() const { return _piggy_backed_single_log_sys_xct;}
-    void                        set_piggy_backed_single_log_sys_xct(bool enabled) { _piggy_backed_single_log_sys_xct = enabled;}
+    bool is_piggy_backed_single_log_sys_xct() const {
+        return _piggy_backed_single_log_sys_xct;
+    }
 
-    bool                        is_sys_xct () const { return _sys_xct || _piggy_backed_single_log_sys_xct; }
-    bool                        is_single_log_sys_xct() const{ return _single_log_sys_xct || _piggy_backed_single_log_sys_xct;}
+    void set_piggy_backed_single_log_sys_xct(bool enabled) {
+        _piggy_backed_single_log_sys_xct = enabled;
+    }
 
-    void                        set_inquery_verify(bool enabled) { _inquery_verify = enabled; }
-    bool                        is_inquery_verify() const { return _inquery_verify; }
-    void                        set_inquery_verify_keyorder(bool enabled) { _inquery_verify_keyorder = enabled; }
-    bool                        is_inquery_verify_keyorder() const { return _inquery_verify_keyorder; }
-    void                        set_inquery_verify_space(bool enabled) { _inquery_verify_space = enabled; }
-    bool                        is_inquery_verify_space() const { return _inquery_verify_space; }
+    bool is_sys_xct() const {
+        return _sys_xct || _piggy_backed_single_log_sys_xct;
+    }
 
-    const inquery_verify_context_t& inquery_verify_context() const { return _inquery_verify_context;}
-    inquery_verify_context_t& inquery_verify_context() { return _inquery_verify_context;}
+    bool is_single_log_sys_xct() const {
+        return _single_log_sys_xct || _piggy_backed_single_log_sys_xct;
+    }
 
+    void set_inquery_verify(bool enabled) {
+        _inquery_verify = enabled;
+    }
 
-    concurrency_t                get_query_concurrency() const { return _query_concurrency; }
-    void                         set_query_concurrency(concurrency_t mode) { _query_concurrency = mode; }
-    bool                         get_query_exlock_for_select() const {return _query_exlock_for_select;}
-    void                         set_query_exlock_for_select(bool mode) {_query_exlock_for_select = mode;}
+    bool is_inquery_verify() const {
+        return _inquery_verify;
+    }
 
-    bool                        is_loser_xct() const
-        {
-            if (loser_false == _loser_xct)
-                return false;   // Not a loser transaction
-            else
-                return true;    // Loser transaction
+    void set_inquery_verify_keyorder(bool enabled) {
+        _inquery_verify_keyorder = enabled;
+    }
+
+    bool is_inquery_verify_keyorder() const {
+        return _inquery_verify_keyorder;
+    }
+
+    void set_inquery_verify_space(bool enabled) {
+        _inquery_verify_space = enabled;
+    }
+
+    bool is_inquery_verify_space() const {
+        return _inquery_verify_space;
+    }
+
+    const inquery_verify_context_t& inquery_verify_context() const {
+        return _inquery_verify_context;
+    }
+
+    inquery_verify_context_t& inquery_verify_context() {
+        return _inquery_verify_context;
+    }
+
+    concurrency_t get_query_concurrency() const {
+        return _query_concurrency;
+    }
+
+    void set_query_concurrency(concurrency_t mode) {
+        _query_concurrency = mode;
+    }
+
+    bool get_query_exlock_for_select() const {
+        return _query_exlock_for_select;
+    }
+
+    void set_query_exlock_for_select(bool mode) {
+        _query_exlock_for_select = mode;
+    }
+
+    bool is_loser_xct() const {
+        if (loser_false == _loser_xct) {
+            return false;   // Not a loser transaction
+        } else {
+            return true;
+        }    // Loser transaction
+    }
+
+    bool is_loser_xct_in_undo() const {
+        if (true == is_loser_xct()) {
+            if (loser_undoing == _loser_xct) {
+                return true;
+            }   // Loser transaction and in the middle of undoing
         }
-    bool                        is_loser_xct_in_undo() const
-        {
-            if (true == is_loser_xct())
-            {
-                if (loser_undoing == _loser_xct)
-                    return true;   // Loser transaction and in the middle of undoing
-            }
-            return false;
-        }
-    void                        set_loser_xct_in_undo()
-        {
-            if (loser_false != _loser_xct)
-                _loser_xct = loser_undoing;
-        }
+        return false;
+    }
 
-    ostream &                   dump_locks(ostream &) const;
+    void set_loser_xct_in_undo() {
+        if (loser_false != _loser_xct) {
+            _loser_xct = loser_undoing;
+        }
+    }
+
+    ostream& dump_locks(ostream&) const;
 
     /////////////////////////////////////////////////////////////////
 private:
@@ -568,14 +676,15 @@ private:
     // removed, now that the lock mgrs use the const,INLINE-d form
     // int        timeout();
 
-    static void                 xct_stats(
-                                    u_long&             begins,
-                                    u_long&             commits,
-                                    u_long&             aborts,
-                                    bool                 reset);
+    static void xct_stats(
+            u_long& begins,
+            u_long& commits,
+            u_long& aborts,
+            bool reset);
 
-    w_rc_t                     _sync_logbuf(bool block=true, bool signal=true);
-    void                       _teardown(bool is_chaining);
+    w_rc_t _sync_logbuf(bool block = true, bool signal = true);
+
+    void _teardown(bool is_chaining);
 
 public:
     /**
@@ -610,9 +719,11 @@ public:
     };
 
 protected: // all data members protected
-    lsn_t                        _first_lsn;
-    lsn_t                        _last_lsn;
-    lsn_t                        _undo_nxt;
+    lsn_t _first_lsn;
+
+    lsn_t _last_lsn;
+
+    lsn_t _undo_nxt;
 
     /**
      * Whenever a transaction acquires some lock,
@@ -623,9 +734,9 @@ protected: // all data members protected
      * Assuming this protocol, we can do ELR for x-locks.
      * See jira ticket:99 "ELR for X-lock" (originally trac ticket:101).
      */
-    lsn_t                        _read_watermark;
+    lsn_t _read_watermark;
 
-    elr_mode_t                   _elr_mode;
+    elr_mode_t _elr_mode;
 
     // timestamp for calculating latency
     std::chrono::high_resolution_clock::time_point _begin_tstamp;
@@ -642,53 +753,79 @@ protected: // all data members protected
     //  */
     // logrec_t*                    _log_buf_for_piggybacked_ssx;
 
-    bool                         _rolling_back;// true if aborting OR
+    bool _rolling_back;// true if aborting OR
 
-    bool                         should_consume_rollback_resv(int t) const;
-    bool                         should_reserve_for_rollback(int t)
-                                 const {
-                                    return  ! should_consume_rollback_resv(t);
-                                 }
+    bool should_consume_rollback_resv(int t) const;
+
+    bool should_reserve_for_rollback(int t)
+    const {
+        return !should_consume_rollback_resv(t);
+    }
+
 private:
     lintel::Atomic<int> _in_compensated_op; // in the midst of a compensated operation
-                                            // use an int because they can be nested.
-    lsn_t                       _anchor; // the anchor for the outermost compensated op
+    // use an int because they can be nested.
+    lsn_t _anchor; // the anchor for the outermost compensated op
 
 public:
-    bool                        rolling_back() const { return _rolling_back; }
+    bool rolling_back() const {
+        return _rolling_back;
+    }
+
 #if W_DEBUG_LEVEL > 2
-private:
-    bool                        _had_error;
-public:
-    // Tells if we ever did a partial rollback.
-    // This state is only needed for certain assertions.
-    void                        set_error_encountered() { _had_error = true; }
-    bool                        error_encountered() const {
-                                               return _had_error; }
+    private:
+        bool                        _had_error;
+    public:
+        // Tells if we ever did a partial rollback.
+        // This state is only needed for certain assertions.
+        void                        set_error_encountered() { _had_error = true; }
+        bool                        error_encountered() const {
+                                                   return _had_error; }
 #else
-    void                        set_error_encountered() {}
-    bool                        error_encountered() const {  return false; }
-#endif
-    tid_t                       tid() const {
-                                    w_assert1(_core == nullptr || _tid == _core->_tid);
-                                    return _tid; }
-    uint32_t                    get_xct_chain_len() const { return _xct_chain_len;}
-    uint32_t&                   ssx_chain_len() { return _ssx_chain_len;}
 
-    const lsn_t&                get_read_watermark() const { return _read_watermark; }
-    void                        update_read_watermark(const lsn_t &tag) {
+    void set_error_encountered() {}
+
+    bool error_encountered() const {
+        return false;
+    }
+
+#endif
+
+    tid_t tid() const {
+        w_assert1(_core == nullptr || _tid == _core->_tid);
+        return _tid;
+    }
+
+    uint32_t get_xct_chain_len() const {
+        return _xct_chain_len;
+    }
+
+    uint32_t& ssx_chain_len() {
+        return _ssx_chain_len;
+    }
+
+    const lsn_t& get_read_watermark() const {
+        return _read_watermark;
+    }
+
+    void update_read_watermark(const lsn_t& tag) {
         if (_read_watermark < tag) {
             _read_watermark = tag;
         }
     }
-    elr_mode_t                  get_elr_mode() const { return _elr_mode; }
-    void                        set_elr_mode(elr_mode_t mode) { _elr_mode = mode; }
+
+    elr_mode_t get_elr_mode() const {
+        return _elr_mode;
+    }
+
+    void set_elr_mode(elr_mode_t mode) {
+        _elr_mode = mode;
+    }
 
     // Latch the xct object in order to access internal data
     // it is to prevent data changing while reading them
     // Mainly for checkpoint logging purpose
-    latch_t* latchp() const
-    {
+    latch_t* latchp() const {
         // If _core is gone (txn is being destroyed), return nullptr
         // CS TODO: this is incorrect. Threads waiting on the latch after
         // core is destructed will encounter a segmentation fault. The real
@@ -700,11 +837,10 @@ public:
 
         return const_cast<latch_t*>(&(_latch));
     }
-    latch_t &latch()
-    {
+
+    latch_t& latch() {
         return *latchp();
     }
-
 };
 
 /**\cond skip */
@@ -712,54 +848,72 @@ public:
 // Release anchor on destruction
 class auto_release_anchor_t {
     bool _compensate;
+
     xct_t* _xct;
+
 public:
-    auto_release_anchor_t (bool and_compensate) :
-        _compensate(and_compensate), _xct(xct())
-    {}
-    ~auto_release_anchor_t ()
-    {
+    auto_release_anchor_t(bool and_compensate) :
+            _compensate(and_compensate),
+            _xct(xct()) {}
+
+    ~auto_release_anchor_t() {
         _xct->release_anchor(_compensate X_LOG_COMMENT_USE("auto_release_anchor_t"));
     }
 };
+
 // Cause a rollback to the savepoint on destruction
 // unless ok() is called, in which case, do not.
 class auto_rollback_t {
 private:
     xct_t* _xd;
-    lsn_t  _save_pt;
-    bool   _roll;
+
+    lsn_t _save_pt;
+
+    bool _roll;
+
     static int _count;
-    int    _test;
-    int    _line; // debugging
-    const char *_file; // debugging
+
+    int _test;
+
+    int _line; // debugging
+    const char* _file; // debugging
 public:
     // for testing
     // every so often we need to fake an eOUTOFLOGSPACE error.
-    w_rc_t test(int x) { _test=x;
-        if(_test && (_count % _test==0))
-             return RC(eOUTOFLOGSPACE); // will ignore ok()
+    w_rc_t test(int x) {
+        _test = x;
+        if (_test && (_count % _test == 0)) {
+            return RC(eOUTOFLOGSPACE);
+        } // will ignore ok()
         return RCOK;
     }
 
 #define AUTO_ROLLBACK_work auto_rollback_t work(__LINE__, __FILE__);
-    auto_rollback_t(int line, const char *file)
-        : _xd(xct()), _roll(true), _test(0),
-        _line(line), _file(file)
-    {
+
+    auto_rollback_t(int line, const char* file)
+            : _xd(xct()),
+              _roll(true),
+              _test(0),
+              _line(line),
+              _file(file) {
         // we don't care if this faking of error is thread-safe
         _count++;
-        if(_xd) {
+        if (_xd) {
             // there's no possible error from save_point
             W_COERCE(_xd->save_point(_save_pt));
         }
     }
-    void ok() { _roll = false; }
+
+    void ok() {
+        _roll = false;
+    }
 
     ~auto_rollback_t() {
 
-        if(_test && (_count % _test==0)) _roll = true; // ignore ok()
-        if(_roll && _xd) {
+        if (_test && (_count % _test == 0)) {
+            _roll = true;
+        } // ignore ok()
+        if (_roll && _xd) {
             _xd->set_error_encountered();
             W_COERCE(_xd->rollback(_save_pt));
             INC_TSTAT(internal_rollback_cnt);
@@ -794,7 +948,7 @@ public:
 
 #else
 
-#define X_DO(x,anchor)             \
+#define X_DO(x, anchor)             \
 {                           \
     w_rc_t __e = (x);       \
     if (__e.is_error()) {        \
@@ -816,7 +970,7 @@ public:
  * This is exposed for the purpose of coping with out-of-log-space
  * conditions. See \ref SSMLOG.
  */
-class xct_i  {
+class xct_i {
 public:
     // NB: still not safe, since this does not
     // lock down the list for the entire iteration.
@@ -826,8 +980,10 @@ public:
 
     /// True if this thread holds the transaction list mutex.
     bool locked_by_me() const {
-        if(xct_t::xlist_mutex_is_mine()) {
-            W_IFDEBUG1(if(_may_check) w_assert1(_locked);)
+        if (xct_t::xlist_mutex_is_mine()) {
+            W_IFDEBUG1(if (_may_check) {
+                w_assert1(_locked);
+            })
             return true;
         }
         return false;
@@ -837,21 +993,26 @@ public:
     void never_mind() {
         // Be careful here: must leave in the
         // state it was when we constructed this.
-        if(_locked && locked_by_me()) {
-            *(const_cast<bool *>(&_locked)) = false; // grot
+        if (_locked && locked_by_me()) {
+            *(const_cast<bool*>(&_locked)) = false; // grot
             xct_t::release_xlist_mutex();
         }
     }
+
     /// Get transaction at cursor.
-    xct_t* curr() const { return unsafe_iterator.curr(); }
+    xct_t* curr() const {
+        return unsafe_iterator.curr();
+    }
+
     /// Advance cursor.
-    xct_t* next() { return unsafe_iterator.next(); }
+    xct_t* next() {
+        return unsafe_iterator.next();
+    }
 
     /**\cond skip */
     // Note that this is called to INIT the attribute "locked"
-    static bool init_locked(bool lockit)
-    {
-        if(lockit) {
+    static bool init_locked(bool lockit) {
+        if (lockit) {
             W_COERCE(xct_t::acquire_xlist_mutex());
         }
         return lockit;
@@ -865,47 +1026,54 @@ public:
     * hold the transaction-list mutex.
     */
     NORET xct_i(bool locked_accesses)
-        : _locked(init_locked(locked_accesses)),
-        _may_check(locked_accesses),
-        unsafe_iterator(xct_t::_xlist)
-    {
+            : _locked(init_locked(locked_accesses)),
+              _may_check(locked_accesses),
+              unsafe_iterator(xct_t::_xlist) {
         w_assert1(_locked == locked_accesses);
         _check(_locked);
     }
 
     /// Desctructor. Calls never_mind() if necessary.
     NORET ~xct_i() {
-        if(locked_by_me()) {
-          _check(true);
-          never_mind();
-          _check(false);
+        if (locked_by_me()) {
+            _check(true);
+            never_mind();
+            _check(false);
         }
     }
 
 private:
-    void _check(bool b) const  {
-          if(!_may_check) return;
-          if(b) xct_t::assert_xlist_mutex_is_mine();
-          else  xct_t::assert_xlist_mutex_not_mine();
+    void _check(bool b) const {
+        if (!_may_check) {
+            return;
+        }
+        if (b) {
+            xct_t::assert_xlist_mutex_is_mine();
+        } else {
+            xct_t::assert_xlist_mutex_not_mine();
+        }
     }
+
     // FRJ: make sure init_locked runs before we actually create the iterator
-    const bool            _locked;
-    const bool            _may_check;
-    w_list_i<xct_t,queue_based_lock_t> unsafe_iterator;
+    const bool _locked;
+
+    const bool _may_check;
+
+    w_list_i<xct_t, queue_based_lock_t> unsafe_iterator;
 
     // disabled
     xct_i(const xct_i&);
+
     xct_i& operator=(const xct_i&);
 };
-
 
 /**\cond skip */
 inline
 xct_t::state_t
-xct_t::state() const
-{
-    if (nullptr == _core)
+xct_t::state() const {
+    if (nullptr == _core) {
         return xct_ended;
+    }
     return _core->_state;
 }
 
@@ -914,81 +1082,78 @@ xct_t::state() const
 // apply to local volumes only.
 class xct_auto_abort_t : public smlevel_0 {
 public:
-    xct_auto_abort_t() : _xct(new xct_t()) {
-    }
+    xct_auto_abort_t() : _xct(new xct_t()) {}
+
     ~xct_auto_abort_t() {
-        switch(_xct->state()) {
-        case smlevel_0::xct_ended:
-            // do nothing
-            break;
-        case smlevel_0::xct_active:
-        case smlevel_0::xct_freeing_space: // we got an error in commit
-        case smlevel_0::xct_committing: // we got an error in commit
-            W_COERCE(_xct->abort());
-            break;
-        default:
-            cerr << "unexpected xct state: " << _xct->state() << endl;
-            W_FATAL(eINTERNAL);
+        switch (_xct->state()) {
+            case smlevel_0::xct_ended:
+                // do nothing
+                break;
+            case smlevel_0::xct_active:
+            case smlevel_0::xct_freeing_space: // we got an error in commit
+            case smlevel_0::xct_committing: // we got an error in commit
+                W_COERCE(_xct->abort());
+                break;
+            default:
+                cerr << "unexpected xct state: " << _xct->state() << endl;
+                W_FATAL(eINTERNAL);
         }
         delete _xct;
     }
+
     rc_t commit() {
         W_DO(_xct->commit());
         return RCOK;
     }
-    rc_t abort() {W_DO(_xct->abort()); return RCOK;}
+
+    rc_t abort() {
+        W_DO(_xct->abort());
+        return RCOK;
+    }
 
 private:
-    xct_t*        _xct;
+    xct_t* _xct;
 };
-
 
 inline
 bool
-operator>(const xct_t& x1, const xct_t& x2)
-{
+operator>(const xct_t& x1, const xct_t& x2) {
     return (x1.tid() > x2.tid());
 }
 
 inline
 const lsn_t&
-xct_t::last_lsn() const
-{
+xct_t::last_lsn() const {
     return _last_lsn;
 }
 
 inline
 void
-xct_t::set_last_lsn( const lsn_t&l)
-{
+xct_t::set_last_lsn(const lsn_t& l) {
     _last_lsn = l;
 }
 
 inline
 const lsn_t&
-xct_t::first_lsn() const
-{
+xct_t::first_lsn() const {
     return _first_lsn;
 }
 
 inline
 void
-xct_t::set_first_lsn(const lsn_t &l)
-{
+xct_t::set_first_lsn(const lsn_t& l) {
     _first_lsn = l;
 }
 
 inline
 const lsn_t&
-xct_t::undo_nxt() const
-{
+xct_t::undo_nxt() const {
     return _undo_nxt;
 }
 
 inline
 void
-xct_t::set_undo_nxt(const lsn_t &l)
-{
+xct_t::set_undo_nxt(const lsn_t& l) {
     _undo_nxt = l;
 }
 
@@ -1006,17 +1171,19 @@ xct_t::set_undo_nxt(const lsn_t &l)
 // it should say 'does not need' if we have absolute locks in LIL.
 // same thing can be manually achieved by user code, though.
 inline bool
-g_xct_does_need_lock()
-{
+g_xct_does_need_lock() {
     xct_t* x = xct();
-    if (x == nullptr)  return false;
-    if (x->is_sys_xct()) return false; // system transaction never needs locks
+    if (x == nullptr) {
+        return false;
+    }
+    if (x->is_sys_xct()) {
+        return false;
+    } // system transaction never needs locks
     return x->get_query_concurrency() == smlevel_0::t_cc_keyrange;
 }
 
 inline bool
-g_xct_does_ex_lock_for_select()
-{
+g_xct_does_ex_lock_for_select() {
     xct_t* x = xct();
     return x && x->get_query_exlock_for_select();
 }
@@ -1045,49 +1212,56 @@ public:
      * @param[in] single_log_sys_xct whether this transaction will have at most one xlog entry
      */
     sys_xct_section_t(bool single_log_sys_xct = false);
+
     /** This destructor makes sure the system transaction ended. */
     ~sys_xct_section_t();
 
     /** Tells if any error happened to begin a system transaction in constructor.*/
-    rc_t check_error_on_start () const {
+    rc_t check_error_on_start() const {
         return _error_on_start;
     }
+
     /** Commits or aborts the system transaction, depending on the given result code.*/
-    rc_t end_sys_xct (rc_t result);
+    rc_t end_sys_xct(rc_t result);
+
 private:
-    rc_t   _error_on_start;
+    rc_t _error_on_start;
+
     size_t _original_xct_depth;
 };
 
 /** Used to tentatively set t_cc_none to _query_concurrency. */
 class no_lock_section_t {
 public:
-    no_lock_section_t () {
-        xct_t *x = xct();
+    no_lock_section_t() {
+        xct_t* x = xct();
         if (x) {
-            DBGOUT3( << "!!!! no_lock_section_t() - lock has been disabled");
+            DBGOUT3(<< "!!!! no_lock_section_t() - lock has been disabled");
 
             org_cc = x->get_query_concurrency();
             x->set_query_concurrency(smlevel_0::t_cc_none);
         } else {
-            DBGOUT3( << "!!!! no_lock_section_t() - set original lock mode to t_cc_none");
+            DBGOUT3(<< "!!!! no_lock_section_t() - set original lock mode to t_cc_none");
 
             org_cc = smlevel_0::t_cc_none;
         }
     }
-    ~no_lock_section_t () {
-        xct_t *x = xct();
+
+    ~no_lock_section_t() {
+        xct_t* x = xct();
         if (x) {
-            DBGOUT3( << "!!!! ~no_lock_section_t() - restored original lock mode: " << org_cc);
+            DBGOUT3(<< "!!!! ~no_lock_section_t() - restored original lock mode: " << org_cc);
             x->set_query_concurrency(org_cc);
         }
     }
+
 private:
     smlevel_0::concurrency_t org_cc;
 };
 
 // microseconds to "give up" watermark waits and flushes its own log in readonly xct
 const int ELR_READONLY_WAIT_MAX_COUNT = 10;
+
 const int ELR_READONLY_WAIT_USEC = 2000;
 
 

@@ -92,7 +92,6 @@
 #ifndef __TABLE_DESC_H
 #define __TABLE_DESC_H
 
-
 #include "sm_vas.h"
 #include "mcs_lock.h"
 
@@ -120,27 +119,26 @@ typedef okvl_mode::element_lock_mode lock_mode_t;
  *
  * --------------------------------------------------------------- */
 
-class table_desc_t
-{
+class table_desc_t {
 protected:
 
-    pthread_mutex_t   _fschema_mutex;        // file schema mutex
-    string              _name;  // file name
-    unsigned            _field_count;          // # of fields
+    pthread_mutex_t _fschema_mutex;        // file schema mutex
+    string _name;  // file name
+    unsigned _field_count;          // # of fields
 
     /* ------------------- */
     /* --- table schema -- */
     /* ------------------- */
 
-    ss_m*           _db;                 // the SM
+    ss_m* _db;                 // the SM
 
-    field_desc_t*   _desc;               // schema - set of field descriptors
+    field_desc_t* _desc;               // schema - set of field descriptors
 
     // primary index for index-organized table (replaces Heap of Shore-MT)
-    index_desc_t*   _primary_idx;
+    index_desc_t* _primary_idx;
 
     // secondary indexes
-    std::vector<index_desc_t*>   _indexes;
+    std::vector<index_desc_t*> _indexes;
 
     unsigned _maxsize;            // max tuple size for this table, shortcut
 
@@ -151,6 +149,7 @@ public:
     /* ------------------- */
 
     table_desc_t(const char* name, int fieldcnt);
+
     virtual ~table_desc_t();
 
 
@@ -162,8 +161,7 @@ public:
 
     w_rc_t create_physical_index(ss_m* db, index_desc_t* index);
 
-    StoreID get_catalog_stid()
-    {
+    StoreID get_catalog_stid() {
         // using fixed stid=1 for catalog (enforced when creating)
         return 1;
     }
@@ -176,14 +174,14 @@ public:
     /* ----------------------------------------------------- */
 
     // create an index on the table
-    bool   create_index_desc(const char* name,
-                             const unsigned* fields,
-                             const unsigned num,
-                             const bool unique=true,
-                             const bool primary=false);
+    bool create_index_desc(const char* name,
+                           const unsigned* fields,
+                           const unsigned num,
+                           const bool unique = true,
+                           const bool primary = false);
 
-    bool   create_primary_idx_desc(const unsigned* fields,
-                                   const unsigned num);
+    bool create_primary_idx_desc(const unsigned* fields,
+                                 const unsigned num);
 
 
 
@@ -192,8 +190,7 @@ public:
     /* ------------------------ */
 
     // index by name
-    index_desc_t* find_index(const char* index_name)
-    {
+    index_desc_t* find_index(const char* index_name) {
         if (_primary_idx->matches_name(index_name)) {
             return _primary_idx;
         }
@@ -205,15 +202,19 @@ public:
         return nullptr;
     }
 
-    std::vector<index_desc_t*>& get_indexes()
-    {
+    std::vector<index_desc_t*>& get_indexes() {
         return _indexes;
     }
 
     // # of indexes
-    int index_count() { return _indexes.size(); }
+    int index_count() {
+        return _indexes.size();
+    }
 
-    index_desc_t* primary_idx() { return (_primary_idx); }
+    index_desc_t* primary_idx() {
+        return (_primary_idx);
+    }
+
     StoreID get_primary_stid();
 
     /* sets primary index, the index itself should be already set to
@@ -224,7 +225,8 @@ public:
     }
 
     char* index_keydesc(index_desc_t* idx);
-    int   index_maxkeysize(index_desc_t* index) const; /* max index key size */
+
+    int index_maxkeysize(index_desc_t* index) const; /* max index key size */
 
     /* ---------------------------------------------------------------- */
     /* --- for the conversion between disk format and memory format --- */
@@ -233,31 +235,40 @@ public:
     unsigned maxsize(); /* maximum requirement for disk format */
 
     inline field_desc_t* desc(const unsigned descidx) {
-        assert (descidx<_field_count);
+        assert (descidx < _field_count);
         assert (_desc);
         return (&(_desc[descidx]));
     }
 
-    const char*   name() const { return _name.c_str(); }
-    unsigned        field_count() const { return _field_count; }
+    const char* name() const {
+        return _name.c_str();
+    }
+
+    unsigned field_count() const {
+        return _field_count;
+    }
 
     /* ---------- */
     /* --- db --- */
     /* ---------- */
-    void set_db(ss_m* db) { _db = db; }
-    ss_m* db() { return (_db); }
+    void set_db(ss_m* db) {
+        _db = db;
+    }
+
+    ss_m* db() {
+        return (_db);
+    }
 
     /* ----------------- */
     /* --- debugging --- */
     /* ----------------- */
 
-    void print_desc(ostream & os = cout);  /* print the schema */
+    void print_desc(ostream& os = cout);  /* print the schema */
 
 protected:
     int find_field_by_name(const char* field_name) const;
 
     srwlock_t _mutex;
-
 }; // EOF: table_desc_t
 
 
@@ -280,16 +291,14 @@ typedef std::list<table_desc_t*> table_list_t;
  *
  ******************************************************************/
 
-inline int table_desc_t::find_field_by_name(const char* field_name) const
-{
-    for (unsigned i=0; i<_field_count; i++) {
-        if (strcmp(field_name, _desc[i].name())==0)
+inline int table_desc_t::find_field_by_name(const char* field_name) const {
+    for (unsigned i = 0; i < _field_count; i++) {
+        if (strcmp(field_name, _desc[i].name()) == 0) {
             return (i);
+        }
     }
     return (-1);
 }
-
-
 
 /******************************************************************
  *
@@ -300,20 +309,18 @@ inline int table_desc_t::find_field_by_name(const char* field_name) const
  *
  ******************************************************************/
 
-inline char* table_desc_t::index_keydesc(index_desc_t* idx)
-{
+inline char* table_desc_t::index_keydesc(index_desc_t* idx) {
     CRITICAL_SECTION(idx_kd_cs, idx->_keydesc_lock);
-    if (strlen(idx->_keydesc)>1) // is key_desc is already set
+    if (strlen(idx->_keydesc) > 1) { // is key_desc is already set
         return (idx->_keydesc);
+    }
 
     // else set the index keydesc
-    for (unsigned i=0; i<idx->field_count(); i++) {
+    for (unsigned i = 0; i < idx->field_count(); i++) {
         strcat(idx->_keydesc, _desc[idx->key_index(i)].keydesc());
     }
     return (idx->_keydesc);
 }
-
-
 
 /******************************************************************
  *
@@ -326,8 +333,7 @@ inline char* table_desc_t::index_keydesc(index_desc_t* idx)
  *
  ******************************************************************/
 
-inline int table_desc_t::index_maxkeysize(index_desc_t* idx) const
-{
+inline int table_desc_t::index_maxkeysize(index_desc_t* idx) const {
     unsigned size = 0;
     if ((size = idx->get_keysize()) > 0) {
         // keysize has already been calculated
@@ -337,16 +343,14 @@ inline int table_desc_t::index_maxkeysize(index_desc_t* idx) const
 
     // needs to calculate the (max)key for that index
     unsigned ix = 0;
-    for (unsigned i=0; i<idx->field_count(); i++) {
+    for (unsigned i = 0; i < idx->field_count(); i++) {
         ix = idx->key_index(i);
         size += _desc[ix].fieldmaxsize();
     }
     // set it for the index, for future invokations
     idx->set_keysize(size);
-    return(size);
+    return (size);
 }
-
-
 
 /******************************************************************
  *
@@ -357,30 +361,34 @@ inline int table_desc_t::index_maxkeysize(index_desc_t* idx) const
  *
  ******************************************************************/
 
-inline unsigned table_desc_t::maxsize()
-{
+inline unsigned table_desc_t::maxsize() {
     // shortcut not to re-compute maxsize
-    if (*&_maxsize)
+    if (*&_maxsize) {
         return (*&_maxsize);
+    }
 
     // calculate maximum size required
     unsigned size = 0;
     unsigned var_count = 0;
     unsigned null_count = 0;
-    for (unsigned i=0; i<_field_count; i++) {
+    for (unsigned i = 0; i < _field_count; i++) {
         size += _desc[i].fieldmaxsize();
-        if (_desc[i].allow_null()) null_count++;
-        if (_desc[i].is_variable_length()) var_count++;
+        if (_desc[i].allow_null()) {
+            null_count++;
+        }
+        if (_desc[i].is_variable_length()) {
+            var_count++;
+        }
     }
 
-    size += (var_count*sizeof(offset_t)) + (null_count>>3) + 1;
+    size += (var_count * sizeof(offset_t)) + (null_count >> 3) + 1;
 
     // There is a small window from the time it checks if maxsize is already set,
     // until the time it tries to set it up. In the meantime, another thread may
     // has done the calculation already. If that had happened, the two threads
     // should have calculated the same maxsize, since it is the same table desc.
     // In other words, the maxsize should be either 0 or equal to the size.
-    assert ((*&_maxsize==0) || (*&_maxsize==size));
+    assert ((*&_maxsize == 0) || (*&_maxsize == size));
 
     // atomic_swap_uint(&_maxsize, size);
     _maxsize = size;

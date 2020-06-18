@@ -37,9 +37,12 @@
 #include "shore_env.h"
 #include "daemons.h"
 
-
 // enumuration of different binding types
-enum eBindingType { BT_NONE=0, BT_NEXT=1, BT_SPREAD=2 };
+enum eBindingType {
+    BT_NONE = 0,
+    BT_NEXT = 1,
+    BT_SPREAD = 2
+};
 
 
 //// Default values for the environment ////
@@ -49,22 +52,22 @@ enum eBindingType { BT_NONE=0, BT_NEXT=1, BT_SPREAD=2 };
 
 
 // default value to spread threads
-const int DF_SPREAD_THREADS        = 1;
+const int DF_SPREAD_THREADS = 1;
 
 // default number of threads
-const int DF_NUM_OF_THR            = 5;
+const int DF_NUM_OF_THR = 5;
 
 // maximum number of threads
-const int MAX_NUM_OF_THR           = 1000;
+const int MAX_NUM_OF_THR = 1000;
 
 // default number of transactions executed per thread
-const int DF_TRX_PER_THR           = 100;
+const int DF_TRX_PER_THR = 100;
 
 // default duration for time-based measurements (in secs)
-const int DF_DURATION              = 20;
+const int DF_DURATION = 20;
 
 // default number of iterations
-const int DF_NUM_OF_ITERS          = 5;
+const int DF_NUM_OF_ITERS = 5;
 
 // default processor binding
 const eBindingType DF_BINDING_TYPE = BT_NONE;
@@ -76,12 +79,10 @@ const eBindingType DF_BINDING_TYPE = BT_NONE;
 const int DF_WARMUP_TRX_PER_THR = 1000;
 
 // default duration of warmup (in secs)
-const int DF_WARMUP_DURATION    = 20;
+const int DF_WARMUP_DURATION = 20;
 
 // default number of iterations during warmup
-const int DF_WARMUP_ITERS       = 3;
-
-
+const int DF_WARMUP_ITERS = 3;
 
 // default batch size
 const int BATCH_SIZE = 10;
@@ -89,9 +90,9 @@ const int BATCH_SIZE = 10;
 // default think time
 const int THINK_TIME = 0;
 
-
 // Instanciate and close the Shore environment
 int inst_test_env(int argc, char* argv[]);
+
 int close_test_env();
 
 /********************************************************************
@@ -112,7 +113,6 @@ enum MeasurementType {
     MT_NO_STOP
 };
 
-
 /********************************************************************
  *
  * @enum:  base_client_t
@@ -121,13 +121,14 @@ enum MeasurementType {
  *
  ********************************************************************/
 
-class base_client_t : public thread_t
-{
+class base_client_t : public thread_t {
 public:
 
     // supported trxs
-    typedef map<int,string>            mapSupTrxs;
-    typedef mapSupTrxs::iterator       mapSupTrxsIt;
+    typedef map<int, string> mapSupTrxs;
+
+    typedef mapSupTrxs::iterator mapSupTrxsIt;
+
     typedef mapSupTrxs::const_iterator mapSupTrxsConstIt;
 
 protected:
@@ -137,14 +138,16 @@ protected:
 
     // workload parameters
     MeasurementType _measure_type;
+
     int _trxid;
+
     int _notrxs;
 
     // used for submitting batches
     guard<condex_pair> _cp;
 
     // for processor binding
-    bool          _is_bound;
+    bool _is_bound;
 
     int _id; // thread id
     int _rv;
@@ -154,24 +157,32 @@ protected:
 public:
 
     base_client_t()
-        : thread_t("none"), _env(nullptr), _measure_type(MT_UNDEF),
-          _trxid(-1), _notrxs(-1), _is_bound(false), _rv(1)
-    { }
+            : thread_t("none"),
+              _env(nullptr),
+              _measure_type(MT_UNDEF),
+              _trxid(-1),
+              _notrxs(-1),
+              _is_bound(false),
+              _rv(1) {}
 
     base_client_t(std::string tname, const int id, ShoreEnv* env,
                   const MeasurementType aType, const int trxid,
                   const int numOfTrxs)
-	: thread_t(tname), _env(env), _measure_type(aType),
-          _trxid(trxid), _notrxs(numOfTrxs), _id(id), _rv(0)
-    {
+            : thread_t(tname),
+              _env(env),
+              _measure_type(aType),
+              _trxid(trxid),
+              _notrxs(numOfTrxs),
+              _id(id),
+              _rv(0) {
         assert (_env);
         assert (_measure_type != MT_UNDEF);
-        assert (_notrxs || (_measure_type == MT_TIME_DUR) || (_measure_type == MT_LOG_VOL) || (_measure_type == MT_NO_STOP));
+        assert (_notrxs || (_measure_type == MT_TIME_DUR) || (_measure_type == MT_LOG_VOL)
+                || (_measure_type == MT_NO_STOP));
         _cp = new condex_pair();
     }
 
-    virtual ~base_client_t() { }
-
+    virtual ~base_client_t() {}
 
     // thread entrance
     void work() {
@@ -180,7 +191,7 @@ public:
             if (_env->init()) {
                 // Couldn't initialize the Shore environment
                 // cannot proceed
-                TRACE( TRACE_ALWAYS, "Couldn't initialize Shore...\n");
+                TRACE(TRACE_ALWAYS, "Couldn't initialize Shore...\n");
                 _rv = 1;
                 return;
             }
@@ -195,47 +206,61 @@ public:
     }
 
     // access methods
-    int id() { return (_id); }
-    bool is_bound() const { return (_is_bound); }
-    inline int rv() { return (_rv); }
+    int id() {
+        return (_id);
+    }
+
+    bool is_bound() const {
+        return (_is_bound);
+    }
+
+    inline int rv() {
+        return (_rv);
+    }
 
     // methods
     w_rc_t run_xcts(int xct_type, int num_xct);
 
     int powerrun() {
         w_rc_t rc = _env->load();
-        if(rc.is_error()) return rc.err_num();
+        if (rc.is_error()) {
+            return rc.err_num();
+        }
         return (run_xcts(_trxid, _notrxs).err_num());
     }
 
     w_rc_t submit_batch(int xct_type, int& trx_cnt, const int batch_size);
 
     static void abort_test();
+
     static void resume_test();
+
     static bool is_test_aborted();
 
     // every client class should implement this functions
     static int load_sup_xct(mapSupTrxs& map) {
-        map.clear(); return (map.size());
+        map.clear();
+        return (map.size());
     }
 
     // INTERFACE
 
-    virtual w_rc_t submit_one(int xct_type, int num_xct)=0;
+    virtual w_rc_t submit_one(int xct_type, int num_xct) = 0;
 
 
     // debugging
 
-    void print_tables() { assert (_env); _env->dump(); }
-
+    void print_tables() {
+        assert (_env);
+        _env->dump();
+    }
 
 private:
 
     // copying not allowed
-    base_client_t(base_client_t const &);
-    void operator=(base_client_t const &);
+    base_client_t(base_client_t const&);
 
-
+    void operator=(base_client_t const&);
 }; // EOF: base_client_t
 
 

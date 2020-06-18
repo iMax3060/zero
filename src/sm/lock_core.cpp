@@ -20,42 +20,51 @@
 
 // these are not used now
 #ifdef SWITCH_DEADLOCK_IMPL
+
 bool g_deadlock_use_waitmap_obsolete = true;
+
 int g_deadlock_dreadlock_interval_ms = 10;
-w_error_codes (*g_check_deadlock_impl)(xct_t* xd, lock_request_t *myreq);
+
+w_error_codes (* g_check_deadlock_impl)(xct_t* xd, lock_request_t* myreq);
+
 #endif // SWITCH_DEADLOCK_IMPL
 
 bool OKVL_EXPERIMENT = false;
+
 uint32_t OKVL_INIT_STR_PREFIX_LEN = 0;
+
 uint32_t OKVL_INIT_STR_UNIQUEFIER_LEN = 0;
 
 struct RawLockCleanerFunctor : public GcWakeupFunctor {
     RawLockCleanerFunctor(RawLockBackgroundThread* cleaner_arg) : cleaner(cleaner_arg) {}
+
     void wakeup() {
         cleaner->wakeup();
     }
-    RawLockBackgroundThread*    cleaner;
+
+    RawLockBackgroundThread* cleaner;
 };
 
-lock_core_m::lock_core_m(const sm_options &options) : _htab(nullptr), _htabsz(0) {
+lock_core_m::lock_core_m(const sm_options& options) : _htab(nullptr),
+                                                      _htabsz(0) {
     size_t sz = options.get_int_option("sm_locktablesize", 64000);
 
 
     // CS TODO: options below were set in the old Zero tpcc.cpp
-            // // very short interval, large segments, for massive accesses.
-            // // back-of-envelope-calculation: ignore xct. it's all about RawLock.
-            // // sizeof(RawLock)=64 or something. 8 * 256 * 4096 * 64 = 512MB. tolerable.
-            // options.set_int_option("sm_rawlock_gc_interval_ms", 3);
-            // options.set_int_option("sm_rawlock_lockpool_initseg", 255);
-            // options.set_int_option("sm_rawlock_xctpool_initseg", 255);
-            // options.set_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
-            // options.set_int_option("sm_rawlock_xctpool_segsize", 1 << 8);
-            // options.set_int_option("sm_rawlock_gc_generation_count", 5);
-            // options.set_int_option("sm_rawlock_gc_init_generation_count", 5);
-            // options.set_int_option("sm_rawlock_gc_free_segment_count", 50);
-            // options.set_int_option("sm_rawlock_gc_max_segment_count", 255);
-            // // meaning: a newly created generation has a lot of (255) segments.
-            // // as soon as remaining gets low, we recycle older ones (few generations).
+    // // very short interval, large segments, for massive accesses.
+    // // back-of-envelope-calculation: ignore xct. it's all about RawLock.
+    // // sizeof(RawLock)=64 or something. 8 * 256 * 4096 * 64 = 512MB. tolerable.
+    // options.set_int_option("sm_rawlock_gc_interval_ms", 3);
+    // options.set_int_option("sm_rawlock_lockpool_initseg", 255);
+    // options.set_int_option("sm_rawlock_xctpool_initseg", 255);
+    // options.set_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
+    // options.set_int_option("sm_rawlock_xctpool_segsize", 1 << 8);
+    // options.set_int_option("sm_rawlock_gc_generation_count", 5);
+    // options.set_int_option("sm_rawlock_gc_init_generation_count", 5);
+    // options.set_int_option("sm_rawlock_gc_free_segment_count", 50);
+    // options.set_int_option("sm_rawlock_gc_max_segment_count", 255);
+    // // meaning: a newly created generation has a lot of (255) segments.
+    // // as soon as remaining gets low, we recycle older ones (few generations).
 
     size_t generation_count = options.get_int_option("sm_rawlock_gc_generation_count", 5);
     size_t init_generations = options.get_int_option("sm_rawlock_gc_init_generation_count", 5);
@@ -67,16 +76,18 @@ lock_core_m::lock_core_m(const sm_options &options) : _htab(nullptr), _htabsz(0)
     size_t lockpool_segsize = options.get_int_option("sm_rawlock_lockpool_segsize", 1 << 12);
     size_t xctpool_segsize = options.get_int_option("sm_rawlock_xctpool_segsize", 1 << 8);
     DBGOUT3(<<"lock_core_m constructor: sm_locktablesize=" << sz
-        << ", sm_rawlock_gc_generation_count=" << generation_count
-        << ", sm_rawlock_gc_init_generation_count=" << init_generations
-        << ", sm_rawlock_lockpool_initseg=" << lockpool_initseg
-        << ", sm_rawlock_xctpool_initseg=" << xctpool_initseg
-        << ", sm_rawlock_lockpool_segsize=" << lockpool_segsize
-        << ", sm_rawlock_xctpool_segsize=" << xctpool_segsize);
+                    << ", sm_rawlock_gc_generation_count=" << generation_count
+                    << ", sm_rawlock_gc_init_generation_count=" << init_generations
+                    << ", sm_rawlock_lockpool_initseg=" << lockpool_initseg
+                    << ", sm_rawlock_xctpool_initseg=" << xctpool_initseg
+                    << ", sm_rawlock_lockpool_segsize=" << lockpool_segsize
+                    << ", sm_rawlock_xctpool_segsize=" << xctpool_segsize);
 
     // find _htabsz, a power of 2 greater than sz
-    int b=0; // count bits shifted
-    for (_htabsz = 1; _htabsz < sz; _htabsz <<= 1) b++;
+    int b = 0; // count bits shifted
+    for (_htabsz = 1; _htabsz < sz; _htabsz <<= 1) {
+        b++;
+    }
 
     w_assert1(!_htab); // just to check size
 
@@ -122,14 +133,13 @@ lock_core_m::lock_core_m(const sm_options &options) : _htab(nullptr), _htabsz(0)
     _lil_global_table->clear();
 }
 
-lock_core_m::~lock_core_m()
-{
-    DBGOUT3( << " lock_core_m::~lock_core_m()" );
-    DBGOUT1( << "Checking if all locks were released..." );
+lock_core_m::~lock_core_m() {
+    DBGOUT3(<< " lock_core_m::~lock_core_m()");
+    DBGOUT1(<< "Checking if all locks were released...");
 #if W_DEBUG_LEVEL >= 1
     for (uint32_t i = 0; i < _htabsz; ++i) {
         if (!_htab[i].head.next.is_null()) {
-            ERROUT( << "There is some lock not released!" );
+            ERROUT(<< "There is some lock not released!");
             dump(std::cerr);
             w_assert0(false);
             break;
@@ -153,7 +163,6 @@ lock_core_m::~lock_core_m()
     _lil_global_table = nullptr;
 }
 
-
 __thread gc_pointer_raw tls_xct_pool_next; // Thread local variable for xct_pool.
 __thread gc_pointer_raw tls_lock_pool_next; // Thread local variable for lock_pool.
 
@@ -168,15 +177,13 @@ void lock_core_m::deallocate_xct(RawXct* xct) {
     _xct_pool->deallocate(xct);
 }
 
-
 w_error_codes lock_core_m::acquire_lock(RawXct* xct, uint32_t hash, const okvl_mode& mode,
-                bool check, bool wait, bool acquire, int32_t timeout, RawLock** out)
-{
+                                        bool check, bool wait, bool acquire, int32_t timeout, RawLock** out) {
     w_assert1(timeout >= 0 || timeout == timeout_t::WAIT_FOREVER);
     uint32_t idx = _table_bucket(hash);
     while (true) {
         w_error_codes er = _htab[idx].acquire(xct, hash, mode, timeout,
-                check, wait, acquire, out);
+                                              check, wait, acquire, out);
         // Possible return codes:
         //   eDEADLOCK - detected deadlock, released the lock entry,
         //                         automaticlly retry here if caller does not own other locks
@@ -229,7 +236,6 @@ void lock_core_m::release_lock(RawLock* lock, lsn_t commit_lsn) {
     _htab[idx].release(lock, commit_lsn);
 }
 
-
 void lock_core_m::release_duration(bool read_lock_only, lsn_t commit_lsn) {
     xct_t* xd = smthread_t::xct();
     if (xd == nullptr) {
@@ -270,7 +276,7 @@ void lock_core_m::release_duration(bool read_lock_only, lsn_t commit_lsn) {
             lock = next;
         }
     } else {
-        while (xct->private_first != nullptr)  {
+        while (xct->private_first != nullptr) {
             RawLock* lock = xct->private_first;
             uint32_t hash = lock->hash;
             uint32_t idx = _table_bucket(hash);

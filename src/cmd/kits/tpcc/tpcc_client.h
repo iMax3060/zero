@@ -31,7 +31,6 @@
 #ifndef __TPCC_CLIENT_H
 #define __TPCC_CLIENT_H
 
-
 #include "shore_client.h"
 
 #include "tpcc/tpcc_const.h"
@@ -47,36 +46,36 @@ namespace tpcc {
  *
  ********************************************************************/
 
-class baseline_tpcc_client_t : public base_client_t
-{
-private:
-    // workload parameters
-    int _wh;
-    trx_worker_t* _worker;
-    double _qf;
-    int _tspread;
+    class baseline_tpcc_client_t : public base_client_t {
+    private:
+        // workload parameters
+        int _wh;
 
+        trx_worker_t* _worker;
 
-public:
+        double _qf;
 
-    baseline_tpcc_client_t() { }
+        int _tspread;
 
-    baseline_tpcc_client_t(std::string tname, const int id, ShoreTPCCEnv* env,
-                           const MeasurementType aType, const int trxid,
-                           const int numOfTrxs,
-                           const int sWH, const double qf,
-                           int tspread);
+    public:
 
-    ~baseline_tpcc_client_t() { }
+        baseline_tpcc_client_t() {}
 
-    // every client class should implement this function
-    static int load_sup_xct(mapSupTrxs& map);
+        baseline_tpcc_client_t(std::string tname, const int id, ShoreTPCCEnv* env,
+                               const MeasurementType aType, const int trxid,
+                               const int numOfTrxs,
+                               const int sWH, const double qf,
+                               int tspread);
 
-    // INTERFACE
+        ~baseline_tpcc_client_t() {}
 
-    w_rc_t submit_one(int xct_type, int xctid);
+        // every client class should implement this function
+        static int load_sup_xct(mapSupTrxs& map);
 
-}; // EOF: baseline_tpcc_client_t
+        // INTERFACE
+
+        w_rc_t submit_one(int xct_type, int xctid);
+    }; // EOF: baseline_tpcc_client_t
 
 
 };

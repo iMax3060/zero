@@ -32,10 +32,8 @@
 #ifndef __REQS_H
 #define __REQS_H
 
-
 #include "sm_vas.h"
 #include "util/condex.h"
-
 
 const int NO_VALID_TRX_ID = -1;
 
@@ -47,14 +45,14 @@ const int NO_VALID_TRX_ID = -1;
  *
  ********************************************************************/
 
-enum TrxState { UNDEF       = 0x0,
-                UNSUBMITTED = 0x1,
-                SUBMITTED   = 0x2,
-                POISSONED   = 0x4,
-		COMMITTED   = 0x8,
-                ROLLBACKED  = 0x10
+enum TrxState {
+    UNDEF = 0x0,
+    UNSUBMITTED = 0x1,
+    SUBMITTED = 0x2,
+    POISSONED = 0x4,
+    COMMITTED = 0x8,
+    ROLLBACKED = 0x10
 };
-
 
 /********************************************************************
  *
@@ -68,12 +66,12 @@ enum TrxState { UNDEF       = 0x0,
  *
  ********************************************************************/
 
-enum eWorkerControl { WC_PAUSED   = 0x1,
-                      WC_ACTIVE   = 0x2,
-                      WC_STOPPED  = 0x4,
-                      WC_RECOVERY = 0x8
+enum eWorkerControl {
+    WC_PAUSED = 0x1,
+    WC_ACTIVE = 0x2,
+    WC_STOPPED = 0x4,
+    WC_RECOVERY = 0x8
 };
-
 
 /********************************************************************
  *
@@ -92,14 +90,14 @@ enum eWorkerControl { WC_PAUSED   = 0x1,
  *
  ********************************************************************/
 
-enum eWorkingState { WS_UNDEF    = 0x1,
-                     WS_LOOP     = 0x2,
-                     WS_SLEEP    = 0x4,
-                     WS_COMMIT_Q = 0x8,
-                     WS_INPUT_Q  = 0x10,
-                     WS_FINISHED = 0x20
+enum eWorkingState {
+    WS_UNDEF = 0x1,
+    WS_LOOP = 0x2,
+    WS_SLEEP = 0x4,
+    WS_COMMIT_Q = 0x8,
+    WS_INPUT_Q = 0x10,
+    WS_FINISHED = 0x20
 };
-
 
 /********************************************************************
  *
@@ -109,11 +107,11 @@ enum eWorkingState { WS_UNDEF    = 0x1,
  *
  ********************************************************************/
 
-enum eDataOwnerState { DOS_UNDEF    = 0x1,
-                       DOS_ALONE    = 0x2,
-                       DOS_MULTIPLE = 0x4
+enum eDataOwnerState {
+    DOS_UNDEF = 0x1,
+    DOS_ALONE = 0x2,
+    DOS_MULTIPLE = 0x4
 };
-
 
 /********************************************************************
  *
@@ -123,27 +121,30 @@ enum eDataOwnerState { DOS_UNDEF    = 0x1,
  *
  ********************************************************************/
 
-class trx_result_tuple_t
-{
+class trx_result_tuple_t {
 private:
 
     TrxState R_STATE;
+
     int R_ID;
+
     condex* _notify;
 
 public:
 
-    trx_result_tuple_t() { reset(UNDEF, -1, nullptr); }
+    trx_result_tuple_t() {
+        reset(UNDEF, -1, nullptr);
+    }
 
     trx_result_tuple_t(TrxState aTrxState, int anID, condex* apcx = nullptr) {
         reset(aTrxState, anID, apcx);
     }
 
-    ~trx_result_tuple_t() { }
+    ~trx_result_tuple_t() {}
 
     // @fn copy constructor
     trx_result_tuple_t(const trx_result_tuple_t& t) {
-	reset(t.R_STATE, t.R_ID, t._notify);
+        reset(t.R_STATE, t.R_ID, t._notify);
     }
 
     // @fn copy assingment
@@ -154,23 +155,34 @@ public:
 
     // @fn equality operator
     friend bool operator==(const trx_result_tuple_t& t,
-                           const trx_result_tuple_t& s)
-    {
+                           const trx_result_tuple_t& s) {
         return ((t.R_STATE == s.R_STATE) && (t.R_ID == s.R_ID));
     }
 
-
     // Access methods
-    condex* get_notify() const { return (_notify); }
-    void set_notify(condex* notify) { _notify = notify; }
+    condex* get_notify() const {
+        return (_notify);
+    }
 
-    int get_id() const { return (R_ID); }
-    void set_id(const int aID) { R_ID = aID; }
+    void set_notify(condex* notify) {
+        _notify = notify;
+    }
 
-    TrxState get_state() { return (R_STATE); }
+    int get_id() const {
+        return (R_ID);
+    }
+
+    void set_id(const int aID) {
+        R_ID = aID;
+    }
+
+    TrxState get_state() {
+        return (R_STATE);
+    }
+
     void set_state(TrxState aState) {
-       assert ((aState >= UNDEF) && (aState <= ROLLBACKED));
-       R_STATE = aState;
+        assert ((aState >= UNDEF) && (aState <= ROLLBACKED));
+        R_STATE = aState;
     }
 
     void reset(TrxState aTrxState, int anID, condex* notify) {
@@ -180,9 +192,8 @@ public:
 
         R_STATE = aTrxState;
         R_ID = anID;
-	_notify = notify;
+        _notify = notify;
     }
-
 }; // EOF: trx_result_tuple_t
 
 
@@ -195,50 +206,63 @@ public:
  *
  ********************************************************************/
 
-struct base_request_t
-{
+struct base_request_t {
     // trx-specific
-    xct_t*              _xct; // Not the owner
-    tid_t               _tid;
-    int                 _xct_id;
-    trx_result_tuple_t  _result;
+    xct_t* _xct; // Not the owner
+    tid_t _tid;
+
+    int _xct_id;
+
+    trx_result_tuple_t _result;
 
     base_request_t()
-        : _xct(nullptr),_xct_id(-1)
-    { }
+            : _xct(nullptr),
+              _xct_id(-1) {}
 
     base_request_t(xct_t* pxct, const tid_t& atid, const int axctid,
                    const trx_result_tuple_t& aresult)
-        : _xct(pxct),_tid(atid),_xct_id(axctid),_result(aresult)
-    {
+            : _xct(pxct),
+              _tid(atid),
+              _xct_id(axctid),
+              _result(aresult) {
         assert (pxct);
     }
 
-    ~base_request_t()
-    {
+    ~base_request_t() {
         _xct = nullptr;
     }
 
-
     inline void set(xct_t* pxct, const tid_t& atid, const int axctid,
-                    const trx_result_tuple_t& aresult)
-    {
+                    const trx_result_tuple_t& aresult) {
         _xct = pxct;
         _tid = atid;
         _xct_id = axctid;
         _result = aresult;
     }
 
-    inline xct_t* xct() { return (_xct); }
-    inline tid_t tid() const { return (_tid); }
-    inline int xct_id() const { return (_xct_id); }
+    inline xct_t* xct() {
+        return (_xct);
+    }
+
+    inline tid_t tid() const {
+        return (_tid);
+    }
+
+    inline int xct_id() const {
+        return (_xct_id);
+    }
 
     void notify_client();
 
-    lsn_t        _my_last_lsn;
-    inline void  set_last_lsn(const lsn_t& alsn) { _my_last_lsn = alsn; }
-    inline lsn_t my_last_lsn() { return (_my_last_lsn); }
+    lsn_t _my_last_lsn;
 
+    inline void set_last_lsn(const lsn_t& alsn) {
+        _my_last_lsn = alsn;
+    }
+
+    inline lsn_t my_last_lsn() {
+        return (_my_last_lsn);
+    }
 }; // EOF: base_request_t
 
 
@@ -251,42 +275,53 @@ struct base_request_t
  *
  ********************************************************************/
 
-struct trx_request_t : public base_request_t
-{
-    int                 _xct_type;
-    int                 _spec_id;
+struct trx_request_t : public base_request_t {
+    int _xct_type;
+
+    int _spec_id;
+
     int _tspread;
 
     trx_request_t()
-        : base_request_t(), _xct_type(-1),_spec_id(0)
-    { }
+            : base_request_t(),
+              _xct_type(-1),
+              _spec_id(0) {}
 
     trx_request_t(xct_t* pxct, const tid_t& atid, const int axctid,
                   const trx_result_tuple_t& aresult,
                   const int axcttype, const int aspecid,
                   int tspread = 0)
-        : base_request_t(pxct,atid,axctid,aresult),
-          _xct_type(axcttype), _spec_id(aspecid), _tspread(tspread)
-    {
-    }
+            : base_request_t(pxct, atid, axctid, aresult),
+              _xct_type(axcttype),
+              _spec_id(aspecid),
+              _tspread(tspread) {}
 
-    ~trx_request_t() { }
+    ~trx_request_t() {}
 
     void set(xct_t* pxct, const tid_t& atid, const int axctid,
              const trx_result_tuple_t& aresult,
-             const int axcttype, const int aspecid, int tspread)
-    {
-        base_request_t::set(pxct,atid,axctid,aresult);
+             const int axcttype, const int aspecid, int tspread) {
+        base_request_t::set(pxct, atid, axctid, aresult);
         _xct_type = axcttype;
         _spec_id = aspecid;
         _tspread = tspread;
     }
 
-    inline int type() const { return (_xct_type); }
-    inline void set_type(const int atype) { _xct_type = atype; }
-    inline int selectedID() { return (_spec_id); }
-    int tspread() const { return _tspread; }
+    inline int type() const {
+        return (_xct_type);
+    }
 
+    inline void set_type(const int atype) {
+        _xct_type = atype;
+    }
+
+    inline int selectedID() {
+        return (_spec_id);
+    }
+
+    int tspread() const {
+        return _tspread;
+    }
 }; // EOF: trx_request_t
 
 #endif // __REQS_H

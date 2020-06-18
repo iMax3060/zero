@@ -40,8 +40,6 @@
 #warning Very verbose worker statistics enabled (avg time waiting window)
 #endif
 
-
-
 /******************************************************************
  *
  * @fn:     print_stats(), reset()
@@ -50,57 +48,55 @@
  *
  ******************************************************************/
 
-void worker_stats_t::print_stats() const
-{
+void worker_stats_t::print_stats() const {
     uint executed = _processed - _early_aborts;
 
     // How many requests were "touched" by this worker
-    TRACE( TRACE_STATISTICS, "Processed       (%d)\n", _processed);
+    TRACE(TRACE_STATISTICS, "Processed       (%d)\n", _processed);
 
     // How many requests were actually processed (touched - early aborts)
-    TRACE( TRACE_STATISTICS, "Executed        (%d) \t%.1f%%\n",
-           executed, (double)(100*executed)/(double)_processed);
+    TRACE(TRACE_STATISTICS, "Executed        (%d) \t%.1f%%\n",
+          executed, (double)(100 * executed) / (double)_processed);
 
     // Total (problems/touched) and real failure (problems/executed) rate
-    TRACE( TRACE_STATISTICS, "Failure rate    (%d) \t%.1f%% \t%.1f%%\n",
-           _problems, (double)(100*_problems)/(double)_processed,
-           (double)(100*_problems)/(double)executed);
+    TRACE(TRACE_STATISTICS, "Failure rate    (%d) \t%.1f%% \t%.1f%%\n",
+          _problems, (double)(100 * _problems) / (double)_processed,
+          (double)(100 * _problems) / (double)executed);
 
     // How many packets were executed right from the input queue
     // If that value is ~100% it means that this worker is the bottleneck
-    TRACE( TRACE_STATISTICS, "Input served    (%d) \t%.1f%%\n",
-           _served_input, (double)(100*_served_input)/(double)_processed);
+    TRACE(TRACE_STATISTICS, "Input served    (%d) \t%.1f%%\n",
+          _served_input, (double)(100 * _served_input) / (double)_processed);
 
     // How many packets had to wait on a lock before being executed
     // If that value is ~100% it means that this worker is not the bottleneck
     // or/and that is has been assigned to few objects (e.g. partition small)
-    TRACE( TRACE_STATISTICS, "Wait served     (%d) \t%.1f%%\n",
-           _served_waiting, (double)(100*_served_waiting)/(double)_processed);
+    TRACE(TRACE_STATISTICS, "Wait served     (%d) \t%.1f%%\n",
+          _served_waiting, (double)(100 * _served_waiting) / (double)_processed);
 
     // How many requests were already aborted when they were checked by this worker
-    TRACE( TRACE_STATISTICS, "Early aborts    (%d) \t%.1f%%\n",
-           _early_aborts, (double)(100*_early_aborts)/(double)_processed);
+    TRACE(TRACE_STATISTICS, "Early aborts    (%d) \t%.1f%%\n",
+          _early_aborts, (double)(100 * _early_aborts) / (double)_processed);
 
     // How many requests were aborted (by another worker) while this worker
     // was executing them
-    TRACE( TRACE_STATISTICS, "Midway aborts   (%d) \t%.1f%% \t%.1f%%\n",
-           _mid_aborts, (double)(100*_mid_aborts)/(double)_processed,
-           (double)(100*_mid_aborts)/(double)executed);
+    TRACE(TRACE_STATISTICS, "Midway aborts   (%d) \t%.1f%% \t%.1f%%\n",
+          _mid_aborts, (double)(100 * _mid_aborts) / (double)_processed,
+          (double)(100 * _mid_aborts) / (double)executed);
 
     // How many times this worker thread used the cond var to sleep
     // If that value is ~0% it means that this worker is the bottleneck.
     // On the other hand, the larger the value it means the more sys time is added
     // to the system by this worker. One solution could be to assign more work to it
-    TRACE( TRACE_STATISTICS, "Sleeped         (%d) \t%.1f%%\n",
-           _condex_sleep, (double)(100*_condex_sleep)/(double)_processed);
+    TRACE(TRACE_STATISTICS, "Sleeped         (%d) \t%.1f%%\n",
+          _condex_sleep, (double)(100 * _condex_sleep) / (double)_processed);
 
     // How many times this worker thread had decided to sleep but it didn't,
     // because a new request arrived. Non-negligible value to this statistic means
     // that this worker is close to start waking-sleeping. Potentially, can be
     // assigned more work
-    TRACE( TRACE_STATISTICS, "Failed sleep   (%d) \t%.1f%%\n",
-           _failed_sleep, (double)(100*_failed_sleep)/(double)_processed);
-
+    TRACE(TRACE_STATISTICS, "Failed sleep   (%d) \t%.1f%%\n",
+          _failed_sleep, (double)(100 * _failed_sleep) / (double)_processed);
 
 #ifdef WORKER_VERBOSE_STATS
 
@@ -132,12 +128,11 @@ void worker_stats_t::print_stats() const
 }
 
 worker_stats_t&
-worker_stats_t::operator+= (worker_stats_t const& rhs)
-{
+worker_stats_t::operator+=(worker_stats_t const& rhs) {
     _processed += rhs._processed;
-    _problems  += rhs._problems;
+    _problems += rhs._problems;
 
-    _served_input  += rhs._served_input;
+    _served_input += rhs._served_input;
     _served_waiting += rhs._served_waiting;
 
     _condex_sleep += rhs._condex_sleep;
@@ -164,14 +159,12 @@ worker_stats_t::operator+= (worker_stats_t const& rhs)
     return (*this);
 }
 
-
-void worker_stats_t::reset()
-{
+void worker_stats_t::reset() {
     _processed = 0;
-    _problems  = 0;
+    _problems = 0;
 
-    _served_input  = 0;
-    _served_waiting  = 0;
+    _served_input = 0;
+    _served_waiting = 0;
 
     _condex_sleep = 0;
     _failed_sleep = 0;
@@ -194,7 +187,6 @@ void worker_stats_t::reset()
 #endif
 #endif
 }
-
 
 #ifdef WORKER_VERBOSE_STATS
 
@@ -248,50 +240,46 @@ void worker_stats_t::update_rvp_notify_time(const double rvp_notify_time_ms)
  *
  ******************************************************************/
 
-void base_worker_t::work()
-{
+void base_worker_t::work() {
     int rval = 0;
 
     // state machine
     while (true) {
         switch (get_control()) {
 
-        //     usleep(1000); // Sleep for a millisecond
-        //     break;
+            //     usleep(1000); // Sleep for a millisecond
+            //     break;
 
-        case (WC_PAUSED):
-            if (work_PAUSED())
+            case (WC_PAUSED):
+                if (work_PAUSED()) {
+                    return;
+                }
+                break;
+
+            case (WC_ACTIVE):
+
+                _env->env_thread_init();
+
+                // does the real work
+                rval = work_ACTIVE();
+
+                _env->env_thread_fini();
+
+                if (rval) {
+                    return;
+                }
+                break;
+
+            case (WC_STOPPED): // exits
+                work_STOPPED();
                 return;
-            break;
+                break;
 
-        case (WC_ACTIVE):
-
-            _env->env_thread_init();
-
-            // does the real work
-            rval = work_ACTIVE();
-
-            _env->env_thread_fini();
-
-            if (rval)
-                return;
-            break;
-
-        case (WC_STOPPED): // exits
-            work_STOPPED();
-            return;
-            break;
-
-        default:
-            assert(0); // should not be in any other state
+            default:
+                assert(0); // should not be in any other state
         }
     }
 }
-
-
-
-
-
 
 /******************************************************************
  *
@@ -303,8 +291,7 @@ void base_worker_t::work()
  *
  ******************************************************************/
 
-int base_worker_t::_work_PAUSED_impl()
-{
+int base_worker_t::_work_PAUSED_impl() {
     //    TRACE( TRACE_DEBUG, "Pausing...\n");
 
     // state (WC_PAUSED)
@@ -315,7 +302,6 @@ int base_worker_t::_work_PAUSED_impl()
     }
     return (0);
 }
-
 
 /******************************************************************
  *
@@ -329,8 +315,7 @@ int base_worker_t::_work_PAUSED_impl()
  *
  ******************************************************************/
 
-int base_worker_t::_work_STOPPED_impl()
-{
+int base_worker_t::_work_STOPPED_impl() {
     //    TRACE( TRACE_DEBUG, "Stopping...\n");
 
     // state (WC_STOPPED)
@@ -339,7 +324,7 @@ int base_worker_t::_work_STOPPED_impl()
     xct_t* ax = smthread_t::xct();
     if (ax) {
         abort_one_trx(ax);
-        TRACE( TRACE_ALWAYS, "Aborted one\n");
+        TRACE(TRACE_ALWAYS, "Aborted one\n");
     }
 
 
@@ -354,7 +339,7 @@ int base_worker_t::_work_STOPPED_impl()
         // if someone is linked behind stop it and join it
         _next->stop();
         _next->join();
-        TRACE( TRACE_DEBUG, "Next joined...\n");
+        TRACE(TRACE_DEBUG, "Next joined...\n");
         delete (_next);
     }
     _next = nullptr; // join() ?
@@ -367,8 +352,6 @@ int base_worker_t::_work_STOPPED_impl()
     return (0);
 }
 
-
-
 /******************************************************************
  *
  * @fn:     abort_one_trx()
@@ -379,20 +362,17 @@ int base_worker_t::_work_STOPPED_impl()
  *
  ******************************************************************/
 
-bool base_worker_t::abort_one_trx(xct_t* axct)
-{
+bool base_worker_t::abort_one_trx(xct_t* axct) {
     assert (_env);
     assert (axct);
     smthread_t::attach_xct(axct);
     w_rc_t e = ss_m::abort_xct();
     if (e.is_error()) {
-        TRACE( TRACE_ALWAYS, "Xct abort failed [0x%x]\n", e.err_num());
+        TRACE(TRACE_ALWAYS, "Xct abort failed [0x%x]\n", e.err_num());
         return (false);
     }
     return (true);
 }
-
-
 
 /******************************************************************
  *
@@ -402,14 +382,12 @@ bool base_worker_t::abort_one_trx(xct_t* axct)
  *
  ******************************************************************/
 
-void base_worker_t::stats()
-{
+void base_worker_t::stats() {
     if (_stats._processed < MINIMUM_PROCESSED) {
         // don't print partitions which have served too few actions
-        TRACE( TRACE_DEBUG, "(%s) few data\n", thread_name().data());
-    }
-    else {
-        TRACE( TRACE_STATISTICS, "(%s)\n", thread_name().data());
+        TRACE(TRACE_DEBUG, "(%s) few data\n", thread_name().data());
+    } else {
+        TRACE(TRACE_STATISTICS, "(%s)\n", thread_name().data());
         _stats.print_stats();
     }
 
@@ -417,9 +395,6 @@ void base_worker_t::stats()
     _stats.reset();
 }
 
-
-
-worker_stats_t base_worker_t::get_stats()
-{
+worker_stats_t base_worker_t::get_stats() {
     return (*&_stats);
 }

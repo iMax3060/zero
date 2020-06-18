@@ -6,7 +6,10 @@
 namespace zero::multi_clock {
 
     typedef uint32_t ClockIndex;
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index> class MultiHandedClock;
+
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index>
+    class MultiHandedClock;
 
     /*!\class   MultiHandedClockException
      * \brief   Exception thrown in a \link MultiHandedClock \endlink
@@ -22,7 +25,8 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
     class MultiHandedClockException : public std::exception {
     public:
         /*!\fn      MultiHandedClockException(const MultiHandedClock* multiHandedClock)
@@ -32,7 +36,8 @@ namespace zero::multi_clock {
          *
          * @param multiHandedClock See \link _multiHandedClock \endlink.
          */
-        MultiHandedClockException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* multiHandedClock) :
+        MultiHandedClockException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                                                         invalid_clock_index>* multiHandedClock) :
                 _multiHandedClock(multiHandedClock) {};
 
         /*!\fn      what()
@@ -57,8 +62,8 @@ namespace zero::multi_clock {
          * \brief   The \link MultiHandedClock \endlink
          * \details A pointer to the \link MultiHandedClock \endlink where this exception was thrown.
          */
-        const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* _multiHandedClock;
-
+        const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                               invalid_clock_index>* _multiHandedClock;
     };
 
     /*!\class   MultiHandedClockEmptyException
@@ -74,8 +79,10 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
-    class MultiHandedClockEmptyException : public MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> {
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    class MultiHandedClockEmptyException : public MultiHandedClockException<key_type, value_type, clock_count,
+                                                                            invalid_index, invalid_clock_index> {
     public:
         /*!\fn      MultiHandedClockEmptyException(const MultiHandedClock* pointer, const ClockIndex& emptyClock)
          * \brief   Constructor of an exception thrown when an \link MultiHandedClock \endlink is empty
@@ -85,8 +92,11 @@ namespace zero::multi_clock {
          * @param multiHandedClock See \link _multiHandedClock \endlink.
          * @param emptyClock       See \link _emptyClock \endlink.
          */
-        MultiHandedClockEmptyException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* multiHandedClock, const ClockIndex& emptyClock) :
-                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(multiHandedClock),
+        MultiHandedClockEmptyException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                                                              invalid_clock_index>* multiHandedClock,
+                                       const ClockIndex& emptyClock) :
+                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(
+                        multiHandedClock),
                 _emptyClock(emptyClock) {};
 
         const char* what() const noexcept override {
@@ -107,7 +117,6 @@ namespace zero::multi_clock {
          *          \link _multiHandedClock \endlink ).
          */
         const ClockIndex _emptyClock;
-
     };
 
     /*!\class   MultiHandedClockInvalidIndexException
@@ -124,8 +133,10 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
-    class MultiHandedClockInvalidIndexException : public MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> {
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    class MultiHandedClockInvalidIndexException : public MultiHandedClockException<key_type, value_type, clock_count,
+                                                                                   invalid_index, invalid_clock_index> {
     public:
         /*!\fn      MultiHandedClockInvalidIndexException(const MultiHandedClock* multiHandedClock, const key_type& invalidIndex)
          * \brief   Constructor of an exception thrown when an access to a \link MultiHandedClock \endlink with an
@@ -136,8 +147,11 @@ namespace zero::multi_clock {
          * @param multiHandedClock See \link _multiHandedClock \endlink.
          * @param invalidIndex     See \link _invalidIndex \endlink.
          */
-        MultiHandedClockInvalidIndexException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* multiHandedClock, const key_type& invalidIndex) :
-                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(multiHandedClock),
+        MultiHandedClockInvalidIndexException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                                                                     invalid_clock_index>* multiHandedClock,
+                                              const key_type& invalidIndex) :
+                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(
+                        multiHandedClock),
                 _invalidIndex(invalidIndex) {};
 
         const char* what() const noexcept override {
@@ -157,7 +171,6 @@ namespace zero::multi_clock {
          * \details The index that was unexpectedly not existing in the \link MultiHandedClock \endlink.
          */
         const key_type _invalidIndex;
-
     };
 
     /*!\class   MultiHandedClockAlreadyContainedException
@@ -173,8 +186,11 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
-    class MultiHandedClockAlreadyContainedException : public MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> {
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    class MultiHandedClockAlreadyContainedException : public MultiHandedClockException<key_type, value_type,
+                                                                                       clock_count, invalid_index,
+                                                                                       invalid_clock_index> {
     public:
         /*!\fn      MultiHandedClockAlreadyContainedException(const MultiHandedClock* multiHandedClock, const key_type& alreadyContainedIndex)
          * \brief   Constructor of an exception thrown when a key was unexpectedly already contained in any clock of the
@@ -185,9 +201,12 @@ namespace zero::multi_clock {
          * @param multiHandedClock      See \link _multiHandedClock \endlink.
          * @param alreadyContainedIndex See \link _alreadyContainedIndex \endlink.
          */
-        MultiHandedClockAlreadyContainedException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* multiHandedClock,
-                                                  const key_type& alreadyContainedIndex) :
-                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(multiHandedClock),
+        MultiHandedClockAlreadyContainedException(
+                const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                                       invalid_clock_index>* multiHandedClock,
+                const key_type& alreadyContainedIndex) :
+                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(
+                        multiHandedClock),
                 _alreadyContainedIndex(alreadyContainedIndex) {};
 
         const char* what() const noexcept override {
@@ -207,7 +226,6 @@ namespace zero::multi_clock {
          * \details The key that was unexpectedly already contained.
          */
         const key_type _alreadyContainedIndex;
-
     };
 
     /*!\class   MultiHandedClockNotContainedException
@@ -223,8 +241,10 @@ namespace zero::multi_clock {
      *
      * \author Max Gilbert
      */
-    template<class key_type, class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
-    class MultiHandedClockNotContainedException : public MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index> {
+    template<class key_type,
+             class value_type, uint32_t clock_count, key_type invalid_index, key_type invalid_clock_index = clock_count>
+    class MultiHandedClockNotContainedException : public MultiHandedClockException<key_type, value_type, clock_count,
+                                                                                   invalid_index, invalid_clock_index> {
     public:
         /*!\fn      MultiHandedClockNotContainedException(const MultiHandedClock* multiHandedClock, const key_type& notContainedIndex)
          * \brief   Constructor of an exception thrown when a key was unexpectedly not already contained in any clock of
@@ -235,9 +255,11 @@ namespace zero::multi_clock {
          * @param multiHandedClock  See \link _multiHandedClock \endlink.
          * @param notContainedIndex See \link _notContainedIndex \endlink.
          */
-        MultiHandedClockNotContainedException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index, invalid_clock_index>* multiHandedClock,
+        MultiHandedClockNotContainedException(const MultiHandedClock<key_type, value_type, clock_count, invalid_index,
+                                                                     invalid_clock_index>* multiHandedClock,
                                               const key_type& notContainedIndex) :
-                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(multiHandedClock),
+                MultiHandedClockException<key_type, value_type, clock_count, invalid_index, invalid_clock_index>(
+                        multiHandedClock),
                 _notContainedIndex(notContainedIndex) {};
 
         const char* what() const noexcept override {
@@ -257,9 +279,7 @@ namespace zero::multi_clock {
          * \details The key that was unexpectedly not already contained.
          */
         const key_type _notContainedIndex;
-
     };
-
 }
 
 #endif // __MULTI_CLOCK_EXCEPTIONS_HPP

@@ -79,10 +79,12 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
         W_FATAL_MSG(fcOS, << "Kernel errno code: " << errno); \
     }
 
-partition_t::partition_t(log_storage *owner, partition_number_t num)
-    : _num(num), _owner(owner), _size(-1),
-      _fhdl_rd(invalid_fhdl), _fhdl_app(invalid_fhdl)
-{
+partition_t::partition_t(log_storage* owner, partition_number_t num)
+        : _num(num),
+          _owner(owner),
+          _size(-1),
+          _fhdl_rd(invalid_fhdl),
+          _fhdl_app(invalid_fhdl) {
     _max_partition_size = owner->get_partition_size();
 #ifndef USE_MMAP
 #if SM_PAGESIZE < 8192
@@ -101,8 +103,7 @@ partition_t::partition_t(log_storage *owner, partition_number_t num)
  * make it the current file.
  */
 // MUTEX: flush, insert, partition
-rc_t partition_t::open_for_append()
-{
+rc_t partition_t::open_for_append() {
     w_assert3(!is_open_for_append());
 
     int fd, flags = O_RDWR | O_CREAT;
@@ -114,10 +115,13 @@ rc_t partition_t::open_for_append()
     return RCOK;
 }
 
-long floor2(long offset, long block_size)
-{ return offset & -block_size; }
-long ceil2(long offset, long block_size)
-{ return floor2(offset + block_size - 1, block_size); }
+long floor2(long offset, long block_size) {
+    return offset & -block_size;
+}
+
+long ceil2(long offset, long block_size) {
+    return floor2(offset + block_size - 1, block_size);
+}
 
 // Block of zeroes : used in next function.
 // Initialize on first access:
@@ -125,14 +129,18 @@ long ceil2(long offset, long block_size)
 class block_of_zeroes {
 private:
     char _block[log_storage::BLOCK_SIZE];
+
 public:
     NORET block_of_zeroes() {
         memset(&_block[0], 0, log_storage::BLOCK_SIZE);
     }
-    char *block() { return _block; }
+
+    char* block() {
+        return _block;
+    }
 };
 
-char *block_of_zeros() {
+char* block_of_zeros() {
 
     static block_of_zeroes z;
     return z.block();
@@ -153,19 +161,18 @@ rc_t partition_t::flush(
         long start1,
         long end1,
         long start2,
-        long end2)
-{
+        long end2) {
     w_assert0(end1 >= start1);
     w_assert0(end2 >= start2);
     long size = (end2 - start2) + (end1 - start1);
     long write_size = size;
 
     { // sync log: Seek the file to the right place.
-        DBG5( << "Sync-ing log lsn " << lsn
-                << " start1 " << start1
-                << " end1 " << end1
-                << " start2 " << start2
-                << " end2 " << end2 );
+        DBG5(<< "Sync-ing log lsn " << lsn
+                     << " start1 " << start1
+                     << " end1 " << end1
+                     << " start2 " << start2
+                     << " end2 " << end2);
 
         // works because BLOCK_SIZE is always a power of 2
         long file_offset = floor2(lsn.lo(), log_storage::BLOCK_SIZE);
@@ -175,7 +182,7 @@ rc_t partition_t::flush(
 
         // adjust down to the nearest full block
         w_assert1(start1 >= delta); // really offset - delta >= 0,
-                                    // but works for unsigned...
+        // but works for unsigned...
         write_size += delta; // account for the extra (clean) bytes
         start1 -= delta;
 
@@ -190,7 +197,7 @@ rc_t partition_t::flush(
 
     { // Copy a skip record to the end of the buffer.
         skip_log* s = _owner->get_skip_log();
-        s->set_lsn_ck(lsn+size);
+        s->set_lsn_ck(lsn + size);
 
         // Hopefully the OS is smart enough to coalesce the writes
         // before sending them to disk. If not, and it's a problem
@@ -205,7 +212,7 @@ rc_t partition_t::flush(
         // take it up to multiple of block size
         w_assert2(grand_total % log_storage::BLOCK_SIZE == 0);
 
-        if(grand_total == log_storage::BLOCK_SIZE) {
+        if (grand_total == log_storage::BLOCK_SIZE) {
             // 1-block flush
             INC_TSTAT(log_short_flush);
         } else {
@@ -214,12 +221,12 @@ rc_t partition_t::flush(
         }
 
         struct iovec iov[] = {
-            // iovec_t expects void* not const void *
-            { (char*)buf+start1, static_cast<size_t>(end1-start1) },
-            // iovec_t expects void* not const void *
-            { (char*)buf+start2, static_cast<size_t>(end2-start2) },
-            { s,                        s->length()},
-            { block_of_zeros(), static_cast<size_t>(grand_total-total) },
+                // iovec_t expects void* not const void *
+                {(char*)buf + start1, static_cast<size_t>(end1 - start1)},
+                // iovec_t expects void* not const void *
+                {(char*)buf + start2, static_cast<size_t>(end2 - start2)},
+                {s,                   s->length()},
+                {block_of_zeros(),    static_cast<size_t>(grand_total - total)},
         };
 
         auto ret = ::writev(_fhdl_app, iov, 4);
@@ -232,8 +239,7 @@ rc_t partition_t::flush(
     return RCOK;
 }
 
-rc_t partition_t::prime_buffer(char* buffer, lsn_t lsn, size_t& prime_offset)
-{
+rc_t partition_t::prime_buffer(char* buffer, lsn_t lsn, size_t& prime_offset) {
     if (get_size() > 0) {
         logrec_t* lr;
 #ifdef USE_MMAP
@@ -248,15 +254,16 @@ rc_t partition_t::prime_buffer(char* buffer, lsn_t lsn, size_t& prime_offset)
         prime_offset = (char*) lr - _readbuf;
         release_read();
 #endif
+    } else {
+        prime_offset = 0;
     }
-    else { prime_offset = 0; }
 
     return RCOK;
 }
 
 #ifdef USE_MMAP
-rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
-{
+
+rc_t partition_t::read(logrec_t*& rp, lsn_t& ll, lsn_t* prev_lsn) {
     w_assert1(ll.hi() == num());
     w_assert3(is_open_for_read());
 
@@ -266,8 +273,7 @@ rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
     if (prev_lsn) {
         if (pos == 0) {
             *prev_lsn = lsn_t::null;
-        }
-        else {
+        } else {
             w_assert1(pos > sizeof(lsn_t) + sizeof(baseLogHeader));
             *prev_lsn = *(reinterpret_cast<lsn_t*>(_readbuf + pos - sizeof(lsn_t)));
         }
@@ -275,6 +281,7 @@ rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
 
     return RCOK;
 }
+
 #else
 rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
 {
@@ -352,8 +359,7 @@ rc_t partition_t::read(logrec_t *&rp, lsn_t &ll, lsn_t* prev_lsn)
 }
 #endif
 
-size_t partition_t::read_block(void* buf, size_t count, off_t offset)
-{
+size_t partition_t::read_block(void* buf, size_t count, off_t offset) {
     w_assert0(is_open_for_read());
     auto bytesRead = ::pread(_fhdl_rd, buf, count, offset);
     CHECK_ERRNO(bytesRead);
@@ -361,19 +367,17 @@ size_t partition_t::read_block(void* buf, size_t count, off_t offset)
     return bytesRead;
 }
 
-void partition_t::release_read()
-{
+void partition_t::release_read() {
 #ifndef USE_MMAP
     _read_mutex.unlock();
 #endif
 }
 
-rc_t partition_t::open_for_read()
-{
+rc_t partition_t::open_for_read() {
     // mmap code needs lock just to synchronize multiple open calls, reads don't need it
     lock_guard<mutex> lck(_read_mutex);
 
-    if(_fhdl_rd == invalid_fhdl) {
+    if (_fhdl_rd == invalid_fhdl) {
         string fname = _owner->make_log_name(_num);
         int fd, flags = O_RDONLY;
         fd = ::open(fname.c_str(), flags, 0 /*mode*/);
@@ -383,7 +387,7 @@ rc_t partition_t::open_for_read()
 #ifdef USE_MMAP
         _readbuf = reinterpret_cast<char*>(
                 mmap(nullptr, _max_partition_size, PROT_READ, MAP_SHARED, _fhdl_rd, 0));
-        CHECK_ERRNO((long) _readbuf);
+        CHECK_ERRNO((long)_readbuf);
 #endif
     }
     w_assert3(is_open_for_read());
@@ -394,8 +398,7 @@ rc_t partition_t::open_for_read()
 // CS TODO: why is this definition here?
 int partition_t::_artificial_flush_delay = 0;
 
-void partition_t::fsync_delayed(int fd)
-{
+void partition_t::fsync_delayed(int fd) {
     static int64_t attempt_flush_delay = 0;
     // We only cound the fsyncs called as
     // a result of flush(), not from peek
@@ -406,8 +409,8 @@ void partition_t::fsync_delayed(int fd)
     CHECK_ERRNO(ret);
 
     if (_artificial_flush_delay > 0) {
-        if (attempt_flush_delay==0) {
-            w_assert1(_artificial_flush_delay < 99999999/1000);
+        if (attempt_flush_delay == 0) {
+            w_assert1(_artificial_flush_delay < 99999999 / 1000);
             attempt_flush_delay = _artificial_flush_delay * 1000;
         }
         struct timespec req, rem;
@@ -415,27 +418,27 @@ void partition_t::fsync_delayed(int fd)
         req.tv_nsec = attempt_flush_delay;
 
         struct timeval start;
-        gettimeofday(&start,0);
+        gettimeofday(&start, 0);
 
-        while(nanosleep(&req, &rem) != 0) {
-            if (errno != EINTR)  break;
+        while (nanosleep(&req, &rem) != 0) {
+            if (errno != EINTR) {
+                break;
+            }
             req = rem;
         }
 
         struct timeval stop;
-        gettimeofday(&stop,0);
+        gettimeofday(&stop, 0);
         int64_t diff = stop.tv_sec * 1000000 + stop.tv_usec;
-        diff -= start.tv_sec *       1000000 + start.tv_usec;
+        diff -= start.tv_sec * 1000000 + start.tv_usec;
         //diff is in micros.
         diff *= 1000; // now it is nanos
-        attempt_flush_delay += ((_artificial_flush_delay * 1000) - diff)/8;
-
+        attempt_flush_delay += ((_artificial_flush_delay * 1000) - diff) / 8;
     }
 }
 
-rc_t partition_t::close_for_append()
-{
-    if (_fhdl_app != invalid_fhdl)  {
+rc_t partition_t::close_for_append() {
+    if (_fhdl_app != invalid_fhdl) {
         auto ret = close(_fhdl_app);
         CHECK_ERRNO(ret);
         _fhdl_app = invalid_fhdl;
@@ -443,9 +446,8 @@ rc_t partition_t::close_for_append()
     return RCOK;
 }
 
-rc_t partition_t::close_for_read()
-{
-    if (_fhdl_rd != invalid_fhdl)  {
+rc_t partition_t::close_for_read() {
+    if (_fhdl_rd != invalid_fhdl) {
 #ifdef USE_MMAP
         auto ret = munmap(_readbuf, _max_partition_size);
         CHECK_ERRNO(ret);
@@ -458,8 +460,7 @@ rc_t partition_t::close_for_read()
     return RCOK;
 }
 
-size_t partition_t::get_size(bool must_be_skip)
-{
+size_t partition_t::get_size(bool must_be_skip) {
     if (_size < 0) {
         W_COERCE(scan_for_size(must_be_skip));
     }
@@ -468,8 +469,7 @@ size_t partition_t::get_size(bool must_be_skip)
     return _size;
 }
 
-rc_t partition_t::scan_for_size(bool must_be_skip)
-{
+rc_t partition_t::scan_for_size(bool must_be_skip) {
     // start scanning backwards from end of file until first valid logrec
     // is found; then check for must_be_skip
     W_DO(open_for_read());
@@ -485,17 +485,19 @@ rc_t partition_t::scan_for_size(bool must_be_skip)
     }
 
     w_assert3(fsize >= XFERSIZE);
-    char buf[2*XFERSIZE];
+    char buf[2 * XFERSIZE];
     size_t bpos = fsize - XFERSIZE;
-    int pos = 2*XFERSIZE - sizeof(lsn_t);
+    int pos = 2 * XFERSIZE - sizeof(lsn_t);
     // start reading just the last of 2 blocks, because the file may be just one block
     auto bytesRead = ::pread(_fhdl_rd, buf + XFERSIZE, XFERSIZE, bpos);
     CHECK_ERRNO(bytesRead);
-    if (bytesRead != XFERSIZE) { return RC(stSHORTIO); }
+    if (bytesRead != XFERSIZE) {
+        return RC(stSHORTIO);
+    }
 
     lsn_t lsn;
     while (pos >= 0) {
-        lsn = *((lsn_t*) (buf + pos));
+        lsn = *((lsn_t*)(buf + pos));
         if (lsn.hi() == _num && lsn.lo() < fsize) {
             // Hi LSN bytes match an lo bytes are below current file
             // position -- good chance we've found the last logrec. Read
@@ -503,13 +505,15 @@ rc_t partition_t::scan_for_size(bool must_be_skip)
             baseLogHeader h;
             bytesRead = ::pread(_fhdl_rd, &h, sizeof(baseLogHeader), lsn.lo());
             CHECK_ERRNO(bytesRead);
-            if (bytesRead != sizeof(baseLogHeader)) { return RC(stSHORTIO); }
+            if (bytesRead != sizeof(baseLogHeader)) {
+                return RC(stSHORTIO);
+            }
 
             if (h.is_valid()) {
                 if (must_be_skip && h._type != logrec_t::t_skip) {
                     W_FATAL_MSG(eINTERNAL,
-                            << "Found last log record in partition " << _num
-                            << " but it is not a skip");
+                                << "Found last log record in partition " << _num
+                                        << " but it is not a skip");
                 }
                 _size = lsn.lo();
                 break; // Found it!
@@ -522,7 +526,9 @@ rc_t partition_t::scan_for_size(bool must_be_skip)
             bpos -= XFERSIZE;
             bytesRead = ::pread(_fhdl_rd, buf, XFERSIZE, bpos);
             CHECK_ERRNO(bytesRead);
-            if (bytesRead != XFERSIZE) { return RC(stSHORTIO); }
+            if (bytesRead != XFERSIZE) {
+                return RC(stSHORTIO);
+            }
         }
         pos--;
     }
@@ -534,8 +540,7 @@ rc_t partition_t::scan_for_size(bool must_be_skip)
     return RCOK;
 }
 
-void partition_t::destroy()
-{
+void partition_t::destroy() {
     lock_guard<mutex> lck(_read_mutex);
 
     W_COERCE(close_for_read());

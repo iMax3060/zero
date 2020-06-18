@@ -190,7 +190,6 @@ namespace zero::buffer_pool {
          * \note    This member function must be implemented by every specific buffer frame selection policy.
          */
         virtual void releaseInternalLatches() noexcept = 0;
-
     };
 
     /*!\class   PageEvictionerFilterNone
@@ -315,7 +314,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame filter does not use locking and therefore,  this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
 
     /*!\class   PageEvictionerFilterCLOCK
@@ -334,7 +332,7 @@ namespace zero::buffer_pool {
      * @tparam on_swizzled If set, the eviction statistics are updated when a page is discovered containing swizzled
      *                     pointers during eviction.
      */
-    template <bool on_hit /*= true*/, bool on_unfix /*= false*/, bool on_miss /*= true*/, bool on_fixed /*= false*/, bool on_dirty /*= false*/, bool on_blocked /*= false*/, bool on_swizzled /*= false*/>
+    template<bool on_hit /*= true*/, bool on_unfix /*= false*/, bool on_miss /*= true*/, bool on_fixed /*= false*/, bool on_dirty /*= false*/, bool on_blocked /*= false*/, bool on_swizzled /*= false*/>
     class PageEvictionerFilterCLOCK : public PageEvictionerFilter {
     public:
         /*!\fn      PageEvictionerFilterCLOCK(const BufferPool* bufferPool)
@@ -516,7 +514,6 @@ namespace zero::buffer_pool {
          * \details The index of the referenced bit corresponding to buffer frame \c n is \c n .
          */
         std::vector<std::atomic<bool>> _refBits;
-
     };
 
     /*!\class   PageEvictionerFilterGCLOCK
@@ -647,7 +644,7 @@ namespace zero::buffer_pool {
      *                            corresponding buffer frame is a b-tree page but neither a root, nor the child of a
      *                            root b-tree page.
      */
-    template <uint16_t decrement/* = 1*/, bool discriminate_pages/* = false*/,
+    template<uint16_t decrement/* = 1*/, bool discriminate_pages/* = false*/,
             bool on_hit/* = true*/, bool set_on_hit/* = false*/, uint16_t level0_on_hit/* = 5*/, uint16_t level1_on_hit/* = 2*/, uint16_t level2_on_hit/* = 1*/,
             bool on_unfix/* = false*/, bool set_on_unfix/* = false*/, uint16_t level0_on_unfix/* = 5*/, uint16_t level1_on_unfix/* = 2*/, uint16_t level2_on_unfix/* = 1*/,
             bool on_miss/* = true*/, bool set_on_miss/* = true*/, uint16_t level0_on_miss/* = 25*/, uint16_t level1_on_miss/* = 10*/, uint16_t level2_on_miss/* = 5*/,
@@ -1081,9 +1078,7 @@ namespace zero::buffer_pool {
          * \details The index of the referenced integer corresponding to buffer frame \c n is \c n .
          */
         std::vector<std::atomic<uint16_t>> _refInts;
-
     };
-
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_FILTER_HPP

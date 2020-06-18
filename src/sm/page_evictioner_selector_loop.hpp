@@ -156,7 +156,6 @@ namespace zero::buffer_pool {
          *          manipulating the \link _lastFrame \endlink.
          */
         std::mutex _lastFrameLock;
-
     };
 
     /*!\class   PageEvictionerSelectorLOOPSpinlock
@@ -311,7 +310,6 @@ namespace zero::buffer_pool {
          *          manipulating the \link _lastFrame \endlink.
          */
         std::atomic_flag _lastFrameLock;
-
     };
 
     /*!\class   PageEvictionerSelectorLOOPModulo
@@ -449,7 +447,6 @@ namespace zero::buffer_pool {
          * \remark  Only used by __LOOP__ and __CLOCK__.
          */
         std::atomic<uint_fast64_t> _lastFrame;
-
     };
 
     /*!\class   PageEvictionerSelectorLOOPLockFree
@@ -592,7 +589,6 @@ namespace zero::buffer_pool {
          * \remark  Only used by __LOOP__ and __CLOCK__.
          */
         std::atomic<uint32_t> _newFrame;
-
     };
 
     /*!\class   PageEvictionerSelectorLOOPThreadLocal
@@ -736,7 +732,6 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
 
     /*!\class   PageEvictionerSelectorLOOPThreadLocalModulo
@@ -874,9 +869,7 @@ namespace zero::buffer_pool {
          * \details This buffer frame selector does not use locking and therefore, this function does nothing.
          */
         inline void releaseInternalLatches() noexcept final {};
-
     };
-
 } // zero::buffer_pool
 
 #endif // __PAGE_EVICTIONER_SELECTOR_LOOP_HPP

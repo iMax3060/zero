@@ -2,34 +2,34 @@
  * (c) Copyright 2011-2014, Hewlett-Packard Development Company, LP
  */
 
-     /*<std-header orig-src='shore' incl-file-exclusion='RESTART_H'>
+/*<std-header orig-src='shore' incl-file-exclusion='RESTART_H'>
 
-        $Id: restart.h,v 1.27 2010/07/01 00:08:22 nhall Exp $
+   $Id: restart.h,v 1.27 2010/07/01 00:08:22 nhall Exp $
 
-        SHORE -- Scalable Heterogeneous Object REpository
+   SHORE -- Scalable Heterogeneous Object REpository
 
-        Copyright (c) 1994-99 Computer Sciences Department, University of
-                                             Wisconsin -- Madison
-        All Rights Reserved.
+   Copyright (c) 1994-99 Computer Sciences Department, University of
+                                        Wisconsin -- Madison
+   All Rights Reserved.
 
-        Permission to use, copy, modify and distribute this software and its
-        documentation is hereby granted, provided that both the copyright
-        notice and this permission notice appear in all copies of the
-        software, derivative works or modified versions, and any portions
-        thereof, and that both notices appear in supporting documentation.
+   Permission to use, copy, modify and distribute this software and its
+   documentation is hereby granted, provided that both the copyright
+   notice and this permission notice appear in all copies of the
+   software, derivative works or modified versions, and any portions
+   thereof, and that both notices appear in supporting documentation.
 
-        THE AUTHORS AND THE COMPUTER SCIENCES DEPARTMENT OF THE UNIVERSITY
-        OF WISCONSIN - MADISON ALLOW FREE USE OF THIS SOFTWARE IN ITS
-        "AS IS" CONDITION, AND THEY DISCLAIM ANY LIABILITY OF ANY KIND
-        FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
+   THE AUTHORS AND THE COMPUTER SCIENCES DEPARTMENT OF THE UNIVERSITY
+   OF WISCONSIN - MADISON ALLOW FREE USE OF THIS SOFTWARE IN ITS
+   "AS IS" CONDITION, AND THEY DISCLAIM ANY LIABILITY OF ANY KIND
+   FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
 
-        This software was developed with support by the Advanced Research
-        Project Agency, ARPA order number 018 (formerly 8230), monitored by
-        the U.S. Army Research Laboratory under contract DAAB07-91-C-Q518.
-        Further funding for this work was provided by DARPA through
-        Rome Research Laboratory Contract No. F30602-97-2-0247.
+   This software was developed with support by the Advanced Research
+   Project Agency, ARPA order number 018 (formerly 8230), monitored by
+   the U.S. Army Research Laboratory under contract DAAB07-91-C-Q518.
+   Further funding for this work was provided by DARPA through
+   Rome Research Laboratory Contract No. F30602-97-2-0247.
 
-        */
+   */
 
 #ifndef __RESTART_H
 #define __RESTART_H
@@ -48,37 +48,54 @@
 // Child thread created by restart_m for concurrent recovery operation
 // It is to carry out the REDO and UNDO phases while the system is
 // opened for user transactions
-class restart_thread_t : public worker_thread_t
-{
+class restart_thread_t : public worker_thread_t {
 public:
     restart_thread_t(const sm_options& options);
 
     virtual void do_work();
 
     void log_analysis();
+
     void redo_log_pass();
+
     void redo_page_pass();
+
     void undo_pass();
 
-    chkpt_t* get_chkpt() { return &chkpt; }
-    bool hasLogAnalysisFinished() {return logAnalysisFinished;}
+    chkpt_t* get_chkpt() {
+        return &chkpt;
+    }
+
+    bool hasLogAnalysisFinished() {
+        return logAnalysisFinished;
+    }
 
     PageID get_dirty_page_count() const;
+
     lsn_t get_dirty_page_emlsn(PageID pid) const;
+
     void checkpoint_dirty_pages(chkpt_t& chkpt) const;
 
     // Methods used in nodb mode and with write elision
     void add_dirty_page(PageID pid, lsn_t lsn);
+
     void notify_archived_lsn(lsn_t lsn);
+
     void notify_cleaned_lsn(lsn_t lsn);
 
-    bool isInstant() { return instantRestart; }
+    bool isInstant() {
+        return instantRestart;
+    }
 
 private:
     bool log_based;
+
     bool instantRestart;
+
     bool no_db_mode;
+
     bool write_elision;
+
     bool take_chkpt;
 
     // System state object, updated by log analysis
@@ -100,15 +117,14 @@ public:
      * Defined in log_spr.cpp.
      * @copydoc ss_m::dump_page_lsn_chain(std::ostream&, const PageID &, const lsn_t&)
      */
-    static void dump_page_lsn_chain(std::ostream &o, const PageID &pid, const lsn_t &max_lsn);
+    static void dump_page_lsn_chain(std::ostream& o, const PageID& pid, const lsn_t& max_lsn);
 
 private:
 
-    void                 _redo_log_with_pid(
-                                logrec_t& r,
-                                PageID page_updated,
-                                bool &redone);
-
+    void _redo_log_with_pid(
+            logrec_t& r,
+            PageID page_updated,
+            bool& redone);
 };
 
 /*
@@ -117,15 +133,15 @@ private:
  * from the latter, which is collected by following the per-page chain in the
  * recovery log.
  */
-class SprIterator
-{
+class SprIterator {
 public:
 
     SprIterator();
+
     ~SprIterator();
 
     void open(PageID pid, lsn_t firstLSN, lsn_t lastLSN,
-            bool prioritizeArchive = true);
+              bool prioritizeArchive = true);
 
     bool next(logrec_t*& lr);
 
@@ -134,12 +150,17 @@ public:
 private:
 
     char* buffer;
+
     size_t buffer_capacity;
+
     std::vector<uint32_t> lr_offsets;
+
     std::vector<uint32_t>::const_reverse_iterator lr_iter;
+
     ArchiveScan archive_scan;
 
     lsn_t last_lsn;
+
     unsigned replayed_count;
 };
 

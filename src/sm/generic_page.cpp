@@ -4,12 +4,10 @@
 
 #include "generic_page.h"
 
-
-
-uint32_t generic_page_header::calculate_checksum () const {
+uint32_t generic_page_header::calculate_checksum() const {
     // Region checksum can cover is [start..end):
-    const unsigned char *start = (const unsigned char *)this + sizeof(checksum);  // do not cover checksum field!
-    const unsigned char *end   = (const unsigned char *)this + page_sz;
+    const unsigned char* start = (const unsigned char*)this + sizeof(checksum);  // do not cover checksum field!
+    const unsigned char* end = (const unsigned char*)this + page_sz;
 
 
     // FIXME: The current checksum ignores most of the headers and
@@ -20,7 +18,7 @@ uint32_t generic_page_header::calculate_checksum () const {
 
     uint64_t value = CHECKSUM_INIT;
     // these values (23/511) are arbitrary
-    for (const unsigned char *p = start + 23; p+3 < end; p += 511) {
+    for (const unsigned char* p = start + 23; p + 3 < end; p += 511) {
         // be aware of alignment issue on spark! so this code is not safe:
         // const uint32_t*next = reinterpret_cast<const uint32_t*>(p);
         // value ^= *next;
@@ -29,15 +27,14 @@ uint32_t generic_page_header::calculate_checksum () const {
         value = value * CHECKSUM_MULT + p[2];
         value = value * CHECKSUM_MULT + p[3];
     }
-    return ((uint32_t) (value >> 32)) ^ ((uint32_t) (value & 0xFFFFFFFF));
+    return ((uint32_t)(value >> 32)) ^ ((uint32_t)(value & 0xFFFFFFFF));
 }
 
-std::ostream& operator<<(std::ostream& os, generic_page_header& p)
-{
+std::ostream& operator<<(std::ostream& os, generic_page_header& p) {
     os << "PAGE " << p.pid
-        << " LSN: " << p.lsn
-        << " TAG: " << p.tag
-        << " FLAGS: " << p.page_flags
-        << " STORE: " << p.store;
+       << " LSN: " << p.lsn
+       << " TAG: " << p.tag
+       << " FLAGS: " << p.page_flags
+       << " STORE: " << p.store;
     return os;
 }

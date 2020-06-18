@@ -31,13 +31,11 @@
 #ifndef __TPCB_CLIENT_H
 #define __TPCB_CLIENT_H
 
-
 #include "shore_client.h"
 
 #include "tpcb/tpcb_env.h"
 
 namespace tpcb {
-
 
 /********************************************************************
  *
@@ -47,34 +45,35 @@ namespace tpcb {
  *
  ********************************************************************/
 
-class baseline_tpcb_client_t : public base_client_t
-{
-private:
-    int _selid;
-    trx_worker_t* _worker;
-    double _qf;
-    int _tspread;
+    class baseline_tpcb_client_t : public base_client_t {
+    private:
+        int _selid;
 
-public:
+        trx_worker_t* _worker;
 
-    baseline_tpcb_client_t() { }
+        double _qf;
 
-    baseline_tpcb_client_t(std::string tname, const int id, ShoreTPCBEnv* env,
-                           const MeasurementType aType, const int trxid,
-                           const int numOfTrxs,
-                           const int selID, const double qf,
-                           int tspread = 0);
+        int _tspread;
 
-    ~baseline_tpcb_client_t() { }
+    public:
 
-    // every client class should implement this function
-    static int load_sup_xct(mapSupTrxs& map);
+        baseline_tpcb_client_t() {}
 
-    // INTERFACE
+        baseline_tpcb_client_t(std::string tname, const int id, ShoreTPCBEnv* env,
+                               const MeasurementType aType, const int trxid,
+                               const int numOfTrxs,
+                               const int selID, const double qf,
+                               int tspread = 0);
 
-    w_rc_t submit_one(int xct_type, int xctid);
+        ~baseline_tpcb_client_t() {}
 
-}; // EOF: baseline_tpcb_client_t
+        // every client class should implement this function
+        static int load_sup_xct(mapSupTrxs& map);
+
+        // INTERFACE
+
+        w_rc_t submit_one(int xct_type, int xctid);
+    }; // EOF: baseline_tpcb_client_t
 
 };
 

@@ -12,7 +12,7 @@ namespace zero::buffer_pool {
      *
      * @tparam filter_class The buffer frame filter to invert.
      */
-    template <class filter_class>
+    template<class filter_class>
     class PageEvictionerFilterLogicNOT : public PageEvictionerFilter {
         static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class>,
                       "'filter_class' is not of type 'PageEvictionerFilter'!");
@@ -24,8 +24,7 @@ namespace zero::buffer_pool {
          * @param bufferPool The buffer pool this invert buffer frame filter is responsible for.
          */
         explicit PageEvictionerFilterLogicNOT(const BufferPool* bufferPool) :
-                _filter(bufferPool) {
-        };
+                _filter(bufferPool) {};
 
         /*!\fn      filter(bf_idx idx) noexcept
          * \brief   Filters a buffer frame for eviction
@@ -171,7 +170,6 @@ namespace zero::buffer_pool {
          * \brief   The underlying buffer frame filter
          */
         filter_class _filter;
-
     };
 
     /*!\class   PageEvictionerFilterLogicAND
@@ -182,7 +180,7 @@ namespace zero::buffer_pool {
      * @tparam filter_class0 The first buffer frame filter of the conjunction.
      * @tparam filter_class1 The second buffer frame filter of the conjunction.
      */
-    template <class filter_class0, class filter_class1>
+    template<class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicAND : public PageEvictionerFilter {
         static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class0>,
                       "'filter_class0' is not of type 'PageEvictionerFilter'!");
@@ -360,7 +358,6 @@ namespace zero::buffer_pool {
          * \brief   The second underlying buffer frame filter
          */
         filter_class1 _filter1;
-
     };
 
     /*!\class   PageEvictionerFilterLogicOR
@@ -371,7 +368,7 @@ namespace zero::buffer_pool {
      * @tparam filter_class0 The first buffer frame filter of the disjunction.
      * @tparam filter_class1 The second buffer frame filter of the disjunction.
      */
-    template <class filter_class0, class filter_class1>
+    template<class filter_class0, class filter_class1>
     class PageEvictionerFilterLogicOR : public PageEvictionerFilter {
         static_assert(std::is_base_of_v<PageEvictionerFilter, filter_class0>,
                       "'filter_class0' is not of type 'PageEvictionerFilter'!");
@@ -547,9 +544,7 @@ namespace zero::buffer_pool {
          * \brief   The second underlying buffer frame filter
          */
         filter_class1 _filter1;
-
     };
-
 } // zero::buffer_pool
 
 #endif // __ZERO_PAGE_EVICTIONER_FILTER_LOGIC_HPP

@@ -49,8 +49,7 @@
  *
  ********************************************************************/
 
-void skewer_t::set(int area, int lower, int upper, int load, bool shifting)
-{
+void skewer_t::set(int area, int lower, int upper, int load, bool shifting) {
     _area = area;
     _lower = lower;
     _upper = upper;
@@ -59,7 +58,6 @@ void skewer_t::set(int area, int lower, int upper, int load, bool shifting)
     clear();
     _set_intervals();
 }
-
 
 /********************************************************************
  *
@@ -77,7 +75,6 @@ void skewer_t::clear() {
     _is_used = false;
 }
 
-
 /********************************************************************
  *
  *  @fn:    reset()
@@ -89,16 +86,15 @@ void skewer_t::clear() {
 
 void skewer_t::reset(skew_type_t type) {
     clear();
-    if(type == SKEW_CHAOTIC) {
-	_load = URand(0,100);
-	_area = URand(1,100);
-	// pin: to debug
-	//cout << "load: " << _load << " area: " << _area << endl;
+    if (type == SKEW_CHAOTIC) {
+        _load = URand(0, 100);
+        _area = URand(1, 100);
+        // pin: to debug
+        //cout << "load: " << _load << " area: " << _area << endl;
     }
     _set_intervals();
     _is_used = true;
 }
-
 
 /********************************************************************
  *
@@ -109,12 +105,13 @@ void skewer_t::reset(skew_type_t type) {
  ********************************************************************/
 
 bool skewer_t::is_used() {
-    if(!_is_used) {
-	_is_used = true;
-	return false;
-    } else return true;
+    if (!_is_used) {
+        _is_used = true;
+        return false;
+    } else {
+        return true;
+    }
 }
-
 
 /********************************************************************
  *
@@ -129,13 +126,12 @@ bool skewer_t::is_used() {
  *
  ********************************************************************/
 
-void skewer_t::_set_intervals()
-{
+void skewer_t::_set_intervals() {
     int values_total = _upper - _lower + 1;
     int values_in_area = ceil(static_cast<double>(values_total * _area) / 100);
 
-    int interval_lower = _shifting? _lower :
-        URand(_lower,_upper - values_in_area);
+    int interval_lower = _shifting ? _lower :
+                         URand(_lower, _upper - values_in_area);
     int interval_upper = interval_lower + values_in_area;
 
     w_assert0(interval_lower >= _lower);
@@ -144,38 +140,37 @@ void skewer_t::_set_intervals()
 
     // // for intervals
     // if(URand(1,100) < 70) { // a continuous spot
-	// int interval_lower = URand(_lower,_upper);
-	// int interval_upper = interval_lower + ceil(((double) ((_upper - _lower + 1) * _area))/100);
-	// _add_interval(interval_lower, interval_upper);
+    // int interval_lower = URand(_lower,_upper);
+    // int interval_upper = interval_lower + ceil(((double) ((_upper - _lower + 1) * _area))/100);
+    // _add_interval(interval_lower, interval_upper);
     // } else { // for possibility of a non continious two spots
-	// int interval = ceil(((double) ((_upper - _lower + 1) * _area))/200);
-	// int interval_lower = URand(_lower,_upper);
-	// int interval_upper = interval_lower + interval;
-	// int interval_lower_2 = URand(interval_lower,_upper);
-	// int interval_upper_2 = interval_lower_2 + interval;
-	// _add_interval(interval_lower, interval_upper);
-	// _add_interval(interval_lower_2, interval_upper_2);
+    // int interval = ceil(((double) ((_upper - _lower + 1) * _area))/200);
+    // int interval_lower = URand(_lower,_upper);
+    // int interval_upper = interval_lower + interval;
+    // int interval_lower_2 = URand(interval_lower,_upper);
+    // int interval_upper_2 = interval_lower_2 + interval;
+    // _add_interval(interval_lower, interval_upper);
+    // _add_interval(interval_lower_2, interval_upper_2);
     // }
     // // for outside of intervals
     // for(unsigned i=0; i<_interval_u.size(); i++) {
-	// if(i==0 && _interval_l[i] > _lower) {
-	    // _non_interval_l.push_back(_lower);
-	    // _non_interval_u.push_back(_interval_l[i]-1);
-	// }
-	// if(i+1<_interval_u.size()) {
-	    // if(_interval_u[i]+1 < _interval_l[i+1]) {
-		// _non_interval_l.push_back(_interval_u[i]+1);
-		// _non_interval_u.push_back(_interval_l[i+1]-1);
-	    // }
-	// }  else if(_interval_u[i] < _upper) {
-	    // _non_interval_l.push_back(_interval_u[i]+1);
-	    // _non_interval_u.push_back(_upper);
-	// }
+    // if(i==0 && _interval_l[i] > _lower) {
+    // _non_interval_l.push_back(_lower);
+    // _non_interval_u.push_back(_interval_l[i]-1);
+    // }
+    // if(i+1<_interval_u.size()) {
+    // if(_interval_u[i]+1 < _interval_l[i+1]) {
+    // _non_interval_l.push_back(_interval_u[i]+1);
+    // _non_interval_u.push_back(_interval_l[i+1]-1);
+    // }
+    // }  else if(_interval_u[i] < _upper) {
+    // _non_interval_l.push_back(_interval_u[i]+1);
+    // _non_interval_u.push_back(_upper);
+    // }
     // }
     // pin: to debug
     //print_intervals();
 }
-
 
 /********************************************************************
  *
@@ -192,56 +187,54 @@ void skewer_t::_set_intervals()
 void skewer_t::_add_interval(int interval_lower, int interval_upper) {
     // // pin: a very ugly check for a special case, try to get rid of this later
     // if(interval_lower == _upper && interval_upper-1>_upper) {
-	// interval_lower--;
-	// interval_upper--;
+    // interval_lower--;
+    // interval_upper--;
     // }
     // if(interval_upper-1 > _upper) {
-	// if(_interval_l.size() == 1) {
-	    // _interval_l.insert(_interval_l.begin(), _lower);
-	    // _interval_u.insert(_interval_u.begin(), interval_upper - _upper - 2 + _lower);
-	    // _interval_l.push_back(interval_lower + 1);
-	    // _interval_u.push_back(_upper);
-	// } else if(_interval_l.size() == 2) {
-	    // if(_interval_u[0] > interval_upper - _upper - 2 + _lower) {
-		// _interval_l.insert(_interval_l.begin(), _lower);
-		// _interval_u.insert(_interval_u.begin(), interval_upper - _upper - 2 + _lower);
-	    // } else {
-		// vector<int>::iterator iter = _interval_l.begin();
-		// _interval_l.insert(++iter, _lower);
-		// iter = _interval_u.begin();
-		// _interval_u.insert(++iter, interval_upper - _upper - 2 + _lower);
-	    // }
-	    // if(_interval_l[2] < interval_lower+1) {
-		// _interval_l.push_back(interval_lower+1);
-		// _interval_u.push_back(_upper);
-	    // } else {
-		// _interval_l.push_back(_interval_l[2]);
-		// _interval_u.push_back(_interval_u[2]);
-		// _interval_l[2] = interval_lower+1;
-		// _interval_u[2] = _upper;
-	    // }
-	// } else {
-	    // _interval_l.push_back(_lower);
-	    // _interval_u.push_back(interval_upper - _upper - 2 + _lower);
-	    // _interval_l.push_back(interval_lower+1);
-	    // _interval_u.push_back(_upper);
-	// }
+    // if(_interval_l.size() == 1) {
+    // _interval_l.insert(_interval_l.begin(), _lower);
+    // _interval_u.insert(_interval_u.begin(), interval_upper - _upper - 2 + _lower);
+    // _interval_l.push_back(interval_lower + 1);
+    // _interval_u.push_back(_upper);
+    // } else if(_interval_l.size() == 2) {
+    // if(_interval_u[0] > interval_upper - _upper - 2 + _lower) {
+    // _interval_l.insert(_interval_l.begin(), _lower);
+    // _interval_u.insert(_interval_u.begin(), interval_upper - _upper - 2 + _lower);
     // } else {
-	// _interval_l.push_back(interval_lower);
-	// _interval_u.push_back(interval_upper - 1);
+    // vector<int>::iterator iter = _interval_l.begin();
+    // _interval_l.insert(++iter, _lower);
+    // iter = _interval_u.begin();
+    // _interval_u.insert(++iter, interval_upper - _upper - 2 + _lower);
+    // }
+    // if(_interval_l[2] < interval_lower+1) {
+    // _interval_l.push_back(interval_lower+1);
+    // _interval_u.push_back(_upper);
+    // } else {
+    // _interval_l.push_back(_interval_l[2]);
+    // _interval_u.push_back(_interval_u[2]);
+    // _interval_l[2] = interval_lower+1;
+    // _interval_u[2] = _upper;
+    // }
+    // } else {
+    // _interval_l.push_back(_lower);
+    // _interval_u.push_back(interval_upper - _upper - 2 + _lower);
+    // _interval_l.push_back(interval_lower+1);
+    // _interval_u.push_back(_upper);
+    // }
+    // } else {
+    // _interval_l.push_back(interval_lower);
+    // _interval_u.push_back(interval_upper - 1);
     // }
     _interval_l = interval_lower;
     _interval_u = interval_upper;
 }
 
-void skewer_t::increment_intervals(int amount)
-{
+void skewer_t::increment_intervals(int amount) {
     if (_interval_u <= _upper - amount) {
         _interval_l += amount;
         _interval_u += amount;
     }
 }
-
 
 /********************************************************************
  *
@@ -251,14 +244,12 @@ void skewer_t::increment_intervals(int amount)
  *
  ********************************************************************/
 
-int skewer_t::get_input()
-{
+int skewer_t::get_input() {
     // CS simplified method without lists of intervals
-    if (URand(1,100) < _load) {
+    if (URand(1, 100) < _load) {
         // apply skew -- select value within the area interval
         return UZRand(_interval_l, _interval_u);
-    }
-    else {
+    } else {
         // don't apply skew -- select value from whole interval
         return UZRand(_lower, _upper);
     }
@@ -287,7 +278,6 @@ int skewer_t::get_input()
 //     return input;
 }
 
-
 /********************************************************************
  *
  *  @fn:    print_intervals()
@@ -300,10 +290,10 @@ int skewer_t::get_input()
 void skewer_t::print_intervals() {
     // cout << "print intervals for (load)" << endl;
     // for(unsigned i=0; i<_interval_u.size(); i++) {
-	// cout << _interval_l[i] << " - " <<  _interval_u[i] << endl;
+    // cout << _interval_l[i] << " - " <<  _interval_u[i] << endl;
     // }
     // cout << "print intervals for (100-load)" << endl;
     // for(unsigned i=0; i<_non_interval_u.size(); i++) {
-	// cout << _non_interval_l[i] << " - " <<  _non_interval_u[i] << endl;
+    // cout << _non_interval_l[i] << " - " <<  _non_interval_u[i] << endl;
     // }
 }

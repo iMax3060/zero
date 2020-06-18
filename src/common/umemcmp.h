@@ -50,10 +50,9 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #endif // __W_WORKAROUND_H
 
 // Simple byte-by-byte comparisions
-inline int __umemcmp(const unsigned char* p, const unsigned char* q, int n)
-{
+inline int __umemcmp(const unsigned char* p, const unsigned char* q, int n) {
     int i;
-    for (i = 0; (i < n) && (*p == *q); i++, p++, q++) ;
+    for (i = 0; (i < n) && (*p == *q); i++, p++, q++) {}
     return (i < n) ? *p - *q : 0;
 }
 
@@ -131,8 +130,7 @@ inline int umemcmp(const void* p, const void* q, int n)
 
 #else  /* defined(Sparc) */
 
-inline int umemcmp(const void* p, const void* q, int n)
-{
+inline int umemcmp(const void* p, const void* q, int n) {
 #if W_DEBUG_LEVEL > 2
     // verify that memcmp is equivalent to umemcmp
     int t1 = memcmp(p, q, n);
@@ -141,7 +139,7 @@ inline int umemcmp(const void* p, const void* q, int n)
     return t1;
 #else
     return memcmp(p, q, n);
-#endif 
+#endif
 }
 
 #endif /* defined(Sparc)  */

@@ -17,11 +17,11 @@ static atomic_thread_map_t all_fingerprints;
 // number of threads that are assigned fingerprints.
 // used for a trivial optimization to assign better fingerprints
 int s_num_assigned_threads = 0;
+
 queue_based_lock_t s_num_assigned_threads_lock; // to protect s_num_assigned_threads
 
 extern "C"
-void clear_all_fingerprints()
-{
+void clear_all_fingerprints() {
     // called from smsh because smsh has points at which
     // this is safe to do, and because it forks off so many threads;
     // it can't really create a pool of smthreads.
@@ -48,21 +48,16 @@ smthread_t::tcb_t::destroy_TL_stats() {
 static smthread_init_t smthread_init;
 
 int smthread_init_t::count = 0;
+
 /*
  *  smthread_init_t::smthread_init_t()
  */
-smthread_init_t::smthread_init_t()
-{
-}
-
-
+smthread_init_t::smthread_init_t() {}
 
 /*
  *        smthread_init_t::~smthread_init_t()
  */
-smthread_init_t::~smthread_init_t()
-{
-}
+smthread_init_t::~smthread_init_t() {}
 
 /*********************************************************************
  *
@@ -71,8 +66,7 @@ smthread_init_t::~smthread_init_t()
  *********************************************************************/
 
 void
-smthread_t::tcb_t::clear_TL_stats()
-{
+smthread_t::tcb_t::clear_TL_stats() {
     TL_stats().fill(0);
 }
 
@@ -85,9 +79,8 @@ smthread_t::tcb_t::clear_TL_stats()
  * going on.
  */
 void
-smthread_t::add_from_TL_stats(sm_stats_t &w)
-{
-    const sm_stats_t &x = tcb().TL_stats_const();
+smthread_t::add_from_TL_stats(sm_stats_t& w) {
+    const sm_stats_t& x = tcb().TL_stats_const();
     for (size_t i = 0; i < w.size(); i++) {
         w[i] += x[i];
     }
@@ -339,13 +332,12 @@ smthread_t::add_from_TL_stats(sm_stats_t &w)
 // }
 
 // timeout given in ms
-void smthread_t::timeout_to_timespec(int timeout, struct timespec &when)
-{
+void smthread_t::timeout_to_timespec(int timeout, struct timespec& when) {
     w_assert1(timeout != timeout_t::WAIT_IMMEDIATE);
     w_assert1(timeout != timeout_t::WAIT_FOREVER);
-    if(timeout > 0) {
+    if (timeout > 0) {
         ::clock_gettime(CLOCK_REALTIME, &when);
-        when.tv_nsec += (uint64_t) timeout * 1000000;
+        when.tv_nsec += (uint64_t)timeout * 1000000;
         when.tv_sec += when.tv_nsec / 1000000000;
         when.tv_nsec = when.tv_nsec % 1000000000;
     }
@@ -388,11 +380,10 @@ void smthread_t::timeout_to_timespec(int timeout, struct timespec &when)
 
 
 void
-smthread_t::attach_xct(xct_t* x)
-{
+smthread_t::attach_xct(xct_t* x) {
     w_assert0(get_tcb_depth() == 1 || x->is_sys_xct()); // only system transactions can be nested
     // add the given transaction as top (outmost) transaction
-    tcb_t *new_outmost = new tcb_t(tcb_ptr());
+    tcb_t* new_outmost = new tcb_t(tcb_ptr());
     w_assert0(new_outmost != nullptr);
     tcb_ptr() = new_outmost;
     new_outmost->xct = x;
@@ -401,10 +392,8 @@ smthread_t::attach_xct(xct_t* x)
     w_assert0(xct() == x);
 }
 
-
 void
-smthread_t::detach_xct(xct_t* x)
-{
+smthread_t::detach_xct(xct_t* x) {
     // removes the top (outmost) transaction from this thread
     if (x != tcb().xct) {
         // are you removing something else??
@@ -413,7 +402,7 @@ smthread_t::detach_xct(xct_t* x)
 
     no_xct(x);
     // pop the outmost tcb_t after the above which cleans up some property of tcb_t
-    tcb_t *outmost = tcb_ptr();
+    tcb_t* outmost = tcb_ptr();
     tcb_ptr() = outmost->_outer;
     delete outmost;
     w_assert0(get_tcb_depth() >= 1);
@@ -450,8 +439,7 @@ smthread_t::detach_xct(xct_t* x)
  * an instrumented transaction.
  */
 void
-smthread_t::no_xct(xct_t *x)
-{
+smthread_t::no_xct(xct_t* x) {
     w_assert3(x);
     /* collect summary statistics */
 
@@ -459,14 +447,12 @@ smthread_t::no_xct(xct_t *x)
     // already detach, the stats values should be 0 to it would
     // be correct if we did this,  but it's needless work.
     //
-    if(tcb().xct == x)
-    {
-        if(x->is_instrumented())
-        {
+    if (tcb().xct == x) {
+        if (x->is_instrumented()) {
             // NOTE: thread-safety comes from the fact that this is called from
             // xct_impl::detach_thread, which first grabs the 1thread-at-a-time
             // mutex.
-            sm_stats_t &s = x->stats_ref();
+            sm_stats_t& s = x->stats_ref();
             /*
             * s refers to the __stats passed in on begin_xct() for an
             * instrumented transaction.

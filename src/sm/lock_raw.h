@@ -106,8 +106,11 @@
 inline void atomic_synchronize() {
     lintel::atomic_thread_fence(lintel::memory_order_seq_cst); // corresponds to full mfence
 }
+
 #ifdef PURE_SPIN_RAWLOCK
+
 inline void atomic_synchronize_if_mutex() {}
+
 #else // PURE_SPIN_RAWLOCK
 inline void atomic_synchronize_if_mutex() { atomic_synchronize(); }
 #endif // PURE_SPIN_RAWLOCK
@@ -140,29 +143,30 @@ struct RawLock : public GcPoolEntry {
     };
 
     /** Precise hash of the protected resource. */
-    uint32_t                    hash;
+    uint32_t hash;
 
     /** Current status of this lock. */
-    LockState                   state;
+    LockState state;
 
     /** Constitutes a singly-linked list in RawLockQueue. */
-    MarkablePointer<RawLock>    next;
+    MarkablePointer<RawLock> next;
 
     /** owning xct. */
-    RawXct*                     owner_xct;
+    RawXct* owner_xct;
 
     /** Requested lock mode. */
-    okvl_mode                   mode;
+    okvl_mode mode;
 
     /** Doubly-linked list in RawXct. This is a transaction-private information. */
-    RawLock*                    xct_previous;
+    RawLock* xct_previous;
     /** Doubly-linked list in RawXct. This is a transaction-private information. */
-    RawLock*                    xct_next;
+    RawLock* xct_next;
 
     // another doubly linked list for RawXctLockHashMap
-    RawLock*                    xct_hashmap_previous;
-    RawLock*                    xct_hashmap_next;
+    RawLock* xct_hashmap_previous;
+    RawLock* xct_hashmap_next;
 };
+
 std::ostream& operator<<(std::ostream& o, const RawLock& v);
 
 /** Const object representing NULL RawLock. */
@@ -196,26 +200,32 @@ struct RawLockQueue {
         * @pre !start_from->next.is_marked()
         */
         Iterator(const RawLockQueue* enclosure, RawLock* start_from);
+
         /** Says whether the iterator currently points to a null entry (e.g., after tail). */
-        bool is_null() const { return current.is_null(); }
+        bool is_null() const {
+            return current.is_null();
+        }
+
         /**
          * Advances the iterator.
          * If is_null(), it does nothing.
          * @param[out] must_retry if this retuns true, the caller must start again.
          */
-        void next(bool &must_retry);
+        void next(bool& must_retry);
 
-        const RawLockQueue*         enclosure;
+        const RawLockQueue* enclosure;
+
         /**
          * Previous entry. Never NULL. You can check predecessor->current relation ship with
          * atomic CAS on predecessor->next considering mark-for-death. See [HERLIHY] Chap 9.8.
          */
-        RawLock*                    predecessor;
+        RawLock* predecessor;
+
         /**
          * Current entry. Can be is_null() if predecessor is \e probably the tail.
          * Again, you should use atomic CAS to change something on it.
          */
-        MarkablePointer<RawLock>    current;
+        MarkablePointer<RawLock> current;
     };
 
     /**
@@ -251,9 +261,9 @@ struct RawLockQueue {
      *
      * @pre out != NULL
      */
-    w_error_codes   acquire(RawXct *xct, uint32_t hash, const okvl_mode& mode,
-                int32_t timeout_in_ms, bool check, bool wait, bool acquire,
-                RawLock** out);
+    w_error_codes acquire(RawXct* xct, uint32_t hash, const okvl_mode& mode,
+                          int32_t timeout_in_ms, bool check, bool wait, bool acquire,
+                          RawLock** out);
 
     /**
      * Waits for the already-inserted lock entry. Used after a failed conditional locking.
@@ -261,42 +271,49 @@ struct RawLockQueue {
      * \note "lock" is a RawLock**, not RawLock*. It might be cleared after another failure,
      * or become a new lock when it's automatically retried.
      */
-    w_error_codes   retry_acquire(RawLock** lock, bool wait, bool acquire,
-            int32_t timeout_in_ms);
+    w_error_codes retry_acquire(RawLock** lock, bool wait, bool acquire,
+                                int32_t timeout_in_ms);
+
     /** Subroutine of acquire(), retry_acquire(). */
-    w_error_codes   complete_acquire(RawLock** lock, bool wait, bool acquire,
-            int32_t timeout_in_ms);
+    w_error_codes complete_acquire(RawLock** lock, bool wait, bool acquire,
+                                   int32_t timeout_in_ms);
 
     /**
      * \brief Releases the given lock from this queue, waking up others if necessary.
      * @param[in] lock the lock to release.
      * @param[in] commit_lsn LSN to update X-lock tag during SX-ELR.
      */
-    void    release(RawLock *lock, const lsn_t &commit_lsn);
+    void release(RawLock* lock, const lsn_t& commit_lsn);
 
     /** Makes sure x_lock_tag is at least the given LSN. */
-    void    update_xlock_tag(const lsn_t& commit_lsn);
+    void update_xlock_tag(const lsn_t& commit_lsn);
 
     /**
      * \brief Atomically insert the given lock to this queue. Called from acquire().
      * \details
      * See Figure 4 and Sec 3.1 of [JUNG13].
      */
-    void    atomic_lock_insert(RawLock *new_lock);
+    void atomic_lock_insert(RawLock* new_lock);
 
     /** result of check_compatiblity() */
     struct Compatibility {
         Compatibility(bool grant, bool deadlock, RawXct* block)
-        : can_be_granted(grant), deadlocked(deadlock), blocker(block) {}
-        bool        can_be_granted;
-        bool        deadlocked;
-        RawXct*     blocker;
+                : can_be_granted(grant),
+                  deadlocked(deadlock),
+                  blocker(block) {}
+
+        bool can_be_granted;
+
+        bool deadlocked;
+
+        RawXct* blocker;
     };
+
     /**
      * Checks if the given lock can be granted.
      * Called from acquire() after atomic_lock_insert() and release().
      */
-    Compatibility check_compatiblity(RawLock *lock) const;
+    Compatibility check_compatiblity(RawLock* lock) const;
 
     /**
      * \brief Used for check_only=true case. Many things are much simpler and faster.
@@ -306,20 +323,20 @@ struct RawLockQueue {
      * EX latch on the page guarantees that no lock for the key is newly coming now.
      * @return whether the mode is permitted
      */
-    bool    peek_compatiblity(RawXct* xct, uint32_t hash, const okvl_mode &mode) const;
+    bool peek_compatiblity(RawXct* xct, uint32_t hash, const okvl_mode& mode) const;
 
     /**
      * Sleeps until the lock is granted.
      * Called from acquire() after check_compatiblity() if the lock was not immediately granted.
      */
-    w_error_codes wait_for(RawLock *new_lock, int32_t timeout_in_ms);
+    w_error_codes wait_for(RawLock* new_lock, int32_t timeout_in_ms);
 
     /**
      * \brief Returns the predecessor of the given lock.
      * This removes marked entries it encounters.
      * @return predecessor of the given lock. NULL if not found.
      */
-    RawLock*    find_predecessor(RawLock *lock) const;
+    RawLock* find_predecessor(RawLock* lock) const;
 
     /**
      * \brief Returns the last entry of this queue.
@@ -327,7 +344,7 @@ struct RawLockQueue {
      * "tail" as a variable in the queue and instead we have to traverse each time.
      * @return the last entry. Never returns NULL, but might be &head (meaning empty).
      */
-    RawLock*    tail() const;
+    RawLock* tail() const;
 
     /**
      * \brief Delinks a marked entry from the list and deallocates the entry object.
@@ -340,30 +357,31 @@ struct RawLockQueue {
      * This method \b physically delinks an already-marked entry, so \b logically it does
      * nothing.
      */
-    bool        delink(RawLock* predecessor, RawLock* target, RawLock* successor) const;
+    bool delink(RawLock* predecessor, RawLock* target, RawLock* successor) const;
 
     // Helper function called by RawLockQueue::acquire
     // Based on the information in Compatibility, if the blocker txn is a loser txn and it is not
     // in the middle of rolling back, trigger the on_demand UNDO for the loser transaction
     // Return true if an on_demand UNDO operation was triggered and completed
-    bool        trigger_UNDO(Compatibility& compatibility);  // In: the current compatibility status of the requested lock
+    bool trigger_UNDO(Compatibility& compatibility);  // In: the current compatibility status of the requested lock
 
     /**
      * The always-existing dummy entry as head.
      * _head is never marked for death.
      * Mutable because even find() physically removes something (though logically nothing).
      */
-    mutable RawLock             head;
+    mutable RawLock head;
 
     /**
      * Stores the commit timestamp of the latest transaction that released an X lock on this
      * queue; holds lsn_t::null if no such transaction exists; protected by _requests_latch.
      */
-    lsn_t                       x_lock_tag;
+    lsn_t x_lock_tag;
 
     // For on_demand and mixed UNDO counting purpose
-    static int                  loser_count;
+    static int loser_count;
 };
+
 std::ostream& operator<<(std::ostream& o, const RawLockQueue& v);
 
 /**
@@ -404,6 +422,7 @@ const int RAW_XCT_LOCK_HASHMAP_SIZE = 1023;
 class RawXctLockHashMap {
 public:
     RawXctLockHashMap();
+
     ~RawXctLockHashMap();
 
     /**
@@ -412,24 +431,28 @@ public:
      * @return the lock mode this transaction has for the lock. ALL_N_GAP_N if not any.
      * @pre the current thread is the only thread running the transaction of this hashmap
      */
-    okvl_mode                   get_granted_mode(uint32_t lock_id) const;
+    okvl_mode get_granted_mode(uint32_t lock_id) const;
 
     /** Clears hash buckets. */
-    void                        reset();
+    void reset();
 
     /** Add a new entry to this hashmap. */
-    void                        push_front(RawLock *link);
+    void push_front(RawLock* link);
+
     /** Removes the entry from this hashmap. */
-    void                        remove(RawLock *link);
+    void remove(RawLock* link);
+
 private:
 
     /**
      * Hash buckets. In each bucket, we have a doubly-linked list of xct_lock_entry_t.
      */
-    RawLock*                    _buckets[RAW_XCT_LOCK_HASHMAP_SIZE];
+    RawLock* _buckets[RAW_XCT_LOCK_HASHMAP_SIZE];
 
     /** Returns the bucket index for the lock. */
-    static uint32_t _bucket_id(uint32_t lock_id) { return lock_id % RAW_XCT_LOCK_HASHMAP_SIZE; }
+    static uint32_t _bucket_id(uint32_t lock_id) {
+        return lock_id % RAW_XCT_LOCK_HASHMAP_SIZE;
+    }
 };
 
 /**
@@ -453,9 +476,10 @@ struct RawXct : GcPoolEntry {
         WAITING,
     };
 
-    void                        init(gc_thread_id thread_id,
-        GcPoolForest<RawLock>* lock_pool, gc_pointer_raw* lock_pool_next);
-    void                        uninit();
+    void init(gc_thread_id thread_id,
+              GcPoolForest<RawLock>* lock_pool, gc_pointer_raw* lock_pool_next);
+
+    void uninit();
 
     /**
      * \brief Recursively checks for the case where some blocker is this transaction itself.
@@ -469,9 +493,9 @@ struct RawXct : GcPoolEntry {
      * appropriate with [JUNG13] approach.
      * @pre first_blocker != NULL
      */
-    bool                        is_deadlocked(RawXct* first_blocker);
+    bool is_deadlocked(RawXct* first_blocker);
 
-    void                        update_read_watermark(const lsn_t &tag) {
+    void update_read_watermark(const lsn_t& tag) {
         if (read_watermark < tag) {
             read_watermark = tag;
         }
@@ -481,38 +505,41 @@ struct RawXct : GcPoolEntry {
      * Newly allocate a lock object from the object pool and put it in transaction-private
      * linked-list and hashmap.
      */
-    RawLock*                    allocate_lock(uint32_t hash,
-                                              const okvl_mode& mode, RawLock::LockState state);
+    RawLock* allocate_lock(uint32_t hash,
+                           const okvl_mode& mode, RawLock::LockState state);
+
     /**
      * Remove the lock object from transaction-private linked-list and hashmap, then deallocate.
      */
-    void                        deallocate_lock(RawLock* lock);
+    void deallocate_lock(RawLock* lock);
 
     /** debugout function. */
-    void                        dump_lockinfo(std::ostream &out) const;
+    void dump_lockinfo(std::ostream& out) const;
 
     /** Returns if this transaction has acquired any lock. */
-    bool                        has_locks() const { return private_first != nullptr; }
+    bool has_locks() const {
+        return private_first != nullptr;
+    }
 
     /**
      * Identifier of the thread running this transaction, eg pthread_self().
      */
-    gc_thread_id                thread_id;
+    gc_thread_id thread_id;
 
     /** Pointer to object pool for RawLock. */
-    GcPoolForest<RawLock>*      lock_pool;
+    GcPoolForest<RawLock>* lock_pool;
 
     /** Pointer to thread-local allocation hint for lock_pool. */
-    gc_pointer_raw*             lock_pool_next;
+    gc_pointer_raw* lock_pool_next;
 
     /** Whether this transaction is waiting for another transaction. */
-    XctState                    state;
+    XctState state;
 
     /** Other transaction realized that this transaction is deadlocked. */
-    bool                        deadlock_detected_by_others;
+    bool deadlock_detected_by_others;
 
     /** If exists the transaction that is now blocking this transaction. NULL otherwise.*/
-    RawXct*                     blocker;
+    RawXct* blocker;
 
 #ifndef PURE_SPIN_RAWLOCK
     /** Used to wait in lock manager, paired with lock_wait_mutex. */
@@ -530,27 +557,29 @@ struct RawXct : GcPoolEntry {
      * Assuming this protocol, we can do ELR for x-locks.
      * See jira ticket:99 "ELR for X-lock" (originally trac ticket:101).
      */
-    lsn_t                       read_watermark;
+    lsn_t read_watermark;
 
     /**
      * A hashmap for lock entries in transaction's \e private memory.
      * Used to quickly check if the transaction already has a required lock.
      */
-    RawXctLockHashMap           private_hash_map;
+    RawXctLockHashMap private_hash_map;
 
     /**
      * A doubly linked-list for lock entries in transaction's \e private memory.
      * first -> next -> next ... is used for unlock while commit/abort.
      * NULL if zero entries.
      */
-    RawLock*                    private_first;
+    RawLock* private_first;
+
     /**
      * A doubly linked-list for lock entries in transaction's \e private memory.
      * last is used for appending a new lock.
      * NULL if zero or one entries.
      */
-    RawLock*                    private_last;
+    RawLock* private_last;
 };
+
 std::ostream& operator<<(std::ostream& o, const RawXct& v);
 
 /**
@@ -563,14 +592,17 @@ std::ostream& operator<<(std::ostream& o, const RawXct& v);
  */
 class RawLockBackgroundThread {
 public:
-    RawLockBackgroundThread(const sm_options &options,
-                GcPoolForest<RawLock>* lock_pool, GcPoolForest<RawXct>* xct_pool);
+    RawLockBackgroundThread(const sm_options& options,
+                            GcPoolForest<RawLock>* lock_pool, GcPoolForest<RawXct>* xct_pool);
+
     ~RawLockBackgroundThread();
 
     /** Start running this thread. */
     void start();
+
     /** Request this thread to stop and wait until it stops. */
     void stop_synchronous();
+
     /** Wakeup this thread to do its job. */
     void wakeup();
 
@@ -582,79 +614,95 @@ public:
     /**
      * Handler for pthread_create. Parameter is _this_.
      */
-    static void* pthread_main(void *t);
+    static void* pthread_main(void* t);
+
 protected:
     /** The background pthread thread. */
-    pthread_t       _thread;
+    pthread_t _thread;
+
     /** To join the thread. */
-    pthread_attr_t  _join_attr;
+    pthread_attr_t _join_attr;
+
     /** Pthread Mutex for taking internal sleep. */
     pthread_mutex_t _interval_mutex;
+
     /** Pthread Condition for taking internal sleep. */
-    pthread_cond_t  _interval_cond;
+    pthread_cond_t _interval_cond;
+
     /** Turned on to stop this thread. */
-    bool            _stop_requested;
-    bool            _running;
+    bool _stop_requested;
+
+    bool _running;
 
     /**
      * When there is no log manager, we still need to do something to invoke
      * retiring. We use this counter to immitate LSN moving forward
      * and retire the last generation. It's unsafe, but so are all no-log executions.
      */
-    int             _dummy_lsn_lock;
-    int             _dummy_lsn_xct;
+    int _dummy_lsn_lock;
+
+    int _dummy_lsn_xct;
+
     /**
      * We start retiring generations when there are more than this number of generations.
      * \e sm_rawlock_gc_generation_count.
      */
-    uint32_t            _generation_count;
+    uint32_t _generation_count;
+
     /**
      * When we start up, we pre-allocate this many generations.
      * \e sm_rawlock_gc_init_generation_count.
      */
-    uint32_t            _init_generation_count;
+    uint32_t _init_generation_count;
+
     /**
      * We start pre-allocating segments in current generation if we have less than
      * this number of free segments.
      * \e sm_rawlock_gc_free_segment_count.
      */
-    uint32_t            _free_segment_count;
+    uint32_t _free_segment_count;
+
     /**
      * We advance generation when there are this number of segments in current generation.
      * \e sm_rawlock_gc_max_segment_count.
      */
-    uint32_t            _max_segment_count;
+    uint32_t _max_segment_count;
 
     /**
      * How many milliseconds do we sleep as interval.
      * \e sm_rawlock_gc_interval_ms.
      */
-    uint32_t            _internal_milliseconds;
+    uint32_t _internal_milliseconds;
+
     /**
      * When we create a new lock generation, we initially pre-allocate this number of segments.
      * \e sm_rawlock_lockpool_initseg.
      */
-    uint32_t            _lockpool_initseg;
+    uint32_t _lockpool_initseg;
+
     /**
      * When we create a new xct generation, we initially pre-allocate this number of segments.
      * \e sm_rawlock_xctpool_initseg.
      */
-    uint32_t            _xctpool_initseg;
+    uint32_t _xctpool_initseg;
+
     /**
      * How many objects we create in each segment of _lock_pool.
      * \e sm_rawlock_lockpool_segsize.
      */
-    size_t              _lockpool_segsize;
+    size_t _lockpool_segsize;
+
     /**
      * How many objects we create in each segment of _xct_pool.
      * \e sm_rawlock_xctpool_segsize.
      */
-    size_t              _xctpool_segsize;
+    size_t _xctpool_segsize;
 
     /** The RawLock pool to take care of. */
-    GcPoolForest<RawLock>*     _lock_pool;
+    GcPoolForest<RawLock>* _lock_pool;
+
     /** The RawXct pool to take care of. */
-    GcPoolForest<RawXct>*      _xct_pool;
+    GcPoolForest<RawXct>* _xct_pool;
 };
 
 #endif // __LOCK_RAW_H

@@ -18,7 +18,6 @@ extern uint32_t OKVL_INIT_STR_PREFIX_LEN;
 /** Global variable to specify the length of "uniquefier" key part in OKVL. 0 to turn it off. */
 extern uint32_t OKVL_INIT_STR_UNIQUEFIER_LEN;
 
-
 #include "w_defines.h"
 #include "w_key.h"
 #include "w_okvl.h"
@@ -54,67 +53,67 @@ private:
 
 public:
     /**\brief comparison operator for lockid_t, used by lock manager */
-    bool operator<(lockid_t const &p) const;
+    bool operator<(lockid_t const& p) const;
+
     /**\brief equality operator for lockid_t*/
     bool operator==(const lockid_t& p) const;
+
     /**\brief inequality operator for lockid_t*/
     bool operator!=(const lockid_t& p) const;
+
     friend ostream& operator<<(ostream& o, const lockid_t& i);
+
 public:
     /// Used by lock cache
-    uint32_t          hash() const; // used by lock_cache
+    uint32_t hash() const; // used by lock_cache
     /// clear out the lockid - initialize to mean nothing
-    void              zero();
+    void zero();
 
     /// extract store number lockid whose lspace() == t_store or has parent with lspace() == t_store
-    StoreID            store() const;
+    StoreID store() const;
 
 private:
-    void              set_store(StoreID s);
-
+    void set_store(StoreID s);
 
 public:
 
     // construct vacuous lockid_t
-    lockid_t() ;
+    lockid_t();
 
     /// construct from key string in an index
-    lockid_t(StoreID stid, const unsigned char *keystr, int16_t keylen);
+    lockid_t(StoreID stid, const unsigned char* keystr, int16_t keylen);
+
     /// construct from key string in an index
-    lockid_t(StoreID stid, const w_keystr_t &key);
+    lockid_t(StoreID stid, const w_keystr_t& key);
+
     /// copy constructor
     lockid_t(const lockid_t& i);
 
-
     /// copy operator
-    lockid_t&         operator=(const lockid_t& i);
+    lockid_t& operator=(const lockid_t& i);
+
 private:
-    void _init_for_str(StoreID stid, const unsigned char *keystr, int16_t keylen);
+    void _init_for_str(StoreID stid, const unsigned char* keystr, int16_t keylen);
 
     // CS TODO replace with std::hash
-    uint64_t hash64(uint32_t seed, const unsigned char *str, int16_t len);
+    uint64_t hash64(uint32_t seed, const unsigned char* str, int16_t len);
 };
 
-
-inline StoreID lockid_t::store() const
-{
+inline StoreID lockid_t::store() const {
     w_assert9(sizeof(StoreID) == sizeof(w[1]));
     return w[1];
 }
 
-inline void lockid_t::set_store(StoreID _s)
-{
+inline void lockid_t::set_store(StoreID _s) {
     w_assert9(sizeof(StoreID) == sizeof(w[1]));
-    w[1] = (uint32_t) _s;
+    w[1] = (uint32_t)_s;
 }
 
-inline void lockid_t::zero()
-{
+inline void lockid_t::zero() {
     l[0] = l[1] = 0;
 }
 
-inline NORET lockid_t::lockid_t()
-{
+inline NORET lockid_t::lockid_t() {
     zero();
 }
 
@@ -122,8 +121,7 @@ inline NORET lockid_t::lockid_t()
 const uint32_t LOCKID_T_HASH_SEED = 0xEE5C61DD;
 
 // CS: copied from old w_hashing.h
-inline uint64_t lockid_t::hash64(uint32_t seed, const unsigned char *str, int16_t len)
-{
+inline uint64_t lockid_t::hash64(uint32_t seed, const unsigned char* str, int16_t len) {
     // simple iterative multiply-sum method on byte-by-byte (safe on every architecture)
     w_assert1(len >= 0);
     uint64_t ret = 0;
@@ -134,14 +132,13 @@ inline uint64_t lockid_t::hash64(uint32_t seed, const unsigned char *str, int16_
 }
 
 inline void
-lockid_t::_init_for_str(StoreID stid, const unsigned char *keystr, int16_t keylen)
-{
+lockid_t::_init_for_str(StoreID stid, const unsigned char* keystr, int16_t keylen) {
     zero();
-    set_store (stid);
+    set_store(stid);
 
     if (OKVL_EXPERIMENT) {
         // take only the prefix part (logical key)
-        if (OKVL_INIT_STR_PREFIX_LEN > 0 && keylen > (int32_t) OKVL_INIT_STR_PREFIX_LEN) {
+        if (OKVL_INIT_STR_PREFIX_LEN > 0 && keylen > (int32_t)OKVL_INIT_STR_PREFIX_LEN) {
             keylen = OKVL_INIT_STR_PREFIX_LEN;
         }
     }
@@ -149,59 +146,56 @@ lockid_t::_init_for_str(StoreID stid, const unsigned char *keystr, int16_t keyle
 }
 
 inline
-lockid_t::lockid_t(StoreID stid, const unsigned char *keystr, int16_t keylen)
-{
-    _init_for_str (stid, keystr, keylen);
+lockid_t::lockid_t(StoreID stid, const unsigned char* keystr, int16_t keylen) {
+    _init_for_str(stid, keystr, keylen);
 }
+
 inline
-lockid_t::lockid_t(StoreID stid, const w_keystr_t &key)
-{
-    _init_for_str (stid, (const unsigned char*) key.buffer_as_keystr(), key.get_length_as_keystr());
+lockid_t::lockid_t(StoreID stid, const w_keystr_t& key) {
+    _init_for_str(stid, (const unsigned char*)key.buffer_as_keystr(), key.get_length_as_keystr());
 }
 
 inline lockid_t&
-lockid_t::operator=(const lockid_t& i)
-{
+lockid_t::operator=(const lockid_t& i) {
     l[0] = i.l[0];
     l[1] = i.l[1];
     return *this;
 }
 
 inline bool
-lockid_t::operator<(lockid_t const &i) const
-{
-    if (l[0] < i.l[0]) return true;
-    if (l[0] > i.l[0]) return false;
+lockid_t::operator<(lockid_t const& i) const {
+    if (l[0] < i.l[0]) {
+        return true;
+    }
+    if (l[0] > i.l[0]) {
+        return false;
+    }
     return (l[1] < i.l[1]);
 }
 
 inline bool
-lockid_t::operator==(const lockid_t& i) const
-{
+lockid_t::operator==(const lockid_t& i) const {
     return (l[0] == i.l[0] && l[1] == i.l[1]);
 }
 
 inline NORET
-lockid_t::lockid_t(const lockid_t& i)
-{
-    (void) this->operator=(i);
+lockid_t::lockid_t(const lockid_t& i) {
+    (void)this->operator=(i);
 }
 
 inline bool
-lockid_t::operator!=(const lockid_t& i) const
-{
+lockid_t::operator!=(const lockid_t& i) const {
     return !(l[0] == i.l[0] && l[1] == i.l[1]);
 }
 
 const uint32_t LOCKID_T_HASH_MULT = 0x35D0B891;
 
-inline uint32_t lockid_t::hash() const
-{
+inline uint32_t lockid_t::hash() const {
     uint64_t h = w[0];
     h = h * LOCKID_T_HASH_MULT + w[1];
     h = h * LOCKID_T_HASH_MULT + w[2];
     h = h * LOCKID_T_HASH_MULT + w[3];
-    return ((uint32_t) (h >> 32)) ^ ((uint32_t) (h & 0xFFFFFFFF));
+    return ((uint32_t)(h >> 32)) ^ ((uint32_t)(h & 0xFFFFFFFF));
 }
 
 #endif // __LOCK_S_H

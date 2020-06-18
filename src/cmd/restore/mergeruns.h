@@ -3,17 +3,23 @@
 
 #include "command.h"
 
-class MergeRuns : public Command
-{
+class MergeRuns : public Command {
 public:
     void setupOptions();
+
     void run();
+
 private:
     string indir;
+
     string outdir;
+
     size_t level;
+
     size_t fanin;
+
     size_t bucketSize;
+
     size_t replFactor;
 };
 

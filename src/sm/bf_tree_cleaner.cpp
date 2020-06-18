@@ -18,8 +18,7 @@
 #include <vector>
 
 bf_tree_cleaner::bf_tree_cleaner(const sm_options& options)
-    : page_cleaner_base(options)
-{
+        : page_cleaner_base(options) {
     num_candidates = options.get_int_option("sm_cleaner_num_candidates", 0);
     min_write_size = options.get_int_option("sm_cleaner_min_write_size", 1);
     min_write_ignore_freq = options.get_int_option("sm_cleaner_min_write_ignore_freq", 0);
@@ -38,12 +37,9 @@ bf_tree_cleaner::bf_tree_cleaner(const sm_options& options)
     candidates.reserve(num_candidates);
 }
 
-bf_tree_cleaner::~bf_tree_cleaner()
-{
-}
+bf_tree_cleaner::~bf_tree_cleaner() {}
 
-void bf_tree_cleaner::do_work()
-{
+void bf_tree_cleaner::do_work() {
     if (ss_m::bf->isNoDBMode() || !ss_m::vol || !ss_m::vol->caches_ready()) {
         // No volume manager initialized -- no point in starting cleaner
         return;
@@ -51,8 +47,7 @@ void bf_tree_cleaner::do_work()
 
     if (policy == cleaner_policy::no_policy) {
         clean_no_policy();
-    }
-    else {
+    } else {
         collect_candidates();
         clean_candidates();
     }
@@ -63,12 +58,13 @@ void bf_tree_cleaner::do_work()
  * consists simply of flushing all dirty pages we can find in one sweep
  * of the whole buffer pool.
  */
-void bf_tree_cleaner::clean_no_policy()
-{
+void bf_tree_cleaner::clean_no_policy() {
     size_t w_index = 0;
     for (bf_idx idx = 1; idx < _bufferpool->getBlockCount(); ++idx) {
         auto& cb = _bufferpool->getControlBlock(idx);
-        if (!cb.pin()) { continue; }
+        if (!cb.pin()) {
+            continue;
+        }
 
         // If page is not dirty or not in use, no need to flush
         if (!cb.is_dirty() || !cb._used || cb.get_rec_lsn().is_null()) {
@@ -93,12 +89,11 @@ void bf_tree_cleaner::clean_no_policy()
 }
 
 // Used by no_policy_round
-void bf_tree_cleaner::flush_workspace_no_clusters(size_t count)
-{
+void bf_tree_cleaner::flush_workspace_no_clusters(size_t count) {
     w_assert1(count <= _workspace_size);
 
     for (size_t i = 0; i < count; i++) {
-        write_pages(i, i+1);
+        write_pages(i, i + 1);
     }
 
     smlevel_0::vol->sync();
@@ -106,12 +101,11 @@ void bf_tree_cleaner::flush_workspace_no_clusters(size_t count)
     for (size_t i = 0; i < count; i++) {
         PageID pid = _workspace[i].pid;
         Logger::log_sys<page_write_log>(pid, _clean_lsn, 1);
-        mark_pages_clean(i, i+1);
+        mark_pages_clean(i, i + 1);
     }
 }
 
-void bf_tree_cleaner::clean_candidates()
-{
+void bf_tree_cleaner::clean_candidates() {
     if (candidates.empty()) {
         return;
     }
@@ -150,9 +144,9 @@ void bf_tree_cleaner::clean_candidates()
         // Copy pages in the cluster to the workspace
         size_t k = 0;
         PageID prev_pid = candidates[i].pid;
-        while (w_index < _workspace_size && i+k < candidates.size()) {
-            PageID pid = candidates[i+k].pid;
-            bf_idx idx = candidates[i+k].idx;
+        while (w_index < _workspace_size && i + k < candidates.size()) {
+            PageID pid = candidates[i + k].pid;
+            bf_idx idx = candidates[i + k].idx;
 
             if (!latch_and_copy(pid, idx, w_index)) {
                 k++;
@@ -170,7 +164,9 @@ void bf_tree_cleaner::clean_candidates()
             w_index++;
             prev_pid = pid;
 
-            if (should_exit()) { break; }
+            if (should_exit()) {
+                break;
+            }
         }
 
         if (w_index > 0) {
@@ -179,7 +175,9 @@ void bf_tree_cleaner::clean_candidates()
 
         ADD_TSTAT(cleaner_time_copy, timer.time_us());
 
-        if (should_exit()) { break; }
+        if (should_exit()) {
+            break;
+        }
 
         flush_clusters(clusters);
         ADD_TSTAT(cleaner_time_io, timer.time_us());
@@ -189,8 +187,7 @@ void bf_tree_cleaner::clean_candidates()
     }
 }
 
-void bf_tree_cleaner::flush_clusters(const vector<size_t>& clusters)
-{
+void bf_tree_cleaner::flush_clusters(const vector<size_t>& clusters) {
     size_t i = 0;
     for (auto k : clusters) {
         w_assert1(k > i);
@@ -204,19 +201,20 @@ void bf_tree_cleaner::flush_clusters(const vector<size_t>& clusters)
     for (auto k : clusters) {
         w_assert1(k > i);
         PageID pid = _workspace[i].pid;
-        Logger::log_sys<page_write_log>(pid, _clean_lsn, k-i);
+        Logger::log_sys<page_write_log>(pid, _clean_lsn, k - i);
         mark_pages_clean(i, k);
         i = k;
     }
 }
 
-bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
-{
+bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos) {
     generic_page* page = _bufferpool->getPage(idx);
-    bf_tree_cb_t &cb = _bufferpool->getControlBlock(idx);
+    bf_tree_cb_t& cb = _bufferpool->getControlBlock(idx);
 
     auto rc = cb.latch().latch_acquire(LATCH_SH, timeout_t::WAIT_IMMEDIATE);
-    if (rc.is_error()) { return false; }
+    if (rc.is_error()) {
+        return false;
+    }
 
     // No need to pin CB here because eviction must hold EX latch
 
@@ -236,7 +234,7 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
         sys_xct_section_t sxs(true);
         W_COERCE (sxs.check_error_on_start());
         W_COERCE (smlevel_0::vol->deallocate_page(page->pid));
-        W_COERCE (sxs.end_sys_xct (RCOK));
+        W_COERCE (sxs.end_sys_xct(RCOK));
 
         // drop the page from bufferpool too
         _bufferpool->_deletePage(idx);
@@ -269,8 +267,7 @@ bool bf_tree_cleaner::latch_and_copy(PageID pid, bf_idx idx, size_t wpos)
     return true;
 }
 
-policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p)
-{
+policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p) {
     // A less-than function makes pop_heap return the highest value, and a
     // greater-than function the lowest. Because the heap's top element should
     // be the lowest in a "highest" policy and vice-versa, greater-than should be
@@ -283,29 +280,29 @@ policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p)
     //             lower-than --> lowest
     switch (p) {
         case cleaner_policy::highest_refcount:
-            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-            {
+            return [this](const cleaner_cb_info& a, const cleaner_cb_info& b) {
                 return a.ref_count > b.ref_count;
             };
         case cleaner_policy::lowest_refcount:
-            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-            {
+            return [this](const cleaner_cb_info& a, const cleaner_cb_info& b) {
                 return a.ref_count < b.ref_count;
             };
         case cleaner_policy::lru:
-            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-            {
+            return [this](const cleaner_cb_info& a, const cleaner_cb_info& b) {
                 return a.page_lsn < b.page_lsn;
             };
         case cleaner_policy::highest_density:
-            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-            {
+            return [this](const cleaner_cb_info& a, const cleaner_cb_info& b) {
                 lsndata_t a_window = a.page_lsn.data() - a.rec_lsn.data();
-                if (a_window == 0) { a_window = std::numeric_limits<lsndata_t>::max(); }
+                if (a_window == 0) {
+                    a_window = std::numeric_limits<lsndata_t>::max();
+                }
                 auto a_density = (a.ref_count / a_window);
 
                 lsndata_t b_window = b.page_lsn.data() - b.rec_lsn.data();
-                if (b_window == 0) { b_window = std::numeric_limits<lsndata_t>::max(); }
+                if (b_window == 0) {
+                    b_window = std::numeric_limits<lsndata_t>::max();
+                }
                 auto b_density = (b.ref_count / b_window);
 
                 return a_density > b_density;
@@ -314,20 +311,18 @@ policy_predicate_t bf_tree_cleaner::get_policy_predicate(cleaner_policy p)
             // mixed policy = LRU half of the time, oldest_lsn the other half
             if (get_rounds_completed() % 2 == 0) {
                 return get_policy_predicate(cleaner_policy::lru);
-            }
-            else {
+            } else {
                 return get_policy_predicate(cleaner_policy::oldest_lsn);
             }
-        case cleaner_policy::oldest_lsn: default:
-            return [this] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-            {
+        case cleaner_policy::oldest_lsn:
+        default:
+            return [this](const cleaner_cb_info& a, const cleaner_cb_info& b) {
                 return a.rec_lsn < b.rec_lsn;
             };
     }
 }
 
-void bf_tree_cleaner::collect_candidates()
-{
+void bf_tree_cleaner::collect_candidates() {
     stopwatch_t timer;
     candidates.clear();
 
@@ -338,12 +333,13 @@ void bf_tree_cleaner::collect_candidates()
 
     for (bf_idx idx = 1; idx < block_cnt; ++idx) {
         auto& cb = _bufferpool->getControlBlock(idx);
-        if (!cb.pin()) { continue; }
+        if (!cb.pin()) {
+            continue;
+        }
 
         // If page is not dirty or not in use, no need to flush
         if (!cb.is_dirty() || !cb._used || cb.get_rec_lsn().is_null() ||
-                cb.is_pinned_for_restore())
-        {
+            cb.is_pinned_for_restore()) {
             cb.unpin();
             continue;
         }
@@ -356,8 +352,7 @@ void bf_tree_cleaner::collect_candidates()
         // manage heap if we are limiting the number of candidates
         if (num_candidates > 0) {
             if (candidates.size() < num_candidates ||
-                !heap_cmp(candidates.front(), candidates.back()))
-            {
+                !heap_cmp(candidates.front(), candidates.back())) {
                 // if it's among the top-k candidates, push it into the heap
                 std::push_heap(candidates.begin(), candidates.end(), heap_cmp);
                 while (candidates.size() > num_candidates) {
@@ -366,15 +361,16 @@ void bf_tree_cleaner::collect_candidates()
                     candidates.pop_back();
                 }
             }
-            // otherwise just remove it
-            else { candidates.pop_back(); }
+                // otherwise just remove it
+            else {
+                candidates.pop_back();
+            }
         }
     }
 
     // CS TODO: one policy could sort each sequence of adjacent pids by cluster size
     // Sort by PageID to exploit large sequential writes
-    auto lt = [] (const cleaner_cb_info& a, const cleaner_cb_info& b)
-    {
+    auto lt = [](const cleaner_cb_info& a, const cleaner_cb_info& b) {
         return a.pid < b.pid;
     };
 
@@ -383,8 +379,7 @@ void bf_tree_cleaner::collect_candidates()
     ADD_TSTAT(cleaner_time_cpu, timer.time_us());
 }
 
-std::ostream& operator<<(std::ostream& out, const cleaner_cb_info& cb)
-{
+std::ostream& operator<<(std::ostream& out, const cleaner_cb_info& cb) {
     out << "pid=" << cb.pid
         << " page=" << cb.page_lsn
         << " rec=" << cb.rec_lsn

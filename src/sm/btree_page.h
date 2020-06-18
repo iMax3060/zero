@@ -8,7 +8,6 @@
 #include "fixable_page_h.h"
 #include "vec_t.h"
 
-
 /**
  * \brief This class holds B-tree-specific headers as well as an ordered list
  * of \e items.
@@ -39,7 +38,7 @@ class btree_page_data : public generic_page_header {
 public:
     enum {
         /// size of all header fields combined
-        hdr_sz  = sizeof(generic_page_header) + 48,
+        hdr_sz = sizeof(generic_page_header) + 48,
         // 48 above must be kept in sync with size of headers below!
         // (checked by static asserts after class)
 
@@ -132,7 +131,7 @@ protected:
      * Initialize item storage area, erasing any existing items.
      * btree_level must be set before hand and not changed afterwards.
      */
-    void          init_items();
+    void init_items();
 
     // Remove the largest 'item_count' items from the storage area
     // It erases existing items from storage therefore use with caution
@@ -140,29 +139,31 @@ protected:
     // restart operation to recovery the source page
     // item_count - number of records to remove
     // high - the new high fence after record removal
-    void          remove_items(const int item_count, const w_keystr_t &high);
+    void remove_items(const int item_count, const w_keystr_t& high);
 
-    int           number_of_items()  const { return nitems;}
+    int number_of_items() const {
+        return nitems;
+    }
 
     /// return number of current items that are ghosts
-    int           number_of_ghosts() const { return nghosts;}
-
+    int number_of_ghosts() const {
+        return nghosts;
+    }
 
     /// is the given item a ghost?
-    bool          is_ghost(int item) const;
+    bool is_ghost(int item) const;
 
     /// turn the given item into a ghost item
-    void          set_ghost(int item);
+    void set_ghost(int item);
 
     /// turn the given item into a non-ghost item
-    void          unset_ghost(int item);
-
+    void unset_ghost(int item);
 
     /// The type of poor_man_key data
     typedef uint16_t poor_man_key;
 
     /// return the poor_man_key data for the given item
-    poor_man_key  item_poor(int item) const;
+    poor_man_key item_poor(int item) const;
 
     /// return a reference to the poor_man_key data for the given item
     poor_man_key& item_poor(int item);
@@ -173,7 +174,7 @@ protected:
      * target for atomic operations.
      * @pre this is an interior page
      */
-    PageID&      item_child(int item);
+    PageID& item_child(int item);
 
     /**
      * return a pointer to the variable-length data of the given item
@@ -181,14 +182,13 @@ protected:
      * the variable length data occupies item_data(item)
      * ... item_data(item)+item_length(item)-1
      */
-    char*         item_data(int item);
+    char* item_data(int item);
 
     /**
      * return the amount of variable-length data belonging to the
      * given item in bytes
      */
-    size_t        item_length(int item) const;
-
+    size_t item_length(int item) const;
 
     /**
      * Attempt to insert a new item at given item position, pushing
@@ -208,8 +208,8 @@ protected:
      * The new item's variable-length data is allocated but not
      * initialized.
      */
-    bool          insert_item(int item, bool ghost, poor_man_key poor, PageID child,
-                              size_t data_length);
+    bool insert_item(int item, bool ghost, poor_man_key poor, PageID child,
+                     size_t data_length);
 
     /**
      * Attempt to insert a new item at given item position, pushing
@@ -226,8 +226,8 @@ protected:
      * poor_man_key data poor, child child, and variable-length data
      * data.  child must be 0 if this is a leaf page.
      */
-    bool          insert_item(int item, bool ghost, poor_man_key poor, PageID child,
-                              const cvec_t& data);
+    bool insert_item(int item, bool ghost, poor_man_key poor, PageID child,
+                     const cvec_t& data);
 
     /**
      * Attempt to resize the variable-length data of the given item to
@@ -239,7 +239,7 @@ protected:
      *
      * @pre keep_old <= item_length(item)
      */
-    bool          resize_item(int item, size_t new_length, size_t keep_old);
+    bool resize_item(int item, size_t new_length, size_t keep_old);
 
     /**
      * Attempt to replace all the variable-length data of the given
@@ -249,7 +249,7 @@ protected:
      *
      * @pre keep_old <= item_length(item)
      */
-    bool          replace_item_data(int item, size_t offset, const cvec_t& new_data);
+    bool replace_item_data(int item, size_t offset, const cvec_t& new_data);
 
     /**
      * delete the given item, moving down items to take its place.
@@ -257,7 +257,7 @@ protected:
      * and so on.  Compaction (compact()) may be required to make the
      * freed space available.
      */
-    void          delete_item(int item);
+    void delete_item(int item);
 
     /**
      * delete the given range of items. This is used in a page split to delete
@@ -265,7 +265,7 @@ protected:
      * boundary, while "from" is inclusive, i.e., (from - to) items are
      * deleted in total
      */
-    void          delete_range(int from, int to);
+    void delete_range(int from, int to);
 
     /**
      * remove 'amount' leading bytes from each item data, starting at offset
@@ -277,12 +277,11 @@ protected:
      */
     void truncate_all(size_t amount, size_t pos);
 
-
     /**
      * return total space currently occupied by given item, including
      * any overhead such as padding for alignment.
      */
-    size_t        item_space(int item) const;
+    size_t item_space(int item) const;
 
     /**
      * Calculate how much space would be occupied by a new item that
@@ -290,17 +289,16 @@ protected:
      * variable-length data.  (E.g., after insert, what will
      * item_space return?)
      */
-    size_t        predict_item_space(size_t data_length) const;
+    size_t predict_item_space(size_t data_length) const;
 
     /**
      * Return amount of available space for inserting/resizing.
      * Calling compact() may increase this number.
      */
-    size_t        usable_space() const;
+    size_t usable_space() const;
 
     /// compact item space, making all freed space available.
-    void          compact();
-
+    void compact();
 
     /**
      * returns the part of this page holding the available space; this
@@ -309,7 +307,7 @@ protected:
      * compact() first when doing this to maximize the bytes that may
      * be ignored.  (See page_img_format_t for a use of this.)
      */
-    char*         unused_part(size_t& length);
+    char* unused_part(size_t& length);
 
     /**
      * the maximum possible item overhead beyond a item's
@@ -322,7 +320,7 @@ protected:
      * [debugging] are item allocations consistent?  E.g., do two item
      * allocations overlap?  This should always be true.
      */
-    bool          _items_are_consistent() const;
+    bool _items_are_consistent() const;
 
 private:
 // ======================================================================
@@ -330,28 +328,30 @@ private:
 // ======================================================================
 
     typedef uint16_t item_index_t;
+
     typedef uint16_t item_length_t;
+
     /**
      * An offset denoting a particular item body, namely body[abs(<offset>)].
      * In some cases, the sign bit is used to encode ghostness.
      */
-    typedef int16_t  body_offset_t;
+    typedef int16_t body_offset_t;
 
     // ======================================================================
     //   BEGIN: item-specific headers
     // ======================================================================
 
     /// current number of items
-    item_index_t  nitems;                          // +2 -> 26
+    item_index_t nitems;                          // +2 -> 26
 
     /// number of current ghost items
-    item_index_t  nghosts;                         // +2 -> 28
+    item_index_t nghosts;                         // +2 -> 28
 
     /// offset to beginning of used item bodies (# of used item body that is located left-most).
     body_offset_t first_used_body;                 // +2 -> 30
 
     /// padding to ensure header size is a multiple of 8
-    uint16_t      padding;                         // +2 -> 32
+    uint16_t padding;                         // +2 -> 32
 
     // ======================================================================
     //   END: item-specific headers
@@ -367,14 +367,14 @@ protected:
      * 0 if this page is leaf or left-most.
      * \ingroup SPR
      */
-    lsn_t   btree_pid0_emlsn;   // +8 -> 40
+    lsn_t btree_pid0_emlsn;   // +8 -> 40
 
     /**
      * Expected-Minimum LSN for the foster-child pointer.
      * 0 if this page doesn't have foster child.
      * \ingroup SPR
      */
-    lsn_t   btree_foster_emlsn; // +8 -> 48
+    lsn_t btree_foster_emlsn; // +8 -> 48
     // ======================================================================
     //   END: Single-Page-Recovery-related headers
     // ======================================================================
@@ -402,7 +402,7 @@ private:
          * first item_body belonging to this item is body[abs(offset)]
          */
         body_offset_t offset;
-        poor_man_key  poor;
+        poor_man_key poor;
     } item_head;
     //static_assert(sizeof(item_head) == 4, "item_head has wrong length");
     BOOST_STATIC_ASSERT(sizeof(item_head) == 4);
@@ -413,13 +413,13 @@ private:
             struct {
                 item_length_t item_len;
                 /// really of size item_len - sizeof(item_len):
-                char          item_data[6];
+                char item_data[6];
             } leaf;
             struct {
-                PageID       child;
+                PageID child;
                 item_length_t item_len;
                 /// really of size item_len - sizeof(item_len) - sizeof(child):
-                char          item_data[2];
+                char item_data[2];
             } interior;
             /**
              * We use 8 byte alignment instead of the required 4 for
@@ -428,12 +428,13 @@ private:
             int64_t _for_alignment_only;
         };
     } item_body;
+
     BOOST_STATIC_ASSERT(sizeof(item_body) == 8);
 
-    BOOST_STATIC_ASSERT(data_sz%sizeof(item_body) == 0);
+    BOOST_STATIC_ASSERT(data_sz % sizeof(item_body) == 0);
     enum {
-        max_heads  = data_sz/sizeof(item_head),
-        max_bodies = data_sz/sizeof(item_body),
+        max_heads = data_sz / sizeof(item_head),
+        max_bodies = data_sz / sizeof(item_body),
         /** Bytes that should be subtracted from item_len for actual data in leaf. */
         leaf_overhead = sizeof(item_length_t),
         /** Bytes that should be subtracted from item_len for actual data in interior. */
@@ -449,17 +450,21 @@ private:
      * #define here is a workaround for ebrowse cannot handle < in
      * marcos calls, numeric_limits::min() is not constant
      */
-#define STATIC_LESS_THAN(x,y)  BOOST_STATIC_ASSERT((x) < (y))
-    STATIC_LESS_THAN(data_sz,    1<<(sizeof(item_length_t)*8));
-    STATIC_LESS_THAN(max_heads,  1<<(sizeof(item_index_t) *8));
-    STATIC_LESS_THAN(max_bodies, 1<<(sizeof(body_offset_t)*8-1)); // -1 for ghost bit
+#define STATIC_LESS_THAN(x, y)  BOOST_STATIC_ASSERT((x) < (y))
+    STATIC_LESS_THAN(data_sz, 1 << (sizeof(item_length_t) * 8));
+    STATIC_LESS_THAN(max_heads, 1 << (sizeof(item_index_t) * 8));
+    STATIC_LESS_THAN(max_bodies, 1 << (sizeof(body_offset_t) * 8 - 1)); // -1 for ghost bit
 
 
     /// are we a leaf node?
-    bool is_leaf() const { return btree_level == 1; }
+    bool is_leaf() const {
+        return btree_level == 1;
+    }
 
     /// align to item_body alignment boundary (integral multiple of item_body's)
-    static size_t _item_align(size_t i) { return (i+sizeof(item_body)-1)&~(sizeof(item_body)-1); }
+    static size_t _item_align(size_t i) {
+        return (i + sizeof(item_body) - 1) & ~(sizeof(item_body) - 1);
+    }
 
     /// add this to data length to get bytes used in item bodies (not counting padding)
     size_t _item_body_overhead() const;
@@ -470,6 +475,7 @@ private:
      * offset offset
      */
     item_length_t& _item_body_length(body_offset_t offset);
+
     /**
      * return current number of bytes used in item bodies (not
      * counting padding) associated with the item starting at offset
@@ -488,8 +494,6 @@ public:
 
     bool eq(const btree_page_data&) const;
 };
-
-
 
 // forward references for friending test...
 class ss_m;
@@ -513,21 +517,24 @@ class test_volume_t;
  */
 class btree_page : public btree_page_data {
     friend class btree_page_h;
-    template <class T> friend class page_img_format_t; // for unused_part()
-    friend class btree_split_log;
 
+    template<class T> friend
+    class page_img_format_t; // for unused_part()
+    friend class btree_split_log;
 
     // _ux_deadopt_foster_apply_foster_parent
     // _ux_adopt_foster_apply_child
     friend class btree_impl;
-
-
     friend class test_bf_tree;
-    friend w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t *test_volume);
+
+    friend w_rc_t test_bf_fix_virgin_root(ss_m* /*ssm*/, test_volume_t* test_volume);
+
     // these are for access to headers from btree_page_headers:
-    friend w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t *test_volume);
-    friend w_rc_t test_bf_evict(ss_m* /*ssm*/, test_volume_t *test_volume);
-    friend w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t *test_volume, bool enable_swizzle);
+    friend w_rc_t test_bf_fix_virgin_child(ss_m* /*ssm*/, test_volume_t* test_volume);
+
+    friend w_rc_t test_bf_evict(ss_m* /*ssm*/, test_volume_t* test_volume);
+
+    friend w_rc_t _test_bf_swizzle(ss_m* /*ssm*/, test_volume_t* test_volume, bool enable_swizzle);
 };
 //static_assert(sizeof(btree_page) == sizeof(generic_page),
 //              "btree_page has wrong length");
@@ -557,6 +564,7 @@ inline btree_page_data::item_length_t& btree_page_data::_item_body_length(body_o
         return body[offset].interior.item_len;
     }
 }
+
 inline btree_page_data::item_length_t btree_page_data::_item_body_length(body_offset_t offset) const {
     w_assert1(offset >= 0);
     if (is_leaf()) {
@@ -568,26 +576,26 @@ inline btree_page_data::item_length_t btree_page_data::_item_body_length(body_of
 
 inline btree_page_data::body_offset_t btree_page_data::_item_bodies(body_offset_t offset) const {
     w_assert1(offset >= 0);
-    return _item_align(_item_body_length(offset))/sizeof(item_body);
+    return _item_align(_item_body_length(offset)) / sizeof(item_body);
 }
 
-
 inline bool btree_page_data::is_ghost(int item) const {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     return head[item].offset < 0;
 }
 
 inline btree_page_data::poor_man_key& btree_page_data::item_poor(int item) {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     return head[item].poor;
 }
+
 inline btree_page_data::poor_man_key btree_page_data::item_poor(int item) const {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     return head[item].poor;
 }
 
 inline PageID& btree_page_data::item_child(int item) {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     w_assert1(!is_leaf());
 
     body_offset_t offset = head[item].offset;
@@ -597,9 +605,8 @@ inline PageID& btree_page_data::item_child(int item) {
     return body[offset].interior.child;
 }
 
-
 inline char* btree_page_data::item_data(int item) {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     body_offset_t offset = head[item].offset;
     if (offset < 0) {
         offset = -offset;
@@ -612,7 +619,7 @@ inline char* btree_page_data::item_data(int item) {
 }
 
 inline size_t btree_page_data::item_length(int item) const {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     body_offset_t offset = head[item].offset;
     if (offset < 0) {
         offset = -offset;
@@ -628,14 +635,13 @@ inline size_t btree_page_data::item_length(int item) const {
     return length;
 }
 
-
 inline size_t btree_page_data::predict_item_space(size_t data_length) const {
     size_t body_length = data_length + _item_body_overhead();
     return _item_align(body_length) + sizeof(item_head);
 }
 
 inline size_t btree_page_data::item_space(int item) const {
-    w_assert1(item>=0 && item<nitems);
+    w_assert1(item >= 0 && item < nitems);
     body_offset_t offset = head[item].offset;
     if (offset < 0) {
         offset = -offset;
@@ -644,13 +650,10 @@ inline size_t btree_page_data::item_space(int item) const {
     return _item_align(_item_body_length(offset)) + sizeof(item_head);
 }
 
-
 inline size_t btree_page_data::usable_space() const {
-    w_assert1(first_used_body*sizeof(item_body) >= nitems*sizeof(item_head));
-    return    first_used_body*sizeof(item_body) -  nitems*sizeof(item_head);
+    w_assert1(first_used_body * sizeof(item_body) >= nitems * sizeof(item_head));
+    return first_used_body * sizeof(item_body) - nitems * sizeof(item_head);
 }
-
-
 
 /**
  * C++ version of Linux kernel's ACCESS_ONCE() macro
@@ -665,8 +668,8 @@ inline size_t btree_page_data::usable_space() const {
  * merging, or refetching absolutely anything at any time.
  */
 template<typename T>
-inline T volatile &ACCESS_ONCE(T &t) {
-    return static_cast<T volatile &>(t);
+inline T volatile& ACCESS_ONCE(T& t) {
+    return static_cast<T volatile&>(t);
 }
 
 #endif // __BTREE_PAGE_H
