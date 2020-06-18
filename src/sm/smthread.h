@@ -579,9 +579,9 @@ inline xct_t* xct() {
 /**\cond skip */
 class smthread_init_t {
 public:
-    NORET smthread_init_t();
+    smthread_init_t();
 
-    NORET ~smthread_init_t();
+    ~smthread_init_t();
 
 private:
     static int count;

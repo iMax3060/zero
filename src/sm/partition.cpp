@@ -131,7 +131,7 @@ private:
     char _block[log_storage::BLOCK_SIZE];
 
 public:
-    NORET block_of_zeroes() {
+    block_of_zeroes() {
         memset(&_block[0], 0, log_storage::BLOCK_SIZE);
     }
 

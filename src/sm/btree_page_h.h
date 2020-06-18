@@ -36,10 +36,11 @@ class btree_page_h;
  */
 class btrec_t {
 public:
-    NORET btrec_t() {};
-    NORET btrec_t(const btree_page_h& page, slotid_t slot);
+    btrec_t() {};
 
-    NORET ~btrec_t() {};
+    btrec_t(const btree_page_h& page, slotid_t slot);
+
+    ~btrec_t() {};
 
     /// Load up a reference to the tuple at slot in "page".
     btrec_t& set(const btree_page_h& page, slotid_t slot);
@@ -86,20 +87,18 @@ private:
     cvec_t _elem;
 
     // disabled
-    NORET btrec_t(const btrec_t&);
+    btrec_t(const btrec_t&);
 
     btrec_t& operator=(const btrec_t&);
 };
 
-inline NORET
-btrec_t::btrec_t(const btree_page_h& page, slotid_t slot) {
+inline btrec_t::btrec_t(const btree_page_h& page, slotid_t slot) {
     set(page, slot);
 }
 
 class btree_impl;
 
-template<class T>
-class btree_ghost_t;
+template<class T> class btree_ghost_t;
 class btree_ghost_mark_log;
 class btree_ghost_reclaim_log;
 
@@ -186,13 +185,11 @@ class btree_ghost_reclaim_log;
 class btree_page_h : public fixable_page_h {
     friend class btree_impl;
 
-    template<class T> friend
-    class btree_ghost_t;
+    template<class T> friend class btree_ghost_t;
     friend class btree_ghost_mark_log;
     friend class btree_ghost_reclaim_log;
 
-    template<class T> friend
-    class page_img_format_t;
+    template<class T> friend class page_img_format_t;
     friend class btree_split_log;
 
     btree_page* page() const {
@@ -1093,7 +1090,7 @@ struct btree_lf_stats_t {
 
     base_stat_t unique_cnt;        /* number of unique entries */
 
-    NORET btree_lf_stats_t() {
+    btree_lf_stats_t() {
         clear();
     }
 
@@ -1115,7 +1112,7 @@ struct btree_int_stats_t {
 
     base_stat_t unused_bs;
 
-    NORET btree_int_stats_t() {
+    btree_int_stats_t() {
         clear();
     }
 
@@ -1155,7 +1152,7 @@ struct btree_stats_t {
     base_stat_t unalloc_pg_cnt; // pages not-allocated by extent-traversal
     base_stat_t level_cnt;    /* number of levels in btree */
 
-    NORET btree_stats_t() {
+    btree_stats_t() {
         clear();
     }
 

@@ -47,8 +47,7 @@
  * All the classes are header-only template classes. Just include w_gc_pool_forest.h to use.
  */
 
-template<class T>
-class GcPointer;
+template<class T> class GcPointer;
 
 template<class T>
 struct GcSegment;

@@ -127,9 +127,9 @@ private:
 class xct_lock_info_t : private smlevel_0 {
 
 public:
-    NORET xct_lock_info_t();
+    xct_lock_info_t();
 
-    NORET ~xct_lock_info_t();
+    ~xct_lock_info_t();
 
     /// Prepare this structure for use by a new transaction.
     /// Used by the TLS agent when recycling a structure after the

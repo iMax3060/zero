@@ -14,16 +14,11 @@
 
 /* Forward decls so we can do proper friend declarations later
  */
-template<class T, size_t MaxBytes>
-class block_alloc;
+template<class T, size_t MaxBytes> class block_alloc;
 
-template<class T, size_t MaxBytes>
-inline
-void* operator new(size_t nbytes, block_alloc<T, MaxBytes>& alloc);
+template<class T, size_t MaxBytes> inline void* operator new(size_t nbytes, block_alloc<T, MaxBytes>& alloc);
 
-template<class T, size_t MaxBytes>
-inline
-void operator delete(void* ptr, block_alloc<T, MaxBytes>& alloc);
+template<class T, size_t MaxBytes> inline void operator delete(void* ptr, block_alloc<T, MaxBytes>& alloc);
 
 // a basic block_pool backed by a dynarray
 struct dynpool : public memory_block::block_pool {
@@ -44,14 +39,12 @@ struct dynpool : public memory_block::block_pool {
 
     size_t _arr_end;
 
-    NORET dynpool(size_t chip_size, size_t chip_count,
-                  size_t log2_block_size, size_t max_bytes);
+    dynpool(size_t chip_size, size_t chip_count,
+                 size_t log2_block_size, size_t max_bytes);
 
-    virtual
-    NORET        ~dynpool();
+    virtual ~dynpool();
 
-    virtual
-    bool validate_pointer(void* ptr);
+    virtual bool validate_pointer(void* ptr);
 
 protected:
 
@@ -62,8 +55,7 @@ protected:
     virtual
     mblock* _acquire_block();
 
-    virtual
-    void _release_block(mblock* b);
+    virtual void _release_block(mblock* b);
 };
 
 /** \brief A factory for speedier allocation from the heap.
@@ -132,8 +124,8 @@ struct block_pool {
         return &p;
     }
 
-    block_pool()
-            : _blist(get_static_pool(), TEMPLATE_ARGS) {}
+    block_pool() :
+            _blist(get_static_pool(), TEMPLATE_ARGS) {}
 
     /* Acquire one object from the pool.
      */
@@ -145,8 +137,7 @@ struct block_pool {
        as released. If \e destruct is \e true then call the object's
        desctructor also.
      */
-    static
-    void release(void* ptr) {
+    static void release(void* ptr) {
         w_assert0(get_static_pool()->validate_pointer(ptr));
         memory_block::block::release_chip(ptr, TEMPLATE_ARGS);
     }
@@ -157,11 +148,9 @@ private:
 
 template<class T, size_t MaxBytes = 0>
 struct block_alloc {
-
     typedef block_pool<T, dynpool, MaxBytes> Pool;
 
-    static
-    void destroy_object(T* ptr) {
+    static void destroy_object(T* ptr) {
         if (ptr == nullptr) {
             return;
         }
@@ -308,8 +297,7 @@ struct object_cache {
         return u.t;
     }
 
-    static
-    void release(T* obj) {
+    static void release(T* obj) {
         TFactory::reset(obj);
         Pool::release(obj);
     }
@@ -319,14 +307,14 @@ private:
     struct cache_pool : public dynpool {
 
         // just a pass-thru...
-        NORET cache_pool(size_t cs, size_t cc, size_t l2bs, size_t mb)
-                : dynpool(cs, cc, l2bs, mb) {}
+        cache_pool(size_t cs, size_t cc, size_t l2bs, size_t mb) :
+                dynpool(cs, cc, l2bs, mb) {}
 
         virtual void _release_block(mblock* b);
 
         virtual mblock* _acquire_block();
 
-        virtual NORET ~cache_pool();
+        virtual ~cache_pool();
     };
 
     typedef block_pool<T, cache_pool, MaxBytes> Pool;
@@ -367,7 +355,7 @@ dynpool::mblock* object_cache<T, TF, M>::cache_pool::_acquire_block() {
  */
 template<class T, class TF, size_t M>
 inline
-NORET object_cache<T, TF, M>::cache_pool::~cache_pool() {
+object_cache<T, TF, M>::cache_pool::~cache_pool() {
     size_t size = _size();
     for (size_t i = 0; i < size; i++) {
         mblock* b = _at(i);

@@ -71,14 +71,11 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 class w_list_base_t;
 
-template<class T, class LOCK>
-class w_list_t;
+template<class T, class LOCK> class w_list_t;
 
-template<class T, class LOCK>
-class w_list_i;
+template<class T, class LOCK> class w_list_i;
 
-template<class T, class LOCK, class K>
-class w_hash_t;
+template<class T, class LOCK, class K> class w_hash_t;
 
 /**\brief You can instantiate unsafe lists by using this type.
  * \details
@@ -106,11 +103,11 @@ unsafe_list_dummy_lock_t* const unsafe_nolock = nullptr; // instantiate with thi
  */
 class w_link_t {
 public:
-    NORET w_link_t();
+    w_link_t();
 
-    NORET ~w_link_t();
+    ~w_link_t();
 
-    NORET w_link_t(const w_link_t&);
+    w_link_t(const w_link_t&);
 
     w_link_t& operator=(const w_link_t&);
 
@@ -154,11 +151,11 @@ public:
     void dump();
 
 protected:
-    NORET w_list_base_t();
+    w_list_base_t();
 
-    NORET w_list_base_t(uint32_t offset);
+    w_list_base_t(uint32_t offset);
 
-    NORET ~w_list_base_t();
+    ~w_list_base_t();
 
     void set_offset(uint32_t offset);
 
@@ -169,98 +166,82 @@ protected:
     uint32_t _adj;
 
 private:
-    NORET w_list_base_t(w_list_base_t&); // disabled
+    w_list_base_t(w_list_base_t&); // disabled
 
     w_list_base_t& operator=(w_list_base_t&);
 
     friend class w_link_t;
 };
 
-inline NORET
-w_link_t::w_link_t()
-        : _list(0) {
+inline w_link_t::w_link_t() :
+        _list(0) {
     _next = this;
     _prev = this;
     /* empty body */
 }
 
-inline NORET
-w_link_t::~w_link_t() {
+inline w_link_t::~w_link_t() {
     w_assert1(_next == this && _prev == this && _list == 0);
 }
 
-inline NORET
-w_link_t::w_link_t(const w_link_t&)
-        : _list(0) {
+inline w_link_t::w_link_t(const w_link_t&) :
+        _list(0) {
     _next = _prev = this;
 }
 
-inline w_link_t&
-w_link_t::operator=(const w_link_t&) {
+inline w_link_t& w_link_t::operator=(const w_link_t&) {
     _list = 0;
     return *(_next = _prev = this);
 }
 
-inline w_list_base_t*
-w_link_t::member_of() const {
+inline w_list_base_t* w_link_t::member_of() const {
     return _list;
 }
 
-inline w_link_t*
-w_link_t::prev() const {
+inline w_link_t* w_link_t::prev() const {
     return _prev;
 }
 
-inline w_link_t*
-w_link_t::next() const {
+inline w_link_t* w_link_t::next() const {
     return _next;
 }
 
-inline NORET
-w_list_base_t::w_list_base_t()
-        : _cnt(0),
-          _adj(uint4_max)  // _adj must be set by a later call
-// to set_offset().  We init _adj
-// with a large number to detect
+inline w_list_base_t::w_list_base_t() :
+        _cnt(0),
+        _adj(uint4_max) { // _adj must be set by a later call
+// to set_offset().  We init _adj with a large number to detect
 // errors
-{
     _tail._list = 0;
     w_assert9(_tail._next == &_tail && _tail._prev == &_tail);
 }
 
-inline NORET
-w_list_base_t::w_list_base_t(uint32_t offset)
-        : _cnt(0),
-          _adj(offset) {
+inline w_list_base_t::w_list_base_t(uint32_t offset) :
+        _cnt(0),
+        _adj(offset) {
     _tail._list = this;
     w_assert9(_tail._next == &_tail && _tail._prev == &_tail);
 }
 
-inline void
-w_list_base_t::set_offset(uint32_t offset) {
+inline void w_list_base_t::set_offset(uint32_t offset) {
     w_assert9(_cnt == 0 && _adj == uint4_max && _tail._list == 0);
     _tail._list = this;
     _adj = offset;
 }
 
-inline NORET
-w_list_base_t::~w_list_base_t() {
+inline w_list_base_t::~w_list_base_t() {
     _tail._list = 0;
     w_assert9(_cnt == 0);
 }
 
-inline bool
-w_list_base_t::is_empty() const {
+inline bool w_list_base_t::is_empty() const {
     return _cnt == 0;
 }
 
-inline uint32_t
-w_list_base_t::num_members() const {
+inline uint32_t w_list_base_t::num_members() const {
     return _cnt;
 }
 
-template<class T, class L>
-class w_list_t;
+template<class T, class L> class w_list_t;
 
 BIND_FRIEND_OPERATOR_PART_1(T, L, w_list_t<T, L>)
 
@@ -319,9 +300,9 @@ public:
      * what lock is meant to protect this list.
      *
      */
-    NORET w_list_t(uint32_t link_offset, LOCK* l)
-            : w_list_base_t(link_offset),
-              lock(l) {
+    w_list_t(uint32_t link_offset, LOCK* l) :
+            w_list_base_t(link_offset),
+            lock(l) {
 #ifdef __GNUC__
 #else
         w_assert2(link_offset + sizeof(w_link_t) <= sizeof(T));
@@ -332,11 +313,11 @@ public:
     /// create a list sans offset.  Client must use set_offset later,
     ///before using the list.
     // This is used by w_hash_t  and the lock manager's list of lock heads
-    NORET w_list_t() : lock(nullptr) {}
+    w_list_t() : lock(nullptr) {}
 
 public:
 
-    NORET ~w_list_t() {}
+    ~w_list_t() {}
 
     /// Tell the list where to find the offset of the w_link_t in 
     /// the item-type T.
@@ -471,7 +452,7 @@ public:
 
 private:
     // disabled
-    NORET w_list_t(const w_list_t<T, LOCK>& x);
+    w_list_t(const w_list_t<T, LOCK>& x);
 
     w_list_t<T, LOCK>& operator=(const w_list_t<T, LOCK>&);
 
@@ -513,7 +494,7 @@ public:
     /// Create a forward iterator. Since the list to be iterated
     /// isn't given, you must call reset() before you can use this
     ///iterator.
-    NORET w_list_i()
+    w_list_i()
             : _list(0),
               _next(0),
               _curr(0),
@@ -521,14 +502,14 @@ public:
 
     /// Create a forward or backward iterator iterator for the given
     /// list. Don't allow updating of the list while iterating.
-    NORET w_list_i(const w_list_t<T, LOCK>& l, bool backwards = false)
+    w_list_i(const w_list_t<T, LOCK>& l, bool backwards = false)
             : _list(&l),
               _curr(0),
               _backwards(backwards) {
         _next = (backwards ? l._tail.prev() : l._tail.next());
     }
 
-    virtual NORET    ~w_list_i() {};
+    virtual ~w_list_i() {};
 
     /// Make an iterator usable (possibly again), for the given list,
     /// backward or forward.
@@ -577,7 +558,7 @@ private:
     bool _backwards;
 
     // disabled
-    NORET w_list_i(w_list_i<T, LOCK>&);
+    w_list_i(w_list_i<T, LOCK>&);
 
     w_list_i<T, LOCK>& operator=(w_list_i<T, LOCK>&);
 };
@@ -590,10 +571,12 @@ private:
 template<class T, class LOCK>
 class w_list_const_i : public w_list_i<T, LOCK> {
 public:
-    NORET w_list_const_i() {};
-    NORET w_list_const_i(const w_list_t<T, LOCK>& l)
-            : w_list_i<T, LOCK>(*(w_list_t<T, LOCK>*)(&l)) {};
-    NORET ~w_list_const_i() {};
+    w_list_const_i() {};
+
+    w_list_const_i(const w_list_t<T, LOCK>& l) :
+            w_list_i<T, LOCK>(*(w_list_t<T, LOCK>*)(&l)) {};
+
+    ~w_list_const_i() {};
 
     void reset(const w_list_t<T, LOCK>& l) {
         w_list_i<T, LOCK>::reset(*(w_list_t<T, LOCK>*)(&l));
@@ -609,7 +592,7 @@ public:
 
 private:
     // disabled
-    NORET w_list_const_i(w_list_const_i<T, LOCK>&);
+    w_list_const_i(w_list_const_i<T, LOCK>&);
 
     w_list_const_i<T, LOCK>& operator=(w_list_const_i<T, LOCK>&);
 };
@@ -632,19 +615,14 @@ public:
 
     virtual T* search(const K& k);
 
-    NORET w_keyed_list_t(LOCK* lock);
+    w_keyed_list_t(LOCK* lock);
 
-    NORET w_keyed_list_t(
-            uint32_t key_offset,
-            uint32_t link_offset,
-            LOCK* lock
-                        );
+    w_keyed_list_t(uint32_t key_offset, uint32_t link_offset,
+                   LOCK* lock);
 
-    NORET ~w_keyed_list_t() {};
+    ~w_keyed_list_t() {};
 
-    void set_offset(
-            uint32_t key_offset,
-            uint32_t link_offset);
+    void set_offset(uint32_t key_offset, uint32_t link_offset);
 
 protected:
     const K& key_of(const T& t) {
@@ -656,7 +634,7 @@ protected:
 
 private:
     // disabled
-    NORET w_keyed_list_t(const w_keyed_list_t<T, LOCK, K>&);
+    w_keyed_list_t(const w_keyed_list_t<T, LOCK, K>&);
 
     uint32_t _key_offset;
 
@@ -687,20 +665,18 @@ class w_ascend_list_t : public w_keyed_list_t<T, LOCK, K> {
     using w_keyed_list_t<T, LOCK, K>::base_of;
 
 public:
-    NORET w_ascend_list_t(
-            uint32_t key_offset,
-            uint32_t link_offset,
-            LOCK* lock)
-            : w_keyed_list_t<T, LOCK, K>(key_offset, link_offset, lock) {};
-    NORET ~w_ascend_list_t() {};
+    w_ascend_list_t(uint32_t key_offset, uint32_t link_offset,
+                    LOCK* lock) :
+            w_keyed_list_t<T, LOCK, K>(key_offset, link_offset, lock) {};
+
+    ~w_ascend_list_t() {};
 
     virtual T* search(const K& k);
 
     virtual void put_in_order(T* t);
 
 private:
-    NORET w_ascend_list_t(
-            const w_ascend_list_t<T, LOCK, K>&); // disabled
+    w_ascend_list_t(const w_ascend_list_t<T, LOCK, K>&); // disabled
 };
 
 /**\brief List maintained in descending order. 
@@ -715,28 +691,22 @@ class w_descend_list_t : public w_keyed_list_t<T, LOCK, K> {
     using w_keyed_list_t<T, LOCK, K>::base_of;
 
 public:
-    NORET w_descend_list_t(
-            uint32_t key_offset,
-            uint32_t link_offset,
-            LOCK* l)
-            : w_keyed_list_t<T, LOCK, K>(
-            key_offset, link_offset, l) {};
-    NORET ~w_descend_list_t() {};
+    w_descend_list_t(uint32_t key_offset, uint32_t link_offset,
+                     LOCK* l) :
+        w_keyed_list_t<T, LOCK, K>(key_offset, link_offset, l) {};
+
+    ~w_descend_list_t() {};
 
     virtual T* search(const K& k);
 
     virtual void put_in_order(T* t);
 
 private:
-    NORET w_descend_list_t(
-            const w_descend_list_t<T, LOCK, K>&); // disabled
+    w_descend_list_t(const w_descend_list_t<T, LOCK, K>&); // disabled
 };
 
 template<class T, class LOCK>
-ostream&
-operator<<(
-        ostream& o,
-        const w_list_t<T, LOCK>& l) {
+ostream& operator<<(ostream& o, const w_list_t<T, LOCK>& l) {
     const w_link_t* p = l._tail.next();
 
     cout << "cnt = " << l.num_members();
@@ -752,7 +722,6 @@ operator<<(
 }
 
 template<class T, class LOCK, class K>
-NORET
 w_keyed_list_t<T, LOCK, K>::w_keyed_list_t(
         uint32_t key_offset,
         uint32_t link_offset,
@@ -767,16 +736,14 @@ w_keyed_list_t<T, LOCK, K>::w_keyed_list_t(
 }
 
 template<class T, class LOCK, class K>
-NORET
-w_keyed_list_t<T, LOCK, K>::w_keyed_list_t(LOCK* l)
-        : w_list_t<T, LOCK>(0, l),
-          _key_offset(0) {}
+w_keyed_list_t<T, LOCK, K>::w_keyed_list_t(LOCK* l) :
+        w_list_t<T, LOCK>(0, l),
+        _key_offset(0) {}
 
 template<class T, class LOCK, class K>
 void
-w_keyed_list_t<T, LOCK, K>::set_offset(
-        uint32_t key_offset,
-        uint32_t link_offset) {
+w_keyed_list_t<T, LOCK, K>::set_offset(uint32_t key_offset,
+                                       uint32_t link_offset) {
     w_assert3(_key_offset == 0);
     w_list_t<T, LOCK>::set_offset(link_offset);
     _key_offset = key_offset;

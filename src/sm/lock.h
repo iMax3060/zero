@@ -31,9 +31,9 @@ public:
 
     static void on_thread_destroy();
 
-    NORET lock_m(const sm_options& options);
+    lock_m(const sm_options& options);
 
-    NORET ~lock_m();
+    ~lock_m();
 
     /**
     * \brief Unsafely check that the lock table is empty for debugging

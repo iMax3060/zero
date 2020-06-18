@@ -36,14 +36,14 @@ void XctLatency::run() {
 }
 
 LatencyHandler::LatencyHandler(int interval, logrec_t::kind_t begin,
-                               logrec_t::kind_t end)
-        : interval(interval),
-          currentTick(0),
-          begin(begin),
-          end(end),
-          seenBegin(false),
-          accum_latency(0),
-          count(0) {
+                               logrec_t::kind_t end) :
+        interval(interval),
+        currentTick(0),
+        begin(begin),
+        end(end),
+        seenBegin(false),
+        accum_latency(0),
+        count(0) {
     assert(interval > 0);
 
     if (begin == logrec_t::t_max_logrec) {

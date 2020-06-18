@@ -349,6 +349,7 @@ class verify_volume_result;
 class lil_global_table;
 struct okvl_mode;
 class key_ranges_map;
+
 /**\addtogroup SSMSP
  * A transaction may perform a partial rollback using savepoints.
  * The transaction populates a savepoint by calling ss_m::save_work,
@@ -1375,10 +1376,11 @@ private:
  */
 class sm_store_info_t {
 public:
-    NORET sm_store_info_t() : store(0),
-                              root(0) {}
+    sm_store_info_t() :
+            store(0),
+            root(0) {}
 
-    NORET ~sm_store_info_t() {}
+    ~sm_store_info_t() {}
 
     /// store number
     StoreID store;

@@ -46,8 +46,7 @@ namespace zero::buffer_pool {
     friend class FreeListHighContention;
     friend class PageEvictioner;
 
-        template<class selector_class, class filter_class, bool filter_early> friend
-        class PageEvictionerSelectAndFilter;
+        template<class selector_class, class filter_class, bool filter_early> friend class PageEvictionerSelectAndFilter;
 
     public:
         /*!\fn      BufferPool()

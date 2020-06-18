@@ -57,8 +57,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 #include <cassert>
 #include "w_base.h"
 
-#define NORET
-
 /* NOTE: The classes defined here are non-template helpers for the
    template-based block_pool class. Because they are only intended to
    be used from template code, they accept "template" parameters with
@@ -122,15 +120,14 @@ namespace memory_block {
             MAX_CHIPS = 8 * sizeof(bitmap)
         };
 
-        NORET block_bits(size_t chip_count);
+        block_bits(size_t chip_count);
 
         size_t acquire_contiguous(size_t chip_count);
 
         // @return whether released successfully
         bool release_contiguous(size_t idx, size_t chip_count);
 
-        static
-        bitmap create_mask(size_t bits_set);
+        static bitmap create_mask(size_t bits_set);
 
         size_t usable_count() const {
             return _popc(_usable_chips);
@@ -142,8 +139,7 @@ namespace memory_block {
 
         void recycle();
 
-        static
-        size_t _popc(bitmap bm);
+        static size_t _popc(bitmap bm);
 
         bitmap _usable_chips; // available as of last recycling (1thr)
         bitmap _zombie_chips; // deallocations since last recycling (racy)
@@ -167,18 +163,16 @@ namespace memory_block {
    access any of the memory it manages.
  */
     struct block {
-        NORET block(size_t chip_size, size_t chip_count, size_t block_size);
+        block(size_t chip_size, size_t chip_count, size_t block_size);
 
         void* acquire_chip(size_t chip_size, size_t chip_count, size_t block_size);
 
         // WARNING: the caller must ensure that ptr is in a valid memory range
         // @return: whether successfully released
-        static
-        bool release_chip(void* ptr, size_t chip_size, size_t chip_count, size_t block_size);
+        static bool release_chip(void* ptr, size_t chip_size, size_t chip_count, size_t block_size);
 
         // WARNING: the caller must ensure that ptr is in a valid memory range
-        static
-        void release(void* ptr, size_t chip_size, size_t chip_count, size_t block_size);
+        static void release(void* ptr, size_t chip_size, size_t chip_count, size_t block_size);
 
         void recycle() {
             _bits.recycle();
@@ -205,7 +199,7 @@ namespace memory_block {
         // true if /ptr/ points to data inside some block managed by this pool
         virtual bool validate_pointer(void* ptr) = 0;
 
-        virtual NORET    ~block_pool() {}
+        virtual ~block_pool() {}
 
     protected:
 
@@ -216,10 +210,10 @@ namespace memory_block {
     };
 
     struct block_list {
-        NORET block_list(block_pool* pool, size_t chip_size,
-                         size_t chip_count, size_t block_size);
+        block_list(block_pool* pool, size_t chip_size, size_t chip_count,
+                   size_t block_size);
 
-        NORET ~block_list();
+        ~block_list();
 
         void* acquire(size_t chip_size, size_t chip_count, size_t block_size);
 

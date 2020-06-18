@@ -9,8 +9,7 @@ class sm_options;
 class FailureThread;
 class SkewShiftingThread;
 
-template<class T>
-class CrashThread;
+template<class T> class CrashThread;
 
 class KitsCommand : public Command {
     using Command::setupOptions;

@@ -85,7 +85,6 @@ Rome Research Laboratory Contract No. F30602-97-2-0247.
 
 #endif // __W_WORKAROUND_H
 
-#define NORET        /**/
 #define CAST(t, o) ((t)(o))
 #define    W_UNUSED(x)    /**/
 
@@ -466,9 +465,9 @@ w_base_t::is_little_endian() {
  */
 class w_vbase_t : public w_base_t {
 public:
-    NORET w_vbase_t() {};
+    w_vbase_t() {};
 
-    virtual NORET        ~w_vbase_t() {};
+    virtual ~w_vbase_t() {};
 };
 
 #include "w_fill.h"

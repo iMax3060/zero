@@ -259,8 +259,7 @@ protected:
 
 /**\cond skip */
 public:
-    static
-    rc_t group_commit(const xct_t* list[], int number);
+    static rc_t group_commit(const xct_t* list[], int number);
 
     rc_t commit_free_locks(bool read_lock_only = false, lsn_t commit_lsn = lsn_t::null);
 
@@ -272,21 +271,18 @@ public:
     void operator delete(void* p, size_t s);
 
 public:
-    NORET xct_t(
-            sm_stats_t* stats = nullptr,
-            int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD,
-            bool sys_xct = false,
-            bool single_log_sys_xct = false,
-            const tid_t& tid = 0,
-            const lsn_t& last_lsn = lsn_t::null,
-            const lsn_t& undo_nxt = lsn_t::null,
-            bool loser_xct = false
-               );
+    xct_t(sm_stats_t* stats = nullptr,
+          int timeout = timeout_t::WAIT_SPECIFIED_BY_THREAD,
+          bool sys_xct = false,
+          bool single_log_sys_xct = false,
+          const tid_t& tid = 0,
+          const lsn_t& last_lsn = lsn_t::null,
+          const lsn_t& undo_nxt = lsn_t::null,
+          bool loser_xct = false);
 
     ~xct_t();
 
 public:
-
     friend ostream& operator<<(ostream&, const xct_t&);
 
     state_t state() const;
@@ -1025,16 +1021,16 @@ public:
     * iterator to be safe, false if you don't care or if you already
     * hold the transaction-list mutex.
     */
-    NORET xct_i(bool locked_accesses)
-            : _locked(init_locked(locked_accesses)),
-              _may_check(locked_accesses),
-              unsafe_iterator(xct_t::_xlist) {
+    xct_i(bool locked_accesses) :
+            _locked(init_locked(locked_accesses)),
+            _may_check(locked_accesses),
+            unsafe_iterator(xct_t::_xlist) {
         w_assert1(_locked == locked_accesses);
         _check(_locked);
     }
 
     /// Desctructor. Calls never_mind() if necessary.
-    NORET ~xct_i() {
+    ~xct_i() {
         if (locked_by_me()) {
             _check(true);
             never_mind();

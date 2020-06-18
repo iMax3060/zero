@@ -30,9 +30,9 @@ class okvl_mode;
 */
 class lock_core_m {
 public:
-    NORET lock_core_m(const sm_options& options);
+    lock_core_m(const sm_options& options);
 
-    NORET ~lock_core_m();
+    ~lock_core_m();
 
     int collect(vtable_t&, bool names_too);
 

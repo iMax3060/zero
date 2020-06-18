@@ -83,8 +83,7 @@ public:
     /* Returns an object to the cache. The object is reset and put on the
      * free list.
      */
-    static
-    void giveback(table_row_t* ptn) {
+    static void giveback(table_row_t* ptn) {
         assert (ptn);
         Cache::release(ptn);
     }

@@ -38,8 +38,9 @@ class btree_m : public smlevel_0 {
     friend class btree_ghost_reclaim_log;
 
 public:
-    NORET btree_m() {};
-    NORET ~btree_m() {};
+    btree_m() {};
+
+    ~btree_m() {};
 
     void construct_once();
 

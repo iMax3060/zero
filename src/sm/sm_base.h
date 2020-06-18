@@ -99,9 +99,7 @@ class rid_t;
 class lsn_t;
 class sm_naive_allocator;
 class sm_tls_allocator;
-
-template<typename T, size_t A>
-class memalign_allocator;
+template<typename T, size_t A> class memalign_allocator;
 class chkpt_m;
 class restart_thread_t;
 namespace zero::buffer_pool {

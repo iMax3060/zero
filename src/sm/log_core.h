@@ -394,9 +394,9 @@ protected:
 class log_i {
 public:
     /// start a scan of the given log a the given log sequence number.
-    NORET log_i(log_core& l, const lsn_t& lsn, const bool forward = true);
+    log_i(log_core& l, const lsn_t& lsn, const bool forward = true);
 
-    NORET ~log_i();
+    ~log_i();
 
     /// Get the next log record for transaction, put its sequence number in argument \a lsn
     bool xct_next(lsn_t& lsn, logrec_t*& r);
@@ -416,11 +416,10 @@ private:
     bool forward_scan;
 }; // log_i
 
-inline NORET
-log_i::log_i(log_core& l, const lsn_t& lsn, const bool forward)  // Default: true for forward scan
-        : log(l),
-          cursor(lsn),
-          forward_scan(forward) {}
+inline log_i::log_i(log_core& l, const lsn_t& lsn, const bool forward) :  // Default: true for forward scan
+        log(l),
+        cursor(lsn),
+        forward_scan(forward) {}
 
 inline
 log_i::~log_i() {

@@ -195,8 +195,7 @@ public:
 }; // EOF: ConfigFile
 
 
-// static
-template<class T>
+/*static*/ template<class T>
 string ConfigFile::T_as_string(const T& t) {
     // Convert from a T to a string
     // Type T must support << operator
@@ -205,8 +204,7 @@ string ConfigFile::T_as_string(const T& t) {
     return ost.str();
 }
 
-// static
-template<class T>
+/*static*/ template<class T>
 T ConfigFile::string_as_T(const string& s) {
     // Convert from a string to a T
     // Type T must support >> operator
@@ -216,16 +214,14 @@ T ConfigFile::string_as_T(const string& s) {
     return t;
 }
 
-// static
-template<>
+/*static*/ template<>
 inline string ConfigFile::string_as_T<string>(const string& s) {
     // Convert from a string to a string
     // In other words, do nothing
     return s;
 }
 
-// static
-template<>
+/*static*/ template<>
 inline bool ConfigFile::string_as_T<bool>(const string& s) {
     // Convert from a string to a bool
     // Interpret "false", "F", "no", "n", "0" as false

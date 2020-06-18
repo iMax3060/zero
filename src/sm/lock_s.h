@@ -113,7 +113,7 @@ inline void lockid_t::zero() {
     l[0] = l[1] = 0;
 }
 
-inline NORET lockid_t::lockid_t() {
+inline lockid_t::lockid_t() {
     zero();
 }
 
@@ -178,8 +178,7 @@ lockid_t::operator==(const lockid_t& i) const {
     return (l[0] == i.l[0] && l[1] == i.l[1]);
 }
 
-inline NORET
-lockid_t::lockid_t(const lockid_t& i) {
+inline lockid_t::lockid_t(const lockid_t& i) {
     (void)this->operator=(i);
 }
 
