@@ -317,7 +317,6 @@ rc_t vol_t::read_many_pages(PageID first_page, generic_page* const buf, int cnt)
 
     w_assert1(cnt > 0);
     size_t offset = size_t(first_page) * sizeof(generic_page);
-    memset(buf, '\0', cnt * sizeof(generic_page));
     int read_count = pread(_fd, (char*)buf, cnt * sizeof(generic_page), offset);
     CHECK_ERRNO(read_count);
 

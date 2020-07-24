@@ -2325,7 +2325,8 @@ namespace zero::buffer_pool {
                 _lruList1(bufferPool->getBlockCount()),
                 _lastChecked(0),
                 _useLRUList0(false),
-                _useLRUList1(false) {
+                _useLRUList1(false),
+                _infinitePast(0) {
             _sortingInProgress.clear(); // _sortingInProgress should be initialized false but sometimes it is true!?
         };
 
@@ -2455,8 +2456,9 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _timestampsLiveOldestTimestamp[idx] = 0;
-            for (size_t i = 0; i < k; i++) {
-                _timestampsLive[idx][i] = std::chrono::steady_clock::now().time_since_epoch().count();
+            _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k] = std::chrono::steady_clock::now().time_since_epoch().count();
+            for (size_t i = 1; i > k; i++) {
+                _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k] = _infinitePast++;
             }
         };
 
@@ -2605,6 +2607,8 @@ namespace zero::buffer_pool {
          *          threads wait for the new list to be sorted. This is used to notify those threads.
          */
         std::mutex _waitForSorted;
+
+        std::atomic<std::chrono::steady_clock::duration::rep> _infinitePast;
 
         /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
