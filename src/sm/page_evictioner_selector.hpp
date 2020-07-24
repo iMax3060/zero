@@ -1471,7 +1471,8 @@ namespace zero::buffer_pool {
         explicit PageEvictionerSelectorLRUK(const BufferPool* bufferPool) :
                 PageEvictionerSelector(bufferPool),
                 _lruList(k * bufferPool->getBlockCount()),
-                _frameReferences(bufferPool->getBlockCount(), 0) {};
+                _frameReferences(bufferPool->getBlockCount(), 0),
+                _leastRecentlyUsedFinite(0) {};
 
         /*!\fn      select() noexcept
          * \brief   Selects a page to be evicted from the buffer pool
@@ -1483,7 +1484,7 @@ namespace zero::buffer_pool {
         inline bf_idx select() noexcept final {
             uint64_t selected;                  // Does not remove more tracked references because the page might be not
             _lruListLock.lock();                // evictable right now.
-            _lruList.popFromFront(selected);
+            selected = _popFromFront();
             return static_cast<bf_idx>(selected / k);
         };
 
@@ -1497,10 +1498,8 @@ namespace zero::buffer_pool {
         inline void updateOnPageHit(bf_idx idx) noexcept final {
             if constexpr (!on_page_unfix) {
                 _lruListLock.lock();
-                try {
-                    _lruList.remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
-                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
-                _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+                _remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
+                _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
                 _lruListLock.unlock();
             }
         };
@@ -1515,10 +1514,8 @@ namespace zero::buffer_pool {
         inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             if constexpr (on_page_unfix) {
                 _lruListLock.lock();
-                try {
-                    _lruList.remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
-                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
-                _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+                _remove(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
+                _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
                 _lruListLock.unlock();
             }
         };
@@ -1542,12 +1539,24 @@ namespace zero::buffer_pool {
         inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _lruListLock.lock();
             _frameReferences[idx] = 0;
-            for (size_t i; i < k; i++) {    // select() does not remove all the tracked references therefore, this is
+            for (size_t i = 0; i < k; i++) {    // select() does not remove all the tracked references therefore, this is
                 try {       // done here to prevent influence of the old reference history on the new page.
-                    _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
+                    _remove(static_cast<uint64_t>((i % k) + k * idx));
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             }
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            if (k >= 2) {
+                _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
+                                      _leastRecentlyUsedFinite);
+            }
+            for (size_t i = 2; i < k; i++) {
+                uint64_t ref = static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx);
+                _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
+                                      ref);
+            }
+            if (k >= 2) {
+                _frameReferences[idx]++;
+            }
             _lruListLock.unlock();
             _lruListLock.unlock();
         };
@@ -1563,7 +1572,7 @@ namespace zero::buffer_pool {
          *            corresponding frame was fixed.
          */
         inline void updateOnPageFixed(bf_idx idx) noexcept final {
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             _lruListLock.unlock();
         };
 
@@ -1578,7 +1587,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a dirty page.
          */
         inline void updateOnPageDirty(bf_idx idx) noexcept final {
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             _lruListLock.unlock();
         };
 
@@ -1593,7 +1602,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             _lruListLock.unlock();
         };
 
@@ -1608,7 +1617,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a page with swizzled pointers.
          */
         inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             _lruListLock.unlock();
         };
 
@@ -1626,9 +1635,7 @@ namespace zero::buffer_pool {
             _lruListLock.lock();
             _frameReferences[idx] = 0;
             for (size_t i; i < k; i++) {
-                try {
-                    _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
-                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
+                _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
             }
             _lruListLock.unlock();
             _lruListLock.unlock();
@@ -1669,7 +1676,7 @@ namespace zero::buffer_pool {
         zero::hashtable_deque::HashtableDeque<uint64_t, 0> _lruList;
 
         /*!\var     _frameReferences
-         * \brief   Last used page reference numbers per buffer frame index
+         * \brief   Next used page reference numbers per buffer frame index
          */
         std::vector<size_t> _frameReferences;
 
@@ -1678,6 +1685,32 @@ namespace zero::buffer_pool {
          *          manipulations
          */
         std::recursive_mutex _lruListLock;
+
+        uint64_t _leastRecentlyUsedFinite;
+
+        inline void _pushToBack(uint64_t key) {
+            if (_leastRecentlyUsedFinite == 0) {
+                _leastRecentlyUsedFinite = key;
+            }
+            _lruList.pushToBack(key);
+        }
+
+        inline uint64_t _popFromFront() {
+            uint64_t front = _lruList.getFront();
+            _remove(front);
+            return front;
+        }
+
+        inline void _remove(uint64_t key) {
+            if (key == _leastRecentlyUsedFinite) {
+                try {
+                    _leastRecentlyUsedFinite = _lruList.getAfter(key);
+                } catch (const zero::hashtable_deque::HashtableDequeAlreadyAtTheBackException<uint64_t, 0>& ex) {
+                    _leastRecentlyUsedFinite = 0;
+                }
+            }
+            _lruList.remove(key);
+        }
     };
 
     /*!\class   PageEvictionerSelectorQuasiMRU
@@ -2086,7 +2119,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
         inline void updateOnPageHit(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
@@ -2096,7 +2129,7 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
          */
         inline void updateOnPageUnfix(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
@@ -2108,7 +2141,7 @@ namespace zero::buffer_pool {
          *             frame with index \c idx .
          */
         inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
@@ -2119,7 +2152,7 @@ namespace zero::buffer_pool {
          *            corresponding frame was fixed.
          */
         inline void updateOnPageFixed(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
@@ -2130,7 +2163,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a dirty page.
          */
         inline void updateOnPageDirty(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
@@ -2143,7 +2176,7 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             _timestampsLive[idx]
-                    = std::chrono::time_point<std::chrono::high_resolution_clock>::max().time_since_epoch().count();
+                    = std::chrono::time_point<std::chrono::steady_clock>::max().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
@@ -2154,7 +2187,7 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a page with swizzled pointers.
          */
         inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
@@ -2166,7 +2199,7 @@ namespace zero::buffer_pool {
          *            explicitly.
          */
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
-            _timestampsLive[idx] = std::chrono::high_resolution_clock::duration::max().count();
+            _timestampsLive[idx] = std::chrono::steady_clock::duration::max().count();
         };
 
         /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
@@ -2192,7 +2225,7 @@ namespace zero::buffer_pool {
          *          contained page. The index of the page reference timestamps corresponding to buffer frame \c n is
          *          \c n .
          */
-        std::vector<std::atomic<std::chrono::high_resolution_clock::duration::rep>> _timestampsLive;
+        std::vector<std::atomic<std::chrono::steady_clock::duration::rep>> _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2200,7 +2233,7 @@ namespace zero::buffer_pool {
          *          timestamps of most recent references at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList0;
+        std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>> _lruList0;
 
         /*!\var     _lruList1
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2208,7 +2241,7 @@ namespace zero::buffer_pool {
          *          timestamps of most recent references at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList1;
+        std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>> _lruList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
@@ -2237,7 +2270,7 @@ namespace zero::buffer_pool {
          */
         std::mutex _waitForSorted;
 
-        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
          * \details Sorts the buffer frame indexes according to the timestamps in \link _timestampsLive \endlink into
          *          the specified list of buffer frame indexes.
@@ -2245,7 +2278,7 @@ namespace zero::buffer_pool {
          * @param into The list of buffer frame indexes to sort into.
          */
         inline void sort(
-                std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+                std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
                 into[index] = std::make_tuple(index, _timestampsLive[index].load());
             }
@@ -2253,10 +2286,14 @@ namespace zero::buffer_pool {
             std::sort(/*std::parallel::par,*/
                     into.begin(),
                     into.end(),
-                    [](const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& a,
-                       const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& b) {
+                    [](const std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>& a,
+                       const std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>& b) {
                         return std::get<1>(a) < std::get<1>(b);
                     });
+
+            std::cout << "0: "                       << std::get<0>(into[0]) << "; "
+                      << _maxBufferpoolIndex << ": " << std::get<0>(into[_maxBufferpoolIndex])
+                      << std::endl;
         };
     };
 
@@ -2389,7 +2426,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageHit(bf_idx idx) noexcept final {
             if constexpr (!on_page_unfix) {
                 _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                        = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                        = std::chrono::steady_clock::now().time_since_epoch().count();
             }
         };
 
@@ -2404,7 +2441,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageUnfix(bf_idx idx) noexcept final {
             if constexpr (on_page_unfix) {
                 _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                        = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                        = std::chrono::steady_clock::now().time_since_epoch().count();
             }
         };
 
@@ -2419,7 +2456,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
             _timestampsLiveOldestTimestamp[idx] = 0;
             for (size_t i = 0; i < k; i++) {
-                _timestampsLive[idx][i] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                _timestampsLive[idx][i] = std::chrono::steady_clock::now().time_since_epoch().count();
             }
         };
 
@@ -2433,7 +2470,7 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageFixed(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                    = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
@@ -2446,7 +2483,7 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageDirty(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                    = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageBlocked(bf_idx idx) noexcept
@@ -2460,7 +2497,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
             for (size_t i = 0; i < k; i++) {
                 _timestampsLive[idx][i]
-                        = std::chrono::time_point<std::chrono::high_resolution_clock>::max().time_since_epoch().count();
+                        = std::chrono::time_point<std::chrono::steady_clock>::max().time_since_epoch().count();
             }
         };
 
@@ -2474,7 +2511,7 @@ namespace zero::buffer_pool {
          */
         inline void updateOnPageSwizzled(bf_idx idx) noexcept final {
             _timestampsLive[idx][_timestampsLiveOldestTimestamp[idx]++ % k]
-                    = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                    = std::chrono::steady_clock::now().time_since_epoch().count();
         };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
@@ -2488,7 +2525,7 @@ namespace zero::buffer_pool {
         inline void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
             for (size_t i = 0; i < k; i++) {
                 _timestampsLive[idx][i]
-                        = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                        = std::chrono::steady_clock::now().time_since_epoch().count();
             }
         };
 
@@ -2524,7 +2561,7 @@ namespace zero::buffer_pool {
          *          \link _timestampsLiveOldestTimestamp \endlink. The index of the page reference timestamps
          *          corresponding to buffer frame \c n is \c n .
          */
-        std::vector<std::array<std::atomic<std::chrono::high_resolution_clock::duration::rep>, k>> _timestampsLive;
+        std::vector<std::array<std::atomic<std::chrono::steady_clock::duration::rep>, k>> _timestampsLive;
 
         /*!\var     _lruList0
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2532,7 +2569,7 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList0;
+        std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>> _lruList0;
 
         /*!\var     _lruList1
          * \brief   List of buffer frame indexes sorted by page reference recency
@@ -2540,7 +2577,7 @@ namespace zero::buffer_pool {
          *          _k_-th timestamps of furthest in the past at the time when this list was created. Each entry also
          *          contains the timestamp that was used for sorting.
          */
-        std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>> _lruList1;
+        std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>> _lruList1;
 
         /*!\var     _lastChecked
          * \brief   The last checked index of the currently sorted list of buffer frames
@@ -2569,7 +2606,7 @@ namespace zero::buffer_pool {
          */
         std::mutex _waitForSorted;
 
-        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to timestamps
          * \details Sorts the buffer frame indexes according to the most recent timestamps (defined in the first
          *          component of \link _timestampsLive \endlink) in the second component \link _timestampsLive \endlink
@@ -2578,7 +2615,7 @@ namespace zero::buffer_pool {
          * @param into The list of buffer frame indexes to sort into.
          */
         inline void sort(
-                std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept {
+                std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept {
             for (bf_idx index = 0; index < _timestampsLive.size(); index++) {
                 into[index] = std::make_tuple(index,
                                               _timestampsLive[index][_timestampsLiveOldestTimestamp[index] % k].load());
@@ -2587,8 +2624,8 @@ namespace zero::buffer_pool {
             std::sort(/*std::parallel::par,*/
                     into.begin(),
                     into.end(),
-                    [](const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& a,
-                       const std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>& b) {
+                    [](const std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>& a,
+                       const std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>& b) {
                         return std::get<1>(a) < std::get<1>(b);
                     });
         };
@@ -2857,7 +2894,7 @@ namespace zero::buffer_pool {
          */
         std::mutex _waitForSorted;
 
-        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to reference frequencies
          * \details Sorts the buffer frame indexes according to the reference frequencies in
          *          \link _frequenciesLive \endlink into the specified list of buffer frame indexes.
@@ -3153,7 +3190,7 @@ namespace zero::buffer_pool {
          */
         std::mutex _waitForSorted;
 
-        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::high_resolution_clock::duration::rep>>& into) noexcept
+        /*!\fn      sort(std::vector<std::tuple<bf_idx, std::chrono::steady_clock::duration::rep>>& into) noexcept
          * \brief   Sorts the buffer frames according to page reference counters
          * \details Sorts the buffer frame indexes according to the page reference counters in
          *          \link _frequenciesLive \endlink into the specified list of buffer frame indexes.

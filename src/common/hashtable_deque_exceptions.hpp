@@ -95,7 +95,7 @@ namespace zero::hashtable_deque {
         /*!\fn      HashtableDequeAlreadyContainsException(const uint64_t& size, const key_type& back, const key_type& front, const key_type& containedKey)
          * \brief   Constructor of an exception thrown when an entry was already contained in an
          *          \link HashtableDeque \endlink
-         * \details This constructor instantiates an \c HashtableDeque_already_contains_exception with all its
+         * \details This constructor instantiates an \c HashtableDequeAlreadyContainsException with all its
          *          variables.
          *
          * @param size         See \link _size \endlink .
@@ -163,7 +163,7 @@ namespace zero::hashtable_deque {
         /*!\fn      HashtableDequeNotContainedException(const uint64_t& size, const key_type& back, const key_type& front, const key_type& requestedKey)
          * \brief   Constructor of an exception thrown when an entry was not already contained in an
          *          \link HashtableDeque \endlink
-         * \details This constructor instantiates an \c HashtableDeque_not_contained_exception with all its variables.
+         * \details This constructor instantiates an \c HashtableDequeNotContainedException with all its variables.
          *
          * @param size         See \link _size \endlink.
          * @param back         See \link _back \endlink.
@@ -189,6 +189,93 @@ namespace zero::hashtable_deque {
          */
         const key_type _requestedKey;
     };
+
+    /*!\class   HashtableDequeAlreadyAtTheFrontException
+     * \brief   Exception thrown when an entry was already at the front of an \link HashtableDeque \endlink
+     * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
+     *          was unexpectedly already at the front of the deque.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
+    template<class key_type, key_type invalid_key>
+    class HashtableDequeAlreadyAtTheFrontException : public HashtableDequeException<key_type, invalid_key> {
+    public:
+        /*!\fn      HashtableDequeNotContainedException(const uint64_t& size, const key_type& back, const key_type& front, const key_type& frontKey)
+         * \brief   Constructor of an exception thrown when an entry was already at the front of an
+         *          \link HashtableDeque \endlink
+         * \details This constructor instantiates an \c HashtableDequeAlreadyAtTheFrontException with all its variables.
+         *
+         * @param size         See \link _size \endlink.
+         * @param back         See \link _back \endlink.
+         * @param front        See \link _front \endlink.
+         * @param frontKey See \link _frontKey \endlink.
+         */
+        HashtableDequeAlreadyAtTheFrontException(const uint64_t& size, const key_type& back, const key_type& front,
+                                                 const key_type& frontKey) :
+                HashtableDequeException<key_type, invalid_key>(size, back, front),
+                _frontKey(frontKey) {};
+
+        const char* what() const noexcept override {
+            int whatStringLength = snprintf(nullptr, 0, "An HashtableDeque has key %zd at the front", _frontKey);
+            char* whatSentence = new char[whatStringLength + 1];
+            snprintf(whatSentence, whatStringLength, "An HashtableDeque has key %zd at the front", _frontKey);
+            return whatSentence;
+        };
+
+    private:
+        /*!\var     _frontKey
+         * \brief   The Entry at the Front
+         * \details The value of the entry that was unexpectedly already at the front.
+         */
+        const key_type _frontKey;
+    };
+
+    /*!\class   HashtableDequeAlreadyAtTheBackException
+     * \brief   Exception thrown when an entry was already at the back of an \link HashtableDeque \endlink
+     * \details Represents an exception that can be thrown in instances of \link HashtableDeque \endlink when an entry
+     *          was unexpectedly already at the back of the deque.
+     *
+     * @tparam key_type    The key type of the corresponding \link HashtableDeque \endlink .
+     * @tparam invalid_key The invalid key used in the corresponding \link HashtableDeque \endlink  .
+     *
+     * \author Max Gilbert
+     */
+    template<class key_type, key_type invalid_key>
+    class HashtableDequeAlreadyAtTheBackException : public HashtableDequeException<key_type, invalid_key> {
+    public:
+        /*!\fn      HashtableDequeNotContainedException(const uint64_t& size, const key_type& back, const key_type& front, const key_type& backKey)
+         * \brief   Constructor of an exception thrown when an entry was already at the back of an
+         *          \link HashtableDeque \endlink
+         * \details This constructor instantiates an \c HashtableDequeAlreadyAtTheBackException with all its variables.
+         *
+         * @param size         See \link _size \endlink.
+         * @param back         See \link _back \endlink.
+         * @param front        See \link _front \endlink.
+         * @param backKey See \link _backKey \endlink.
+         */
+        HashtableDequeAlreadyAtTheBackException(const uint64_t& size, const key_type& back, const key_type& front,
+                                                 const key_type& backKey) :
+                HashtableDequeException<key_type, invalid_key>(size, back, front),
+                _backKey(backKey) {};
+
+        const char* what() const noexcept override {
+            int whatStringLength = snprintf(nullptr, 0, "An HashtableDeque has key %zd at the back", _backKey);
+            char* whatSentence = new char[whatStringLength + 1];
+            snprintf(whatSentence, whatStringLength, "An HashtableDeque has key %zd at the back", _backKey);
+            return whatSentence;
+        };
+
+    private:
+        /*!\var     _backKey
+         * \brief   The Entry at the Back
+         * \details The value of the entry that was unexpectedly already at the back.
+         */
+        const key_type _backKey;
+    };
+
 }
 
 #endif //__HASHTABLE_DEQUE_EXCEPTIONS_HPP

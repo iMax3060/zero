@@ -212,7 +212,7 @@ namespace zero::hashtable_deque {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
-                w_assert1((*_directAccessDeque)[_back]._next == invalid_key);
+                w_assert1((*_directAccessDeque)[_front]._previous == invalid_key);
 
                 if (_directAccessDeque->count(k)) {
                     throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
@@ -244,7 +244,7 @@ namespace zero::hashtable_deque {
             if (!_directAccessDeque->empty()) {
                 auto oldSize = _directAccessDeque->size();
                 w_assert1(_back != invalid_key);
-                w_assert1((*_directAccessDeque)[_back]._next == invalid_key);
+                w_assert1((*_directAccessDeque)[_front]._previous == invalid_key);
 
                 if (_directAccessDeque->count(k)) {
                     throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
@@ -389,6 +389,410 @@ namespace zero::hashtable_deque {
                 }
                 _directAccessDeque->erase(k);
                 w_assert1(_directAccessDeque->size() == old_size - 1);
+            }
+        }
+
+        /*!\fn      insertBefore(const key_type& k, const key_type& ref)
+         * \brief   Add the key to before a reference key
+         * \details Adds an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param k                                       The key that is added to this deque.
+         * @param ref                                     The already contained key given as position for the insert.
+         * @throws HashtableDequeNotContainedException    Thrown if the reference key was not already contained in this
+         *                                                deque.
+         * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
+         */
+        void insertBefore(const key_type& k, const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_directAccessDeque->count(k)) {
+                throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                    _back, _front, k);
+            } else if (_front == ref) {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                w_assert1(_back != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(invalid_key, ref);
+                _front = k;
+                (*_directAccessDeque)[ref]._previous = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._previous != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair((*_directAccessDeque)[ref]._previous, ref);
+                (*_directAccessDeque)[(*_directAccessDeque)[ref]._previous]._next = k;
+                (*_directAccessDeque)[ref]._previous = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            }
+        }
+
+        /*!\fn      insertBefore(key_type&& k, key_type&& ref)
+         * \brief   Add the key to before a reference key
+         * \details Adds an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param k                                       The key that is added to this deque.
+         * @param ref                                     The already contained key given as position for the insert.
+         * @throws HashtableDequeNotContainedException    Thrown if the reference key was not already contained in this
+         *                                                deque.
+         * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
+         */
+        void insertBefore(key_type&& k, key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_directAccessDeque->count(k)) {
+                throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                    _back, _front, k);
+            } else if (_front == ref) {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                w_assert1(_back != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(invalid_key, ref);
+                _front = k;
+                (*_directAccessDeque)[ref]._previous = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._previous != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair((*_directAccessDeque)[ref]._previous, ref);
+                (*_directAccessDeque)[(*_directAccessDeque)[ref]._previous]._next = k;
+                (*_directAccessDeque)[ref]._previous = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            }
+        }
+
+        /*!\fn      insertAfter(const key_type& k, const key_type& ref)
+         * \brief   Add the key to after a reference key
+         * \details Adds an entry right after (closer to the back of the deque) a given reference key already contained
+         *          in this deque.
+         *
+         * @param k                                       The key that is added to this deque.
+         * @param ref                                     The already contained key given as position for the insert.
+         * @throws HashtableDequeNotContainedException    Thrown if the reference key was not already contained in this
+         *                                                deque.
+         * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
+         */
+        void insertAfter(const key_type& k, const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_directAccessDeque->count(k)) {
+                throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                    _back, _front, k);
+            } else if (_back == ref) {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._next == invalid_key);
+                w_assert1(_front != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(ref, invalid_key);
+                _back = k;
+                (*_directAccessDeque)[ref]._next = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._next != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(ref, (*_directAccessDeque)[ref]._next);
+                (*_directAccessDeque)[(*_directAccessDeque)[ref]._next]._previous = k;
+                (*_directAccessDeque)[ref]._next = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            }
+        }
+
+        /*!\fn      insertAfter(key_type&& k, key_type&& ref)
+         * \brief   Add the key to after a reference key
+         * \details Adds an entry right after (closer to the back of the deque) a given reference key already contained
+         *          in this deque.
+         *
+         * @param k                                       The key that is added to this deque.
+         * @param ref                                     The already contained key given as position for the insert.
+         * @throws HashtableDequeNotContainedException    Thrown if the reference key was not already contained in this
+         *                                                deque.
+         * @throws HashtableDequeAlreadyContainsException Thrown if the key was already contained in this deque.
+         */
+        void insertAfter(key_type&& k, key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_directAccessDeque->count(k)) {
+                throw HashtableDequeAlreadyContainsException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                    _back, _front, k);
+            } else if (_back == ref) {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._next == invalid_key);
+                w_assert1(_front != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(ref, invalid_key);
+                _back = k;
+                (*_directAccessDeque)[ref]._next = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            } else {
+                auto oldSize = _directAccessDeque->size();
+                w_assert1((*_directAccessDeque)[ref]._next != invalid_key);
+                (*_directAccessDeque)[k] = KeyPair(ref, (*_directAccessDeque)[ref]._next);
+                (*_directAccessDeque)[(*_directAccessDeque)[ref]._next]._previous = k;
+                (*_directAccessDeque)[ref]._next = k;
+                w_assert1(_directAccessDeque->size() == oldSize + 1);
+            }
+        }
+
+        /*!\fn      getFront(key_type& k)
+         * \brief   Get the key at the front
+         * \details Returns the entry at the front of this deque.
+         *
+         * @param[out] k                        The key at the front.
+         * @throws HashtableDequeEmptyException Thrown if this deque is empty.
+         */
+        void getFront(key_type& k) {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else {
+                k = _front;
+            }
+        }
+
+        /*!\fn      getFront()
+         * \brief   Get the key at the front
+         * \details Returns the entry at the front of this deque.
+         *
+         * @return                              The key at the front.
+         * @throws HashtableDequeEmptyException Thrown if this deque is empty.
+         */
+        key_type getFront() {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else {
+                return _front;
+            }
+        }
+
+        /*!\fn      getBack(key_type& k)
+         * \brief   Get the key at the back
+         * \details Returns the entry at the back of this deque.
+         *
+         * @param[out] k                        The key at the back.
+         * @throws HashtableDequeEmptyException Thrown if this deque is empty.
+         */
+        void getBack(key_type& k) {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else {
+                k = _back;
+            }
+        }
+
+        /*!\fn      getBack()
+         * \brief   Get the key at the back
+         * \details Returns the entry at the back of this deque.
+         *
+         * @return                              The key at the back.
+         * @throws HashtableDequeEmptyException Thrown if this deque is empty.
+         */
+        key_type getBack() {
+            if (_directAccessDeque->empty()) {
+                throw HashtableDequeEmptyException<key_type, invalid_key>(_directAccessDeque->size(), _back, _front);
+            } else {
+                return _back;
+            }
+        }
+
+        /*!\fn      getBefore(key_type& k, const key_type& ref)
+         * \brief   Get the key to before a reference key
+         * \details Returns an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param[out] k                                    The key before the reference key.
+         * @param ref                                       The already contained key given as position.
+         * @throws HashtableDequeNotContainedException      Thrown if the reference key was not already contained in
+         *                                                  this deque.
+         * @throws HashtableDequeAlreadyAtTheFrontException Thrown if the reference key was already at the front of this
+         *                                                  deque.
+         */
+        void getBefore(key_type& k, const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_front == ref) {
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                throw HashtableDequeAlreadyAtTheFrontException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                      _back, _front, invalid_key);
+            } else {
+                k = (*_directAccessDeque)[ref]._previous;
+            }
+        }
+
+        /*!\fn      getBefore(key_type& k, key_type&& ref)
+         * \brief   Get the key to before a reference key
+         * \details Returns an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param[out] k                                    The key before the reference key.
+         * @param ref                                       The already contained key given as position.
+         * @throws HashtableDequeNotContainedException      Thrown if the reference key was not already contained in
+         *                                                  this deque.
+         * @throws HashtableDequeAlreadyAtTheFrontException Thrown if the reference key was already at the front of this
+         *                                                  deque.
+         */
+        void getBefore(key_type& k, key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_front == ref) {
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                throw HashtableDequeAlreadyAtTheFrontException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                      _back, _front, invalid_key);
+            } else {
+                k = (*_directAccessDeque)[ref]._previous;
+            }
+        }
+
+        /*!\fn      getBefore(const key_type& ref)
+         * \brief   Get the key to before a reference key
+         * \details Returns an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @return                                          The key before the reference key.
+         * @param ref                                       The already contained key given as position.
+         * @throws HashtableDequeNotContainedException      Thrown if the reference key was not already contained in
+         *                                                  this deque.
+         * @throws HashtableDequeAlreadyAtTheFrontException Thrown if the reference key was already at the front of this
+         *                                                  deque.
+         */
+        key_type getBefore(const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_front == ref) {
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                throw HashtableDequeAlreadyAtTheFrontException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                      _back, _front, invalid_key);
+            } else {
+                return (*_directAccessDeque)[ref]._previous;
+            }
+        }
+
+        /*!\fn      getBefore(key_type&& ref)
+         * \brief   Get the key to before a reference key
+         * \details Returns an entry right before (closer to the front of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @return                                          The key before the reference key.
+         * @param ref                                       The already contained key given as position.
+         * @throws HashtableDequeNotContainedException      Thrown if the reference key was not already contained in
+         *                                                  this deque.
+         * @throws HashtableDequeAlreadyAtTheFrontException Thrown if the reference key was already at the front of this
+         *                                                  deque.
+         */
+        key_type getBefore(key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_front == ref) {
+                w_assert1((*_directAccessDeque)[ref]._previous == invalid_key);
+                throw HashtableDequeAlreadyAtTheFrontException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                      _back, _front, invalid_key);
+            } else {
+                return (*_directAccessDeque)[ref]._previous;
+            }
+        }
+
+        /*!\fn      getAfter(key_type& k, const key_type& ref)
+         * \brief   Get the key to after a reference key
+         * \details Returns an entry right after (closer to the back of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param[out] k                                   The key after the reference key.
+         * @param ref                                      The already contained key given as position.
+         * @throws HashtableDequeNotContainedException     Thrown if the reference key was not already contained in this
+         *                                                 deque.
+         * @throws HashtableDequeAlreadyAtTheBackException Thrown if the reference key was already at the back of this
+         *                                                 deque.
+         */
+        void getAfter(key_type& k, const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_back == ref) {
+                w_assert1((*_directAccessDeque)[ref].next == invalid_key);
+                throw HashtableDequeAlreadyAtTheBackException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                     _back, _front, invalid_key);
+            } else {
+                k = (*_directAccessDeque)[ref]._next;
+            }
+        }
+
+        /*!\fn      getAfter(key_type& k, key_type&& ref)
+         * \brief   Get the key to after a reference key
+         * \details Returns an entry right after (closer to the back of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @param[out] k                                   The key after the reference key.
+         * @param ref                                      The already contained key given as position.
+         * @throws HashtableDequeNotContainedException     Thrown if the reference key was not already contained in this
+         *                                                 deque.
+         * @throws HashtableDequeAlreadyAtTheBackException Thrown if the reference key was already at the back of this
+         *                                                 deque.
+         */
+        void getAfter(key_type& k, key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_back == ref) {
+                w_assert1((*_directAccessDeque)[ref].next == invalid_key);
+                throw HashtableDequeAlreadyAtTheBackException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                     _back, _front, invalid_key);
+            } else {
+                k = (*_directAccessDeque)[ref]._next;
+            }
+        }
+
+        /*!\fn      getAfter(key_type& k, const key_type& ref)
+         * \brief   Get the key to after a reference key
+         * \details Returns an entry right after (closer to the back of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @return                                         The key after the reference key.
+         * @param ref                                      The already contained key given as position.
+         * @throws HashtableDequeNotContainedException     Thrown if the reference key was not already contained in this
+         *                                                 deque.
+         * @throws HashtableDequeAlreadyAtTheBackException Thrown if the reference key was already at the back of this
+         *                                                 deque.
+         */
+        key_type getAfter(const key_type& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_back == ref) {
+                w_assert1((*_directAccessDeque)[ref].next == invalid_key);
+                throw HashtableDequeAlreadyAtTheBackException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                     _back, _front, invalid_key);
+            } else {
+                return (*_directAccessDeque)[ref]._next;
+            }
+        }
+
+        /*!\fn      getAfter(key_type& k, key_type&& ref)
+         * \brief   Get the key to after a reference key
+         * \details Returns an entry right after (closer to the back of the deque) a given reference key already
+         *          contained in this deque.
+         *
+         * @return                                         The key after the reference key.
+         * @param ref                                      The already contained key given as position.
+         * @throws HashtableDequeNotContainedException     Thrown if the reference key was not already contained in this
+         *                                                 deque.
+         * @throws HashtableDequeAlreadyAtTheBackException Thrown if the reference key was already at the back of this
+         *                                                 deque.
+         */
+        key_type getAfter(key_type&& ref) {
+            if (_directAccessDeque->count(ref) == 0) {
+                throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                 _back, _front, ref);
+            } else if (_back == ref) {
+                w_assert1((*_directAccessDeque)[ref].next == invalid_key);
+                throw HashtableDequeAlreadyAtTheBackException<key_type, invalid_key>(_directAccessDeque->size(),
+                                                                                     _back, _front, invalid_key);
+            } else {
+                return (*_directAccessDeque)[ref]._next;
             }
         }
 
