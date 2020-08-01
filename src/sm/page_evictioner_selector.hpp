@@ -1544,7 +1544,6 @@ namespace zero::buffer_pool {
                     _remove(static_cast<uint64_t>((i % k) + k * idx));
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             }
-            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             if (k >= 2) {
                 _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
                                       _leastRecentlyUsedFinite);
@@ -1557,6 +1556,7 @@ namespace zero::buffer_pool {
             if (k >= 2) {
                 _frameReferences[idx]++;
             }
+            _pushToBack(static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx));
             _lruListLock.unlock();
             _lruListLock.unlock();
         };
