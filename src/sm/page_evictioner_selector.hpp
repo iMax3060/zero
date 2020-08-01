@@ -1229,26 +1229,12 @@ namespace zero::buffer_pool {
 
         /*!\fn      updateOnPageUnfix(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on page unfix
-         * \details Moves the buffer frame index from some segment to the back of the protected segment. If the
-         *          protected segment is greater than supposed, the least recently used buffer frame is moved from the
-         *          protected segment to the back of the probationary segment.
+         * \details This buffer frame selector does not update its page reference statistics on unfix because of the
+         *          effect this would have on the reference frequencies of the pages.
          *
-         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page hit occurred.
+         * @param idx The buffer frame index of the \link BufferPool \endlink on which a page unfix occurred.
          */
-        inline void updateOnPageUnfix(bf_idx idx) noexcept final {
-            std::lock_guard<std::recursive_mutex> lock(_lruListLock);
-            try {
-                _protectedLRUList.remove(idx);
-            } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0>& ex) {
-                _probationaryLRUList.remove(idx);
-            }
-            if (_protectedLRUList.length() >= _protectedBlockCount - 1) {
-                bf_idx downgradeIndex;
-                _protectedLRUList.popFromFront(downgradeIndex);
-                _probationaryLRUList.pushToBack(downgradeIndex);
-            }
-            _protectedLRUList.pushToBack(idx);
-        };
+        inline void updateOnPageUnfix(bf_idx idx) noexcept final {};
 
         /*!\fn      updateOnPageMiss(bf_idx idx, PageID pid) noexcept
          * \brief   Updates the eviction statistics on page miss
