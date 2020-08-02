@@ -2363,7 +2363,8 @@ namespace zero::buffer_pool {
                         } else {
                             if (std::get<1>(_lruList0[checkThis])
                                 == _timestampsLive[std::get<0>(_lruList0[checkThis])][
-                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList0[checkThis])] % k]) {
+                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList0[checkThis])] % k]
+                             && std::get<0>(_lruList0[checkThis]) != 0) {
                                 return std::get<0>(_lruList0[checkThis]);
                             } else {
                                 continue;
@@ -2390,7 +2391,8 @@ namespace zero::buffer_pool {
                         } else {
                             if (std::get<1>(_lruList1[checkThis])
                                 == _timestampsLive[std::get<0>(_lruList1[checkThis])][
-                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList1[checkThis])] % k]) {
+                                        _timestampsLiveOldestTimestamp[std::get<0>(_lruList1[checkThis])] % k]
+                             && std::get<0>(_lruList1[checkThis]) != 0) {
                                 return std::get<0>(_lruList1[checkThis]);
                             } else {
                                 continue;
@@ -2405,6 +2407,7 @@ namespace zero::buffer_pool {
                     _waitForSorted.unlock();
                     _useLRUList1 = false;
                     _sortingInProgress.clear();
+                    continue;
                 } else {
                     _waitForSorted.lock();
                     _waitForSorted.unlock();
