@@ -1531,13 +1531,21 @@ namespace zero::buffer_pool {
                 } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             }
             if (k >= 2) {
-                _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
-                                      _leastRecentlyUsedFinite);
+                try {
+                    _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
+                                          _leastRecentlyUsedFinite);
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {
+                    _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
+                }
             }
             for (size_t i = 2; i < k; i++) {
                 uint64_t ref = static_cast<uint64_t>((_frameReferences[idx]++ % k) + k * idx);
-                _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
-                                      ref);
+                try {
+                    _lruList.insertBefore(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx),
+                                          ref);
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {
+                    _lruList.pushToBack(static_cast<uint64_t>((_frameReferences[idx] % k) + k * idx));
+                }
             }
             if (k >= 2) {
                 _frameReferences[idx]++;
@@ -1621,7 +1629,9 @@ namespace zero::buffer_pool {
             _lruListLock.lock();
             _frameReferences[idx] = 0;
             for (size_t i; i < k; i++) {
-                _lruList.remove(static_cast<uint64_t>((i % k) + k * idx));
+                try {
+                    _remove(static_cast<uint64_t>((i % k) + k * idx));
+                } catch (const zero::hashtable_deque::HashtableDequeNotContainedException<uint64_t, 0>& ex) {}
             }
             _lruListLock.unlock();
             _lruListLock.unlock();
@@ -1697,6 +1707,7 @@ namespace zero::buffer_pool {
             }
             _lruList.remove(key);
         }
+
     };
 
     /*!\class   PageEvictionerSelectorQuasiMRU

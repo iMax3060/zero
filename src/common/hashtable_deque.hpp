@@ -763,7 +763,7 @@ namespace zero::hashtable_deque {
                 throw HashtableDequeNotContainedException<key_type, invalid_key>(_directAccessDeque->size(),
                                                                                  _back, _front, ref);
             } else if (_back == ref) {
-                w_assert1((*_directAccessDeque)[ref].next == invalid_key);
+                w_assert1((*_directAccessDeque)[ref]._next == invalid_key);
                 throw HashtableDequeAlreadyAtTheBackException<key_type, invalid_key>(_directAccessDeque->size(),
                                                                                      _back, _front, invalid_key);
             } else {

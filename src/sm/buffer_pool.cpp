@@ -452,6 +452,7 @@ bool BufferPool::isEvictable(const bf_idx indexToCheck, const bool doFlushIfDirt
     }
     if (// ... pinned frames, i.e., someone required it not be evicted
             controlBlockToCheck._pin_cnt != 0) {
+        _evictioner->updateOnPageBlocked(indexToCheck);
         return false;
     }
 
