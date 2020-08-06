@@ -3350,7 +3350,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _frameReferences[idx] = std::numeric_limits<uint64_t>::max();   // Prevent further tries of eviction!
+            _frameReferences[idx] = _globalReferences.load();   // Prevent further tries of eviction!
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
@@ -3600,7 +3600,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _frameReferences[idx] = std::numeric_limits<uint64_t>::max();   // Prevent further tries of eviction!
+            _frameReferences[idx] = _globalReferences.load();   // Prevent further tries of eviction!
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
