@@ -2807,7 +2807,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
+            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max() / 2;
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
@@ -3098,7 +3098,7 @@ namespace zero::buffer_pool {
          *            that cannot be evicted at all.
          */
         inline void updateOnPageBlocked(bf_idx idx) noexcept final {
-            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max();
+            _frequenciesLive[idx] = std::numeric_limits<uint64_t>::max() / 2;
         };
 
         /*!\fn      updateOnPageSwizzled(bf_idx idx) noexcept
