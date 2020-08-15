@@ -884,8 +884,8 @@ namespace zero::buffer_pool {
     template<size_t k = 2, bf_idx resort_threshold_ppm = 750000, bool on_page_unfix = false> class PageEvictionerSelectorTimestampLRUK;
 
     // LFU (Least Frequently Used) Page Selectors:
-    template<bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFU;
-    template<bf_idx resort_threshold_ppm = 750000> class PageEvictionerSelectorLFUDA;
+    class PageEvictionerSelectorLFU;
+    class PageEvictionerSelectorLFUDA;
 
     // LRD (Least Reference Density) Page Selectors:
     class PageEvictionerSelectorLRDV1;
@@ -1464,9 +1464,9 @@ namespace zero::buffer_pool {
                                                                       PageEvictionerFilterNone, false>;
 
     // LFU (Least Frequently Used) Page Evictioners:
-    using PageEvictionerLFU = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU<>, PageEvictionerFilterNone,
+    using PageEvictionerLFU = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFU, PageEvictionerFilterNone,
                                                             false>;
-    using PageEvictionerLFUDA = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA<>, PageEvictionerFilterNone,
+    using PageEvictionerLFUDA = PageEvictionerSelectAndFilter<PageEvictionerSelectorLFUDA, PageEvictionerFilterNone,
                                                               false>;
 
     // LRD (Least Reference Density) Page Evictioners:
