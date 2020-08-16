@@ -95,7 +95,9 @@ namespace zero::buffer_pool {
          * @param pid The \link PageID \endlink of the \link generic_page \endlink that was loaded into the buffer
          *             frame with index \c idx .
          */
-        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {};
+        void updateOnPageMiss(bf_idx idx, PageID pid) noexcept final {
+            _notEvictable[idx] = false;
+        };
 
         /*!\fn      updateOnPageFixed(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of fixed (i.e. used) pages during eviction
@@ -104,7 +106,13 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame was fixed.
          */
-        void updateOnPageFixed(bf_idx idx) noexcept final {};
+        void updateOnPageFixed(bf_idx idx) noexcept final {
+            try {
+                _coolingStageLock.lock();
+                _coolingStage.pushToBack(idx);
+                _coolingStageLock.unlock();
+            } catch (const hashtable_deque::HashtableDequeAlreadyContainsException<bf_idx, 0x80000001u>& ex) {}
+        };
 
         /*!\fn      updateOnPageDirty(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of dirty pages during eviction
@@ -114,6 +122,12 @@ namespace zero::buffer_pool {
          *            corresponding frame contained a dirty page.
          */
         void updateOnPageDirty(bf_idx idx) noexcept final {
+            try {
+                _coolingStageLock.lock();
+                _coolingStage.pushToBack(idx);
+                _coolingStageLock.unlock();
+            } catch (const hashtable_deque::HashtableDequeAlreadyContainsException<bf_idx, 0x80000001u>& ex) {}
+
             /*!\var     _dirtyCount
              * \brief   TODO
              * \details TODO
@@ -143,7 +157,13 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink that was picked for eviction while the
          *            corresponding frame contained a page with swizzled pointers.
          */
-        void updateOnPageSwizzled(bf_idx idx) noexcept final {};
+        void updateOnPageSwizzled(bf_idx idx) noexcept final {
+            try {
+                _coolingStageLock.lock();
+                _coolingStage.pushToBack(idx);
+                _coolingStageLock.unlock();
+            } catch (const hashtable_deque::HashtableDequeAlreadyContainsException<bf_idx, 0x80000001u>& ex) {}
+        };
 
         /*!\fn      updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics on explicit unbuffer
@@ -152,7 +172,14 @@ namespace zero::buffer_pool {
          * @param idx The buffer frame index of the \link BufferPool \endlink whose corresponding frame is freed
          *            explicitly.
          */
-        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {};
+        void updateOnPageExplicitlyUnbuffered(bf_idx idx) noexcept final {
+            try {
+                _coolingStageLock.lock();
+                _coolingStage.remove(idx);
+                _coolingStageLock.unlock();
+            } catch (const hashtable_deque::HashtableDequeNotContainedException<bf_idx, 0x80000001u>& ex) {}
+            _notEvictable[idx] = true;
+        };
 
         /*!\fn      updateOnPointerSwizzling(bf_idx idx) noexcept
          * \brief   Updates the eviction statistics of pages when its pointer got swizzled in its parent page
